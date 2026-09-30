@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>個人開発アプリ一覧</title>
+<meta name="description" content="1人で作っているスマホアプリの一覧です。野球シミュレーション DIAMOND NINE、パチンコ・競馬の収支管理 カチマケ。">
+<meta property="og:title" content="個人開発アプリ一覧">
+<meta property="og:description" content="1人で作っているスマホアプリの一覧です。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kame6493-del.github.io/">
+<meta property="og:image" content="https://kame6493-del.github.io/img/diamond-nine-icon.png">
+<meta name="twitter:card" content="summary">
+<style>
+  :root {
+    --bg: #f4f4f1; --card: #ffffff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc;
+    --dn: #1b3a8a; --km: #f9b712; --km-ink: #2b2100;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121211; --card: #1d1d1b; --ink: #f1f1ec; --sub: #a3a39c; --line: #33332f; --dn: #8fb0ff; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.75 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 56px; }
+  header { margin-bottom: 28px; }
+  h1 { font-size: 22px; line-height: 1.4; margin: 0 0 6px; letter-spacing: 0.02em; }
+  header p { margin: 0; color: var(--sub); font-size: 14px; }
+  .app { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .app-head { display: flex; gap: 14px; align-items: center; }
+  .app-head img { width: 72px; height: 72px; border-radius: 16px; flex: none; border: 1px solid var(--line); }
+  .app h2 { font-size: 19px; line-height: 1.35; margin: 0; }
+  .kind { font-size: 13px; color: var(--sub); margin: 2px 0 0; }
+  .lead { margin: 14px 0 0; }
+  .shots { display: flex; gap: 10px; margin: 16px 0 0; overflow-x: auto; scrollbar-width: none; }
+  .shots img { width: 150px; height: auto; border-radius: 10px; border: 1px solid var(--line); flex: none; }
+  ul.points { margin: 14px 0 0; padding-left: 1.2em; }
+  ul.points li { margin: 2px 0; }
+  .status { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; }
+  .tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--sub); }
+  .tag.on { color: var(--ink); border-color: var(--ink); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
+  .btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; }
+  .btn.main.dn { background: var(--dn); color: #fff; }
+  .btn.main.km { background: var(--km); color: var(--km-ink); }
+  .btn.line { border: 1px solid var(--line); color: var(--ink); }
+  .note { font-size: 13px; color: var(--sub); margin: 12px 0 0; }
+  .tester { margin: 14px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--bg); font-size: 14px; }
+  .tester ol { margin: 6px 0 0; padding-left: 1.3em; }
+  footer { margin-top: 32px; font-size: 14px; color: var(--sub); }
+  footer a, .tester a { color: var(--ink); }
+  @media (min-width: 640px) { main { padding-top: 64px; } h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>個人で作っているアプリ</h1>
+    <p>企画・デザイン・開発まで1人で作っています。新しいアプリはここに足していきます。</p>
+  </header>
+
+  <section class="app" aria-labelledby="dn">
+    <div class="app-head">
+      <img src="img/diamond-nine-icon.png" alt="DIAMOND NINE のアイコン" width="72" height="72">
+      <div>
+        <h2 id="dn">DIAMOND NINE</h2>
+        <p class="kind">野球シミュレーション・無料</p>
+      </div>
+    </div>
+    <p class="lead">選手を集めて、育てて、打線を組んで、1年を進める。弱小チームから優勝を目指す野球シミュレーションです。打率・本塁打・打点・OPS まで、成績表をずっと眺めていられます。</p>
+    <div class="shots">
+      <img src="img/diamond-nine-1.jpg" alt="選手を獲得した画面" width="150" height="267" loading="lazy">
+      <img src="img/diamond-nine-2.jpg" alt="DIAMOND NINE のゲーム画面" width="150" height="267" loading="lazy">
+    </div>
+    <div class="status">
+      <span class="tag on">ブラウザで遊べます</span>
+      <span class="tag on">Android テスト中</span>
+      <span class="tag">iPhone 準備中</span>
+    </div>
+    <div class="actions">
+      <a class="btn main dn" href="https://diamond-nine-baseball.com/">ブラウザで遊ぶ</a>
+    </div>
+    <div class="tester">
+      Android 版のテストに参加してくれる方を探しています。
+      <ol>
+        <li><a href="https://groups.google.com/g/diamond-nine-testers">テスター用のグループ</a>に参加する(Google アカウントで1回押すだけ)</li>
+        <li><a href="https://play.google.com/apps/testing/com.diamondninebaseball.game">テスト参加のページ</a>で「テスターになる」を押し、Google Play から入れる</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="app" aria-labelledby="km">
+    <div class="app-head">
+      <img src="img/kachimake-icon.png" alt="カチマケ のアイコン" width="72" height="72">
+      <div>
+        <h2 id="km">カチマケ</h2>
+        <p class="kind">パチンコ・パチスロ・競馬・競輪・ボート・オートの収支管理</p>
+      </div>
+    </div>
+    <p class="lead">投資と回収を入れるだけで、今月いくら勝って、どこで負けているかが分かる収支アプリです。貯玉・貯メダルやイベント日の印にも対応。勝った月は画像でシェアできます。</p>
+    <div class="shots">
+      <img src="img/kachimake-1.jpg" alt="カレンダーで月の収支を見る画面" width="150" height="325" loading="lazy">
+      <img src="img/kachimake-2.jpg" alt="回収率や種類ごとの収支の分析画面" width="150" height="325" loading="lazy">
+    </div>
+    <div class="status">
+      <span class="tag on">Android 審査中</span>
+      <span class="tag">iPhone 準備中</span>
+      <span class="tag">18歳以上向け</span>
+    </div>
+    <div class="actions">
+      <a class="btn line" href="https://kame6493-del.github.io/kachimake-site/support.html">使い方・よくある質問</a>
+    </div>
+    <p class="note">公開されたら、ここにストアへのリンクを置きます。</p>
+  </section>
+
+  <footer>
+    <p>開発の途中経過とお知らせは X で発信しています: <a href="https://x.com/VRCtoolers">@VRCtoolers</a></p>
+    <p>お問い合わせ: <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a>(件名にアプリ名を入れてください)</p>
+  </footer>
+</main>
+</body>
+</html>
