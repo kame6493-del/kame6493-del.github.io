@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>アプリの宣伝動画を Python で量産する: Playwright で画面録画 → VOICEVOX で読み上げ → Pillow と ffmpeg で合成｜YURU 開発日記</title>
+<meta name="description" content=" 個人開発のアプリの宣伝用に、縦長(1080×1920)のショート動画を 19 本作りました。動画編集ソフトは使わず、全部 Python のスクリプトです。1本直すたびに手で編集し直さなくて済むのが一番の利点でした。">
+<link rel="canonical" href="https://kame6493-del.github.io/blog/promo-video-python.html">
+<meta property="og:title" content="アプリの宣伝動画を Python で量産する: Playwright で画面録画 → VOICEVOX で読み上げ → Pillow と ffmpeg で合成">
+<meta property="og:description" content=" 個人開発のアプリの宣伝用に、縦長(1080×1920)のショート動画を 19 本作りました。動画編集ソフトは使わず、全部 Python のスクリプトです。1本直すたびに手で編集し直さなくて済むのが一番の利点でした。">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<style>
+  :root { --bg: #f4f4f1; --card: #fff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc; --link: #1b3a8a; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121211; --card: #1d1d1b; --ink: #f1f1ec; --sub: #a3a39c; --line: #33332f; --link: #8fb0ff; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.85 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
+  article { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; }
+  h1 { font-size: 23px; line-height: 1.45; margin: 0 0 6px; }
+  .date { color: var(--sub); font-size: 13px; margin: 0 0 20px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+  a { color: var(--link); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; display: block; overflow-x: auto; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; white-space: nowrap; }
+  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+  nav { margin: 0 0 16px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="../">← アプリ一覧へ</a></nav>
+<article>
+<h1>アプリの宣伝動画を Python で量産する: Playwright で画面録画 → VOICEVOX で読み上げ → Pillow と ffmpeg で合成</h1>
+<p class="date">2026-10-03 ・ <a href="https://x.com/apkderete">@apkderete</a></p>
+<p>個人開発のアプリの宣伝用に、縦長(1080×1920)のショート動画を 19 本作りました。動画編集ソフトは使わず、全部 Python のスクリプトです。1本直すたびに手で編集し直さなくて済むのが一番の利点でした。</p>
+<p>構成はこうです。</p>
+<pre><code>アプリ(開発サーバー) ─ Playwright + CDP screencast ─→ 画面のコマ(jpg) + 各コマの時刻
+                                                         │
+VOICEVOX エンジン(ローカル) ─ 文ごとに wav ─────────────┤
+                                                         ▼
+                         Pillow で 1 コマずつ描く(背景・スマホ枠・字幕・クレジット)
+                                                         │ rawvideo を標準入力へ
+                                                         ▼
+                         ffmpeg(libx264) → 効果音と声を adelay + amix → loudnorm
+</code></pre>
+<h2>1. 画面を録る: CDP の screencast を使う</h2>
+<p>Playwright の動画録画は画質が粗いので、Chrome DevTools Protocol の <code>Page.startScreencast</code> でコマを直接受け取りました。各コマの受け取り時刻も一緒に保存しておくと、後で「何秒目の画面」を正確に取り出せます。</p>
+<p>ハマりどころが2つありました。</p>
+<ul>
+<li><code>device_scale_factor=3</code> にしても screencast のコマは等倍のままでした。Chrome の起動引数に <code>--force-device-scale-factor=3</code> を付けると、390×844 の画面が 1170×2532 で撮れます。</li>
+<li>見本データの日付が「今月」基準だったため、撮る日によって画面が変わりました。<code>page.clock.install()</code> で時計を固定して解決しました。</li>
+</ul>
+<h2>2. 声を作る: VOICEVOX のエンジンを HTTP で叩く</h2>
+<p>VOICEVOX はエンジンをローカルで起動すると <code>127.0.0.1:50021</code> で HTTP API が使えます。<code>/audio_query</code> で読み上げ用のパラメータを作り、話速や音量を書き換えて <code>/synthesis</code> に渡すと wav が返ってきます。同じ文はハッシュをキーにキャッシュしておくと、作り直しが速くなります。</p>
+<p>声の長さが場面より長いときは、場面のほうを伸ばして録画をゆっくり再生しています。字幕と声がずれないので、これが一番手間が少なかったです。</p>
+<p>VOICEVOX のキャラクターを動画に使うときは、利用規約どおりクレジット(例:「VOICEVOX:ずんだもん」)を画面に入れます。</p>
+<h2>3. 1コマずつ描いて ffmpeg に流し込む</h2>
+<p>Pillow で 1 コマずつ画像を作り、<code>tobytes()</code> を ffmpeg の標準入力に <code>-f rawvideo -pix_fmt rgb24</code> で流しています。中間ファイルを作らないので速いです。</p>
+<p>音は、効果音と声それぞれに <code>adelay</code> で開始時刻を付けて <code>amix</code> で混ぜ、最後に <code>loudnorm</code> で音量をそろえました。</p>
+<p>ハマりどころ:</p>
+<ul>
+<li>ffmpeg を <code>subprocess</code> で呼ぶとき、標準入力を閉じないと待ち続けて止まることがありました。<code>stdin=subprocess.DEVNULL</code> と <code>timeout</code> を付けています。</li>
+<li>音が映像より短いと尻切れになるので、<code>apad=whole_dur=</code> で映像の長さまで無音を足しています。</li>
+</ul>
+<h2>4. 「掛け合い」動画にする</h2>
+<p>途中から、2人のキャラクターが掛け合う形式に変えました。せりふを <code>(話者, 文)</code> の並びで書いておけば、話している人の名札と字幕、声が自動でつながります。</p>
+<p>ここでの失敗は、せりふで「設定6の確率は17%」と言っているのに、画面がまだその数字に届いていなかったことです。録画を時間どおりに流すと、言い終わってから数字が映ります。せりふが画面の数字を指すときは、その数字が映っている瞬間で画面を止めるようにしました。</p>
+<h2>結果と反省</h2>
+<ul>
+<li>作るのは速くなりました。せりふを1行直して1コマンドで作り直せます。</li>
+<li>ただ、動画を作ることと見られることは別でした。ギャンブル系の内容は TikTok でほぼ再生されず、X でも表示は伸びませんでした。題材と出す場所の相性は、作る前に確かめるべきでした。</li>
+</ul>
+<hr />
+<p>作っているアプリ</p>
+<ul>
+<li>カチマケ(パチンコ・競馬の収支管理): https://kame6493-del.github.io/kachimake-site/</li>
+<li>DIAMOND NINE(野球シミュレーション): https://diamond-nine-baseball.com/</li>
+<li>X: https://x.com/apkderete</li>
+</ul>
+</article>
+</main>
+</body>
+</html>

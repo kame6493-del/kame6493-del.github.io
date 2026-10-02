@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Android のクローズドテスト「12人×14日」、2日で1人→6人まで集めたやり方｜YURU 開発日記</title>
+<meta name="description" content=" 個人開発の Android アプリを Google Play に出すには、新しい個人アカウントだと「12人以上のテスターが14日間続けて参加しているクローズドテスト」が必要です。作り終わってから知って、正直かなり焦りま">
+<link rel="canonical" href="https://kame6493-del.github.io/blog/closed-test-12.html">
+<meta property="og:title" content="Android のクローズドテスト「12人×14日」、2日で1人→6人まで集めたやり方">
+<meta property="og:description" content=" 個人開発の Android アプリを Google Play に出すには、新しい個人アカウントだと「12人以上のテスターが14日間続けて参加しているクローズドテスト」が必要です。作り終わってから知って、正直かなり焦りま">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<style>
+  :root { --bg: #f4f4f1; --card: #fff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc; --link: #1b3a8a; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121211; --card: #1d1d1b; --ink: #f1f1ec; --sub: #a3a39c; --line: #33332f; --link: #8fb0ff; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.85 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
+  article { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; }
+  h1 { font-size: 23px; line-height: 1.45; margin: 0 0 6px; }
+  .date { color: var(--sub); font-size: 13px; margin: 0 0 20px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+  a { color: var(--link); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; display: block; overflow-x: auto; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; white-space: nowrap; }
+  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+  nav { margin: 0 0 16px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="../">← アプリ一覧へ</a></nav>
+<article>
+<h1>Android のクローズドテスト「12人×14日」、2日で1人→6人まで集めたやり方</h1>
+<p class="date">2026-10-03 ・ <a href="https://x.com/apkderete">@apkderete</a></p>
+<p>個人開発の Android アプリを Google Play に出すには、新しい個人アカウントだと「12人以上のテスターが14日間続けて参加しているクローズドテスト」が必要です。作り終わってから知って、正直かなり焦りました。</p>
+<p>この記事は、パチンコ・競馬の収支を記録するアプリ「カチマケ」のテスターを、X だけで集めた2日間の記録です。結果は 1人(自分だけ)→6人。まだ12人には届いていませんが、何が効いて何が効かなかったかははっきりしたので、同じ壁にいる人向けに書いておきます。</p>
+<h2>先に結論</h2>
+<p>効いたこと</p>
+<ol>
+<li>相手のテストに先に参加してから「相互でお願いできますか」と声をかける</li>
+<li>参加手順に「X のアプリ内ブラウザでは開かず、Chrome で開く」と書く</li>
+<li>参加してくれた人には必ずお礼と「こちらも入れました」を返す</li>
+</ol>
+<p>効かなかったこと</p>
+<ul>
+<li>本文にリンクを貼った宣伝投稿(1本あたりの表示が 10〜20 回)</li>
+<li>ギャンブル系の内容の TikTok 動画(公開した動画の再生がすべて 0 回)</li>
+</ul>
+<h2>1. 先に参加してから声をかける</h2>
+<p>X で「クローズドテスト テスター」「#相互テスト」を最新順で検索すると、同じようにテスターを探している個人開発者が毎日何人も見つかります。</p>
+<p>最初は「相互テストお願いします、こちらも参加します」と声だけかけていました。これだと返事はもらえても、相手が本当に参加してくれるかは半々でした。</p>
+<p>やり方を変えて、</p>
+<ol>
+<li>相手の Google グループに参加する</li>
+<li>相手のテスト参加ページで「テスターになる」を押す</li>
+<li>そのうえで「グループ参加とテスター登録しました。よければこちらもお願いできますか?」と返信する</li>
+</ol>
+<p>にしたところ、この形で声をかけた最初の2人は、数時間のうちに「こちらも参加しました」と返してくれました(残りの人はまだ返事待ちです)。先に手を動かしたことが文面から伝わるのが大きいと思います。</p>
+<p>注意点として、同じ人に複数のアカウントから声をかけないこと。自分は別アプリ用のアカウントと二重に声をかけかけて、途中で 1 アカウントにまとめました。</p>
+<h2>2. 参加手順に「Chrome で開く」と書く</h2>
+<p>声をかけた相手から一番多かった質問は「グループに入れない」「入ったのにアプリが落ちてこない」でした。原因はほぼ次の3つです。</p>
+<ul>
+<li>X のアプリの中のブラウザで開くと、Google のログインが引き継がれない</li>
+<li>グループ参加とテスト参加で、違う Google アカウントを使っている</li>
+<li>グループに入った直後は、Google Play に出てくるまで時間がかかる</li>
+</ul>
+<p>これをテスター募集ページの手順の下に「うまく参加できないとき」として書き足しました。手順は次の3段にしています。</p>
+<ol>
+<li>テスター用の Google グループに参加する</li>
+<li>テスト参加のページで「テスターになる」を押す</li>
+<li>Google Play のアプリのページから入れる</li>
+</ol>
+<h2>3. お礼と報告を必ず返す</h2>
+<p>参加してくれた人には、いいねと「ありがとうございます、こちらも14日間入れておきます」を返しています。相互テストの輪は狭く、同じ人が何度も顔を出します。約束を守っているかどうかは、次に声をかけるときに効いてきます。</p>
+<h2>数字</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1日目</th>
+<th>2日目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>テスター(自分を除く)</td>
+<td>1</td>
+<td>5〜6</td>
+</tr>
+<tr>
+<td>X のフォロワー</td>
+<td>13</td>
+<td>20</td>
+</tr>
+<tr>
+<td>宣伝投稿 1 本あたりの表示</td>
+<td>10〜20</td>
+<td>10〜20</td>
+</tr>
+<tr>
+<td>相互テスト募集投稿の表示</td>
+<td>—</td>
+<td>約 190</td>
+</tr>
+</tbody>
+</table>
+<p>宣伝投稿はほとんど見られていませんが、相互テストの募集投稿だけは桁が違いました。テスター集めは「宣伝」ではなく「同じ立場の人との交換」だと割り切ったほうが早いです。</p>
+<h2>まだ足りていないこと</h2>
+<p>X の検索で見つかる募集は、2日でほぼ回り切りました。次は TestCrew のような相互テストのサービスや、Discord の相互テストのコミュニティを試す予定です。12人に届いたら続きを書きます。</p>
+<hr />
+<p>テスターはまだ募集中です。Android をお持ちで、14日間入れておくだけで良ければ参加していただけると助かります。</p>
+<ul>
+<li>カチマケ(パチンコ・競馬の収支を30秒で記録): https://kame6493-del.github.io/kachimake-site/</li>
+<li>作っている人の X: https://x.com/apkderete</li>
+</ul>
+</article>
+</main>
+</body>
+</html>
