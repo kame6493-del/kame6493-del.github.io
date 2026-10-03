@@ -63,7 +63,10 @@ def convert(md):
 
 def main():
     slug, src = sys.argv[1], sys.argv[2]
-    title, body = convert(open(src, encoding="utf-8").read())
+    md = open(src, encoding="utf-8").read()
+    # 「【公開前に記入…】」のような記入欄は窓口のメールに置き換える
+    md = re.sub(r"【[^】]*記入[^】]*】", MAIL, md)
+    title, body = convert(md)
     d = os.path.join(os.path.dirname(os.path.abspath(__file__)), "apps", slug)
     os.makedirs(d, exist_ok=True)
     page = f"""<!doctype html>
