@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>個人開発アプリ一覧</title>
-<meta name="description" content="1人で作っているスマホアプリの一覧です。野球シミュレーション DIAMOND NINE、パチンコ・競馬の収支管理 カチマケ。">
+<meta name="description" content="1人で作っているスマホアプリの一覧です。国家試験の過去問 ニガテ帳(管理栄養士・臨床検査技師・理学療法士)、野球シミュレーション DIAMOND NINE、パチンコ・競馬の収支管理 カチマケ。">
 <meta property="og:title" content="個人開発アプリ一覧">
 <meta property="og:description" content="1人で作っているスマホアプリの一覧です。">
 <meta property="og:type" content="website">
@@ -14,7 +14,7 @@
 <style>
   :root {
     --bg: #f4f4f1; --card: #ffffff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc;
-    --dn: #1b3a8a; --km: #f9b712; --km-ink: #2b2100;
+    --dn: #1b3a8a; --km: #f9b712; --km-ink: #2b2100; --ng: #c0392b;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
@@ -42,6 +42,7 @@
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
   .btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; }
   .btn.main.dn { background: var(--dn); color: #fff; }
+  .btn.main.ng { background: var(--ng); color: #fff; }
   .btn.main.km { background: var(--km); color: var(--km-ink); }
   .btn.line { border: 1px solid var(--line); color: var(--ink); }
   .note { font-size: 13px; color: var(--sub); margin: 12px 0 0; }
@@ -58,6 +59,37 @@
     <h1>個人で作っているアプリ</h1>
     <p>企画・デザイン・開発まで1人で作っています。新しいアプリはここに足していきます。</p>
   </header>
+
+  <section class="app" aria-labelledby="ng">
+    <div class="app-head">
+      <img src="img/nigatecho-icon.png" alt="ニガテ帳 のアイコン" width="72" height="72">
+      <div>
+        <h2 id="ng">ニガテ帳</h2>
+        <p class="kind">国家試験の過去問・管理栄養士 / 臨床検査技師 / 理学療法士</p>
+      </div>
+    </div>
+    <p class="lead">間違えた問題だけが「苦手」として残り、2回続けて正解すると消える過去問アプリです。各試験5年分1,000問と全問解説。本番の予想点と科目ごとの正答率も毎日わかります。直近1回分は無料、完全版は買い切り。</p>
+    <div class="shots">
+      <img src="img/nigatecho-1.jpg" alt="苦手の数と本番の予想点が出るホーム画面" width="150" height="325" loading="lazy">
+      <img src="img/nigatecho-2.jpg" alt="科目ごとの予想点の画面" width="150" height="325" loading="lazy">
+    </div>
+    <div class="status">
+      <span class="tag on">iPhone 審査中</span>
+      <span class="tag on">Android テスト中</span>
+    </div>
+    <div class="actions">
+      <a class="btn main ng" href="https://kame6493-del.github.io/nigatecho-site/">管理栄養士</a>
+      <a class="btn main ng" href="https://kame6493-del.github.io/nigatecho-site/rinsho/">臨床検査技師</a>
+      <a class="btn main ng" href="https://kame6493-del.github.io/nigatecho-site/pt/">理学療法士</a>
+    </div>
+    <div class="tester">
+      Android 版のテストに参加してくれる方を探しています(3本共通)。
+      <ol>
+        <li><a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に参加する</li>
+        <li>テスト参加ページで「テスターになる」を押し、Google Play から入れる:<a href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">管理栄養士</a> / <a href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師</a> / <a href="https://play.google.com/apps/testing/jp.nigatecho.rigakuryouhoushi">理学療法士</a></li>
+      </ol>
+    </div>
+  </section>
 
   <section class="app" aria-labelledby="dn">
     <div class="app-head">
