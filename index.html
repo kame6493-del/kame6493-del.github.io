@@ -48,6 +48,12 @@
   .note { font-size: 13px; color: var(--sub); margin: 12px 0 0; }
   .tester { margin: 14px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--bg); font-size: 14px; }
   .tester ol { margin: 6px 0 0; padding-left: 1.3em; }
+  ul.mini { list-style: none; margin: 14px 0 0; padding: 0; }
+  ul.mini li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line); }
+  ul.mini img { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); flex: none; }
+  ul.mini b { display: block; font-size: 15px; }
+  ul.mini span { display: block; font-size: 13px; color: var(--sub); }
+  ul.mini a, .note a { color: var(--ink); font-size: 13px; }
   footer { margin-top: 32px; font-size: 14px; color: var(--sub); }
   footer a, .tester a { color: var(--ink); }
   @media (min-width: 640px) { main { padding-top: 64px; } h1 { font-size: 26px; } }
@@ -139,6 +145,20 @@
       <a class="btn line" href="https://kame6493-del.github.io/kachimake-site/support.html">使い方・よくある質問</a>
     </div>
     <p class="note">公開されたら、ここにストアへのリンクを置きます。</p>
+  </section>
+
+  <section class="app" aria-labelledby="new">
+    <h2 id="new">新しく作ったアプリ(Android テスト中)</h2>
+    <p class="lead">どれも広告なしで、記録は端末の中だけに残ります。テストに参加してくれる方を探しています。</p>
+    <ul class="mini">
+      <li><img src="img/tabedoki-icon.png" alt="" width="48" height="48"><div><b>タベドキ</b><span>賞味期限と冷蔵庫の管理。期限が近い順に並びます</span><a href="https://play.google.com/apps/testing/jp.tabedoki.app">テストに参加</a></div></li>
+      <li><img src="img/hiyorigoyomi-icon.png" alt="" width="48" height="48"><div><b>ひよりごよみ</b><span>スタンプで貼るカレンダー。アカウント登録なし</span><a href="https://play.google.com/apps/testing/jp.hiyorigoyomi.app">テストに参加</a></div></li>
+      <li><img src="img/yamebiyori-sake-icon.png" alt="" width="48" height="48"><div><b>やめ日和 お酒</b><span>禁酒・断酒を続けた日数と浮いたお金の記録</span><a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">テストに参加</a></div></li>
+      <li><img src="img/yamebiyori-tabako-icon.png" alt="" width="48" height="48"><div><b>やめ日和 たばこ</b><span>禁煙を続けた時間と吸わなかった本数の記録</span><a href="https://play.google.com/apps/testing/jp.yamebiyori.tabako">テストに参加</a></div></li>
+      <li><img src="img/kobunmekuri-icon.png" alt="" width="48" height="48"><div><b>こぶんめくり</b><span>大学受験の古文単語601語を、古典の例文で覚える</span><a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">テストに参加</a></div></li>
+      <li><img src="img/atsuyomi-icon.png" alt="" width="48" height="48"><div><b>あつよみ</b><span>暑さ指数と熱中症アラート</span><a href="https://play.google.com/apps/testing/jp.atsuyomi.app">テストに参加</a></div></li>
+    </ul>
+    <p class="note">先に<a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に参加してから、各アプリの「テストに参加」を開いてください。</p>
   </section>
 
   <section class="app" aria-labelledby="blog">
