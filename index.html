@@ -3,325 +3,178 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ai bite studio | スマホアプリ</title>
-<meta name="description" content="ai bite studio のスマホアプリ。国家試験の過去問 ニガテ帳(管理栄養士・臨床検査技師は App Store で公開中)、野球シミュレーション DIAMOND NINE、収支管理 カチマケ ほか。">
-<meta property="og:title" content="ai bite studio | スマホアプリ">
-<meta property="og:description" content="毎日の小さな困りごとを、ひとつずつアプリに。国家試験の過去問 ニガテ帳ほか。">
+<title>YURU のアプリ</title>
+<meta name="description" content="YURU が作っているスマホアプリ。国家試験の過去問 ニガテ帳(管理栄養士・臨床検査技師は App Store で公開中)、野球シミュレーション DIAMOND NINE、収支管理 カチマケ ほか。">
+<meta property="og:title" content="YURU のアプリ">
+<meta property="og:description" content="国家試験の過去問 ニガテ帳ほか、YURU が作っているスマホアプリの一覧です。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kame6493-del.github.io/">
 <meta property="og:image" content="https://kame6493-del.github.io/img/nigatecho-icon.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@apkderete">
 <link rel="icon" href="img/nigatecho-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f4ef; --surface: #ffffff; --ink: #18181b; --sub: #5f5f66; --mute: #8b8b93; --line: #e6e2d9;
-    --accent: #c2412d; --accent-ink: #ffffff; --soft: #efe9dc;
-    --ok: #1f7a4d; --ok-bg: #e3f3ea; --wait: #8a5a00; --wait-bg: #fbefd5; --test: #3b4b9a; --test-bg: #e6e9f8;
-    --shadow: 0 1px 2px rgba(24,24,27,.04), 0 8px 24px rgba(24,24,27,.06);
+    --bg: #ffffff; --tint: #f2f5f8; --ink: #222831; --sub: #5a6270; --mute: #8a919c; --line: #dfe4ea;
+    --accent: #24527a; --accent-soft: #e6eef6;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #111113; --surface: #1a1a1d; --ink: #f2f1ee; --sub: #b4b3ad; --mute: #85848c; --line: #2c2c31;
-      --accent: #ef6a52; --soft: #232227;
-      --ok: #7fd4a6; --ok-bg: #173527; --wait: #f2c36b; --wait-bg: #3a2c10; --test: #a9b6ff; --test-bg: #1f2547;
-      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-      color-scheme: dark;
-    }
+    :root { --bg: #15181c; --tint: #1c2025; --ink: #e9ecef; --sub: #b0b7c1; --mute: #868e99; --line: #2c323a; --accent: #8db7e0; --accent-soft: #1f2b38; color-scheme: dark; }
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.8 "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; }
-  a { color: inherit; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "YuGothic", "Meiryo", sans-serif; }
+  a { color: var(--accent); }
   img { display: block; max-width: 100%; }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
 
-  /* header */
-  .top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
-  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-  .brand { font-family: Inter, "Noto Sans JP", sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -.01em; text-decoration: none; display: flex; align-items: center; gap: 10px; }
-  .brand i { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); display: inline-grid; place-items: center; color: #fff; font-style: normal; font-size: 13px; font-weight: 800; }
-  .top nav { display: flex; gap: 20px; font-size: 14px; color: var(--sub); }
-  .top nav a { text-decoration: none; }
-  .top nav a:hover { color: var(--ink); }
-  @media (max-width: 560px) { .top nav .hide-sm { display: none; } }
+  header.top { border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; }
+  .logo { font-weight: 700; font-size: 20px; letter-spacing: .06em; color: var(--ink); text-decoration: none; }
+  .logo small { font-size: 12px; font-weight: 400; color: var(--mute); letter-spacing: 0; margin-left: 8px; }
+  header.top nav a { color: var(--sub); text-decoration: none; font-size: 14px; margin-left: 18px; }
+  header.top nav a:hover { color: var(--ink); }
+  @media (max-width: 520px) { .logo small, header.top nav .pc { display: none; } }
 
-  /* hero */
-  .hero { padding: 64px 0 40px; }
-  .eyebrow { font-family: Inter, sans-serif; font-weight: 700; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
-  .hero h1 { font-size: clamp(30px, 6vw, 52px); line-height: 1.25; font-weight: 900; letter-spacing: -.01em; margin: 0; }
-  .hero p.lead { font-size: clamp(15px, 2.2vw, 17px); color: var(--sub); max-width: 34em; margin: 18px 0 0; }
-  .stats { display: flex; flex-wrap: wrap; gap: 28px; margin: 32px 0 0; }
-  .stats div { font-size: 13px; color: var(--sub); }
-  .stats b { display: block; font-family: Inter, sans-serif; font-size: 28px; font-weight: 800; color: var(--ink); line-height: 1.2; }
+  .intro { padding: 44px 0 36px; }
+  .intro h1 { font-size: clamp(22px, 4vw, 30px); font-weight: 700; line-height: 1.5; margin: 0; }
+  .intro p { color: var(--sub); margin: 12px 0 0; max-width: 36em; }
 
-  section { padding: 40px 0; }
-  h2.sec { font-size: clamp(21px, 3.4vw, 26px); font-weight: 900; margin: 0 0 6px; }
-  p.sec-sub { color: var(--sub); margin: 0 0 24px; font-size: 14px; }
+  section.block { padding: 40px 0; border-top: 1px solid var(--line); }
+  section.block.tint { background: var(--tint); border-top: 0; }
+  h2 { font-size: 19px; font-weight: 700; margin: 0 0 8px; }
+  .lead-s { color: var(--sub); font-size: 14px; margin: 0 0 22px; }
 
-  /* featured */
-  .feature { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; display: grid; grid-template-columns: 1.1fr .9fr; }
-  .feature .body { padding: 36px; }
-  .feature .head { display: flex; align-items: center; gap: 16px; }
-  .feature .head img { width: 72px; height: 72px; border-radius: 18px; border: 1px solid var(--line); }
-  .feature h3 { font-size: 26px; font-weight: 900; margin: 0; line-height: 1.3; }
-  .feature .kind { color: var(--sub); font-size: 13px; margin: 2px 0 0; }
-  .feature .copy { font-size: 20px; font-weight: 700; line-height: 1.6; margin: 24px 0 0; }
-  .feature ul { margin: 16px 0 0; padding: 0; list-style: none; }
-  .feature li { padding-left: 22px; position: relative; margin: 6px 0; color: var(--sub); font-size: 14px; }
-  .feature li::before { content: ""; position: absolute; left: 4px; top: .78em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
-  .feature .gallery { background: var(--soft); display: flex; gap: 14px; align-items: flex-end; justify-content: center; padding: 32px 24px 0; }
-  .feature .gallery img { width: 46%; max-width: 190px; border-radius: 18px 18px 0 0; box-shadow: var(--shadow); }
-  .feature .gallery img:last-child { transform: translateY(-24px); }
-  @media (max-width: 820px) { .feature { grid-template-columns: 1fr; } .feature .body { padding: 24px; } .feature .gallery img:last-child { transform: none; } }
+  /* ニガテ帳 */
+  .pick { display: grid; grid-template-columns: 1fr 300px; gap: 36px; align-items: center; }
+  .pick .name { display: flex; gap: 14px; align-items: center; }
+  .pick .name img { width: 64px; height: 64px; border-radius: 14px; border: 1px solid var(--line); }
+  .pick h3 { font-size: 24px; margin: 0; line-height: 1.3; }
+  .pick .kind { font-size: 13px; color: var(--sub); margin: 0; }
+  .pick .copy { font-size: 17px; font-weight: 700; margin: 20px 0 8px; line-height: 1.7; }
+  .pick ul { margin: 0; padding-left: 1.2em; color: var(--sub); font-size: 14px; }
+  .pick .shots { display: flex; gap: 12px; }
+  .pick .shots img { width: 50%; border-radius: 12px; border: 1px solid var(--line); }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 18px; border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none; }
+  .btn.fill { background: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn.fill { color: #10161c; } }
+  .btn.ghost { border: 1px solid var(--line); color: var(--ink); background: var(--bg); }
+  @media (max-width: 760px) { .pick { grid-template-columns: 1fr; } .pick .shots { max-width: 320px; } }
 
-  .ctas { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 0; }
-  .store { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 18px 0 14px; border-radius: 14px; background: var(--ink); color: var(--bg); text-decoration: none; transition: transform .15s ease; }
-  .store:hover { transform: translateY(-1px); }
-  .store svg { width: 22px; height: 22px; flex: none; }
-  .store span { display: flex; flex-direction: column; line-height: 1.2; }
-  .store small { font-size: 10px; opacity: .8; }
-  .store strong { font-size: 15px; font-weight: 700; }
-  .link { display: inline-flex; align-items: center; min-height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line); text-decoration: none; font-weight: 700; font-size: 14px; color: var(--ink); }
+  .state { font-size: 12.5px; color: var(--sub); margin: 10px 0 0; }
+  .state b { font-weight: 700; color: var(--accent); }
 
-  /* chips */
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
-  .chip { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
-  .chip.ok { color: var(--ok); background: var(--ok-bg); }
-  .chip.wait { color: var(--wait); background: var(--wait-bg); }
-  .chip.test { color: var(--test); background: var(--test-bg); }
-  .chip.plain { color: var(--sub); background: var(--soft); }
+  /* 一覧 */
+  .list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+  .list li { display: flex; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .list img { width: 52px; height: 52px; border-radius: 12px; border: 1px solid var(--line); flex: none; }
+  .list h3 { font-size: 16px; margin: 0; line-height: 1.4; }
+  .list .kind { font-size: 12.5px; color: var(--mute); margin: 0; }
+  .list p.d { font-size: 13.5px; color: var(--sub); margin: 6px 0 0; line-height: 1.7; }
+  .list .a { font-size: 13px; margin: 6px 0 0; }
+  .list .a a { margin-right: 14px; }
+  @media (max-width: 700px) { .list { grid-template-columns: 1fr; } }
 
-  /* grid */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; transition: box-shadow .2s ease, transform .2s ease; }
-  .card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
-  .card .head { display: flex; gap: 14px; align-items: center; }
-  .card .head img { width: 56px; height: 56px; border-radius: 14px; border: 1px solid var(--line); flex: none; }
-  .card h3 { font-size: 17px; margin: 0; line-height: 1.35; }
-  .card .kind { font-size: 12.5px; color: var(--mute); margin: 1px 0 0; }
-  .card p.desc { font-size: 14px; color: var(--sub); margin: 12px 0 0; flex: 1; }
-  .card .more { margin-top: 14px; font-size: 13px; font-weight: 700; display: flex; gap: 14px; flex-wrap: wrap; }
-  .card .more a { text-decoration: none; color: var(--accent); }
-  .card.wide { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
-  .card.wide .shots { display: flex; gap: 10px; }
-  .card.wide .shots img { width: 96px; border-radius: 12px; border: 1px solid var(--line); }
-  @media (max-width: 720px) { .card.wide { grid-template-columns: 1fr; } }
 
-  /* tester band */
-  .band { background: var(--ink); color: var(--bg); border-radius: 24px; padding: 32px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
-  .band h2 { font-size: 22px; font-weight: 900; margin: 0; }
-  .band p { margin: 8px 0 0; opacity: .82; font-size: 14px; }
-  .band ol { margin: 12px 0 0; padding-left: 1.2em; font-size: 14px; opacity: .9; }
-  .band a { color: inherit; }
-  .band .go { display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; border-radius: 14px; background: var(--bg); color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; }
-  @media (max-width: 720px) { .band { grid-template-columns: 1fr; padding: 24px; } }
+  .tester { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 22px 24px; }
+  .tester ol { margin: 10px 0 0; padding-left: 1.3em; font-size: 14px; }
 
-  /* blog */
-  .posts { display: grid; gap: 10px; }
-  .post { display: flex; justify-content: space-between; gap: 16px; padding: 18px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; text-decoration: none; }
-  .post:hover { border-color: var(--mute); }
-  .post b { font-weight: 700; }
-  .post span { color: var(--mute); font-size: 13px; white-space: nowrap; }
 
-  footer { border-top: 1px solid var(--line); margin-top: 32px; padding: 32px 0 48px; color: var(--sub); font-size: 14px; }
-  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
-  footer a { color: var(--ink); }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 44px; color: var(--sub); font-size: 13.5px; }
+  footer p { margin: 2px 0; }
 </style>
 </head>
 <body>
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="./"><i>ab</i>ai bite studio</a>
+    <a class="logo" href="./">YURU<small>スマホアプリ</small></a>
     <nav>
       <a href="#apps">アプリ</a>
-      <a href="#tester" class="hide-sm">テスター募集</a>
-      <a href="#blog" class="hide-sm">開発日記</a>
+      <a href="#tester" class="pc">テスター募集</a>
       <a href="https://x.com/apkderete">X</a>
     </nav>
   </div>
 </header>
 
 <main>
-  <div class="wrap">
-
-    <section class="hero">
-      <p class="eyebrow">Apps by ai bite studio</p>
-      <h1>毎日の小さな困りごとを、<br>ひとつずつアプリに。</h1>
-      <p class="lead">試験勉強、冷蔵庫、禁酒、推し活。身近な「ちょっと面倒」を、すぐ開いてすぐ閉じられるアプリにしています。登録なしで使えて、記録は端末の中だけに残ります。</p>
-      <div class="stats">
-        <div><b>2</b>App Store で公開中</div>
-        <div><b>10</b>iPhone 版 審査中</div>
-      </div>
-    </section>
-
-    <section aria-labelledby="ng">
-      <article class="feature">
-        <div class="body">
-          <div class="head">
-            <img src="img/nigatecho-icon.png" alt="" width="72" height="72">
-            <div>
-              <h3 id="ng">ニガテ帳</h3>
-              <p class="kind">国家試験の過去問 ・ 管理栄養士 / 臨床検査技師 / 理学療法士</p>
-            </div>
-          </div>
-          <div class="chips">
-            <span class="chip ok">App Store 公開中</span>
-            <span class="chip test">Android テスト中</span>
-          </div>
-          <p class="copy">間違えた問題だけが残る。<br>2回続けて正解すると、消える。</p>
-          <ul>
-            <li>各試験5年分 1,000問、全問に解説つき</li>
-            <li>本番の予想点と、科目ごとの正答率が毎日わかる</li>
-            <li>直近1回分の200問は無料。完全版は買い切り</li>
-          </ul>
-          <div class="ctas">
-            <a class="store" href="https://apps.apple.com/jp/app/id6818535389">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.64.8-3.32.8-.69 0-1.74-.78-2.86-.76-1.47.02-2.83.86-3.59 2.17-1.53 2.66-.39 6.6 1.1 8.75.73 1.05 1.6 2.23 2.73 2.19 1.1-.04 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.31-3.5zM14.2 6.13c.6-.73 1.01-1.75.9-2.76-.87.04-1.92.58-2.54 1.31-.56.64-1.05 1.67-.92 2.66.97.08 1.96-.49 2.56-1.21z"/></svg>
-              <span><small>App Store で見る</small><strong>管理栄養士</strong></span>
-            </a>
-            <a class="store" href="https://apps.apple.com/jp/app/id6818536142">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.64.8-3.32.8-.69 0-1.74-.78-2.86-.76-1.47.02-2.83.86-3.59 2.17-1.53 2.66-.39 6.6 1.1 8.75.73 1.05 1.6 2.23 2.73 2.19 1.1-.04 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.31-3.5zM14.2 6.13c.6-.73 1.01-1.75.9-2.76-.87.04-1.92.58-2.54 1.31-.56.64-1.05 1.67-.92 2.66.97.08 1.96-.49 2.56-1.21z"/></svg>
-              <span><small>App Store で見る</small><strong>臨床検査技師</strong></span>
-            </a>
-            <a class="link" href="https://kame6493-del.github.io/nigatecho-site/pt/">理学療法士(準備中)</a>
-          </div>
-        </div>
-        <div class="gallery">
-          <img src="img/nigatecho-1.jpg" alt="苦手の数と本番の予想点が出るホーム画面" width="190" height="412" loading="lazy">
-          <img src="img/nigatecho-2.jpg" alt="科目ごとの予想点の画面" width="190" height="412" loading="lazy">
-        </div>
-      </article>
-    </section>
-
-    <section id="apps" aria-labelledby="apps-h">
-      <h2 class="sec" id="apps-h">アプリ</h2>
-      <p class="sec-sub">iPhone 版は順に審査中です。Android 版はテスターを募集しています。</p>
-      <div class="grid">
-
-        <article class="card wide">
-          <div>
-            <div class="head">
-              <img src="img/diamond-nine-icon.png" alt="" width="56" height="56">
-              <div><h3>DIAMOND NINE</h3><p class="kind">野球シミュレーション ・ 無料</p></div>
-            </div>
-            <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-            <p class="desc">選手を集めて、育てて、打線を組んで、1年を進める。弱小チームから優勝を目指す野球シミュレーションです。打率・本塁打・OPS まで、成績表をずっと眺めていられます。</p>
-            <div class="more"><a href="https://groups.google.com/g/diamond-nine-testers">テスターになる</a><a href="https://play.google.com/apps/testing/com.diamondninebaseball.game">Android テスト参加</a></div>
-          </div>
-          <div class="shots">
-            <img src="img/diamond-nine-1.jpg" alt="選手を獲得した画面" width="96" height="171" loading="lazy">
-            <img src="img/diamond-nine-2.jpg" alt="ゲーム画面" width="96" height="171" loading="lazy">
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/kaigonigate-icon.png" alt="" width="56" height="56"><div><h3>介護ニガテ帳</h3><p class="kind">介護福祉士 国家試験の過去問</p></div></div>
-          <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">過去問750問。事例問題は事例文つき、図もそのまま。間違えた問題だけが残ります。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.kaigonigate.app">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/kachimake-icon.png" alt="" width="56" height="56"><div><h3>カチマケ</h3><p class="kind">パチンコ・競馬などの収支管理</p></div></div>
-          <div class="chips"><span class="chip plain">iPhone 準備中</span><span class="chip test">Android テスト中</span><span class="chip plain">18歳以上</span></div>
-          <p class="desc">投資と回収を入れるだけで、今月いくら勝って、どこで負けているかが分かります。勝った月は画像でシェアできます。</p>
-          <div class="more"><a href="https://kame6493-del.github.io/kachimake-site/support.html">使い方・よくある質問</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/uchiwakirari-icon.png" alt="" width="56" height="56"><div><h3>うちわキラリ</h3><p class="kind">うちわ文字・ファンサうちわ作成</p></div></div>
-          <div class="chips"><span class="chip plain">iPhone 準備中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">推しの名前を入れるだけで、うちわ文字を原寸で作れます。そのまま印刷できます。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.uchiwakirari.app">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/negairo-icon.png" alt="" width="56" height="56"><div><h3>ネガイロ</h3><p class="kind">フィルムカメラ風・日付入り</p></div></div>
-          <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">フィルム、使い捨てカメラ、平成のデジカメ風に撮れるカメラ。写真に日付が入ります。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.negairo.app">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/tabedoki-icon.png" alt="" width="56" height="56"><div><h3>タベドキ</h3><p class="kind">賞味期限と冷蔵庫の管理</p></div></div>
-          <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">よく買う食材はワンタップで登録。期限の近い順に並び、前日にお知らせが来ます。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.tabedoki.app">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/hiyorigoyomi-icon.png" alt="" width="56" height="56"><div><h3>ひよりごよみ</h3><p class="kind">スタンプで貼るカレンダー</p></div></div>
-          <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">スタンプを選んで日付を押すだけ。シフトや給料日、通院の日を書き込めます。六曜と祝日つき。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.hiyorigoyomi.app">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/yamebiyori-sake-icon.png" alt="" width="56" height="56"><div><h3>やめ日和 お酒</h3><p class="kind">禁酒・断酒カウンター</p></div></div>
-          <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">お酒をやめて続いた日数と、浮いたお金を記録します。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/yamebiyori-tabako-icon.png" alt="" width="56" height="56"><div><h3>やめ日和 たばこ</h3><p class="kind">禁煙カウンター</p></div></div>
-          <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">禁煙を続けた時間と、吸わなかった本数を記録します。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.yamebiyori.tabako">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/kobunmekuri-icon.png" alt="" width="56" height="56"><div><h3>こぶんめくり</h3><p class="kind">古文単語601語・例文つき</p></div></div>
-          <div class="chips"><span class="chip wait">iPhone 審査中</span><span class="chip test">Android テスト中</span></div>
-          <p class="desc">大学受験の古文単語を、源氏物語や徒然草の一文で覚える単語帳です。</p>
-          <div class="more"><a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">Android テスト参加</a></div>
-        </article>
-
-        <article class="card">
-          <div class="head"><img src="img/atsuyomi-icon.png" alt="" width="56" height="56"><div><h3>あつよみ</h3><p class="kind">暑さ指数と熱中症アラート</p></div></div>
-          <div class="chips"><span class="chip plain">2027年春に公開予定</span></div>
-          <p class="desc">暑さ指数を見やすく出して、危ない日に知らせます。環境省のデータ提供が始まる春から動きます。</p>
-        </article>
-
-      </div>
-    </section>
-
-    <section id="tester" aria-labelledby="tester-h">
-      <div class="band">
-        <div>
-          <h2 id="tester-h">Android 版のテスターを募集しています</h2>
-          <p>Google Play で一般公開するには、14日間のテストが必要です。入れて14日間置いておいてもらえるだけで助かります。相互テストも歓迎です。</p>
-          <ol>
-            <li><a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に参加する</li>
-            <li>上の各アプリの「Android テスト参加」から、Google Play で入れる</li>
-          </ol>
-        </div>
-        <a class="go" href="https://groups.google.com/g/nigatecho-testers">グループに参加する</a>
-      </div>
-    </section>
-
-    <section id="blog" aria-labelledby="blog-h">
-      <h2 class="sec" id="blog-h">開発日記</h2>
-      <p class="sec-sub">作りながら考えたこと、つまずいたこと。</p>
-      <div class="posts">
-        <a class="post" href="blog/closed-test-12.html"><b>クローズドテストの「12人」、3日でなんとか集まった話</b><span>読む →</span></a>
-        <a class="post" href="blog/promo-video-python.html"><b>動画編集ができないので、宣伝動画を Python で作ることにした</b><span>読む →</span></a>
-      </div>
-    </section>
-
+  <div class="wrap intro">
+    <h1>会社員のかたわら、1人でスマホアプリを作っています。</h1>
+    <p>試験勉強、冷蔵庫の中身、禁酒、推し活など、身近でちょっと面倒なことを手軽にするアプリです。どれもアカウント登録なしで使えて、記録は端末の中だけに残ります。</p>
   </div>
+
+  <section class="block tint" aria-labelledby="ng">
+    <div class="wrap pick">
+      <div>
+        <div class="name">
+          <img src="img/nigatecho-icon.png" alt="" width="64" height="64">
+          <div>
+            <h3 id="ng">ニガテ帳</h3>
+            <p class="kind">国家試験の過去問(管理栄養士・臨床検査技師・理学療法士)</p>
+          </div>
+        </div>
+        <p class="copy">間違えた問題だけが残って、<br>2回続けて正解すると消える問題集です。</p>
+        <ul>
+          <li>各試験5年分の1,000問、全問に解説つき</li>
+          <li>本番の予想点と、科目ごとの正答率が毎日わかる</li>
+          <li>直近1回分の200問は無料。完全版は買い切り</li>
+        </ul>
+        <div class="btns">
+          <a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">管理栄養士(App Store)</a>
+          <a class="btn fill" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a>
+          <a class="btn ghost" href="https://kame6493-del.github.io/nigatecho-site/pt/">理学療法士(準備中)</a>
+        </div>
+        <p class="state"><b>iPhone 公開中</b>(管理栄養士・臨床検査技師) / Android テスト中</p>
+      </div>
+      <div class="shots">
+        <img src="img/nigatecho-1.jpg" alt="苦手の数と本番の予想点が出るホーム画面" width="150" height="325" loading="lazy">
+        <img src="img/nigatecho-2.jpg" alt="科目ごとの予想点の画面" width="150" height="325" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="apps" aria-labelledby="apps-h">
+    <div class="wrap">
+      <h2 id="apps-h">アプリ一覧</h2>
+
+      <ul class="list">
+        <li><img src="img/diamond-nine-icon.png" alt="" width="52" height="52"><div><h3>DIAMOND NINE</h3><p class="kind">野球シミュレーション・無料</p><p class="d">選手を集めて、育てて、打線を組んで、1年を進める野球シミュレーションです。弱小チームから優勝を目指します。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://groups.google.com/g/diamond-nine-testers">Android テスト参加</a></p></div></li>
+        <li><img src="img/kaigonigate-icon.png" alt="" width="52" height="52"><div><h3>介護ニガテ帳</h3><p class="kind">介護福祉士 国家試験の過去問</p><p class="d">過去問750問。事例問題は事例文つき、図もそのまま。間違えた問題だけが残ります。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.kaigonigate.app">Android テスト参加</a></p></div></li>
+        <li><img src="img/kachimake-icon.png" alt="" width="52" height="52"><div><h3>カチマケ</h3><p class="kind">パチンコ・競馬などの収支管理(18歳以上)</p><p class="d">投資と回収を入れるだけで、今月いくら勝って、どこで負けているかが分かります。</p><p class="state">iPhone 準備中 / Android テスト中</p><p class="a"><a href="https://kame6493-del.github.io/kachimake-site/support.html">使い方・よくある質問</a></p></div></li>
+        <li><img src="img/uchiwakirari-icon.png" alt="" width="52" height="52"><div><h3>うちわキラリ</h3><p class="kind">うちわ文字・ファンサうちわ作成</p><p class="d">推しの名前を入れるだけで、うちわ文字を原寸で作れます。そのまま印刷できます。</p><p class="state">iPhone 準備中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.uchiwakirari.app">Android テスト参加</a></p></div></li>
+        <li><img src="img/negairo-icon.png" alt="" width="52" height="52"><div><h3>ネガイロ</h3><p class="kind">フィルムカメラ風・日付入り</p><p class="d">フィルム、使い捨てカメラ、平成のデジカメ風に撮れるカメラ。写真に日付が入ります。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.negairo.app">Android テスト参加</a></p></div></li>
+        <li><img src="img/tabedoki-icon.png" alt="" width="52" height="52"><div><h3>タベドキ</h3><p class="kind">賞味期限と冷蔵庫の管理</p><p class="d">よく買う食材はワンタップで登録。期限の近い順に並び、前日にお知らせが来ます。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.tabedoki.app">Android テスト参加</a></p></div></li>
+        <li><img src="img/hiyorigoyomi-icon.png" alt="" width="52" height="52"><div><h3>ひよりごよみ</h3><p class="kind">スタンプで貼るカレンダー</p><p class="d">スタンプを選んで日付を押すだけ。シフトや給料日、通院の日を書き込めます。六曜と祝日つき。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.hiyorigoyomi.app">Android テスト参加</a></p></div></li>
+        <li><img src="img/yamebiyori-sake-icon.png" alt="" width="52" height="52"><div><h3>やめ日和 お酒</h3><p class="kind">禁酒・断酒カウンター</p><p class="d">お酒をやめて続いた日数と、浮いたお金を記録します。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">Android テスト参加</a></p></div></li>
+        <li><img src="img/yamebiyori-tabako-icon.png" alt="" width="52" height="52"><div><h3>やめ日和 たばこ</h3><p class="kind">禁煙カウンター</p><p class="d">禁煙を続けた時間と、吸わなかった本数を記録します。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.yamebiyori.tabako">Android テスト参加</a></p></div></li>
+        <li><img src="img/kobunmekuri-icon.png" alt="" width="52" height="52"><div><h3>こぶんめくり</h3><p class="kind">古文単語601語・例文つき</p><p class="d">大学受験の古文単語を、源氏物語や徒然草の一文で覚える単語帳です。</p><p class="state">iPhone 審査中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">Android テスト参加</a></p></div></li>
+        <li><img src="img/atsuyomi-icon.png" alt="" width="52" height="52"><div><h3>あつよみ</h3><p class="kind">暑さ指数と熱中症アラート</p><p class="d">暑さ指数を見やすく出して、危ない日に知らせます。環境省のデータ提供が始まる春から動きます。</p><p class="state">2027年春に公開予定</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block tint" id="tester" aria-labelledby="tester-h">
+    <div class="wrap">
+      <div class="tester">
+        <h2 id="tester-h">Android 版のテスターを募集しています</h2>
+        <p style="margin:6px 0 0;color:var(--sub);font-size:14px">Google Play で一般公開するには、14日間のテストが必要です。入れて14日間置いておいてもらえるだけで助かります。相互テストも歓迎です。</p>
+        <ol>
+          <li><a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に参加する</li>
+          <li>上の各アプリの「Android テスト参加」から、Google Play で入れる</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
   <div class="wrap">
-    <div>© 2026 ai bite studio</div>
-    <div>お知らせは X で: <a href="https://x.com/apkderete">@apkderete</a> ・ お問い合わせ: <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a></div>
+    <p>お知らせは X で発信しています: <a href="https://x.com/apkderete">@apkderete</a></p>
+    <p>お問い合わせ: <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a>(件名にアプリ名を入れてください)</p>
+    <p>© 2026 YURU</p>
   </div>
 </footer>
 
