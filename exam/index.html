@@ -60,6 +60,9 @@
   th:first-child, td:first-child { text-align: left; }
   thead th { font-size: 12.5px; color: var(--sub); font-weight: 700; }
   .note { font-size: 13px; color: var(--sub); }
+  @media (max-width: 560px) { th, td { padding: 6px 6px; font-size: 13px; } thead th { white-space: normal; vertical-align: bottom; } }
+  .tbl.w th, .tbl.w td { white-space: normal; }
+  .tbl.w th:first-child { min-width: 11em; }
   ol.plan { list-style: none; margin: 10px 0 0; padding: 0; border-left: 2px solid var(--accent-soft); }
   ol.plan li { padding: 4px 0 10px 16px; }
   ol.plan b { font-weight: 700; color: var(--accent); margin-right: 8px; }
@@ -146,11 +149,11 @@
 <p class="lead">過去問アプリ「ニガテ帳」で扱っている試験について、次の試験日と合格基準を公式の発表から整理し、過去問の解き方をまとめました。試験ごとのページに出典のリンクを付けています。</p>
 <p class="upd">2026年10月7日時点の情報です。</p>
 <ul class="cards">
-<li><h2><a href="/exam/kaigo/">介護福祉士国家試験</a></h2><p>第39回 2027年1月31日。125問。第38回の合格点は64点、合格率70.1%。11の科目群すべてで得点が必要。パート合格あり。</p></li>
-<li><h2><a href="/exam/shakai/">社会福祉士国家試験</a></h2><p>第39回 2027年2月7日。129問。第38回の合格点は50点、合格率60.7%。6つの科目群すべてで得点が必要。</p></li>
-<li><h2><a href="/exam/kanri/">管理栄養士国家試験</a></h2><p>第41回 2027年2月28日。200問。合格基準は総合点120点以上。第40回の合格率47.6%。出願は11月2日〜12月4日。</p></li>
-<li><h2><a href="/exam/pt/">理学療法士国家試験</a></h2><p>第62回 2027年2月21日。200問。第61回は総得点167点以上かつ実地問題41点以上、合格率89.7%。出願は12月14日〜1月4日。</p></li>
-<li><h2><a href="/exam/rinsho/">臨床検査技師国家試験</a></h2><p>第73回 2027年2月17日。200問。第72回は120点以上(199点満点)、合格率84.7%。出願は12月14日〜1月4日。</p></li>
+<li><h2><a href="/exam/kaigo/">介護福祉士国家試験</a></h2><p>第39回 2027年1月31日。125問。第38回の合格点は64点、合格率70.1%。11の科目群すべてで得点が必要。パート合格あり。</p><p><a href="/exam/kaigo/goukakuten/">合格点の推移</a> ・ <a href="/exam/kaigo/schedule/">日程と残り日数</a> ・ <a href="/exam/kaigo/kamoku/">11の科目群</a></p></li>
+<li><h2><a href="/exam/shakai/">社会福祉士国家試験</a></h2><p>第39回 2027年2月7日。129問。第38回の合格点は50点、合格率60.7%。6つの科目群すべてで得点が必要。</p><p><a href="/exam/shakai/goukakuten/">合格点の推移</a> ・ <a href="/exam/shakai/schedule/">日程と残り日数</a></p></li>
+<li><h2><a href="/exam/kanri/">管理栄養士国家試験</a></h2><p>第41回 2027年2月28日。200問。合格基準は総合点120点以上。第40回の合格率47.6%。出願は11月2日〜12月4日。</p><p><a href="/exam/kanri/goukakuten/">合格点の推移</a> ・ <a href="/exam/kanri/schedule/">日程と残り日数</a></p></li>
+<li><h2><a href="/exam/pt/">理学療法士国家試験</a></h2><p>第62回 2027年2月21日。200問。第61回は総得点167点以上かつ実地問題41点以上、合格率89.7%。出願は12月14日〜1月4日。</p><p><a href="/exam/pt/goukakuten/">合格点の推移</a> ・ <a href="/exam/pt/schedule/">日程と残り日数</a></p></li>
+<li><h2><a href="/exam/rinsho/">臨床検査技師国家試験</a></h2><p>第73回 2027年2月17日。200問。第72回は120点以上(199点満点)、合格率84.7%。出願は12月14日〜1月4日。</p><p><a href="/exam/rinsho/goukakuten/">合格点の推移</a> ・ <a href="/exam/rinsho/schedule/">日程と残り日数</a></p></li>
 </ul>
 <section><h2>ニガテ帳について</h2>
 <p>間違えた問題が残り、日を空けて2回続けて正解すると消える、国家試験の過去問アプリです。どの試験も直近1回分は無料で、完全版は買い切りです。広告はなく、アカウント登録も要りません。iPhone では管理栄養士と臨床検査技師を公開中で、介護福祉士・社会福祉士・理学療法士はアップデートで追加予定(審査中)です。Android 版はテスト中です。</p>
