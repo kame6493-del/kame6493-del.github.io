@@ -182,7 +182,7 @@ function glyph(c, ch, x, y, size) {
 function layout(W, H, ls) {
   const v = st.dir === 'v';
   const cols = ls.length, rows = Math.max(...ls.map((l) => l.length));
-  const cell = Math.min((v ? W : H) * 0.9 / cols, (v ? H : W) * 0.9 / rows);
+  const cell = Math.min((v ? W : H) * 0.8 / cols, (v ? H : W) * 0.8 / rows);
   return { v, cols, rows, cell };
 }
 
