@@ -291,7 +291,50 @@ def shakai_kisotsu():
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
 
 
-PAGES = [kanri_kisotsu, shakai_hajimekata, kaigo_dokugaku, pt_kisotsu, rinsho_kisotsu, shakai_kisotsu]
+KG_SRC = [(f"第{r}回介護福祉士国家試験の合格発表について(試験センター・PDF)", f"https://www.sssc.or.jp/kaigo/past_exam/pdf/no{r}/k_happyou.pdf") for r in (38, 37)]
+
+
+def kaigo_shokuba():
+    url = f"{BASE}/exam/kaigo/shokuba/"
+    title = "介護福祉士国試の合格率を受験資格(職場)ごとに。第38回は訪問介護員82.3%、老人福祉施設67.2%"
+    desc = "介護福祉士国家試験の合格率を、試験センターが公表している受験資格別(養成施設・老人福祉施設・訪問介護員・介護老人保健施設・看護補助者など)に並べました。第38回は全体70.1%、受験者78,469人。第37回との比較と、働きながら受ける人の過去問の進め方。"
+    data = (("養成施設", "7,824", "58.8", "66.7"), ("老人福祉施設", "41,704", "67.2", "76.7"),
+            ("障害者福祉施設", "6,381", "84.5", "89.3"), ("訪問介護員", "9,706", "82.3", "87.5"),
+            ("老健・介護医療院", "4,892", "61.1", "70.2"), ("看護補助者", "5,355", "67.8", "76.8"),
+            ("福祉系高校", "2,024", "90.9", "90.3"), ("全体", "78,469", "70.1", "78.3"))
+    rows = "".join(f"<tr><td>{n}</td><td>{a}人</td><td>{p}%</td><td>{q}%</td></tr>" for n, a, p, q in data)
+    body = f"""<main class="wrap">
+<p class="note"><a href="/exam/kaigo/">介護福祉士国家試験</a> / 受験資格ごとの合格率</p>
+<h1>介護福祉士国試、受験資格(職場)ごとの合格率</h1>
+<p>介護福祉士の国家試験は、試験センターの発表に、受験資格ごとの受験者数と合格率が載っています。実務経験で受ける人は、働いている施設の種類ごとに分かれています。第38回と第37回の数字を並べました。</p>
+<h2>受験資格別の合格率</h2>
+<table class="tbl">
+<tr><th>受験資格</th><th>受験者</th><th>第38回</th><th>第37回</th></tr>
+{rows}
+</table>
+<p>受験者は第38回の人数です。区分の名前は短くしました。発表では「老人福祉施設の介護職員等」「介護老人保健施設、介護医療院の介護職員等」「医療機関の看護補助者等」「福祉系高等学校(専攻科を含む)」などの名前です。人数の少ない区分(保護施設・児童福祉施設、その他の社会福祉施設、その他)は表から省きました。全体の合格率は第37回の78.3%から、第38回は70.1%に下がっています。</p>
+{B.srcs(KG_SRC)}
+<p>第38回でいちばん受験者が多いのは老人福祉施設の介護職員等で41,704人、全体の半分を超えます。合格率は区分によって58.8%から90.9%まで開きがあり、2回とも、訪問介護員等と障害者福祉施設は全体より高く、介護老人保健施設・介護医療院は全体より低くなっていました。理由は発表には書かれていないので、ここでは数字だけを並べます。</p>
+
+<h2>働きながら受ける人の進め方</h2>
+<p>ここからは、過去問アプリを作っている立場からの提案です。合格を約束するものではありません。</p>
+<h3>1. 第38回を通しで解いて、パートごとの点を出す</h3>
+<p>第38回から、試験はAパート・Bパート・Cパートに分かれ、パートごとに合格できるようになりました。第38回の125問を午前と午後に分けて解いて、どのパートで落としているかを先に知っておくと、時間の使い方を決めやすくなります。</p>
+<h3>2. 間違えた問題だけを回す</h3>
+<p>間違えた問題と、勘で当たった問題に印を付けて、そこだけを日を空けて解き直します。2回続けて正解できたら印を外す、と決めておくと、休憩時間や通勤の数分でも、残っている問題だけに手をつけられます。</p>
+<h3>3. 多く出る科目から</h3>
+<p>科目ごとの問題数は第33回から第38回までほとんど変わらず、いちばん多い生活支援技術は毎回26問でした。<a href="/blog/kaigo-subject-counts.html">科目ごとの問題数を数えた話</a> / <a href="/exam/kaigo/dokugaku/">独学か講座か。実務経験ルートの条件</a></p>
+
+<h2>第38回の問題を1問ずつ</h2>
+<p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/kaigo/38/">第38回の過去問と解説</a> / <a href="/exam/kaigo/">第39回の日程と合格基準</a></p>
+<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+<p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第38回の125問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+</main>"""
+    ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
+    return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
+
+
+PAGES = [kanri_kisotsu, shakai_hajimekata, kaigo_dokugaku, pt_kisotsu, rinsho_kisotsu, shakai_kisotsu, kaigo_shokuba]
 
 
 def main():
