@@ -448,7 +448,7 @@ GUIDES = {"kanri": [("/exam/kanri/kisotsu/", "既卒の合格率と、働きな�
           "shakai": [("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
                      ("/exam/shakai/kisotsu/", "既卒の合格率(第36〜38回)と、もう一度受ける人の進め方")],
           "kaigo": [("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番"),
-                    ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第38回と第37回")],
+                    ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第36〜38回")],
           "pt": [("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")],
           "rinsho": [("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")]}
 
