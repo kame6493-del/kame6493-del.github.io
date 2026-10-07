@@ -334,6 +334,50 @@ def kaigo_shokuba():
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
 
 
+SE_SRC = [(f"第{r}回精神保健福祉士国家試験の合格発表について(試験センター・PDF)", f"https://www.sssc.or.jp/seishin/past_exam/pdf/no{r}/se_happyou.pdf") for r in (28, 27, 26)]
+
+
+def seishin_kisotsu():
+    """1.2.0(精神保健福祉士の追加)が公開された日に PAGES と GUIDES に足す(backlog 22)。それまでは書き出さない。"""
+    url = f"{BASE}/exam/seishin/kisotsu/"
+    title = "精神保健福祉士国試、既卒の合格率は3〜5割。第26〜28回の新卒・既卒の数字と、もう一度受ける人の進め方"
+    desc = "第28回精神保健福祉士国家試験の既卒の合格率は1,917人中940人で49.0%、新卒は89.0%でした。試験センターの発表のルート別の数字を合計した新卒・既卒の合格率(第26〜28回)と、既卒で受け直す人の過去問の進め方。"
+    rows = "".join(f"<tr><td>第{r}回</td><td>{a}人</td><td>{b}人</td><td>{p}%</td><td>{q}%</td></tr>" for r, a, b, p, q in (
+        (28, "1,917", "940", "49.0", "89.0"), (27, "1,788", "609", "34.1", "84.2"), (26, "1,979", "650", "32.8", "85.2")))
+    body = f"""<main class="wrap">
+<p class="note"><a href="/exam/seishin/">精神保健福祉士国家試験</a> / もう一度受ける人へ</p>
+<h1>精神保健福祉士国試、既卒の合格率と、受け直す人の進め方</h1>
+<p>精神保健福祉士の国家試験は、試験センターの発表に、資格を取るルートごとの新卒・既卒の数が載っています。ルートごとの数を足して、新卒と既卒の合格率を出しました。</p>
+<h2>既卒の合格率(第26〜28回)</h2>
+<table class="tbl">
+<tr><th>回</th><th>受験者</th><th>合格者</th><th>合格率</th><th>新卒の率</th></tr>
+{rows}
+</table>
+<p>表の受験者・合格者・合格率は既卒の人の数で、右端だけ新卒の合格率です。第28回は、新卒が5,190人中4,618人、既卒が1,917人中940人で、足すと発表の全体(7,107人中5,558人、78.2%)と一致します。</p>
+{B.srcs(SE_SRC)}
+<p>既卒の受験者は毎回1,800〜2,000人ほどで、受験者の4人に1人ぐらいです。第28回は既卒の合格率が49.0%まで上がりましたが、第26回・第27回は3割台でした。第28回は全体の合格率も78.2%で、前の回(70.7%)より高い回でした。</p>
+
+<h2>合格基準は、点数と科目群の両方</h2>
+<p>第28回の合格点は132点のうち62点で、そのうえ9つの科目群すべてで得点があることが条件でした。点数が足りていても、0点の科目群が1つあると不合格になります。結果の通知には、総得点と科目群ごとの得点、0点だった科目群も書かれています(試験センターの発表より)。</p>
+
+<h2>もう一度受ける人の進め方</h2>
+<p>ここからは、過去問アプリを作っている立場で、上の数字から言えることを書きます。合格を約束するものではありません。</p>
+<h3>1. 通知の点を、総得点と科目群に分けて見る</h3>
+<p>手元の通知で、総得点が合格点まで何点足りなかったか、0点の科目群がなかったかを確かめます。0点の科目群があった人は、まずそこから手をつけます。</p>
+<h3>2. 今の形の過去問は2回分</h3>
+<p>第27回から新しい科目構成になっていて、その形の過去問は第27回と第28回の264問です。共通科目は社会福祉士と同じ問題なので、社会福祉士の過去問の解説も使えます。</p>
+<h3>3. 間違えた問題だけを回す</h3>
+<p>間違えた問題と、勘で当たった問題に印を付けて、そこだけを日を空けて解き直します。2回続けて正解できたら印を外す、と決めておくと、残りの数で進み具合が分かります。</p>
+
+<h2>第28回の問題を1問ずつ</h2>
+<p>第28回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/seishin/28/">第28回の過去問と解説</a> / <a href="/exam/seishin/">第29回の日程と合格基準</a></p>
+<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+<p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第28回の132問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+</main>"""
+    ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
+    return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
+
+
 PAGES = [kanri_kisotsu, shakai_hajimekata, kaigo_dokugaku, pt_kisotsu, rinsho_kisotsu, shakai_kisotsu, kaigo_shokuba]
 
 
