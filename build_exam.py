@@ -693,13 +693,14 @@ def exam_page(x):
                    f'<div class="btns"><a class="btn fill" href="/q/{x["key"]}/{qround}/">第{qround}回の過去問と解説</a></div></section>')
 
     # 受験生の質問に答える小ページ(build_guides.py が書き出す)
-    guide = {"kanri": ("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方"),
-             "shakai": ("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
-             "kaigo": ("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番"),
-             "pt": ("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方"),
-             "rinsho": ("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")}.get(x["key"])
-    if guide:
-        out.append(f'<p>あわせて読む: <a href="{guide[0]}">{e(guide[1])}</a></p>')
+    guides = {"kanri": [("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方")],
+              "shakai": [("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
+                         ("/exam/shakai/kisotsu/", "既卒の合格率(第36〜38回)と、もう一度受ける人の進め方")],
+              "kaigo": [("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番")],
+              "pt": [("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")],
+              "rinsho": [("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")]}.get(x["key"], [])
+    if guides:
+        out.append("<p>あわせて読む: " + " / ".join(f'<a href="{u}">{e(t)}</a>' for u, t in guides) + "</p>")
 
     out.append(app_block(x))
 

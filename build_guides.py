@@ -248,7 +248,50 @@ def rinsho_kisotsu():
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
 
 
-PAGES = [kanri_kisotsu, shakai_hajimekata, kaigo_dokugaku, pt_kisotsu, rinsho_kisotsu]
+SK_SRC = [(f"第{r}回社会福祉士国家試験の合格発表について(試験センター・PDF)", f"https://www.sssc.or.jp/shakai/past_exam/pdf/no{r}/s_happyou.pdf") for r in (38, 37, 36)]
+
+
+def shakai_kisotsu():
+    url = f"{BASE}/exam/shakai/kisotsu/"
+    title = "社会福祉士国試、既卒の合格率は約4割。第36〜38回の新卒・既卒の数字と、もう一度受ける人の進め方"
+    desc = "第38回社会福祉士国家試験の既卒の合格率は12,280人中5,028人で40.9%、新卒は79.2%でした。受験者のおよそ半分が既卒です。試験センターの発表のルート別の数字を合計した新卒・既卒の合格率(第36〜38回)と、既卒で受け直す人の過去問の進め方。"
+    rows = "".join(f"<tr><td>第{r}回</td><td>{a}人</td><td>{b}人</td><td>{p}%</td><td>{q}%</td></tr>" for r, a, b, p, q in (
+        (38, "12,280", "5,028", "40.9", "79.2"), (37, "14,114", "5,228", "37.0", "76.5"), (36, "19,702", "8,508", "43.2", "77.8")))
+    body = f"""<main class="wrap">
+<p class="note"><a href="/exam/shakai/">社会福祉士国家試験</a> / もう一度受ける人へ</p>
+<h1>社会福祉士国試、既卒の合格率と、受け直す人の進め方</h1>
+<p>社会福祉士の国家試験は、試験センターの発表に、資格を取るルートごとの新卒・既卒の数が載っています。ルートごとの数を足して、新卒と既卒の合格率を出しました。</p>
+<h2>既卒の合格率(第36〜38回)</h2>
+<table class="tbl">
+<tr><th>回</th><th>受験者</th><th>合格者</th><th>合格率</th><th>新卒の率</th></tr>
+{rows}
+</table>
+<p>表の受験者・合格者・合格率は既卒の人の数で、右端だけ新卒の合格率です。第38回は、新卒が13,150人中10,410人、既卒が12,280人中5,028人で、足すと発表の全体(25,430人中15,438人、60.7%)と一致します。</p>
+{B.srcs(SK_SRC)}
+<p>既卒は受験者の48〜57%を占めていて、新卒と同じくらいの人数です。合格率は新卒の約半分でした。第37回から新しい科目構成の試験になっていて、第36回は前の科目の試験です。</p>
+
+<h2>合格基準は、点数と科目群の両方</h2>
+<p>第38回の合格基準は、129点のうち50点以上で、そのうえ6つの科目群すべてで得点があることでした。点数が足りていても、0点の科目群が1つあると不合格になります。結果の通知には、総得点と科目群ごとの得点、0点だった科目群も書かれています(試験センターの発表より)。</p>
+
+<h2>もう一度受ける人の進め方</h2>
+<p>ここからは、過去問アプリを作っている立場で、上の数字から言えることを書きます。合格を約束するものではありません。</p>
+<h3>1. 通知の点を、総得点と科目群に分けて見る</h3>
+<p>手元の通知で、総得点が合格点まで何点足りなかったか、0点の科目群がなかったかを確かめます。0点の科目群があった人は、まずそこから手をつけます。</p>
+<h3>2. 今の形の過去問は2回分しかない</h3>
+<p>新しい科目構成の過去問は、第37回と第38回の258問です。数が少ないので、何周も解くより、1問ずつ選択肢のどこが違うのかまで確かめるほうが、時間に見合います。19科目はどれも6問か9問で、2回とも同じでした。<a href="/blog/shakai-subject-counts.html">科目ごとの問題数を数えた話</a></p>
+<h3>3. 間違えた問題だけを回す</h3>
+<p>間違えた問題と、勘で当たった問題に印を付けて、そこだけを日を空けて解き直します。2回続けて正解できたら印を外す、と決めておくと、残りの数で進み具合が分かります。働きながらの人は、<a href="/exam/shakai/hajimekata/">社会人から始めるときの最初の2週間</a>も参考にしてください。</p>
+
+<h2>第38回の問題を1問ずつ</h2>
+<p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/shakai/38/">第38回の過去問と解説</a> / <a href="/exam/shakai/">第39回の日程と合格基準</a></p>
+<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+<p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第38回の129問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+</main>"""
+    ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
+    return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
+
+
+PAGES = [kanri_kisotsu, shakai_hajimekata, kaigo_dokugaku, pt_kisotsu, rinsho_kisotsu, shakai_kisotsu]
 
 
 def main():
