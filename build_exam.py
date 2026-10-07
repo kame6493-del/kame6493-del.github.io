@@ -457,6 +457,15 @@ def e(s):
     return html.escape(s, quote=True)
 
 
+def itunes_banner(url):
+    """国試のページだけ、iPhone の Safari で上に出る App Store のバナー(Smart App Banner)を付ける。
+    臨床検査技師は単体のアプリ、ほかはまとめ版。古文・禁煙などのページはアプリが App Store に無いので付けない。"""
+    if "/exam/" not in url and "/q/" not in url:
+        return ""
+    app = "6818536142" if "rinsho" in url else "6818535389"
+    return f'\n<meta name="apple-itunes-app" content="app-id={app}">'
+
+
 def head(title, desc, url, jsonld):
     return f"""<!doctype html>
 <html lang="ja">
@@ -469,7 +478,7 @@ def head(title, desc, url, jsonld):
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:type" content="article">
-<meta property="og:url" content="{url}">
+<meta property="og:url" content="{url}">{itunes_banner(url)}
 <meta property="og:site_name" content="YURU">
 <meta property="og:locale" content="ja_JP">
 <meta property="og:image" content="{BASE}/img/nigatecho-icon.png">

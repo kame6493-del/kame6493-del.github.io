@@ -18,6 +18,13 @@ POSTS = [
     ('06_社会福祉士の科目ごとの問題数.md', 'shakai-subject-counts', '2026-10-07'),
 ]
 
+def banner(slug):
+    """国試の記事だけ、iPhone の Safari で上に出る App Store のバナーを付ける(まとめ版ニガテ帳)。"""
+    if slug.startswith(('kokushi', 'kaigo', 'kanri', 'shakai')):
+        return '<meta name="apple-itunes-app" content="app-id=6818535389">\n'
+    return ''
+
+
 PAGE = '''<!doctype html>
 <html lang="ja">
 <head>
@@ -26,7 +33,7 @@ PAGE = '''<!doctype html>
 <title>{title}｜YURU 開発日記</title>
 <meta name="description" content="{desc}">
 <link rel="canonical" href="https://kame6493-del.github.io/blog/{slug}.html">
-<meta property="og:title" content="{title}">
+{banner}<meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary">
@@ -74,7 +81,7 @@ def build():
         first = next(p for p in body_md.split('\n\n') if p.strip() and not p.startswith('#'))
         desc = re.sub(r'\s+', ' ', first)[:110]
         body = markdown.markdown(body_md, extensions=['tables', 'fenced_code'])
-        (OUT / f'{slug}.html').write_text(PAGE.format(title=html.escape(title), desc=html.escape(desc), slug=slug, date=date, body=body), encoding='utf-8')
+        (OUT / f'{slug}.html').write_text(PAGE.format(title=html.escape(title), desc=html.escape(desc), slug=slug, date=date, body=body, banner=banner(slug)), encoding='utf-8')
         items.append((slug, title, date))
     return items
 
