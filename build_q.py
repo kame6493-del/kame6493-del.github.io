@@ -26,6 +26,7 @@ EXAMS = [
     ("rinsho", "臨床検査技師", "exams/rinsho/data/questions.json", 72, "厚生労働省", MHLW_NOTE, "rinsho_live"),
     ("pt", "理学療法士", "public/data/pt/questions.json", 61, "厚生労働省", MHLW_NOTE, "multi_live"),
     ("shakai", "社会福祉士", "public/data/shakai/questions.json", 38, "社会福祉振興・試験センター", SSSC_NOTE, "multi_live"),
+    ("seishin", "精神保健福祉士", "public/data/seishin/questions.json", 28, "社会福祉振興・試験センター", SSSC_NOTE, "soon"),
 ]
 
 EXTRA_CSS = """
@@ -57,7 +58,7 @@ def app_cta(name, state):
     elif state == "multi_live":
         url, txt = B.APP_MULTI, f"「ニガテ帳」(iPhone)で、{name}の過去問を解けます。"
     else:
-        url, txt = B.APP_MULTI, f"{name}は「ニガテ帳」(iPhone)のアップデートで追加予定です(審査中)。"
+        url, txt = B.APP_MULTI, f"{name}は「ニガテ帳」(iPhone)の次のアップデートで追加する予定です。"
     return (f'<div class="q-cta"><p><b>間違えた問題だけが残る過去問アプリ</b><br>{e(txt)}'
             "間違えた問題は「苦手」として残り、2回続けて正解すると消えます。全問に解説つき、広告なし。</p>"
             f'<div class="btns"><a class="btn fill" href="{url}">App Store で見る</a>'

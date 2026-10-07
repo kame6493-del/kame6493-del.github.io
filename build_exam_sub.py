@@ -372,8 +372,8 @@ def ex(key):
 
 
 SUBS = {  # key -> [(slug, 短い名前)]
-    k: [("goukakuten", "合格点・合格率の推移"), ("schedule", "日程と残り日数の使い方")] for k in B.ORDER_HUB
-}
+    k: [("goukakuten", "合格点・合格率の推移"), ("schedule", "日程と残り日数の使い方")] for k in B.ORDER_HUB if k != "seishin"
+}  # 精神保健福祉士の小ページはまだ作っていない
 SUBS["kaigo"].append(("kamoku", "11の科目群と0点の決まり"))
 
 
@@ -573,6 +573,8 @@ def write(path, text):
 
 def build_all():
     for k in B.ORDER_HUB:
+        if k not in GOUKAKU:  # 精神保健福祉士はまだ小ページを作っていない
+            continue
         write(os.path.join(B.ROOT, "exam", k, "goukakuten", "index.html"), goukaku_page(k))
         write(os.path.join(B.ROOT, "exam", k, "schedule", "index.html"), schedule_page(k))
     write(os.path.join(B.ROOT, "exam", "kaigo", "kamoku", "index.html"), kamoku_page())
@@ -580,6 +582,8 @@ def build_all():
 
 def sub_links_html(k):
     """親ページ(/exam/<key>/)に入れる、小ページへのリンク。"""
+    if k not in SUBS:
+        return ""
     x = ex(k)
     items = "".join(f'<li><a href="/exam/{k}/{s}/">{x["name"]}国家試験 {e(short)}</a></li>' for s, short in SUBS[k])
     return f'<section id="more"><h2>くわしいページ</h2><ul class="others">{items}</ul></section>'
