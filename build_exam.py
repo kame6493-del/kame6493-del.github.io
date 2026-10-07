@@ -623,7 +623,8 @@ def exam_page(x):
 
     # 受験生の質問に答える小ページ(build_guides.py が書き出す)
     guide = {"kanri": ("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方"),
-             "shakai": ("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること")}.get(x["key"])
+             "shakai": ("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
+             "kaigo": ("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番")}.get(x["key"])
     if guide:
         out.append(f'<p>あわせて読む: <a href="{guide[0]}">{e(guide[1])}</a></p>')
 
