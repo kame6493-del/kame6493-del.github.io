@@ -443,6 +443,16 @@ EXAMS = [
     },
 ]
 
+# 受験生の質問に答える小ページ(build_guides.py が書き出す)。試験ページと一覧の両方から張る
+GUIDES = {"kanri": [("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方")],
+          "shakai": [("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
+                     ("/exam/shakai/kisotsu/", "既卒の合格率(第36〜38回)と、もう一度受ける人の進め方")],
+          "kaigo": [("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番"),
+                    ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第38回と第37回")],
+          "pt": [("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")],
+          "rinsho": [("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")]}
+
+
 ORDER_HUB = ["kaigo", "shakai", "seishin", "kanri", "pt", "rinsho"]
 
 # ---------------------------------------------------------------------------
@@ -693,13 +703,7 @@ def exam_page(x):
                    f'<div class="btns"><a class="btn fill" href="/q/{x["key"]}/{qround}/">第{qround}回の過去問と解説</a></div></section>')
 
     # 受験生の質問に答える小ページ(build_guides.py が書き出す)
-    guides = {"kanri": [("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方")],
-              "shakai": [("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
-                         ("/exam/shakai/kisotsu/", "既卒の合格率(第36〜38回)と、もう一度受ける人の進め方")],
-              "kaigo": [("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番"),
-                        ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第38回と第37回")],
-              "pt": [("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")],
-              "rinsho": [("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")]}.get(x["key"], [])
+    guides = GUIDES.get(x["key"], [])
     if guides:
         out.append("<p>あわせて読む: " + " / ".join(f'<a href="{u}">{e(t)}</a>' for u, t in guides) + "</p>")
 
@@ -759,11 +763,12 @@ def hub_page():
         out.append(f'<li><h2><a href="/exam/{k}/">{y["name"]}国家試験</a></h2>'
                    f'<p>第{y["round"]}回 {y["date_ja"]}。{e(blurbs[k])}</p>'
                    + (f'<p><a href="/exam/{k}/goukakuten/">合格点の推移</a> ・ <a href="/exam/{k}/schedule/">日程と残り日数</a>'
-                      + (' ・ <a href="/exam/kaigo/kamoku/">11の科目群</a>' if k == "kaigo" else "") + '</p>' if k != "seishin" else "") + '</li>')
+                      + (' ・ <a href="/exam/kaigo/kamoku/">11の科目群</a>' if k == "kaigo" else "") + '</p>' if k != "seishin" else "")
+                   + ('<p>' + ' ・ '.join(f'<a href="{u}">{e(t)}</a>' for u, t in GUIDES.get(k, [])) + '</p>' if GUIDES.get(k) else "") + '</li>')
     out.append("</ul>")
     out.append("""<section><h2>ニガテ帳について</h2>
 <p>間違えた問題が残り、日を空けて2回続けて正解すると消える、国家試験の過去問アプリです。どの試験も直近1回分は無料で、完全版は買い切りです。広告はなく、アカウント登録も要りません。iPhone では「ニガテ帳」で管理栄養士・介護福祉士・社会福祉士・理学療法士を、「ニガテ帳 臨床検査技師」で臨床検査技師を公開中です。Android 版はテスト中です。</p>
-<div class="btns"><a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">管理栄養士(App Store)</a><a class="btn fill" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a><a class="btn ghost" href="/#tester">Android テスト</a></div>
+<div class="btns"><a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">ニガテ帳(App Store)</a><a class="btn fill" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a><a class="btn ghost" href="/#tester">Android テスト</a></div>
 </section>
 <section><h2>このページについて</h2><p class="disc">個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。受験の手続きは、必ず公式の案内で確かめてください。</p></section>""")
     out.append("</main>")
