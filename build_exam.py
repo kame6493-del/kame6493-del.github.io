@@ -605,6 +605,13 @@ def exam_page(x):
         out.append(f"<li><b>{e(m)}</b>{e(t)}</li>")
     out.append("</ol></section>")
 
+    # 1問ずつの解答・解説ページ(build_q.py が書き出す)
+    qround = {"kaigo": 38, "kanri": 40, "rinsho": 72, "pt": 61, "shakai": 38}.get(x["key"])
+    if qround:
+        out.append(f'<section id="q"><h2>第{qround}回の過去問を1問ずつ解く</h2>'
+                   f'<p>第{qround}回{x["name"]}国家試験の問題を、正答と選択肢ごとの解説つきで1問ずつ載せています(図を使う問題は除く)。</p>'
+                   f'<div class="btns"><a class="btn fill" href="/q/{x["key"]}/{qround}/">第{qround}回の過去問と解説</a></div></section>')
+
     out.append(app_block(x))
 
     # FAQ
