@@ -14,6 +14,7 @@ POSTS = [
     ('02_宣伝動画をコードで量産する.md', 'promo-video-python', '2026-10-03'),
     ('03_国試の正解の番号を数えた.md', 'kokushi-answer-numbers', '2026-10-07'),
     ('04_介護福祉士の科目ごとの問題数.md', 'kaigo-subject-counts', '2026-10-07'),
+    ('05_管理栄養士の科目ごとの問題数.md', 'kanri-subject-counts', '2026-10-07'),
 ]
 
 PAGE = '''<!doctype html>
