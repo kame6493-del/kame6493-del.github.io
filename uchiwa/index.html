@@ -97,6 +97,8 @@ footer{max-width:980px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:va
     <input type="range" id="bw" min="0" max="40" value="22">
     <label>地の色(仕上がりの見本用)</label>
     <div class="colors" data-k="bg"></div>
+    <label>配色の見本(押すと文字・ふち・地の色がまとめて変わります)</label>
+    <div class="row" id="pal"></div>
   </div>
   <div class="card">
     <canvas id="cv" width="1000" height="1200" aria-label="うちわ文字の見本"></canvas>
@@ -124,6 +126,12 @@ footer{max-width:980px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:va
   <h2>ファンサうちわの定番の言葉</h2>
   <p>よく見かけるのは「指さして」「手ふって」「ピースして」「ウインクして」「投げキスして」「指ハートして」「バーンして」「3秒見つめて」「こっち見て」「名前呼んで」などです。推しの名前だけを大きく書く名前うちわや、「〇〇推し」「初参戦」「誕生日おめでとう」も定番です。上の「ひな形」を押すと、文字と色がまとめて入ります。名前は「〇〇」を書きかえてください。</p>
   <p>文字数が少ないほど、遠くからでも読みやすくなります。2行にするときは、1行目と2行目の文字数をそろえると形がきれいに見えます。</p>
+</section>
+
+<section>
+  <h2>遠くから見やすい色の組み合わせ</h2>
+  <p>見やすさを決めるのは、色そのものより、文字と地の明るさの差です。黒い地に黄色の文字のように、明るさが大きく違う組み合わせほど、遠くからでも読めます。黄色と黒が見やすいと言われるのはこのためで、道路の標識にも使われている組み合わせです。</p>
+  <p>反対に、ピンクの地にピンクの文字や、黄色の地に白の文字のように、明るさが近い組み合わせは読みにくくなります。地と文字の明るさが近いときは、あいだにはっきりした色のふちを入れると、輪郭が浮き上がって読めるようになります。上の「配色の見本」から、明るさの差が大きい組み合わせを試せます。</p>
 </section>
 
 <section>
@@ -163,6 +171,26 @@ for (const [label, text, color] of TPL) {
     draw();
   };
   $('tpl').appendChild(b);
+}
+// 配色の見本: [名前, 文字, 内側のふち, 外側のふち, 地]
+const SETS = [
+  ['黒地に黄色', '#ffd400', '#1b1b1b', '#ffffff', '#1b1b1b'],
+  ['黒地にピンク', '#ff4f9a', '#ffffff', '#1b1b1b', '#1b1b1b'],
+  ['黒地に水色', '#2bb3ff', '#ffffff', '#1b1b1b', '#1b1b1b'],
+  ['白地に赤', '#ff3b30', '#ffffff', '#1b1b1b', '#ffffff'],
+  ['ピンク地に白', '#ffffff', '#ff4f9a', '#1b1b1b', '#ffe3ef'],
+];
+function pick(k, color) {
+  st[k] = color;
+  const box = document.querySelector(`.colors[data-k=${k}]`);
+  for (const x of box.querySelectorAll('.sw')) x.setAttribute('aria-pressed', String(x.title === color));
+  box.querySelector('input[type=color]').value = color;
+}
+for (const [label, fill, b1, b2, bg] of SETS) {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.textContent = label;
+  b.onclick = () => { pick('fill', fill); pick('b1', b1); pick('b2', b2); pick('bg', bg); draw(); };
+  $('pal').appendChild(b);
 }
 for (const box of document.querySelectorAll('.colors')) {
   const k = box.dataset.k;
