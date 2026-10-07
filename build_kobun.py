@@ -87,7 +87,7 @@ def page(w, prev, nxt):
     return B.head(title, desc, url, ld) + body + B.FOOT
 
 
-def index(ws):
+def index(ws, gs=()):
     url = f"{BASE}/kobun/"
     title = "古文単語601 意味と例文の一覧(重要度順)"
     desc = "大学受験の古文単語601語を重要度順に、意味・覚え方・本文の例文と現代語訳つきで1語ずつ載せています。"
@@ -104,10 +104,49 @@ def index(ws):
 <h1>{e(title)}</h1>
 <p>{e(desc)} 1語ごとのページでは、意味の一覧と覚え方、源氏物語・徒然草・枕草子などの一文を現代語訳つきで読めます。</p>
 {CTA}
+<h2>品詞ごと</h2><p>{" / ".join(f'<a href="/kobun/pos/{slug}/">{e(name)}({len(g)}語)</a>' for kind, name, slug, g in gs if kind == "pos")}</p>
+<h2>意味のジャンルごと</h2><p>{" / ".join(f'<a href="/kobun/cat/{slug}/">{e(name)}({len(g)}語)</a>' for kind, name, slug, g in gs if kind == "cat")}</p>
 {''.join(rows)}
 {NOTE}
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
+
+
+POS_SLUG = {"名詞": "meishi", "形容詞": "keiyoushi", "動詞": "doushi", "副詞": "fukushi", "形容動詞": "keiyoudoushi", "連語": "rengo"}
+
+
+def group_page(kind, name, slug, ws):
+    url = f"{BASE}/kobun/{kind}/{slug}/"
+    if kind == "pos":
+        title = f"古文単語の{name}の一覧({len(ws)}語・意味と例文つき)"
+        desc = f"大学受験の古文単語601語のうち、{name}の{len(ws)}語を重要度順に並べました。1語ずつ意味・覚え方・本文の例文と現代語訳を見られます。"
+    else:
+        title = f"「{name}」の古文単語({len(ws)}語・意味と例文つき)"
+        desc = f"古文単語601語のうち、意味が「{name}」に関わる{len(ws)}語を重要度順に並べました。1語ずつ意味・覚え方・本文の例文と現代語訳を見られます。"
+    ld = {"@context": "https://schema.org", "@type": "CollectionPage", "url": url, "name": title, "description": desc, "inLanguage": "ja"}
+    items = "".join(f'<li><a href="/kobun/{w["id"]}/">{e(w["w"])}</a> <span class="k-meta">{e(w["pos"])}・{e("・".join(w["means"][:2]))}</span></li>' for w in ws)
+    body = f"""<main class="wrap">
+<style>{CSS}</style>
+<p class="k-meta"><a href="/kobun/">古文単語601</a></p>
+<h1>{e(title)}</h1>
+<p>{e(desc)}</p>
+<ul class="k-list">{items}</ul>
+{NOTE}
+{CTA}
+</main>"""
+    return url, B.head(title, desc, url, ld) + body + B.FOOT
+
+
+def groups(ws):
+    out = []
+    for pos, slug in POS_SLUG.items():
+        g = [w for w in ws if w["pos"] == pos]
+        if g:
+            out.append(("pos", pos, slug, g))
+    cats = [c for c in dict.fromkeys(w.get("cat") for w in ws) if c and c != "その他"]
+    for i, c in enumerate(sorted(cats, key=lambda c: -sum(1 for w in ws if w.get("cat") == c)), 1):
+        out.append(("cat", c, f"c{i:02d}", [w for w in ws if w.get("cat") == c]))
+    return out
 
 
 def main():
@@ -120,8 +159,16 @@ def main():
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:
             f.write(page(w, ws[i - 1] if i else None, ws[i + 1] if i + 1 < len(ws) else None))
         urls.append(f"{BASE}/kobun/{w['id']}/")
+    gs = groups(ws)
+    for kind, name, slug, g in gs:
+        gurl, html = group_page(kind, name, slug, g)
+        d = os.path.join(ROOT, "kobun", kind, slug)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+            f.write(html)
+        urls.append(gurl)
     with open(os.path.join(ROOT, "kobun", "index.html"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(index(ws))
+        f.write(index(ws, gs))
     sm = os.path.join(ROOT, "sitemap.xml")
     s = open(sm, encoding="utf-8").read()
     s = re.sub(r"<url><loc>[^<]*/kobun/[^<]*</loc>[^\n]*\n", "", s)
