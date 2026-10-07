@@ -612,6 +612,12 @@ def exam_page(x):
                    f'<p>第{qround}回{x["name"]}国家試験の問題を、正答と選択肢ごとの解説つきで1問ずつ載せています(図を使う問題は除く)。</p>'
                    f'<div class="btns"><a class="btn fill" href="/q/{x["key"]}/{qround}/">第{qround}回の過去問と解説</a></div></section>')
 
+    # 受験生の質問に答える小ページ(build_guides.py が書き出す)
+    guide = {"kanri": ("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方"),
+             "shakai": ("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること")}.get(x["key"])
+    if guide:
+        out.append(f'<p>あわせて読む: <a href="{guide[0]}">{e(guide[1])}</a></p>')
+
     out.append(app_block(x))
 
     # FAQ
