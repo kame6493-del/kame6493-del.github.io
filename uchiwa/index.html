@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>うちわ文字メーカー|ファンサうちわの文字を作って1文字ずつ印刷(無料・登録なし)</title>
+<meta name="description" content="ファンサうちわ・応援うちわの文字をブラウザで作れます。縦書き・横書き、字体、文字の色、2重のふちを選んで、画像で保存したり、1文字ずつA4に印刷して切り抜けます。無料・登録なし。">
+<link rel="canonical" href="https://kame6493-del.github.io/uchiwa/">
+<meta property="og:title" content="うちわ文字メーカー(無料・登録なし)">
+<meta property="og:description" content="ファンサうちわの文字を作って、1文字ずつA4に印刷。縦書き・横書き・2重のふち。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kame6493-del.github.io/uchiwa/">
+<meta property="og:image" content="https://kame6493-del.github.io/img/uchiwakirari-icon.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/img/uchiwakirari-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@900&family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@900&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"うちわ文字メーカー","url":"https://kame6493-del.github.io/uchiwa/","applicationCategory":"DesignApplication","operatingSystem":"Web","inLanguage":"ja","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}}
+</script>
+<style>
+:root{--bg:#fff7fb;--ink:#2a1b25;--sub:#7a6470;--line:#f0d7e4;--accent:#e2457d;--card:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1418;--ink:#f6e9ef;--sub:#c3a9b6;--line:#3b2a33;--card:#271c22;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 56px}
+a{color:var(--accent)}
+h1{font-size:24px;line-height:1.4;margin:6px 0 4px}
+.lead{color:var(--sub);margin:0 0 18px}
+.tool{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.tool{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+label{display:block;font-size:14px;color:var(--sub);margin:12px 0 4px}
+textarea{width:100%;font-size:20px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.colors{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+.sw[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:2px}
+input[type=color]{width:34px;height:34px;border:none;background:none;padding:0}
+input[type=range]{width:100%}
+canvas{width:100%;height:auto;border-radius:14px;background:repeating-conic-gradient(#0000000d 0 25%,#0000 0 50%) 0 0/20px 20px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.btn{border:none;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+.fill{background:var(--accent);color:#fff}
+.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.note{font-size:13px;color:var(--sub)}
+section{margin-top:28px}
+h2{font-size:19px;margin:0 0 8px}
+.app{display:flex;gap:14px;align-items:center}
+.app img{border-radius:14px}
+footer{max-width:980px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:var(--sub)}
+#printArea{display:none}
+@media print{
+  body *{visibility:hidden}
+  #printArea,#printArea *{visibility:visible}
+  #printArea{display:block;position:absolute;left:0;top:0;width:100%}
+  .sheet{page-break-after:always;break-after:page;height:277mm;display:flex;align-items:center;justify-content:center}
+  .sheet img{max-width:190mm;max-height:270mm}
+  @page{size:A4;margin:10mm}
+}
+</style>
+</head>
+<body>
+<main>
+<p class="note"><a href="/">YURU のアプリ</a></p>
+<h1>うちわ文字メーカー</h1>
+<p class="lead">ファンサうちわ・応援うちわの文字を、ブラウザだけで作れます。登録は要りません。作った文字は画像で保存するか、1文字ずつA4に印刷して切り抜いてください。</p>
+
+<div class="tool">
+  <div class="card">
+    <label for="txt">文字(改行で2行目へ)</label>
+    <textarea id="txt" rows="3">ピース
+して</textarea>
+    <label>向き</label>
+    <div class="row" id="dir">
+      <button class="chip" data-v="v" aria-pressed="true">縦書き</button>
+      <button class="chip" data-v="h" aria-pressed="false">横書き</button>
+    </div>
+    <label>字体</label>
+    <div class="row" id="font">
+      <button class="chip" data-v="'M PLUS Rounded 1c'" aria-pressed="true" style="font-family:'M PLUS Rounded 1c';font-weight:900">まるもじ太</button>
+      <button class="chip" data-v="'Dela Gothic One'" aria-pressed="false" style="font-family:'Dela Gothic One'">ごくぶと</button>
+      <button class="chip" data-v="'Zen Maru Gothic'" aria-pressed="false" style="font-family:'Zen Maru Gothic';font-weight:900">やさしい丸</button>
+    </div>
+    <label>文字の色</label>
+    <div class="colors" data-k="fill"></div>
+    <label>内側のふち</label>
+    <div class="colors" data-k="b1"></div>
+    <label>外側のふち</label>
+    <div class="colors" data-k="b2"></div>
+    <label for="bw">ふちの太さ</label>
+    <input type="range" id="bw" min="0" max="40" value="22">
+    <label>地の色(仕上がりの見本用)</label>
+    <div class="colors" data-k="bg"></div>
+  </div>
+  <div class="card">
+    <canvas id="cv" width="1000" height="1200" aria-label="うちわ文字の見本"></canvas>
+    <div class="btns">
+      <button class="btn fill" id="save">画像で保存(透明の背景)</button>
+      <button class="btn ghost" id="print">1文字ずつA4で印刷</button>
+    </div>
+    <p class="note">保存する画像は背景が透明です。印刷するときは、1文字ずつA4の紙1枚に大きく出ます。厚紙や光沢紙に印刷して、ふちに沿って切り抜き、うちわに貼ってください。会場ごとにうちわの大きさの決まりがあることが多いので、公演の案内も確かめてください。</p>
+  </div>
+</div>
+
+<section class="card">
+  <h2>アプリ「うちわキラリ」なら</h2>
+  <div class="app">
+    <img src="/img/uchiwakirari-icon.png" alt="" width="64" height="64">
+    <p style="margin:0">字体は14種(ハングルも)、ハートや星の飾り、3重のふち、名前うちわのひな形まで使えます。作ったうちわは、文字ごとにA4で印刷できるPDFにして保存できます。</p>
+  </div>
+  <div class="btns">
+    <a class="btn ghost" href="https://play.google.com/apps/testing/jp.uchiwakirari.app">Android テスト版に参加</a>
+  </div>
+  <p class="note">iPhone 版は App Store の審査中です。Android 版はテスト中で、参加ページで「テスターになる」を押すと使えます。</p>
+</section>
+
+<section>
+  <h2>うちわ文字の作り方</h2>
+  <p>文字を入れて、縦書きか横書きかを選び、字体と色を決めます。ふちは2重にすると、遠くからでも文字が読みやすくなります。内側を白、外側を濃い色にするのが定番です。できたら「1文字ずつA4で印刷」を押して、プリンターで印刷してください。家にプリンターがない場合は、画像で保存してコンビニのプリントを使えます。</p>
+  <p>この作成ページは、文字の形を描くだけで、入れた文字をどこかへ送ることはしていません。字体は Google Fonts の M PLUS Rounded 1c・Dela Gothic One・Zen Maru Gothic(SIL Open Font License)を使っています。</p>
+</section>
+</main>
+<div id="printArea"></div>
+<footer>作っている人: YURU(個人) / お知らせは X <a href="https://x.com/apkderete">@apkderete</a> / <a href="/">ほかのアプリ</a></footer>
+
+<script>
+const PAL = {
+  fill: ['#ffffff', '#ff4f9a', '#ffd400', '#2bb3ff', '#8a5cff', '#ff3b30', '#1b1b1b'],
+  b1: ['#ffffff', '#1b1b1b', '#ffd400', '#ff9fc8', '#c7f0ff'],
+  b2: ['#ff4f9a', '#1b1b1b', '#2bb3ff', '#8a5cff', '#ffd400', '#ffffff'],
+  bg: ['#1b1b1b', '#ffffff', '#ffe3ef', '#e9f6ff'],
+};
+const st = { dir: 'v', font: "'M PLUS Rounded 1c'", fill: '#ff4f9a', b1: '#ffffff', b2: '#1b1b1b', bg: '#1b1b1b' };
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const $ = (id) => document.getElementById(id);
+
+for (const box of document.querySelectorAll('.colors')) {
+  const k = box.dataset.k;
+  for (const c of PAL[k]) {
+    const b = document.createElement('button');
+    b.className = 'sw'; b.style.background = c; b.title = c; b.setAttribute('aria-label', c);
+    b.setAttribute('aria-pressed', String(st[k] === c));
+    b.onclick = () => { st[k] = c; mark(box, b); draw(); };
+    box.appendChild(b);
+  }
+  const inp = document.createElement('input');
+  inp.type = 'color'; inp.value = st[k]; inp.title = 'ほかの色';
+  inp.oninput = () => { st[k] = inp.value; mark(box, null); draw(); };
+  box.appendChild(inp);
+}
+function mark(box, on) { for (const b of box.querySelectorAll('.sw')) b.setAttribute('aria-pressed', String(b === on)); }
+for (const id of ['dir', 'font']) {
+  const box = $(id);
+  for (const b of box.querySelectorAll('.chip')) b.onclick = () => {
+    st[id] = b.dataset.v; for (const x of box.querySelectorAll('.chip')) x.setAttribute('aria-pressed', String(x === b)); draw();
+  };
+}
+$('txt').oninput = draw; $('bw').oninput = draw;
+
+function lines() { return $('txt').value.split('\n').map((s) => [...s.trim()]).filter((l) => l.length); }
+function weight() { return st.font.includes('Dela') ? '400' : '900'; }
+
+// 1文字を (x,y) の中心に描く。外側のふち → 内側のふち → 文字 の順に重ねる
+function glyph(c, ch, x, y, size) {
+  const bw = +$('bw').value * size / 200;
+  c.font = `${weight()} ${size}px ${st.font}`;
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.miterLimit = 2;
+  const vert = st.dir === 'v' && 'ー〜～-‐—'.includes(ch);
+  c.save(); c.translate(x, y); if (vert) c.rotate(Math.PI / 2);
+  if (bw > 0) {
+    c.strokeStyle = st.b2; c.lineWidth = bw * 4; c.strokeText(ch, 0, 0);
+    c.strokeStyle = st.b1; c.lineWidth = bw * 2; c.strokeText(ch, 0, 0);
+  }
+  c.fillStyle = st.fill; c.fillText(ch, 0, 0);
+  c.restore();
+}
+
+function layout(W, H, ls) {
+  const v = st.dir === 'v';
+  const cols = ls.length, rows = Math.max(...ls.map((l) => l.length));
+  const cell = Math.min((v ? W : H) * 0.9 / cols, (v ? H : W) * 0.9 / rows);
+  return { v, cols, rows, cell };
+}
+
+function draw() {
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  // うちわの見本(角の丸い四角)
+  ctx.fillStyle = st.bg;
+  ctx.beginPath(); ctx.roundRect(40, 40, W - 80, H - 80, 120); ctx.fill();
+  paint(ctx, W, H);
+}
+function paint(c, W, H) {
+  const ls = lines(); if (!ls.length) return;
+  const L = layout(W, H, ls), size = L.cell * 0.86;
+  ls.forEach((l, i) => l.forEach((ch, j) => {
+    let x, y;
+    if (L.v) { // 縦書き: 1行目が右
+      x = W / 2 + ((L.cols - 1) / 2 - i) * L.cell;
+      y = H / 2 + (j - (l.length - 1) / 2) * L.cell;
+    } else {
+      x = W / 2 + (j - (l.length - 1) / 2) * L.cell;
+      y = H / 2 + (i - (L.cols - 1) / 2) * L.cell;
+    }
+    glyph(c, ch, x, y, size);
+  }));
+}
+
+$('save').onclick = () => {
+  const W = 2000, H = 2400, o = document.createElement('canvas');
+  o.width = W; o.height = H; paint(o.getContext('2d'), W, H);
+  const a = document.createElement('a');
+  a.download = 'uchiwa-moji.png'; a.href = o.toDataURL('image/png'); a.click();
+};
+$('print').onclick = () => {
+  const area = $('printArea'); area.innerHTML = '';
+  for (const ch of lines().flat()) {
+    const o = document.createElement('canvas'); o.width = 1600; o.height = 1600;
+    glyph(o.getContext('2d'), ch, 800, 800, 1180);
+    const d = document.createElement('div'); d.className = 'sheet';
+    const im = new Image(); im.src = o.toDataURL('image/png'); d.appendChild(im); area.appendChild(d);
+  }
+  setTimeout(() => window.print(), 300);
+};
+document.fonts.ready.then(draw);
+draw();
+</script>
+</body>
+</html>
