@@ -696,7 +696,8 @@ def exam_page(x):
     guide = {"kanri": ("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方"),
              "shakai": ("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
              "kaigo": ("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番"),
-             "pt": ("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")}.get(x["key"])
+             "pt": ("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方"),
+             "rinsho": ("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")}.get(x["key"])
     if guide:
         out.append(f'<p>あわせて読む: <a href="{guide[0]}">{e(guide[1])}</a></p>')
 
