@@ -766,6 +766,14 @@ def hub_page():
                       + (' ・ <a href="/exam/kaigo/kamoku/">11の科目群</a>' if k == "kaigo" else "") + '</p>' if k != "seishin" else "")
                    + ('<p>' + ' ・ '.join(f'<a href="{u}">{e(t)}</a>' for u, t in GUIDES.get(k, [])) + '</p>' if GUIDES.get(k) else "") + '</li>')
     out.append("</ul>")
+    out.append("""<section><h2>過去問を数えた記事</h2>
+<ul>
+<li><a href="/blog/kisotsu-pass-rates.html">国試5つで、既卒の合格率を並べてみた</a></li>
+<li><a href="/blog/kokushi-answer-numbers.html">国試の正解の番号を数えた</a></li>
+<li><a href="/blog/kaigo-subject-counts.html">介護福祉士の科目ごとの問題数</a></li>
+<li><a href="/blog/shakai-subject-counts.html">社会福祉士の科目ごとの問題数</a></li>
+<li><a href="/blog/kanri-subject-counts.html">管理栄養士の科目ごとの問題数</a></li>
+</ul></section>""")
     out.append("""<section><h2>ニガテ帳について</h2>
 <p>間違えた問題が残り、日を空けて2回続けて正解すると消える、国家試験の過去問アプリです。どの試験も直近1回分は無料で、完全版は買い切りです。広告はなく、アカウント登録も要りません。iPhone では「ニガテ帳」で管理栄養士・介護福祉士・社会福祉士・理学療法士を、「ニガテ帳 臨床検査技師」で臨床検査技師を公開中です。Android 版はテスト中です。</p>
 <div class="btns"><a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">ニガテ帳(App Store)</a><a class="btn fill" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a><a class="btn ghost" href="/#tester">Android テスト</a></div>
