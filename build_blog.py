@@ -12,6 +12,7 @@ OUT.mkdir(exist_ok=True)
 POSTS = [
     ('01_テスター12人の集め方.md', 'closed-test-12', '2026-10-03'),
     ('02_宣伝動画をコードで量産する.md', 'promo-video-python', '2026-10-03'),
+    ('03_国試の正解の番号を数えた.md', 'kokushi-answer-numbers', '2026-10-07'),
 ]
 
 PAGE = '''<!doctype html>
@@ -43,6 +44,7 @@ PAGE = '''<!doctype html>
   code {{ font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }}
   hr {{ border: 0; border-top: 1px solid var(--line); margin: 28px 0; }}
   nav {{ margin: 0 0 16px; font-size: 14px; }}
+  img {{ max-width: 100%; height: auto; border-radius: 10px; }}
 </style>
 </head>
 <body>

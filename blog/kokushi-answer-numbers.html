@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>国家試験の「正解の番号」を数えてみた(介護福祉士・管理栄養士・臨床検査技師・理学療法士)｜YURU 開発日記</title>
+<meta name="description" content=" 過去問アプリを作っていると、問題と正答のデータが手元にそろいます。せっかくなので、正解が何番だったかを数えてみました。対象は5択で正解が1つの問題だけです。問題と正答は、社会福祉振興・試験センターと厚生労働省が公表して">
+<link rel="canonical" href="https://kame6493-del.github.io/blog/kokushi-answer-numbers.html">
+<meta property="og:title" content="国家試験の「正解の番号」を数えてみた(介護福祉士・管理栄養士・臨床検査技師・理学療法士)">
+<meta property="og:description" content=" 過去問アプリを作っていると、問題と正答のデータが手元にそろいます。せっかくなので、正解が何番だったかを数えてみました。対象は5択で正解が1つの問題だけです。問題と正答は、社会福祉振興・試験センターと厚生労働省が公表して">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<style>
+  :root { --bg: #f4f4f1; --card: #fff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc; --link: #1b3a8a; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121211; --card: #1d1d1b; --ink: #f1f1ec; --sub: #a3a39c; --line: #33332f; --link: #8fb0ff; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.85 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
+  article { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; }
+  h1 { font-size: 23px; line-height: 1.45; margin: 0 0 6px; }
+  .date { color: var(--sub); font-size: 13px; margin: 0 0 20px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+  a { color: var(--link); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; display: block; overflow-x: auto; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; white-space: nowrap; }
+  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+  nav { margin: 0 0 16px; font-size: 14px; }
+  img { max-width: 100%; height: auto; border-radius: 10px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="../">← アプリ一覧へ</a></nav>
+<article>
+<h1>国家試験の「正解の番号」を数えてみた(介護福祉士・管理栄養士・臨床検査技師・理学療法士)</h1>
+<p class="date">2026-10-07 ・ <a href="https://x.com/apkderete">@apkderete</a></p>
+<p>過去問アプリを作っていると、問題と正答のデータが手元にそろいます。せっかくなので、正解が何番だったかを数えてみました。対象は5択で正解が1つの問題だけです。問題と正答は、社会福祉振興・試験センターと厚生労働省が公表しているものを使っています。</p>
+<p>先に言っておくと、これは勉強法の話ではありません。わからない問題で「何番にするか」の参考にもならないと思います。ただ、試験ごとにこんなに違うのかと驚いたので、そのまま載せます。</p>
+<h2>介護福祉士は、きれいに散らしてある</h2>
+<p>第33回から第38回までの6回分を数えました。いちばん目を引いたのは第34回で、125問のうち1番から5番までが、ちょうど25問ずつでした。</p>
+<p><img alt="介護福祉士国家試験 第33〜38回の正解の番号" src="img/grid_kaigo.png" /></p>
+<p>ほかの回も、どの番号も22問から28問のあいだに収まっています。偶然でここまで揃うことはまずないので、問題を作る側が正解の番号を均等に散らしているのだと思います。</p>
+<p>よく「3番が続いたから次は違う番号だろう」と考えてしまいますが、介護福祉士では回全体で数が揃うようにしてあるだけで、続くこと自体はあります。数えた範囲では、同じ番号が続いたのは最長3問でした。</p>
+<h2>管理栄養士は、1番が少ない</h2>
+<p>同じ数え方で、管理栄養士の第36回から第40回、5択836問を数えました。こちらは様子が違って、正解が1番の問題が96問(11.5%)しかありません。ほかの番号は178問から205問です。</p>
+<p><img alt="管理栄養士国家試験 第36〜40回の正解の番号" src="img/answer_kanri.png" /></p>
+<p>回ごとに見ても、どの回も1番がいちばん少なくなっていました。第36回は1番が18問に対して4番が50問です。</p>
+<p><img alt="管理栄養士国家試験 回ごとの正解の番号" src="img/grid_kanri.png" /></p>
+<p>管理栄養士は、同じ番号が5問続けて正解になっている所もありました。第36回の午前22〜26問はすべて5番、第39回の午後173〜177問はすべて3番です。介護福祉士とは作り方がかなり違うようです。</p>
+<h2>臨床検査技師と理学療法士</h2>
+<p>臨床検査技師(第68〜72回、837問)は、1番が135問(16.1%)で少なめ、4番が200問(23.9%)で多めでした。</p>
+<p><img alt="臨床検査技師国家試験 第68〜72回の正解の番号" src="img/grid_rinsho.png" /></p>
+<p>理学療法士(第57〜61回、833問)も1番が132問(15.8%)で少なめです。ただ回ごとのばらつきが大きく、第60回は1番と2番がどちらも38問で、むしろ多い回でした。</p>
+<p><img alt="理学療法士国家試験 第57〜61回の正解の番号" src="img/grid_pt.png" /></p>
+<h2>数え方について</h2>
+<p>数えたのは、各試験の5択で正解が1つの問題です。正答が公表されなかった問題や、正解が2つある問題は除いています。数字は、アプリに入れている問題データから数えたもので、私の入力に誤りがある可能性はあります。気づいたことがあれば X(@apkderete)で教えてください。</p>
+<p>問題そのものを解きたい人のために、各試験の最新の回を1問ずつ、正答と解説つきで置いています。</p>
+<p><a href="https://kame6493-del.github.io/q/kaigo/38/">介護福祉士 第38回</a> / <a href="https://kame6493-del.github.io/q/kanri/40/">管理栄養士 第40回</a> / <a href="https://kame6493-del.github.io/q/rinsho/72/">臨床検査技師 第72回</a> / <a href="https://kame6493-del.github.io/q/pt/61/">理学療法士 第61回</a> / <a href="https://kame6493-del.github.io/q/shakai/38/">社会福祉士 第38回</a></p>
+<p>解説は私が書いたもので、試験センターや厚生労働省とは関係ありません。過去問アプリ「ニガテ帳」は、間違えた問題だけが残り、2回続けて正解すると消える作りにしています。</p>
+</article>
+</main>
+</body>
+</html>
