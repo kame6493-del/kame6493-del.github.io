@@ -74,6 +74,8 @@ footer{max-width:980px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:va
     <label for="txt">文字(改行で2行目へ)</label>
     <textarea id="txt" rows="3">ピース
 して</textarea>
+    <label>ひな形(押すと文字と色が入ります)</label>
+    <div class="row" id="tpl"></div>
     <label>向き</label>
     <div class="row" id="dir">
       <button class="chip" data-v="v" aria-pressed="true">縦書き</button>
@@ -119,6 +121,12 @@ footer{max-width:980px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:va
 </section>
 
 <section>
+  <h2>ファンサうちわの定番の言葉</h2>
+  <p>よく見かけるのは「指さして」「手ふって」「ピースして」「ウインクして」「投げキスして」「指ハートして」「バーンして」「3秒見つめて」「こっち見て」「名前呼んで」などです。推しの名前だけを大きく書く名前うちわや、「〇〇推し」「初参戦」「誕生日おめでとう」も定番です。上の「ひな形」を押すと、文字と色がまとめて入ります。名前は「〇〇」を書きかえてください。</p>
+  <p>文字数が少ないほど、遠くからでも読みやすくなります。2行にするときは、1行目と2行目の文字数をそろえると形がきれいに見えます。</p>
+</section>
+
+<section>
   <h2>うちわ文字の作り方</h2>
   <p>文字を入れて、縦書きか横書きかを選び、字体と色を決めます。ふちは2重にすると、遠くからでも文字が読みやすくなります。内側を白、外側を濃い色にするのが定番です。できたら「1文字ずつA4で印刷」を押して、プリンターで印刷してください。家にプリンターがない場合は、画像で保存してコンビニのプリントを使えます。</p>
   <p>この作成ページは、文字の形を描くだけで、入れた文字をどこかへ送ることはしていません。字体は Google Fonts の M PLUS Rounded 1c・Dela Gothic One・Zen Maru Gothic(SIL Open Font License)を使っています。</p>
@@ -138,6 +146,33 @@ const st = { dir: 'v', font: "'M PLUS Rounded 1c'", fill: '#ff4f9a', b1: '#fffff
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const $ = (id) => document.getElementById(id);
 
+const TPL = [
+  ['指さして', '指さして', '#ff1f8e'], ['手ふって', '手ふって', '#4cc3ff'], ['ピースして', 'ピース
+して', '#ffd400'],
+  ['ウインクして', 'ウインク
+して', '#ff7eb6'], ['投げキスして', '投げキス
+して', '#ff1f8e'], ['指ハートして', '指ハート
+して', '#e60033'],
+  ['バーンして', 'バーン
+して', '#ff8a00'], ['3秒見つめて', '3秒
+見つめて', '#c7a6ff'], ['こっち見て', 'こっち
+見て', '#9be22d'],
+  ['名前呼んで', '名前
+呼んで', '#5fe0c0'], ['〇〇推し', '〇〇
+推し', '#ff1f8e'], ['初参戦', '初参戦', '#4cc3ff'],
+];
+for (const [label, text, color] of TPL) {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.textContent = label;
+  b.onclick = () => {
+    $('txt').value = text; st.fill = color;
+    const box = document.querySelector('.colors[data-k=fill]');
+    for (const x of box.querySelectorAll('.sw')) x.setAttribute('aria-pressed', String(x.title === color));
+    box.querySelector('input[type=color]').value = color;
+    draw();
+  };
+  $('tpl').appendChild(b);
+}
 for (const box of document.querySelectorAll('.colors')) {
   const k = box.dataset.k;
   for (const c of PAL[k]) {
