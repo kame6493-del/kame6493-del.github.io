@@ -68,7 +68,20 @@ def ans_text(q):
     return "・".join(f"{a} {q['choices'][a - 1]}" for a in q["answer"])
 
 
-def page(x, q, prev, nxt):
+def related(x, q, qs, n=5):
+    """同じ科目のほかの問題を、この問題の次から順に n 問(科目で探している人が次へ進めるように)"""
+    key, ex = x[0], x[3]
+    same = [p for p in qs if p["subject"] == q["subject"] and p["id"] != q["id"]]
+    if not same:
+        return ""
+    i = next((k for k, p in enumerate(same) if (p["session"], p.get("session_no") or p["no"]) > (q["session"], q.get("session_no") or q["no"])), 0)
+    pick = (same[i:] + same[:i])[:n]
+    items = "".join(f'<li><a href="/q/{key}/{ex}/{p["id"]}/">{e(label(p))}</a> '
+                    f'<span class="q-meta">{e(re.sub(r"[ 　]+", " ", p["stem"])[:40])}…</span></li>' for p in pick)
+    return f'<h2 style="font-size:1.05rem;margin-top:26px">{e(q["subject"])}のほかの問題</h2><ul class="q-list">{items}</ul>'
+
+
+def page(x, q, prev, nxt, qs=()):
     key, name, _, ex, org, lic, state = x
     url = f"{BASE}/q/{key}/{ex}/{q['id']}/"
     stem1 = re.sub(r"\s+", " ", q["stem"])
@@ -103,6 +116,7 @@ def page(x, q, prev, nxt):
 <p class="note">問題文・選択肢・正答は{e(org)}が公表したものです。解説は「ニガテ帳」が独自に書いたもので、{e(org)}によるものではありません。誤りに気づいたらお知らせください。</p>
 {B.srcs(src)}
 {nav}
+{related(x, q, qs)}
 {app_cta(name, state)}
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
@@ -151,7 +165,7 @@ def main():
             d = os.path.join(ROOT, "q", key, str(ex), q["id"])
             os.makedirs(d, exist_ok=True)
             with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:
-                f.write(page(x, q, qs[i - 1] if i else None, qs[i + 1] if i + 1 < len(qs) else None))
+                f.write(page(x, q, qs[i - 1] if i else None, qs[i + 1] if i + 1 < len(qs) else None, qs))
             urls.append(f"{BASE}/q/{key}/{ex}/{q['id']}/")
         bysub = sorted(qs, key=lambda q: (x and 0, [s for s in dict.fromkeys(p["subject"] for p in qs)].index(q["subject"])))
         with open(os.path.join(ROOT, "q", key, str(ex), "index.html"), "w", encoding="utf-8", newline="\n") as f:
