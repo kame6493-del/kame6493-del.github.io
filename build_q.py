@@ -26,7 +26,7 @@ EXAMS = [
     ("rinsho", "臨床検査技師", "exams/rinsho/data/questions.json", 72, "厚生労働省", MHLW_NOTE, "rinsho_live"),
     ("pt", "理学療法士", "public/data/pt/questions.json", 61, "厚生労働省", MHLW_NOTE, "multi_live"),
     ("shakai", "社会福祉士", "public/data/shakai/questions.json", 38, "社会福祉振興・試験センター", SSSC_NOTE, "multi_live"),
-    ("seishin", "精神保健福祉士", "public/data/seishin/questions.json", 28, "社会福祉振興・試験センター", SSSC_NOTE, "soon"),
+    ("seishin", "精神保健福祉士", "public/data/seishin/questions.json", 28, "社会福祉振興・試験センター", SSSC_NOTE, "multi_live"),
 ]
 
 EXTRA_CSS = """
