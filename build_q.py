@@ -21,11 +21,11 @@ MHLW_NOTE = B.MHLW_LICENSE
 
 EXAMS = [
     # key, 表示名, データ, 回, 出題元, 出題元の利用条件, アプリの状態
-    ("kaigo", "介護福祉士", "public/data/kaigo/questions.json", 38, "社会福祉振興・試験センター", SSSC_NOTE, "multi_review"),
+    ("kaigo", "介護福祉士", "public/data/kaigo/questions.json", 38, "社会福祉振興・試験センター", SSSC_NOTE, "multi_live"),
     ("kanri", "管理栄養士", "public/data/kanri/questions.json", 40, "厚生労働省", MHLW_NOTE, "multi_live"),
     ("rinsho", "臨床検査技師", "exams/rinsho/data/questions.json", 72, "厚生労働省", MHLW_NOTE, "rinsho_live"),
-    ("pt", "理学療法士", "public/data/pt/questions.json", 61, "厚生労働省", MHLW_NOTE, "multi_review"),
-    ("shakai", "社会福祉士", "public/data/shakai/questions.json", 38, "社会福祉振興・試験センター", SSSC_NOTE, "multi_review"),
+    ("pt", "理学療法士", "public/data/pt/questions.json", 61, "厚生労働省", MHLW_NOTE, "multi_live"),
+    ("shakai", "社会福祉士", "public/data/shakai/questions.json", 38, "社会福祉振興・試験センター", SSSC_NOTE, "multi_live"),
 ]
 
 EXTRA_CSS = """
