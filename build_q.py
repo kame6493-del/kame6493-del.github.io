@@ -52,11 +52,11 @@ def label(q):
     return f"{q['session']} 問{n}"
 
 
-def app_cta(name, state):
+def app_cta(name, state, key=""):
     if state == "rinsho_live":
         url, txt = B.APP_RINSHO, "「ニガテ帳 臨床検査技師」は App Store で公開中です。"
     elif state == "multi_live":
-        url, txt = B.APP_MULTI, f"「ニガテ帳」(iPhone)で、{name}の過去問を解けます。"
+        url, txt = B.APP_CPP.get(key, B.APP_MULTI), f"「ニガテ帳」(iPhone)で、{name}の過去問を解けます。"
     else:
         url, txt = B.APP_MULTI, f"{name}は「ニガテ帳」(iPhone)の次のアップデートで追加する予定です。"
     return (f'<div class="q-cta"><p><b>間違えた問題だけが残る過去問アプリ</b><br>{e(txt)}'
@@ -118,7 +118,7 @@ def page(x, q, prev, nxt, qs=()):
 {B.srcs(src)}
 {nav}
 {related(x, q, qs)}
-{app_cta(name, state)}
+{app_cta(name, state, key)}
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 
@@ -146,7 +146,7 @@ def index_page(x, qs):
 <p class="q-meta"><a href="/exam/{key}/">{e(name)}国家試験</a></p>
 <h1>{e(title)}</h1>
 <p>{e(desc)} 図を使う問題と、正答が公表されなかった問題は載せていません。</p>
-{app_cta(name, state)}
+{app_cta(name, state, key)}
 {''.join(rows)}
 {B.srcs([(f"{org} 第{ex}回{name}国家試験", qs[0]["source"]), lic])}
 </main>"""
