@@ -58,7 +58,7 @@ def kanri_kisotsu():
 
 <h2>第40回の問題を1問ずつ</h2>
 <p>第40回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/kanri/40/">第40回の過去問と解説</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+<div class="btns"><a class="btn fill" href="{B.APP_CPP["kanri"]}">過去問アプリ「ニガテ帳」(App Store)</a></div>
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第40回の200問は無料で解けます。このページとアプリは個人(YURU)の制作物で、厚生労働省とは関係ありません。</p>
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
@@ -153,7 +153,7 @@ def kaigo_dokugaku():
 
 <h2>第38回の問題を1問ずつ</h2>
 <p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/kaigo/38/">第38回の過去問と解説</a> / <a href="/exam/kaigo/">第39回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+<div class="btns"><a class="btn fill" href="{B.APP_CPP["kaigo"]}">過去問アプリ「ニガテ帳」(App Store)</a></div>
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第38回の125問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
@@ -341,7 +341,7 @@ def kaigo_shokuba():
 
 <h2>第38回の問題を1問ずつ</h2>
 <p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/kaigo/38/">第38回の過去問と解説</a> / <a href="/exam/kaigo/">第39回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+<div class="btns"><a class="btn fill" href="{B.APP_CPP["kaigo"]}">過去問アプリ「ニガテ帳」(App Store)</a></div>
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第38回の125問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}

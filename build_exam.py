@@ -16,6 +16,11 @@ UPDATED_JA = "2026年10月7日"
 
 APP_MULTI = "https://apps.apple.com/jp/app/id6818535389"
 APP_RINSHO = "https://apps.apple.com/jp/app/id6818536142"
+# 試験ごとの専用ページ(カスタムプロダクトページ)。承認されたものだけ。写真と説明がその試験だけになる
+APP_CPP = {
+    "kaigo": APP_MULTI + "?ppid=a40c3453-5460-4911-b67d-c67c16387fc0",
+    "kanri": APP_MULTI + "?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5",
+}
 
 SSSC_LICENSE = ("過去問題利用にあたっての留意事項等(社会福祉振興・試験センター)",
                 "https://www.sssc.or.jp/pastissues/index.html")
@@ -86,7 +91,7 @@ EXAMS = [
         ],
         "app": {
             "status": "live",
-            "store": APP_MULTI,
+            "store": APP_CPP["kaigo"],
             "range": "第33回〜第38回の750問",
             "free": "第38回の125問",
             "price": "¥900",
@@ -304,7 +309,7 @@ EXAMS = [
         ],
         "app": {
             "status": "live",
-            "store": APP_MULTI,
+            "store": APP_CPP["kanri"],
             "range": "第36回〜第40回の1,000問",
             "free": "第40回の200問",
             "price": "¥980",
