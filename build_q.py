@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """過去問1問ずつの解答・解説ページ(/q/<試験>/<回>/<id>/)と、回ごとの一覧(/q/<試験>/<回>/)を書き出す。
 
-対象はアプリで無料にしている最新の回だけ。図のある問題と、正答が公表されなかった(除外の)問題は載せない。
+最新の回(アプリで無料の回)は正答と解説、それより前の回(アプリでは完全版)は正答まで載せる(2026-10-08 持ち主の決定)。図のある問題と、正答が公表されなかった(除外の)問題は載せない。
 問題文・選択肢・正答は公表された原文のまま。解説はアプリ「ニガテ帳」のもの(独自に書いたもの)。
     python build_q.py   (sitemap.xml の /q/ の行も書き直す)
 """
@@ -28,6 +28,20 @@ EXAMS = [
     ("shakai", "社会福祉士", "public/data/shakai/questions.json", 38, "社会福祉振興・試験センター", SSSC_NOTE, "multi_live"),
     ("seishin", "精神保健福祉士", "public/data/seishin/questions.json", 28, "社会福祉振興・試験センター", SSSC_NOTE, "soon"),
 ]
+
+# 解説なしで正答まで載せる前の回(アプリでは完全版の中身)。精神保健福祉士は 1.2.0 公開まで seishin-live 側で扱う
+OLDER = {"kaigo": [37, 36, 35, 34, 33], "kanri": [39, 38, 37, 36], "rinsho": [71, 70, 69, 68],
+         "pt": [60, 59, 58, 57], "shakai": [37]}
+
+
+def rounds_nav(x, cur):
+    key = x[0]
+    allr = [x[3]] + OLDER.get(key, [])
+    if len(allr) < 2:
+        return ""
+    a = " / ".join(f"<b>第{r}回</b>" if r == cur else f'<a href="/q/{key}/{r}/">第{r}回</a>' for r in allr)
+    return f'<p class="q-meta">回ごとの一覧: {a}</p>'
+
 
 EXTRA_CSS = """
 .q-stem{font-size:1.08rem;line-height:1.9;margin:18px 0 14px;white-space:pre-wrap}
@@ -82,19 +96,30 @@ def related(x, q, qs, n=5):
     return f'<h2 style="font-size:1.05rem;margin-top:26px">{e(q["subject"])}のほかの問題</h2><ul class="q-list">{items}</ul>'
 
 
-def page(x, q, prev, nxt, qs=()):
+def exp_block(q, full, key, latest):
+    ans = f'<p style="margin-top:12px"><b>正答: {e(ans_text(q))}</b></p>'
+    if full:
+        return (f'<details class="q-ans"><summary>正答と解説を見る</summary>{ans}'
+                f'<div class="q-exp">{e(q["explanation"])}</div></details>')
+    return (f'<details class="q-ans"><summary>正答を見る</summary>{ans}'
+            f'<p class="q-meta">この回の選択肢ごとの解説は、アプリ「ニガテ帳」の完全版で読めます。'
+            f'<a href="/q/{key}/{latest}/">第{latest}回</a>は解説までここで読めます。</p></details>')
+
+
+def page(x, q, prev, nxt, qs=(), latest=None):
     key, name, _, ex, org, lic, state = x
+    full = latest is None or ex == latest
     url = f"{BASE}/q/{key}/{ex}/{q['id']}/"
     stem1 = re.sub(r"\s+", " ", q["stem"])
-    title = f"第{ex}回{name}国家試験 {label(q)} 解答と解説|{q['subject']}"
-    desc = f"{stem1[:70]}… 正答と、選択肢ごとの解説。第{ex}回{name}国家試験 {label(q)}({q['subject']})。"
+    title = f"第{ex}回{name}国家試験 {label(q)} {'解答と解説' if full else '解答'}|{q['subject']}"
+    desc = f"{stem1[:70]}… {'正答と、選択肢ごとの解説' if full else '正答つき'}。第{ex}回{name}国家試験 {label(q)}({q['subject']})。"
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebPage", "@id": url, "url": url, "name": title, "description": desc, "inLanguage": "ja",
          "dateModified": B.UPDATED, "isPartOf": {"@type": "WebSite", "name": "YURU", "url": BASE + "/"}},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "国家試験の過去問ガイド", "item": BASE + "/exam/"},
             {"@type": "ListItem", "position": 2, "name": f"{name}", "item": f"{BASE}/exam/{key}/"},
-            {"@type": "ListItem", "position": 3, "name": f"第{ex}回 過去問と解説", "item": f"{BASE}/q/{key}/{ex}/"},
+            {"@type": "ListItem", "position": 3, "name": f"第{ex}回 過去問{'と解説' if full else ''}", "item": f"{BASE}/q/{key}/{ex}/"},
             {"@type": "ListItem", "position": 4, "name": label(q), "item": url}]}]}
     ch = "".join(f"<li><b>{i}</b><span>{e(c)}</span></li>" for i, c in enumerate(q["choices"], 1))
     nav = '<div class="q-nav">'
@@ -105,29 +130,29 @@ def page(x, q, prev, nxt, qs=()):
     src = [(f"{org} 第{ex}回{name}国家試験 問題", q["source"]), lic]
     body = f"""<main class="wrap">
 <style>{EXTRA_CSS}</style>
-<p class="q-meta"><a href="/exam/{key}/">{e(name)}国家試験</a> / <a href="/q/{key}/{ex}/">第{ex}回 過去問と解説</a></p>
+<p class="q-meta"><a href="/exam/{key}/">{e(name)}国家試験</a> / <a href="/q/{key}/{ex}/">第{ex}回 過去問{'と解説' if full else ''}</a></p>
 <h1>第{ex}回{e(name)}国家試験 {e(label(q))}</h1>
 <p class="q-meta">科目: {e(q['subject'])}</p>
 <div class="q-stem">{e(q['stem'])}</div>
 <ol class="q-ch">{ch}</ol>
-<details class="q-ans"><summary>正答と解説を見る</summary>
-<p style="margin-top:12px"><b>正答: {e(ans_text(q))}</b></p>
-<div class="q-exp">{e(q['explanation'])}</div>
-</details>
-<p class="note">問題文・選択肢・正答は{e(org)}が公表したものです。解説は「ニガテ帳」が独自に書いたもので、{e(org)}によるものではありません。誤りに気づいたらお知らせください。</p>
+{exp_block(q, full, key, latest)}
+<p class="note">問題文・選択肢・正答は{e(org)}が公表したものです。{'解説は「ニガテ帳」が独自に書いたもので、' + e(org) + 'によるものではありません。' if full else ''}誤りに気づいたらお知らせください。</p>
 {B.srcs(src)}
 {nav}
+{rounds_nav(x, ex) if latest else ""}
 {related(x, q, qs)}
 {app_cta(name, state, key)}
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 
 
-def index_page(x, qs):
+def index_page(x, qs, latest=None):
     key, name, _, ex, org, lic, state = x
+    full = latest is None or ex == latest
     url = f"{BASE}/q/{key}/{ex}/"
-    title = f"第{ex}回{name}国家試験 過去問と解説(全{len(qs)}問)"
-    desc = f"第{ex}回{name}国家試験の問題を1問ずつ、正答と選択肢ごとの解説つきで載せています。科目別に並べています。"
+    title = f"第{ex}回{name}国家試験 過去問{'と解説' if full else 'と正答'}(全{len(qs)}問)"
+    desc = (f"第{ex}回{name}国家試験の問題を1問ずつ、正答と選択肢ごとの解説つきで載せています。科目別に並べています。" if full else
+            f"第{ex}回{name}国家試験の問題を1問ずつ、正答つきで載せています。科目別に並べています。解説はアプリの完全版で読めます。")
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "url": url, "name": title,
           "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     rows = []
@@ -146,6 +171,7 @@ def index_page(x, qs):
 <p class="q-meta"><a href="/exam/{key}/">{e(name)}国家試験</a></p>
 <h1>{e(title)}</h1>
 <p>{e(desc)} 図を使う問題と、正答が公表されなかった問題は載せていません。</p>
+{rounds_nav(x, ex) if latest else ""}
 {app_cta(name, state, key)}
 {''.join(rows)}
 {B.srcs([(f"{org} 第{ex}回{name}国家試験", qs[0]["source"]), lic])}
@@ -158,21 +184,32 @@ def main():
     for x in EXAMS:
         key, name, path, ex = x[0], x[1], x[2], x[3]
         allq = json.load(open(os.path.join(APPDIR, path), encoding="utf-8"))
+        for r in [ex] + OLDER.get(key, []):
+            build_round(x, allq, r, urls)
+    write_sitemap(urls)
+
+
+def build_round(x0, allq, ex, urls):
+        key, name, path, latest = x0[0], x0[1], x0[2], x0[3]
+        x = (x0[0], x0[1], x0[2], ex, x0[4], x0[5], x0[6])
         qs = [q for q in allq if q["exam"] == ex and not q.get("excluded") and not q.get("figure")
-              and q.get("explanation") and q.get("answer")]
+              and (q.get("explanation") or ex != latest) and q.get("answer")]
         order = {"午前": 0, "午後": 1}
         qs.sort(key=lambda q: (order.get(q["session"], 2), q.get("session_no") or q["no"]))
         for i, q in enumerate(qs):
             d = os.path.join(ROOT, "q", key, str(ex), q["id"])
             os.makedirs(d, exist_ok=True)
             with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:
-                f.write(page(x, q, qs[i - 1] if i else None, qs[i + 1] if i + 1 < len(qs) else None, qs))
+                f.write(page(x, q, qs[i - 1] if i else None, qs[i + 1] if i + 1 < len(qs) else None, qs, latest))
             urls.append(f"{BASE}/q/{key}/{ex}/{q['id']}/")
         bysub = sorted(qs, key=lambda q: (x and 0, [s for s in dict.fromkeys(p["subject"] for p in qs)].index(q["subject"])))
         with open(os.path.join(ROOT, "q", key, str(ex), "index.html"), "w", encoding="utf-8", newline="\n") as f:
-            f.write(index_page(x, bysub))
+            f.write(index_page(x, bysub, latest))
         urls.insert(0, f"{BASE}/q/{key}/{ex}/")
         print(key, ex, len(qs))
+
+
+def write_sitemap(urls):
     sm = os.path.join(ROOT, "sitemap.xml")
     s = open(sm, encoding="utf-8").read()
     s = re.sub(r"<url><loc>[^<]*/q/[^<]*</loc>[^\n]*\n", "", s)
