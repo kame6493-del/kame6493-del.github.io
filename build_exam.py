@@ -606,6 +606,20 @@ def srcs(lst):
         f'<a href="{u}">{e(t)}</a>' for t, u in lst) + "</span>"
 
 
+# 試験ページのアプリの段に置く縦動画(実機の画面+VOICEVOX:ずんだもん)。画面の数字が今のアプリと合うものだけ
+VIDEOS = {"kanri": ("/video/zkanri.mp4", "/video/zkanri.jpg")}
+
+
+def video_block(key):
+    if key not in VIDEOS:
+        return ""
+    src, poster = VIDEOS[key]
+    return ('<figure style="margin:18px auto 0;max-width:320px">'
+            f'<video src="{src}" poster="{poster}" controls playsinline preload="none" width="1080" height="1920" '
+            'style="width:100%;height:auto;border-radius:16px;background:#000"></video>'
+            '<figcaption class="note" style="text-align:center">アプリの画面(30秒・音声あり)。音声: VOICEVOX:ずんだもん / イラスト: 東北ずん子・ずんだもんプロジェクト</figcaption></figure>')
+
+
 def app_block(x):
     a = x["app"]
     nm = x["name"]
@@ -636,7 +650,7 @@ def app_block(x):
     <p class="note" style="margin-top:10px">{e(a["extra"])}</p>
     <p class="state">{state} Android 版はテスト中です(<a href="/#tester">テスターの募集はこちら</a>)。</p>
     <div class="btns">{btn}</div>
-  </div>
+  </div>{video_block(x["key"])}
 </section>
 """
 
