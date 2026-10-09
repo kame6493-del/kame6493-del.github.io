@@ -29,14 +29,16 @@ EXAMS = [
     ("seishin", "精神保健福祉士", "public/data/seishin/questions.json", 28, "社会福祉振興・試験センター", SSSC_NOTE, "multi_live"),
 ]
 
-# 解説なしで正答まで載せる前の回(アプリでは完全版の中身)。精神保健福祉士は 1.2.0 公開まで seishin-live 側で扱う
+# 解説なしで正答まで載せる前の回(アプリでは完全版の中身)
 OLDER = {"kaigo": [37, 36, 35, 34, 33], "kanri": [39, 38, 37, 36], "rinsho": [71, 70, 69, 68],
-         "pt": [60, 59, 58, 57], "shakai": [37]}
+         "pt": [60, 59, 58, 57], "shakai": [37], "seishin": [27]}
 
 
 def rounds_nav(x, cur):
     key = x[0]
-    allr = [x[3]] + OLDER.get(key, [])
+    # 前の回のページでは x[3] がその回に置き換わっているので、最新の回は EXAMS から取る
+    latest = next(e[3] for e in EXAMS if e[0] == key)
+    allr = [latest] + OLDER.get(key, [])
     if len(allr) < 2:
         return ""
     a = " / ".join(f"<b>第{r}回</b>" if r == cur else f'<a href="/q/{key}/{r}/">第{r}回</a>' for r in allr)
