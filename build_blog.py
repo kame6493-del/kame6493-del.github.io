@@ -17,11 +17,12 @@ POSTS = [
     ('05_管理栄養士の科目ごとの問題数.md', 'kanri-subject-counts', '2026-10-07'),
     ('06_社会福祉士の科目ごとの問題数.md', 'shakai-subject-counts', '2026-10-07'),
     ('07_国試5つの既卒の合格率.md', 'kisotsu-pass-rates', '2026-10-08'),
+    ('08_精神保健福祉士の科目ごとの問題数.md', 'seishin-subject-counts', '2026-10-09'),
 ]
 
 def banner(slug):
     """国試の記事だけ、iPhone の Safari で上に出る App Store のバナーを付ける(まとめ版ニガテ帳)。"""
-    if slug.startswith(('kokushi', 'kaigo', 'kanri', 'shakai', 'kisotsu')):
+    if slug.startswith(('kokushi', 'kaigo', 'kanri', 'shakai', 'kisotsu', 'seishin')):
         return '<meta name="apple-itunes-app" content="app-id=6818535389">\n'
     return ''
 

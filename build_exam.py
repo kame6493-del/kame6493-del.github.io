@@ -792,6 +792,7 @@ def hub_page():
 <li><a href="/blog/kokushi-answer-numbers.html">国試の正解の番号を数えた</a></li>
 <li><a href="/blog/kaigo-subject-counts.html">介護福祉士の科目ごとの問題数</a></li>
 <li><a href="/blog/shakai-subject-counts.html">社会福祉士の科目ごとの問題数</a></li>
+<li><a href="/blog/seishin-subject-counts.html">精神保健福祉士の科目ごとの問題数</a></li>
 <li><a href="/blog/kanri-subject-counts.html">管理栄養士の科目ごとの問題数</a></li>
 </ul></section>""")
     out.append("""<section><h2>ニガテ帳について</h2>
