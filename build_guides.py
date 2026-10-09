@@ -392,7 +392,7 @@ def seishin_kisotsu():
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
 
 
-PAGES = [kanri_kisotsu, shakai_hajimekata, kaigo_dokugaku, pt_kisotsu, rinsho_kisotsu, shakai_kisotsu, kaigo_shokuba]
+PAGES = [kanri_kisotsu, shakai_hajimekata, kaigo_dokugaku, pt_kisotsu, rinsho_kisotsu, shakai_kisotsu, kaigo_shokuba, seishin_kisotsu]
 
 
 def main():
