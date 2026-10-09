@@ -20,6 +20,7 @@ APP_RINSHO = "https://apps.apple.com/jp/app/id6818536142"
 APP_CPP = {
     "kaigo": APP_MULTI + "?ppid=a40c3453-5460-4911-b67d-c67c16387fc0",
     "kanri": APP_MULTI + "?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5",
+    "pt": APP_MULTI + "?ppid=c66bda58-4649-4a61-8f7e-c97e17cb7081",
 }
 
 SSSC_LICENSE = ("過去問題利用にあたっての留意事項等(社会福祉振興・試験センター)",
@@ -370,7 +371,7 @@ EXAMS = [
         ],
         "app": {
             "status": "live",
-            "store": APP_MULTI,
+            "store": APP_CPP["pt"],
             "range": "第57回〜第61回の1,000問",
             "free": "第61回の200問",
             "price": "¥980",
