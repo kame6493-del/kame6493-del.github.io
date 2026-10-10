@@ -4,85 +4,140 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>YURU のアプリ</title>
-<meta name="description" content="YURU が作っているスマホアプリ。国家試験の過去問 ニガテ帳(介護福祉士・管理栄養士・理学療法士・社会福祉士・臨床検査技師を App Store で公開中)、野球シミュレーション DIAMOND NINE、収支管理 カチマケ ほか。">
+<meta name="description" content="YURU が1人で作っているスマホアプリ。ハムスターと作業・勉強の時間を記録する こつびん、歩いて編む歩数計 てくあみ、国家試験の過去問 ニガテ帳(App Store で公開中)ほか。">
 <meta property="og:title" content="YURU のアプリ">
-<meta property="og:description" content="国家試験の過去問 ニガテ帳ほか、YURU が作っているスマホアプリの一覧です。">
+<meta property="og:description" content="ハムスターと作業・勉強の記録 こつびんほか、YURU が1人で作っているスマホアプリの一覧です。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kame6493-del.github.io/">
-<meta property="og:image" content="https://kame6493-del.github.io/img/nigatecho-icon.png">
+<meta property="og:image" content="https://kame6493-del.github.io/img/kotsubin-icon.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@apkderete">
-<link rel="icon" href="img/nigatecho-icon.png">
+<link rel="icon" href="img/kotsubin-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #ffffff; --tint: #f2f5f8; --ink: #222831; --sub: #5a6270; --mute: #8a919c; --line: #dfe4ea;
-    --accent: #24527a; --accent-soft: #e6eef6;
+    --bg: #ffffff; --ink: #1d2126; --sub: #555d68; --mute: #868d97; --line: #e3e7ec; --soft: #f3f6f9;
+    --accent: #1f6fb2;
+    --wood: #3a271c; --wood2: #4b3426; --honey: #f6c768; --milk: #fff3e3; --milk2: #e9cfb6;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #15181c; --tint: #1c2025; --ink: #e9ecef; --sub: #b0b7c1; --mute: #868e99; --line: #2c323a; --accent: #8db7e0; --accent-soft: #1f2b38; color-scheme: dark; }
+    :root { --bg: #121417; --ink: #eceff2; --sub: #b4bcc6; --mute: #8a929c; --line: #262b31; --soft: #1a1e23; --accent: #82b8e8; color-scheme: dark; }
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "YuGothic", "Meiryo", sans-serif; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.8 "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif; }
   a { color: var(--accent); }
-  img { display: block; max-width: 100%; }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  img { display: block; max-width: 100%; height: auto; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  .round { font-family: "M PLUS Rounded 1c", "Zen Kaku Gothic New", sans-serif; }
 
-  header.top { border-bottom: 1px solid var(--line); }
-  header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; }
-  .logo { font-weight: 700; font-size: 20px; letter-spacing: .06em; color: var(--ink); text-decoration: none; }
-  .logo small { font-size: 12px; font-weight: 400; color: var(--mute); letter-spacing: 0; margin-left: 8px; }
-  header.top nav a { color: var(--sub); text-decoration: none; font-size: 14px; margin-left: 18px; }
-  header.top nav a:hover { color: var(--ink); }
-  @media (max-width: 520px) { .logo small, header.top nav .pc { display: none; } }
+  /* 上の帯 */
+  header.top { position: absolute; inset: 0 0 auto 0; z-index: 2; }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .logo { font-family: "M PLUS Rounded 1c", sans-serif; font-weight: 800; font-size: 21px; letter-spacing: .08em; color: var(--milk); text-decoration: none; }
+  header.top nav a { color: var(--milk2); text-decoration: none; font-size: 14px; margin-left: 18px; }
+  header.top nav a:hover { color: #fff; }
+  @media (max-width: 520px) { header.top nav .pc { display: none; } }
 
-  .intro { padding: 44px 0 36px; }
-  .intro h1 { font-size: clamp(22px, 4vw, 30px); font-weight: 700; line-height: 1.5; margin: 0; }
-  .intro p { color: var(--sub); margin: 12px 0 0; max-width: 36em; }
+  /* こつびん */
+  .hero { position: relative; overflow: hidden; color: var(--milk); padding: 96px 0 72px;
+    background: radial-gradient(1200px 520px at 78% 30%, #6a4a33 0%, rgba(106,74,51,0) 60%), linear-gradient(180deg, var(--wood2), var(--wood)); }
+  .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: linear-gradient(180deg, #7a5638, #5b3f2a); box-shadow: 0 -6px 18px rgba(0,0,0,.25); }
+  .hero .grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; position: relative; z-index: 1; }
+  .hero .badge { display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .1em; color: var(--wood); background: var(--honey); border-radius: 999px; padding: 3px 14px; }
+  .hero .name { display: flex; align-items: center; gap: 16px; margin: 18px 0 0; }
+  .hero .name img { width: 76px; height: 76px; border-radius: 18px; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+  .hero .name h1 { margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800; }
+  .hero .name p { margin: 2px 0 0; font-size: 14px; color: var(--milk2); }
+  .hero .copy { font-size: clamp(24px, 3.6vw, 34px); font-weight: 800; line-height: 1.5; margin: 26px 0 14px; }
+  .hero .copy em { font-style: normal; color: var(--honey); }
+  .hero .lead { color: var(--milk2); margin: 0; max-width: 32em; }
+  .hero ul.points { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 8px; }
+  .hero ul.points li { position: relative; padding-left: 22px; font-size: 14.5px; color: #f3e2d2; }
+  .hero ul.points li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--honey)); }
+  .hero .btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 999px; font-weight: 700; font-size: 15px; text-decoration: none; }
+  .hero .btn.fill { background: var(--honey); color: var(--wood); }
+  .hero .btn.fill:hover { background: #ffd98a; }
+  .hero .btn.ghost { color: var(--milk); border: 1.5px solid rgba(255,243,227,.45); }
+  .hero .note { font-size: 13px; color: var(--milk2); margin: 14px 0 0; }
+  .hero .note a { color: var(--honey); }
+  .hero .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: end; }
+  .hero .shots img { border-radius: 16px; box-shadow: 0 14px 30px rgba(0,0,0,.35); }
+  .hero .shots img:nth-child(2) { transform: translateY(-22px); }
+  @media (max-width: 820px) {
+    .hero { padding-top: 84px; }
+    .hero .grid { grid-template-columns: 1fr; }
+    .hero .shots { max-width: 460px; }
+  }
 
-  section.block { padding: 40px 0; border-top: 1px solid var(--line); }
-  section.block.tint { background: var(--tint); border-top: 0; }
-  h2 { font-size: 19px; font-weight: 700; margin: 0 0 8px; }
-  .lead-s { color: var(--sub); font-size: 14px; margin: 0 0 22px; }
+  /* 作り直したアプリ */
+  section.block { padding: 64px 0; }
+  .sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 0 0 26px; }
+  .sec-h h2 { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 24px; font-weight: 800; margin: 0; }
+  .sec-h p { margin: 0; color: var(--sub); font-size: 14px; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .card { display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; background: var(--soft); border: 1px solid var(--line); }
+  .card .pic { aspect-ratio: 9 / 13; overflow: hidden; background: var(--c); }
+  .card .pic img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .card .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .card .t { display: flex; align-items: center; gap: 10px; }
+  .card .t img { width: 36px; height: 36px; border-radius: 9px; }
+  .card h3 { font-size: 16.5px; margin: 0; line-height: 1.3; }
+  .card .k { font-size: 12px; color: var(--mute); margin: 0; }
+  .card .d { font-size: 13.5px; color: var(--sub); margin: 6px 0 0; line-height: 1.7; flex: 1; }
+  .card .a { font-size: 13px; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .card .a a { font-weight: 700; color: var(--c); }
+  @media (prefers-color-scheme: dark) { .card .a a { color: var(--accent); } }
+  @media (max-width: 960px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 700px) { .cards { grid-template-columns: repeat(2, 1fr); gap: 12px; } .card .d { display: none; } }
 
   /* ニガテ帳 */
-  .pick { display: grid; grid-template-columns: 1fr 300px; gap: 36px; align-items: center; }
-  .pick .name { display: flex; gap: 14px; align-items: center; }
-  .pick .name img { width: 64px; height: 64px; border-radius: 14px; border: 1px solid var(--line); }
-  .pick h3 { font-size: 24px; margin: 0; line-height: 1.3; }
-  .pick .kind { font-size: 13px; color: var(--sub); margin: 0; }
-  .pick .copy { font-size: 17px; font-weight: 700; margin: 20px 0 8px; line-height: 1.7; }
-  .pick ul { margin: 0; padding-left: 1.2em; color: var(--sub); font-size: 14px; }
-  .pick .shots { display: flex; gap: 12px; }
-  .pick .shots img { width: 50%; border-radius: 12px; border: 1px solid var(--line); }
-  .btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 18px; border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none; }
-  .btn.fill { background: var(--accent); color: #fff; }
-  @media (prefers-color-scheme: dark) { .btn.fill { color: #10161c; } }
-  .btn.ghost { border: 1px solid var(--line); color: var(--ink); background: var(--bg); }
-  @media (max-width: 760px) { .pick { grid-template-columns: 1fr; } .pick .shots { max-width: 320px; } }
+  .ng { background: linear-gradient(135deg, #b8282f, #8e1c22); color: #fff; }
+  .ng .grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: center; }
+  .ng .t { display: flex; align-items: center; gap: 14px; }
+  .ng .t img { width: 64px; height: 64px; border-radius: 15px; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+  .ng h2 { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 28px; font-weight: 800; margin: 0; }
+  .ng .k { margin: 0; font-size: 13.5px; color: #ffd9da; }
+  .ng .copy { font-size: 19px; font-weight: 700; margin: 20px 0 10px; line-height: 1.7; }
+  .ng ul { margin: 0; padding-left: 1.2em; color: #ffe7e8; font-size: 14px; }
+  .ng .btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
+  .ng .btn.fill { background: #fff; color: #9a1f26; }
+  .ng .btn.ghost { color: #fff; border: 1.5px solid rgba(255,255,255,.5); }
+  .ng .note { font-size: 13px; color: #ffd9da; margin: 12px 0 0; }
+  .ng .note a { color: #fff; }
+  .ng .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ng .shots img { border-radius: 14px; box-shadow: 0 12px 26px rgba(0,0,0,.3); }
+  @media (max-width: 820px) { .ng .grid { grid-template-columns: 1fr; } .ng .shots { max-width: 360px; } }
 
-  .state { font-size: 12.5px; color: var(--sub); margin: 10px 0 0; }
-  .state b { font-weight: 700; color: var(--accent); }
+  /* そのほか */
+  .others { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .others li { display: flex; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; }
+  .others img { width: 52px; height: 52px; border-radius: 12px; flex: none; }
+  .others h3 { font-size: 15.5px; margin: 0; }
+  .others .k { font-size: 12px; color: var(--mute); margin: 0; }
+  .others .d { font-size: 13px; color: var(--sub); margin: 4px 0 0; line-height: 1.7; }
+  .others .a { font-size: 13px; margin: 4px 0 0; }
+  .others .a a { margin-right: 12px; }
+  @media (max-width: 900px) { .others { grid-template-columns: 1fr; } }
 
-  /* 一覧 */
-  .list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
-  .list li { display: flex; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-  .list img { width: 52px; height: 52px; border-radius: 12px; border: 1px solid var(--line); flex: none; }
-  .list h3 { font-size: 16px; margin: 0; line-height: 1.4; }
-  .list .kind { font-size: 12.5px; color: var(--mute); margin: 0; }
-  .list p.d { font-size: 13.5px; color: var(--sub); margin: 6px 0 0; line-height: 1.7; }
-  .list .a { font-size: 13px; margin: 6px 0 0; }
-  .list .a a { margin-right: 14px; }
-  @media (max-width: 700px) { .list { grid-template-columns: 1fr; } }
+  /* テスター */
+  .tester-sec { background: #16324d; color: #eaf2fa; }
+  .tester-sec h2 { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 24px; font-weight: 800; margin: 0 0 8px; }
+  .tester-sec p { color: #c4d6e8; margin: 0; max-width: 46em; }
+  .steps { list-style: none; counter-reset: s; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .steps li { counter-increment: s; background: rgba(255,255,255,.07); border-radius: 14px; padding: 16px 18px 16px 58px; position: relative; font-size: 14px; }
+  .steps li::before { content: counter(s); position: absolute; left: 16px; top: 14px; width: 30px; height: 30px; border-radius: 50%; background: #7fc1ff; color: #16324d; font-weight: 800; display: grid; place-items: center; }
+  .steps a, .tester-sec .apps a { color: #9fd0ff; }
+  .tester-sec .apps { margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tester-sec .apps a { display: inline-block; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(159,208,255,.4); text-decoration: none; font-size: 13.5px; }
+  .tester-sec .apps a.top { background: var(--honey); color: var(--wood); border-color: var(--honey); font-weight: 700; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
 
-
-  .tester { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 22px 24px; }
-  .tester ol { margin: 10px 0 0; padding-left: 1.3em; font-size: 14px; }
-
-
-  footer { border-top: 1px solid var(--line); padding: 28px 0 44px; color: var(--sub); font-size: 13.5px; }
+  footer { padding: 34px 0 48px; color: var(--sub); font-size: 13.5px; border-top: 1px solid var(--line); }
   footer p { margin: 2px 0; }
 </style>
 </head>
@@ -90,9 +145,10 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="./">YURU<small>スマホアプリ</small></a>
+    <a class="logo" href="./">YURU</a>
     <nav>
       <a href="#apps">アプリ</a>
+      <a href="#nigatecho" class="pc">ニガテ帳</a>
       <a href="#tester" class="pc">テスター募集</a>
       <a href="https://x.com/apkderete">X</a>
     </nav>
@@ -100,91 +156,180 @@
 </header>
 
 <main>
-  <div class="wrap intro">
-    <h1>会社員のかたわら、1人でスマホアプリを作っています。</h1>
-    <p>試験勉強、冷蔵庫の中身、禁酒、推し活など、身近でちょっと面倒なことを手軽にするアプリです。どれもアカウント登録なしで使えて、記録は端末の中だけに残ります。</p>
-  </div>
-
-  <section class="block tint" aria-labelledby="ng">
-    <div class="wrap pick">
+  <section class="hero" aria-labelledby="kb">
+    <div class="wrap grid">
       <div>
+        <span class="badge">いま、いちばん使ってほしいアプリ</span>
         <div class="name">
-          <img src="img/nigatecho-icon.png" alt="" width="64" height="64">
+          <img src="img/kotsubin-icon.png" alt="" width="76" height="76">
           <div>
-            <h3 id="ng">ニガテ帳</h3>
-            <p class="kind">国家試験の過去問(介護福祉士・管理栄養士・理学療法士・社会福祉士・臨床検査技師)</p>
+            <h1 id="kb" class="round">こつびん</h1>
+            <p>ハムスターと作業・勉強の記録</p>
           </div>
         </div>
-        <p class="copy">間違えた問題だけが残って、<br>2回続けて正解すると消える問題集です。</p>
-        <ul>
-          <li>介護福祉士750問・管理栄養士1,000問・理学療法士1,000問・社会福祉士258問・臨床検査技師1,000問、全問に解説つき</li>
-          <li>本番の予想点と、科目ごとの正答率が毎日わかる</li>
-          <li>どの試験も直近1回分は無料。完全版は試験ごとの買い切り</li>
+        <p class="copy round">がんばった時間が、<br><em>こんぺいとう</em>になってたまる。</p>
+        <p class="lead">「はじめる」を押すと、となりでハムスターがこんぺいとうを磨きはじめます。10分ごとに1粒、びんの中へころんと落ちます。</p>
+        <ul class="points">
+          <li style="--c:#7fb6ff">粒の色は作業の色。勉強は青、仕事はオレンジ、読書は緑</li>
+          <li style="--c:#ffb36b">1日で1びん。月のカレンダーは、びんが並んだ棚になります</li>
+          <li style="--c:#9be38b">押し忘れた分は、あとから分単位で直せます</li>
+          <li style="--c:#c9a2ff">休憩の間はハムスターもひと眠り。時間になると起こしてくれます</li>
+          <li>アカウント登録なし、広告なし。記録は端末の中だけ</li>
         </ul>
         <div class="btns">
-          <a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">介護福祉士・社会福祉士・精神保健福祉士・管理栄養士・理学療法士(App Store)</a>
-          <a class="btn fill" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a>
-          <a class="btn ghost" href="/q/kaigo/38/">過去問と解説(ウェブ)</a>
+          <a class="btn fill" href="https://play.google.com/apps/testing/jp.kotsubin.app">Android でテストに参加</a>
+          <a class="btn ghost" href="/kotsubin/">使い方とサポート</a>
         </div>
-        <p class="state"><b>iPhone 公開中</b>(6試験) / Android テスト中</p>
-        <p class="state">Android テスト参加: <a href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳(管理栄養士・理学療法士・介護福祉士・社会福祉士)</a> / <a href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師</a></p>
-        <p class="state"><a href="exam/">試験ごとの日程・合格基準と過去問の解き方</a> / <a href="blog/kisotsu-pass-rates.html">既卒の合格率を試験ごとに</a></p>
+        <p class="note">先に <a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a> に入ってから、ボタンを押してください。iPhone 版は準備中です。</p>
       </div>
       <div class="shots">
-        <img src="img/nigatecho-1.jpg" alt="苦手の数と本番の予想点が出るホーム画面" width="150" height="325" loading="lazy">
-        <img src="img/nigatecho-2.jpg" alt="科目ごとの予想点の画面" width="150" height="325" loading="lazy">
+        <img src="img/kotsubin-1.jpg" alt="ハムスターがこんぺいとうを磨いている作業中の画面" width="540" height="960">
+        <img src="img/kotsubin-2.jpg" alt="月のカレンダーがびんの棚になった画面" width="540" height="960">
+        <img src="img/kotsubin-3.jpg" alt="その日の作業のタイムライン" width="540" height="960">
       </div>
     </div>
   </section>
 
   <section class="block" id="apps" aria-labelledby="apps-h">
     <div class="wrap">
-      <h2 id="apps-h">アプリ一覧</h2>
-
-      <ul class="list">
-        <li><img src="img/tekuami-icon.png" alt="" width="52" height="52"><div><h3>てくあみ</h3><p class="kind">歩いて編む歩数計・広告なし</p><p class="d">歩いた分だけ、マフラーがひと目ずつ編み上がる歩数計です。1段はだいたい500歩。模様は編み上がるまで秘密です。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.tekuami.app">Android テスト参加</a> / <a href="/tekuami/">サポート</a></p></div></li>
-        <li><img src="img/kotsubin-icon.png" alt="" width="52" height="52"><div><h3>こつびん</h3><p class="kind">ハムスターと作業・勉強の記録・広告なし</p><p class="d">「はじめる」を押すと、となりでハムスターがこんぺいとうを磨きます。10分ごとに1粒、1日で1びん。作業と勉強の時間が、びんの棚になります。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.kotsubin.app">Android テスト参加</a> / <a href="/kotsubin/">サポート</a></p></div></li>
-        <li><img src="img/tsugimemo-icon.png" alt="" width="52" height="52"><div><h3>ツギメモ</h3><p class="kind">ロック画面のメモ・ToDo・広告なし</p><p class="d">つぎにやる1行を、ロック画面のお知らせとホーム画面のウィジェットに出しておくメモです。完了を押すと次の1行が上がってきます。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.tsugimemo.app">Android テスト参加</a> / <a href="/tsugimemo/">サポート</a></p></div></li>
-        <li><img src="img/diamond-nine-icon.png" alt="" width="52" height="52"><div><h3>DIAMOND NINE</h3><p class="kind">野球シミュレーション・無料</p><p class="d">選手を集めて、育てて、打線を組んで、1年を進める野球シミュレーションです。弱小チームから優勝を目指します。</p><p class="state">Android テスト中</p><p class="a"><a href="https://groups.google.com/g/diamond-nine-testers">Android テスト参加</a></p></div></li>
-        <li><img src="img/kaigonigate-icon.png" alt="" width="52" height="52"><div><h3>介護ニガテ帳</h3><p class="kind">介護福祉士 国家試験の過去問</p><p class="d">過去問750問。事例問題は事例文つき、図もそのまま。間違えた問題だけが残ります。</p><p class="state">ニガテ帳(上)の中で選べるようになりました</p><p class="a"><a href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">Android テスト参加(ニガテ帳)</a></p></div></li>
-        <li><img src="img/kachimake-icon.png" alt="" width="52" height="52"><div><h3>カチマケ</h3><p class="kind">パチンコ・競馬などの収支管理(18歳以上)</p><p class="d">投資と回収を入れるだけで、今月いくら勝って、どこで負けているかが分かります。</p><p class="state">iPhone 準備中 / Android テスト中</p><p class="a"><a href="https://kame6493-del.github.io/kachimake-site/support.html">使い方・よくある質問</a></p></div></li>
-        <li><img src="img/uchiwakirari-icon.png" alt="" width="52" height="52"><div><h3>うちわキラリ</h3><p class="kind">うちわ文字・ファンサうちわ作成</p><p class="d">推しの名前を入れるだけで、うちわ文字を原寸で作れます。そのまま印刷できます。</p><p class="state">iPhone 準備中 / Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.uchiwakirari.app">Android テスト参加</a> / <a href="/uchiwa/">ウェブでうちわ文字を作る</a></p></div></li>
-        <li><img src="img/negairo-icon.png" alt="" width="52" height="52"><div><h3>ネガイロ</h3><p class="kind">フィルムカメラ風・日付入り</p><p class="d">フィルム、使い捨てカメラ、平成のデジカメ風に撮れるカメラ。写真に日付が入ります。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.negairo.app">Android テスト参加</a></p></div></li>
-        <li><img src="img/tabedoki-icon.png" alt="" width="52" height="52"><div><h3>タベドキ</h3><p class="kind">賞味期限と冷蔵庫の管理</p><p class="d">よく買う食材はワンタップで登録。期限の近い順に並び、前日にお知らせが来ます。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.tabedoki.app">Android テスト参加</a></p></div></li>
-        <li><img src="img/hiyorigoyomi-icon.png" alt="" width="52" height="52"><div><h3>ひよりごよみ</h3><p class="kind">スタンプで貼るカレンダー</p><p class="d">スタンプを選んで日付を押すだけ。シフトや給料日、通院の日を書き込めます。六曜と祝日つき。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.hiyorigoyomi.app">Android テスト参加</a></p></div></li>
-        <li><img src="img/yamebiyori-sake-icon.png" alt="" width="52" height="52"><div><h3>やめ日和</h3><p class="kind">禁酒・禁煙カウンター</p><p class="d">お酒とたばこ、やめた日数と浮いたお金を別々に記録します。片方だけでも、両方でも使えます。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">Android テスト参加</a> / <a href="/yamebiyori/kinen/">禁煙で体はいつ変わる?</a> / <a href="/yamebiyori/kinshu/">禁酒で体はどう変わる?</a></p></div></li>
-        <li><img src="img/kobunmekuri-icon.png" alt="" width="52" height="52"><div><h3>こぶんめくり</h3><p class="kind">古文単語601語・例文つき</p><p class="d">大学受験の古文単語を、源氏物語や徒然草の一文で覚える単語帳です。</p><p class="state">Android テスト中</p><p class="a"><a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">Android テスト参加</a> / <a href="/kobun/">古文単語601の一覧(ウェブ)</a></p></div></li>
-        <li><img src="img/atsuyomi-icon.png" alt="" width="52" height="52"><div><h3>あつよみ</h3><p class="kind">暑さ指数と熱中症アラート</p><p class="d">暑さ指数を見やすく出して、危ない日に知らせます。環境省のデータ提供が始まる春から動きます。</p><p class="state">2027年春に公開予定</p></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="block tint" id="tester" aria-labelledby="tester-h">
-    <div class="wrap">
-      <div class="tester">
-        <h2 id="tester-h">Android 版のテスターを募集しています</h2>
-        <p style="margin:6px 0 0;color:var(--sub);font-size:14px">Google Play で一般公開するには、14日間のテストが必要です。入れて14日間置いておいてもらえるだけで助かります。相互テストも歓迎です。</p>
-        <ol>
-          <li><a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に参加する(1回で全部のアプリに入れます)</li>
-          <li>下のアプリの参加ページを開いて「テスターになる」を押す(この人数が Google Play の「12人」に数えられます)</li>
-          <li>同じページの「Google Play でダウンロード」から入れる</li>
-        </ol>
-        <p style="margin:10px 0 4px;font-weight:700">いま人数が足りないアプリ</p>
-        <ul>
-          <li><a href="https://play.google.com/apps/testing/jp.tekuami.app">てくあみ</a>(歩いて編む歩数計・見た目を作り直しました)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.tsugimemo.app">ツギメモ</a>(ロック画面のメモ・見た目を作り直しました)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.kotsubin.app">こつびん</a>(ハムスターと作業記録・見た目を作り直しました)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.tabedoki.app">タベドキ</a>(賞味期限と冷蔵庫・見た目を作り直しました)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳 国家試験の過去問</a>(介護福祉士・管理栄養士ほか)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.uchiwakirari.app">うちわキラリ</a>(うちわ文字)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">やめ日和</a>(禁酒・禁煙カウンター)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">こぶんめくり</a>(古文単語)</li>
-          <li><a href="https://play.google.com/apps/testing/jp.negairo.app">ネガイロ</a>(フィルムカメラ風)</li>
-        </ul>
+      <div class="sec-h">
+        <h2 id="apps-h">見た目を新しくしたアプリ</h2>
+        <p>会社員のかたわら、1人で作っています。どれも登録なしで使えます。</p>
+      </div>
+      <div class="cards">
+        <article class="card" style="--c:#b0523a">
+          <div class="pic"><img src="img/tekuami-card.jpg" alt="てくあみの画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/tekuami-icon.png" alt="" width="36" height="36"><div><h3>てくあみ</h3><p class="k">歩いて編む歩数計</p></div></div>
+            <p class="d">歩いた分だけ、マフラーがひと目ずつ編み上がります。模様は編み上がるまで秘密です。</p>
+            <p class="a"><a href="https://play.google.com/apps/testing/jp.tekuami.app">Android テスト参加</a><a href="/tekuami/">サポート</a></p>
+          </div>
+        </article>
+        <article class="card" style="--c:#2d6fb8">
+          <div class="pic"><img src="img/tsugimemo-card.jpg" alt="ツギメモの画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/tsugimemo-icon.png" alt="" width="36" height="36"><div><h3>ツギメモ</h3><p class="k">ロック画面のメモ・ToDo</p></div></div>
+            <p class="d">つぎにやる1行だけを、ロック画面のお知らせに出しておくメモです。</p>
+            <p class="a"><a href="https://play.google.com/apps/testing/jp.tsugimemo.app">Android テスト参加</a><a href="/tsugimemo/">サポート</a></p>
+          </div>
+        </article>
+        <article class="card" style="--c:#1f7a43">
+          <div class="pic"><img src="img/tabedoki-card.jpg" alt="タベドキの画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/tabedoki-icon.png" alt="" width="36" height="36"><div><h3>タベドキ</h3><p class="k">賞味期限と冷蔵庫の管理</p></div></div>
+            <p class="d">よく買う食材はワンタップで登録。期限の近い順に並んで、色の札でひと目でわかります。</p>
+            <p class="a"><a href="https://play.google.com/apps/testing/jp.tabedoki.app">Android テスト参加</a></p>
+          </div>
+        </article>
+        <article class="card" style="--c:#c2551e">
+          <div class="pic"><img src="img/negairo-card.jpg" alt="ネガイロの画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/negairo-icon.png" alt="" width="36" height="36"><div><h3>ネガイロ</h3><p class="k">フィルムカメラ風・日付入り</p></div></div>
+            <p class="d">フィルムや使い捨てカメラの色で撮れるカメラ。仕上がりを見ながら撮れます。</p>
+            <p class="a"><a href="https://play.google.com/apps/testing/jp.negairo.app">Android テスト参加</a></p>
+          </div>
+        </article>
+        <article class="card" style="--c:#24345e">
+          <div class="pic"><img src="img/kobunmekuri-card.jpg" alt="こぶんめくりの画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/kobunmekuri-icon.png" alt="" width="36" height="36"><div><h3>こぶんめくり</h3><p class="k">古文単語601語・例文つき</p></div></div>
+            <p class="d">大学受験の古文単語を、源氏物語や徒然草の一文で覚える単語帳です。</p>
+            <p class="a"><a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">Android テスト参加</a><a href="/kobun/">単語の一覧</a></p>
+          </div>
+        </article>
+        <article class="card" style="--c:#c4527a">
+          <div class="pic"><img src="img/hiyorigoyomi-card.jpg" alt="ひよりごよみの画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/hiyorigoyomi-icon.png" alt="" width="36" height="36"><div><h3>ひよりごよみ</h3><p class="k">スタンプで貼るカレンダー</p></div></div>
+            <p class="d">スタンプを選んで日付を押すだけ。シフトや給料日、通院の日に。六曜と祝日つき。</p>
+            <p class="a"><a href="https://play.google.com/apps/testing/jp.hiyorigoyomi.app">Android テスト参加</a></p>
+          </div>
+        </article>
+        <article class="card" style="--c:#3f8a3a">
+          <div class="pic"><img src="img/yamebiyori-card.jpg" alt="やめ日和の画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/yamebiyori-sake-icon.png" alt="" width="36" height="36"><div><h3>やめ日和</h3><p class="k">禁酒・禁煙カウンター</p></div></div>
+            <p class="d">お酒とたばこ、やめた日数と浮いたお金を別々に数えます。</p>
+            <p class="a"><a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">Android テスト参加</a><a href="/yamebiyori/kinen/">禁煙で体はいつ変わる?</a></p>
+          </div>
+        </article>
+        <article class="card" style="--c:#1d6fc4">
+          <div class="pic"><img src="img/atsuyomi-card.jpg" alt="あつよみの画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/atsuyomi-icon.png" alt="" width="36" height="36"><div><h3>あつよみ</h3><p class="k">暑さ指数と熱中症アラート</p></div></div>
+            <p class="d">暑さ指数を大きな数字と色で。環境省のデータ提供が始まる春から動きます。</p>
+            <p class="a"><span style="color:var(--mute)">2027年春に公開予定</span></p>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
+  <section class="block ng" id="nigatecho" aria-labelledby="ng-h">
+    <div class="wrap grid">
+      <div>
+        <div class="t">
+          <img src="img/nigatecho-icon.png" alt="" width="64" height="64">
+          <div>
+            <h2 id="ng-h">ニガテ帳</h2>
+            <p class="k">国家試験の過去問(介護福祉士・社会福祉士・精神保健福祉士・管理栄養士・理学療法士・臨床検査技師)</p>
+          </div>
+        </div>
+        <p class="copy">間違えた問題だけが残って、2回続けて正解すると消える問題集です。</p>
+        <ul>
+          <li>介護福祉士750問・管理栄養士1,000問・理学療法士1,000問・社会福祉士258問・臨床検査技師1,000問、全問に解説つき</li>
+          <li>本番の予想点と、科目ごとの正答率が毎日わかる</li>
+          <li>どの試験も直近1回分は無料。完全版は試験ごとの買い切り</li>
+        </ul>
+        <div class="btns">
+          <a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">App Store で見る</a>
+          <a class="btn ghost" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a>
+          <a class="btn ghost" href="/q/kaigo/38/">過去問と解説(ウェブ)</a>
+        </div>
+        <p class="note">iPhone 公開中 / Android はテスト中: <a href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳</a>・<a href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師</a></p>
+        <p class="note"><a href="exam/">試験ごとの日程・合格基準と過去問の解き方</a> / <a href="blog/kisotsu-pass-rates.html">既卒の合格率を試験ごとに</a></p>
+      </div>
+      <div class="shots">
+        <img src="img/nigatecho-card.jpg" alt="ニガテ帳のホーム画面" width="480" height="853" loading="lazy">
+        <img src="img/nigatecho-card2.jpg" alt="ニガテ帳の問題画面" width="480" height="853" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="other-h">
+    <div class="wrap">
+      <div class="sec-h"><h2 id="other-h">そのほかのアプリ</h2></div>
+      <ul class="others">
+        <li><img src="img/diamond-nine-icon.png" alt="" width="52" height="52"><div><h3>DIAMOND NINE</h3><p class="k">野球シミュレーション</p><p class="d">選手を集めて、育てて、打線を組んで、弱小チームから優勝を目指します。</p><p class="a"><a href="https://groups.google.com/g/diamond-nine-testers">Android テスト参加</a></p></div></li>
+        <li><img src="img/kachimake-icon.png" alt="" width="52" height="52"><div><h3>カチマケ</h3><p class="k">パチンコ・競馬などの収支管理(18歳以上)</p><p class="d">投資と回収を入れるだけで、今月いくら勝って、どこで負けているかが分かります。</p><p class="a"><a href="https://kame6493-del.github.io/kachimake-site/support.html">使い方・よくある質問</a></p></div></li>
+        <li><img src="img/uchiwakirari-icon.png" alt="" width="52" height="52"><div><h3>うちわキラリ</h3><p class="k">うちわ文字・ファンサうちわ作成</p><p class="d">推しの名前を入れるだけで、うちわ文字を原寸で作れます。</p><p class="a"><a href="https://play.google.com/apps/testing/jp.uchiwakirari.app">Android テスト参加</a><a href="/uchiwa/">ウェブで作る</a></p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block tester-sec" id="tester" aria-labelledby="tester-h">
+    <div class="wrap">
+      <h2 id="tester-h">Android 版のテスターを募集しています</h2>
+      <p>Google Play で一般公開するには、12人に14日間入れておいてもらうテストが必要です。入れて置いておくだけで助かります。相互テストも歓迎です。</p>
+      <ol class="steps">
+        <li><a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に参加する。1回で全部のアプリに入れます</li>
+        <li>下のアプリの参加ページを開いて「テスターになる」を押す</li>
+        <li>同じページの「Google Play でダウンロード」から入れる</li>
+      </ol>
+      <div class="apps">
+        <a class="top" href="https://play.google.com/apps/testing/jp.kotsubin.app">こつびん</a>
+        <a href="https://play.google.com/apps/testing/jp.tekuami.app">てくあみ</a>
+        <a href="https://play.google.com/apps/testing/jp.tsugimemo.app">ツギメモ</a>
+        <a href="https://play.google.com/apps/testing/jp.tabedoki.app">タベドキ</a>
+        <a href="https://play.google.com/apps/testing/jp.negairo.app">ネガイロ</a>
+        <a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">こぶんめくり</a>
+        <a href="https://play.google.com/apps/testing/jp.hiyorigoyomi.app">ひよりごよみ</a>
+        <a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">やめ日和</a>
+        <a href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳</a>
+        <a href="https://play.google.com/apps/testing/jp.uchiwakirari.app">うちわキラリ</a>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer>
