@@ -1,0 +1,60 @@
+:root{
+  --night:#1c1640; --night2:#2b2160; --orange:#ff9a3c; --orange2:#ffb85c;
+  --text:#fff6e8; --muted:#d8c9f0; --pad:#2a1f4d;
+  --font:"Hiragino Maru Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--night);color:var(--text);font-family:var(--font);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#stage{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hidden{display:none !important}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(12px,env(safe-area-inset-bottom));overflow:auto}
+#drawScreen{background:rgba(20,14,48,.62)}
+.drawWrap{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.head{text-align:center}
+.logo{font-size:30px;letter-spacing:.04em;color:var(--orange2);text-shadow:0 3px 0 #5a2a10,0 0 18px rgba(255,154,60,.5);line-height:1.15}
+.logo span{color:#fff;margin-left:.15em}
+.lead{font-size:14px;color:var(--muted);margin-top:4px}
+.padBox{position:relative;width:min(100%, calc(100dvh - 330px), 520px);aspect-ratio:1;min-width:220px}
+#pad{width:100%;height:100%;border-radius:20px;background:var(--pad);touch-action:none;display:block;
+  box-shadow:0 0 0 3px rgba(255,184,92,.55),0 10px 30px rgba(0,0,0,.4)}
+#padHint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;
+  color:rgba(255,255,255,.28);font-size:20px}
+.side{width:100%;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.tools{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}
+.colors{display:flex;gap:6px}
+.sw{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.25);cursor:pointer}
+.sw.on{border-color:#fff;transform:scale(1.12)}
+.tool{font:inherit;font-size:13px;color:var(--text);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+  border-radius:999px;padding:7px 11px;cursor:pointer}
+.tool.wide{width:100%;padding:10px}
+.nameRow input{width:100%;font:inherit;font-size:16px;padding:10px 14px;border-radius:12px;border:2px solid rgba(255,184,92,.6);
+  background:rgba(0,0,0,.35);color:#fff;-webkit-user-select:text;user-select:text}
+.nameRow input::placeholder{color:rgba(255,255,255,.45)}
+.go{font:inherit;font-size:20px;font-weight:bold;color:#3a1600;background:linear-gradient(#ffc56e,#ff8f2e);border:none;border-radius:16px;
+  padding:12px;box-shadow:0 4px 0 #a2480f;cursor:pointer}
+.go:disabled{filter:grayscale(.8) brightness(.7);cursor:default}
+.go:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #a2480f}
+.note{font-size:12px;color:var(--muted);text-align:center;min-height:1em}
+#hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:max(10px,env(safe-area-inset-top)) 14px 0;pointer-events:none}
+.candyCount{display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.35);border-radius:999px;padding:4px 12px 4px 6px;font-size:20px;font-weight:bold}
+.candyCount img{width:28px;height:28px;object-fit:contain}
+#skipBtn{pointer-events:auto;font:inherit;font-size:13px;color:#fff;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 12px;cursor:pointer}
+#resultScreen{background:rgba(14,10,36,.82)}
+.resultWrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:520px}
+#resultImg{width:auto;max-width:100%;max-height:calc(100dvh - 250px);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);
+  -webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.resultBtns{display:flex;flex-direction:column;gap:8px;width:100%}
+.xbtn{display:block;text-align:center;text-decoration:none;font-size:18px;font-weight:bold;color:#fff;background:#111;border:2px solid #fff;border-radius:16px;padding:10px}
+
+/* 横長の画面(PC など): 描く板を左、道具を右に */
+@media (min-aspect-ratio: 11/10){
+  .drawWrap{max-width:900px;display:grid;grid-template-columns:auto 300px;grid-template-areas:"head head" "pad side";gap:12px 22px;align-items:center}
+  .head{grid-area:head}
+  .padBox{grid-area:pad;width:min(calc(100dvh - 150px), 560px)}
+  .side{grid-area:side}
+  .resultWrap{max-width:900px;flex-direction:row;align-items:center;justify-content:center}
+  #resultImg{max-height:calc(100dvh - 40px);max-width:60vw}
+  .resultBtns{width:300px}
+}

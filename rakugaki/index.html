@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>らくがき百鬼夜行 描いたおばけが商店街を練り歩く</title>
+<meta name="description" content="指でおばけを描くと、ハロウィンの夜の商店街を練り歩きます。最後に名前と今夜の驚かせ度が入った1枚ができます。">
+<meta property="og:title" content="らくがき百鬼夜行">
+<meta property="og:description" content="描いたおばけが、ハロウィンの夜の商店街を練り歩く">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yurustudio.github.io/rakugaki/">
+<meta property="og:image" content="https://yurustudio.github.io/rakugaki/assets/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1c1640">
+<link rel="icon" href="assets/icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<section id="drawScreen" class="screen">
+  <div class="drawWrap">
+    <header class="head">
+      <h1 class="logo">らくがき<span>百鬼夜行</span></h1>
+      <p class="lead">おばけを描いてね。なんでもおばけになります</p>
+    </header>
+    <div class="padBox"><canvas id="pad" width="600" height="600"></canvas><p id="padHint">ここに描く</p></div>
+    <div class="side">
+      <div class="tools">
+        <div class="colors" id="colors"></div>
+        <button id="widthBtn" class="tool" type="button" aria-label="線の太さ">太い線</button>
+        <button id="undoBtn" class="tool" type="button">もどす</button>
+        <button id="clearBtn" class="tool" type="button">けす</button>
+      </div>
+      <div class="nameRow">
+        <input id="nameInput" type="text" maxlength="12" placeholder="おばけの名前(なくてもOK)" autocomplete="off">
+      </div>
+      <button id="goBtn" class="go" type="button" disabled>出発!</button>
+      <p id="followNote" class="note"></p>
+    </div>
+  </div>
+</section>
+
+<section id="hud" class="hidden">
+  <div class="candyCount"><img src="assets/candy_1.png" alt=""><span id="candyNum">0</span></div>
+  <button id="skipBtn" type="button">とばす</button>
+</section>
+
+<section id="resultScreen" class="screen hidden">
+  <div class="resultWrap">
+    <img id="resultImg" alt="今夜の結果の画像">
+    <div class="resultBtns">
+      <button id="saveBtn" class="go" type="button">画像を保存</button>
+      <a id="xBtn" class="xbtn" href="#" target="_blank" rel="noopener">X に投稿する</a>
+      <p class="note">保存した画像をつけて投稿してね</p>
+      <button id="againBtn" class="tool wide" type="button">もう1体描く(いまの子は後ろについてきます)</button>
+    </div>
+  </div>
+</section>
+
+<script src="main.js"></script>
+</body>
+</html>
