@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#5ec4ff">
+<title>ハルの冒険</title>
+<meta name="description" content="ほしのかけらを集める横スクロールアクション。ブラウザでそのまま遊べる体験版(ワールド1)。">
+<meta property="og:title" content="ハルの冒険(体験版)">
+<meta property="og:description" content="ほしのかけらを集める横スクロールアクション。ブラウザでそのまま遊べます。">
+<meta property="og:image" content="https://yurustudio.github.io/haru/ogp.jpg">
+<meta property="og:url" content="https://yurustudio.github.io/haru/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #1b1f3a; overflow: hidden; touch-action: none; }
+  body { display: flex; align-items: center; justify-content: center; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  canvas { display: block; image-rendering: auto; }
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="ハルの冒険 ゲーム画面"></canvas>
+<script src="levels.js"></script>
+<script src="map.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
