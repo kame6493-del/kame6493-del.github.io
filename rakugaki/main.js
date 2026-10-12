@@ -4,7 +4,7 @@
 
 const CFG = {
   SHARE_URL: 'https://yurustudio.github.io/rakugaki/', // 公開したら本番の URL を入れる(空ならこのページの URL)
-  TAGS: '#らくがき百鬼夜行 #ハロウィン2026',
+  TAGS: '#らくがき百鬼夜行ゲーム #ハロウィン2026',
   STORE_KEY: 'rakugaki_hyakki_v1',
   GHOST_SIZE: 270,       // おばけの大きさ(世界の単位、画面の高さ=1000)
   ROUTE_START: 250,
