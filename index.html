@@ -138,6 +138,8 @@
   .cards.one .card { display: grid; grid-template-columns: 220px 1fr; grid-template-rows: 1fr auto; }
   .cards.one .pic { grid-row: 1 / 3; aspect-ratio: auto; height: 100%; min-height: 300px; }
   .cards.one .acts { grid-column: 2; }
+  /* 2枚のカード(かんじさん・よみふだ) */
+  .cards.two { grid-template-columns: repeat(2, 1fr); max-width: 620px; }
   /* スマホは1列。左に画面、右に名前と説明 */
   @media (max-width: 560px) {
     .cards { grid-template-columns: 1fr; gap: 16px; }
@@ -151,6 +153,7 @@
     .cards.one .card { grid-template-columns: 112px 1fr; grid-template-rows: auto; }
     .cards.one .pic { grid-row: auto; min-height: 200px; }
     .cards.one .acts { grid-column: 1 / -1; }
+    .cards.two { grid-template-columns: 1fr; }
   }
 
   /* ニガテ帳 */
@@ -235,6 +238,8 @@
         <li><a href="#atsuyomi" style="--c:#1d6fc4"><img src="img/atsuyomi-icon.png" alt="" width="44" height="44"><span><b>あつよみ</b><small>暑さ指数</small></span></a></li>
         <li><a href="#yamebiyori" style="--c:#3f8a3a"><img src="img/yamebiyori-sake-icon.png" alt="" width="44" height="44"><span><b>やめ日和</b><small>禁酒・禁煙</small></span></a></li>
         <li><a href="#hiyorigoyomi" style="--c:#c4527a"><img src="img/hiyorigoyomi-icon.png" alt="" width="44" height="44"><span><b>ひよりごよみ</b><small>カレンダー</small></span></a></li>
+        <li><a href="#kanjisan" style="--c:#b3262e"><img src="img/kanjisan-icon.png" alt="" width="44" height="44"><span><b>かんじさん</b><small>宴会の幹事</small></span></a></li>
+        <li><a href="#yomifuda" style="--c:#164032"><img src="img/yomifuda-icon.png" alt="" width="44" height="44"><span><b>よみふだ</b><small>百人一首の読み上げ</small></span></a></li>
         <li><a href="#nigatecho" style="--c:#b8282f"><img src="img/nigatecho-icon.png" alt="" width="44" height="44"><span><b>ニガテ帳</b><small>国試の過去問</small></span></a></li>
         <li><a href="#pasudan" style="--c:#2a3f7a"><img src="img/pasudan-icon.png" alt="" width="44" height="44"><span><b>パスダン</b><small>ITパスポート</small></span></a></li>
         <li><a href="#others" style="--c:#5a6470"><img src="img/diamond-nine-icon.png" alt="" width="44" height="44"><span><b>そのほか</b><small>野球・収支ほか</small></span></a></li>
@@ -360,6 +365,36 @@
     </div>
   </section>
 
+  <section class="block" id="new-apps" aria-labelledby="new-h" style="padding-top:8px">
+    <div class="wrap">
+      <div class="sec-h">
+        <h2 id="new-h">新しく作ったアプリ</h2>
+        <p>Android のテストを始めたところです。iPhone 版はまだありません。</p>
+      </div>
+      <div class="cards two">
+        <article class="card" id="kanjisan" style="--c:#b3262e">
+          <div class="pic"><img src="img/kanjisan-card.jpg" alt="かんじさんのホーム画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/kanjisan-icon.png" alt="" width="44" height="44"><div><h3>かんじさん</h3><p class="k">宴会ビンゴ・景品くじ・席決め</p></div></div>
+            <ul class="tags"><li class="tag test">Android テスト中</li></ul>
+            <p class="d">ビンゴの抽選、景品くじ、席決め、乾杯のカウントダウンを、テレビに映して進める幹事のアプリです。スマホを横にすると大画面の表示になります。</p>
+          </div>
+          <div class="acts"><a class="btn fill" href="https://play.google.com/apps/testing/jp.kanjisan.app">Android でテストに参加</a><a class="btn line" href="/kanjisan/">サポート</a></div>
+        </article>
+        <article class="card" id="yomifuda" style="--c:#164032">
+          <div class="pic"><img src="img/yomifuda-card.jpg" alt="よみふだが札を読んでいる画面" width="480" height="853" loading="lazy"></div>
+          <div class="body">
+            <div class="t"><img src="img/yomifuda-icon.png" alt="" width="44" height="44"><div><h3>よみふだ</h3><p class="k">百人一首の読み上げ</p></div></div>
+            <ul class="tags"><li class="tag test">Android テスト中</li></ul>
+            <p class="d">百人一首の読み手をスマホがつとめます。上の句から下の句まで間をおいて読み、五色百人一首の色で札を選べます。速さ・間・下の句の回数も変えられます。</p>
+          </div>
+          <div class="acts"><a class="btn fill" href="https://play.google.com/apps/testing/jp.yomifuda.app">Android でテストに参加</a><a class="btn line" href="/yomifuda/">サポート</a></div>
+        </article>
+      </div>
+      <p style="margin:14px 0 0;font-size:14px;color:var(--sub)">先に <a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a> に入ってから、ボタンを押してください。</p>
+    </div>
+  </section>
+
   <section class="block ng" id="nigatecho" aria-labelledby="ng-h">
     <div class="wrap grid">
       <div>
@@ -453,6 +488,8 @@
         <a href="https://play.google.com/apps/testing/jp.kobunmekuri.app">こぶんめくり</a>
         <a href="https://play.google.com/apps/testing/jp.yamebiyori.sake">やめ日和</a>
         <a href="https://play.google.com/apps/testing/jp.hiyorigoyomi.app">ひよりごよみ</a>
+        <a href="https://play.google.com/apps/testing/jp.kanjisan.app">かんじさん</a>
+        <a href="https://play.google.com/apps/testing/jp.yomifuda.app">よみふだ</a>
         <a href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳</a>
         <a href="https://play.google.com/apps/testing/jp.uchiwakirari.app">うちわキラリ</a>
       </div>
