@@ -52,6 +52,10 @@ const EN_DICT = {
   "ほぼ見えない": "Almost hidden",
   // 今日の1面(2026-10-13)
   "今日の1面": "Daily Stage",
+  // きのうの1位の 看板(2026-10-13)
+  "きのうの1位": "Yesterday's #1",
+  "きのうの1位 まだいません": "Yesterday's #1: nobody yet",
+  "#ハルの今日の1面 で結果を投稿してね": "Post your result with #ハルの今日の1面",
   "今日の1面 ✔": "Daily Stage ✔",
   "Xで シェア": "Share on X",
   "タイトルへ": "Back to Title",

@@ -4371,13 +4371,78 @@ function dailyFinish() {
   daily.last = res;
   return res;
 }
+// タイムは 「分:秒.1けた」(0:42.3)。きのうの1位の 看板(daily_champ.json)と 同じ 形
+function dailyClock(sec) { const d = Math.max(0, Math.round(Number(sec) * 10) || 0), m = Math.floor(d / 600), r = d - m * 600; return m + ':' + String(Math.floor(r / 10)).padStart(2, '0') + '.' + (r % 10); }
 function dailyShareText(res) {
   res = res || daily.last;
   if (!res) return '';
   const sq = res.row.map(v => ['🟩', '🟨', '🟥'][v] || '🟩').join('');
-  const st = '⭐'.repeat(res.stars) + '☆'.repeat(3 - res.stars), tm = Number(res.time).toFixed(1);
-  if (isEN()) return `Haru's Adventure Daily #${res.num}\n⏱ ${tm}s ${st} try ${res.tries}\n${sq}\n#HaruDaily\n${DAILY_SHARE_URL}&lang=en`;
-  return `ハルの冒険 今日の1面 #${res.num}\n⏱ ${tm}秒 ${st} ${res.tries}回目\n${sq}\n#ハルの今日の1面\n${DAILY_SHARE_URL}`;
+  const st = '⭐'.repeat(res.stars) + '☆'.repeat(3 - res.stars), tm = dailyClock(res.time), ds = res.date || '';
+  if (isEN()) return `Haru's Adventure Daily #${res.num} ${ds}
+⏱ ${tm} ${st} try ${res.tries}
+${sq}
+Fastest time goes on tomorrow's sign
+#HaruDaily #ハルの今日の1面
+${DAILY_SHARE_URL}&lang=en`;
+  return `ハルの冒険 今日の1面 #${res.num} ${ds}
+⏱ ${tm} ${st} ${res.tries}回目
+${sq}
+1位はあしたの看板にのります
+#ハルの今日の1面
+${DAILY_SHARE_URL}`;
+}
+// ---------- きのうの1位の 看板(2026-10-13) ----------
+// daily_champ.json([{date, name, time, note}] 日づけごと)を 起動時に 1回 よむ。よめなくても ゲームは そのまま(看板は「まだいません」)。
+// アプリ(Capacitor)の 中の ファイルは 古いままなので、アプリの ときは サイトの 物を よむ。
+const DAILY_CHAMP_URL = 'https://yurustudio.github.io/haru/daily_champ.json';
+let dailyChamps = null;
+function dailyChampLoad() {
+  try {
+    const u = (window.Capacitor ? DAILY_CHAMP_URL : 'daily_champ.json') + '?d=' + dailyToday() + '-' + new Date().getHours();
+    fetch(u, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).then(a => { if (Array.isArray(a)) dailyChamps = a; }).catch(() => {});
+  } catch (e) { /* よめない 環境 */ }
+}
+dailyChampLoad();
+// きのう(今日の1面の 日づけの 前の日)の 1位。形が おかしい 物は つかわない
+function dailyChampOf(ds) {
+  if (!Array.isArray(dailyChamps) || !ds) return null;
+  const y = new Date(Date.parse(ds + 'T00:00:00Z') - 86400000).toISOString().slice(0, 10);
+  for (let i = dailyChamps.length - 1; i >= 0; i--) {
+    const c = dailyChamps[i];
+    if (!c || c.date !== y) continue;
+    if (typeof c.name !== 'string' || !/^@[A-Za-z0-9_]{1,15}$/.test(c.name)) return null;
+    if (typeof c.time !== 'string' || !/^\d{1,2}:[0-5]\d\.\d$/.test(c.time)) return null;
+    return { date: y, name: c.name, time: c.time, note: typeof c.note === 'string' ? c.note.slice(0, 24) : '' };
+  }
+  return null;
+}
+// 文字が はばに おさまるまで 小さくする(日本語でも)
+function fitAny(text, maxW, px, mk = font, min = 10) { let p = px; ctx.font = mk(p); while (p > min && ctx.measureText(text).width > maxW) { p--; ctx.font = mk(p); } return mk(p); }
+// 開始地点の 木の 看板
+function drawChampBoard(cx, gy) {
+  const c = dailyChampOf(world.def._date);
+  const W = 380, H = c && c.note ? 118 : 100, top = gy - 52 - H;
+  // 2本の 柱
+  for (const px of [cx - W / 2 + 46, cx + W / 2 - 58]) {
+    const g = ctx.createLinearGradient(px, 0, px + 12, 0); g.addColorStop(0, '#8a5226'); g.addColorStop(1, '#5e3414');
+    ctx.fillStyle = g; ctx.fillRect(px, top + H - 10, 12, gy - top - H + 12); ctx.strokeStyle = '#3a1e0a'; ctx.lineWidth = 2; ctx.strokeRect(px, top + H - 10, 12, gy - top - H + 12);
+  }
+  woodPlate(cx - W / 2, top, W, H);
+  // 板の すじ
+  ctx.save(); ctx.globalAlpha = 0.18; ctx.strokeStyle = '#3a1e0a'; ctx.lineWidth = 2;
+  for (let i = 1; i < 3; i++) { const yy = top + (H * i) / 3; ctx.beginPath(); ctx.moveTo(cx - W / 2 + 10, yy); ctx.lineTo(cx + W / 2 - 10, yy); ctx.stroke(); }
+  ctx.restore();
+  const inner = W - 36;
+  if (c) {
+    outlined('きのうの1位', cx, top + 24, '#ffe9a8', '#3a1a08', 5, fitAny('きのうの1位', inner, 19, p => font(p, 800)));
+    const line = c.name + '  ' + c.time;
+    outlined(line, cx, top + 62, '#fff36b', '#3a1a08', 7, fitAny(line, inner, 30, titleFont, 12));
+    if (c.note) outlined(c.note, cx, top + 98, '#fff', '#3a1a08', 4, fitAny(c.note, inner, 16, p => font(p, 800)));
+  } else {
+    const a = 'きのうの1位 まだいません', b = '#ハルの今日の1面 で結果を投稿してね';
+    outlined(a, cx, top + 32, '#fff36b', '#3a1a08', 6, fitAny(a, inner, 24, titleFont, 12));
+    outlined(b, cx, top + 70, '#fff', '#3a1a08', 4, fitAny(b, inner, 18, p => font(p, 800)));
+  }
 }
 function dailyCopy(text) {
   const ok = () => { daily.msg = { text: 'コピーしました', t: 2.4 }; };
@@ -5507,6 +5572,7 @@ function drawWater(t) {
   if (tides.length) drawTides(t);
 }
 function drawDecos(back) {
+  let board = null;
   for (const d of level.decos) {
     const X = d.x * TILE + 24;
     if (X < cam.x - 200 || X > cam.x + VW + 200) continue;
@@ -5517,8 +5583,11 @@ function drawDecos(back) {
       rg.addColorStop(0, 'rgba(255,190,90,.35)'); rg.addColorStop(1, 'rgba(255,190,90,0)');
       ctx.fillStyle = rg; ctx.fillRect(X - 90, gy - h - 74, 180, 180); ctx.restore();
     }
+    // 今日の1面の 開始地点の 看板は ほかの 飾り(木など)より 手前に 描く
+    if (d.name === 'sign' && world && world.def.daily) { board = [X, gy]; continue; }
     drawFit(d.name, X, gy + 4, h);
   }
+  if (board) drawChampBoard(board[0], board[1]);
 }
 
 function drawPlayer() {
@@ -7075,6 +7144,12 @@ function frame(now) {
     ctx.fillStyle = 'rgba(20,15,40,.88)'; ctx.fillRect(0, 0, VW, VH);
     drawFit('hero_idle', VW / 2, VH / 2 - 10, 120);
     outlined('よこむきにしてね', VW / 2, VH / 2 + 50, '#fff', '#2a1a3a', 8, titleFont(44));
+    // 今日の1面: 縦の ままでも きのうの1位が 読めるように 大きく 出す
+    if (world && world.def && world.def.daily && (scene === 'play' || scene === 'pause')) {
+      const c = dailyChampOf(world.def._date), a = c ? 'きのうの1位' : 'きのうの1位 まだいません', b = c ? c.name + '  ' + c.time : '#ハルの今日の1面 で結果を投稿してね';
+      outlined(a, VW / 2, VH / 2 + 128, '#ffe9a8', '#2a1a3a', 7, fitAny(a, 900, c ? 34 : 40, titleFont, 14));
+      outlined(b, VW / 2, VH / 2 + (c ? 186 : 182), c ? '#fff36b' : '#fff', '#2a1a3a', 8, fitAny(b, 900, c ? 52 : 34, c ? titleFont : (p => font(p, 800)), 14));
+    }
   }
   requestAnimationFrame(frame);
 }
@@ -7104,5 +7179,5 @@ window.__game = {
   restore(snap) { const c = structuredClone(snap); world = { ...c.w, def: level.def }; P = c.P; level.tiles = c.tiles; scene = c.scene; parts = []; toast = null; },
   // 今日の1面
   startDaily: from => startDaily(from), dailyInfo: ds => dailyInfo(ds), dailyShareText: r => dailyShareText(r), dailyShare: () => dailyShare(), get daily() { return daily; },
-  setDailyDate(ds) { DAILY_DATE = ds || null; }, dailyToday: () => dailyDate(), dailyNum: ds => dailyNum(ds), DAILY_IDX,
+  setDailyDate(ds) { DAILY_DATE = ds || null; }, setDailyChamps(a) { dailyChamps = a; }, dailyChampOf: ds => dailyChampOf(ds), dailyClock: s => dailyClock(s), reloadChamps: () => dailyChampLoad(), dailyToday: () => dailyDate(), dailyNum: ds => dailyNum(ds), DAILY_IDX,
 };
