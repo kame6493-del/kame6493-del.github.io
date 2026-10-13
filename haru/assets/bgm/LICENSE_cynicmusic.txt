@@ -1,0 +1,28 @@
+作者: cynicmusic (The Cynic Project / pixelsphere.org / cynicmusic.com)
+ライセンス: CC0 1.0 Universal (Public Domain Dedication) https://creativecommons.org/publicdomain/zero/1.0/
+取得日: 2026-10-13
+取得元: OpenGameArt.org
+
+- Crystal Cave (song18)
+  ページ: https://opengameart.org/content/crystal-cave-song18
+  ライセンス(ページの表示): CC0
+  使っている場面: cave
+
+- Mysterious Ambience (song21)
+  ページ: https://opengameart.org/content/mysterious-ambience-song21
+  ライセンス(ページの表示): CC0
+  使っている場面: kage  ※このページは CC-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0 / CC0 の複数ライセンス。CC0 を選んで使う
+
+- Awake! (Megawall-10)
+  ページ: https://opengameart.org/content/awake-megawall-10
+  ライセンス(ページの表示): CC0
+  使っている場面: starroad
+
+- Happy Lullaby (song17)
+  ページ: https://opengameart.org/content/happy-lullaby-song17
+  ライセンス(ページの表示): CC0
+  使っている場面: switchpalace
+
+表記は CC0 なので不要。作者の希望(任意): "Credit pixelsphere.org / The Cynic Project. Please link to my website and notify me if you use the music."
+
+加工: 切り出し(ループ区間・頭の無音)、音量合わせ(-16 LUFS。map/dusk/ghost/gameover はピークを抑えるリミッターつき)、underwater だけループの終わり0.3秒を頭へつなぐクロスフェード、MP3 80kbps への変換。曲の中身(旋律・編曲)は変えていない。

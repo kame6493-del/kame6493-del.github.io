@@ -1,0 +1,11 @@
+作者: nene
+ライセンス: CC0 1.0 Universal (Public Domain Dedication) https://creativecommons.org/publicdomain/zero/1.0/
+取得日: 2026-10-13
+取得元: OpenGameArt.org
+
+- Long Away Home [8bit]
+  ページ: https://opengameart.org/content/long-away-home-8bit
+  ライセンス(ページの表示): CC0
+  使っている場面: dusk
+
+加工: 切り出し(ループ区間・頭の無音)、音量合わせ(-16 LUFS。map/dusk/ghost/gameover はピークを抑えるリミッターつき)、underwater だけループの終わり0.3秒を頭へつなぐクロスフェード、MP3 80kbps への変換。曲の中身(旋律・編曲)は変えていない。

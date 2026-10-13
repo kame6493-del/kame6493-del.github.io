@@ -1,0 +1,13 @@
+作者: SketchyLogic
+ライセンス: CC0 1.0 Universal (Public Domain Dedication) https://creativecommons.org/publicdomain/zero/1.0/
+取得日: 2026-10-13
+取得元: OpenGameArt.org
+
+- NES Shooter Music (5 tracks, 3 jingles)
+  ページ: https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles
+  ライセンス(ページの表示): CC0
+  使っている場面: map (Map) / storm (Mars) / finalboss (BossIntro + BossMain) / worldclear (Win Jingle)
+
+ページの説明: "All the music tracks loop by themselves, with the exception of the boss track which has an intro section that leads into the main loop."
+
+加工: 切り出し(ループ区間・頭の無音)、音量合わせ(-16 LUFS。map/dusk/ghost/gameover はピークを抑えるリミッターつき)、underwater だけループの終わり0.3秒を頭へつなぐクロスフェード、MP3 80kbps への変換。曲の中身(旋律・編曲)は変えていない。

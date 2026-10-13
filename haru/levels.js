@@ -607,7 +607,7 @@ function sections(L) {
     en(x, o.en);
     return x + pat.length + 5;
   };
-  // 水の中の 道(上から 下まで 水)。ぷくぷく と さかな
+  // 水の中の 道(上から 下まで 水)。ぷっくん と さかな
   S.deep = (x, w, o = {}) => {
     L.ground(x, x + w - 1, 11); L.water(x, x + w - 1, 1, 10);
     if (o.pillars) o.pillars.forEach(([dx, y0, y1]) => L.fill(x + dx, x + dx + 1, y0, y1, 'S'));
@@ -631,6 +631,7 @@ function sections(L) {
     L.put(x + 3, top - 1, 'h');
     if (o.star) L.put(x + 10, top - 5, '*');
     L.row(x + 7, top - 4, '==='); L.row(x + 13, top - 4, '===');
+    if (o.low) L.hazard(x + 1, 'lowgrav', { w: 21 });
     L.enemy(x + 14, 'hone', { arena: [x + 1, x + 21], hp });
     L.deco(x + 1, 'torch', 1); L.deco(x + 20, 'torch', 1);
     return x + 23;
@@ -642,6 +643,244 @@ function sections(L) {
     L.put(x + 7, top - 1, '!');
     L.deco(x + 2, 'crystal', 1); L.deco(x + 11, 'crystal', 1);
     return x + 14;
+  };
+  // ---------- 第5段階(2026-10-13): 新しい しかけの 区画 ----------
+  // シーソー: 穴の 上に シーソーを ならべる(のった ほうが さがる)
+  S.seesaws = (x, n, o = {}) => {
+    const top = o.top ?? 10, w = 3 + n * 6 + 3;
+    if (o.hint) L.hint(x, 'シーソー', 'のった ほうが さがる。高い ほうへ あるいて つぎへ');
+    L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
+    if (o.lava) L.lava(x + 3, x + w - 4, top + 1);
+    if (o.safe) L.ground(x + 3, x + w - 4, top + 1);
+    for (let i = 0; i < n; i++) { const px = x + 5 + i * 6; L.hazard(px, 'seesaw', { y: top - 1, half: 2.5 }); L.row(px - 1, top - 3, 'ooo'); }
+    if (o.star) L.put(x + 5 + (n - 1) * 6, hi(top - 5), '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // すいこみ つつ: 口の 上で ↓。高い かべの むこうへ(または 上の たなへ)
+  S.tubeWall = (x, o = {}) => {
+    const top = o.top ?? 10, w = 16;
+    if (o.hint) L.hint(x, 'すいこみ つつ', 'つつの 口の 上で ↓ を おすと 中を とおって とびだす');
+    L.ground(x, x + w - 1, top);
+    L.fill(x + 7, x + 8, 3, top - 1, o.ch || 'S');
+    L.hazard(x + 3, 'tube', { pts: [[x + 3, top - 1], [x + 3, 2], [x + 11, 2], [x + 11, top - 3]], exitV: 600 });
+    L.row(x + 9, top - 1, 'oo'); if (o.star) L.put(x + 13, top - 1, '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // つつで 上の たなへ(ほうびの たな。下を あるいても すすめる)
+  S.tubeUp = (x, o = {}) => {
+    const top = o.top ?? 10, w = 14, ly = Math.max(3, top - 6);
+    L.ground(x, x + w - 1, top);
+    L.fill(x + 6, x + 12, ly, ly, o.ch || 'S');
+    L.hazard(x + 2, 'tube', { pts: [[x + 2, top - 1], [x + 2, ly - 2], [x + 8, ly - 2]], exitV: 500 });
+    if (o.star) L.put(x + 11, ly - 1, '*'); else L.row(x + 9, ly - 1, 'ooo');
+    en(x, o.en);
+    return x + w;
+  };
+  // トロッコ: pat の 1文字が 1マス。'.' 地面 / '_' 穴 / '#' 1マスの いわ(とびこえる。ぶつかると おりる)/ 'e' 地面と てき / 'o' 地面と 上の コイン / '*' 地面と 上の 星
+  S.cart = (x, pat, o = {}) => {
+    const top = o.top ?? 10;
+    if (o.hint) L.hint(x, 'トロッコ', 'のると すすみつづける。ジャンプで あなを とびこえよう');
+    L.ground(x, x + 4, top);
+    L.hazard(x + 2, 'cart', { sp: o.sp || 440 });
+    for (let i = 0; i < pat.length; i++) {
+      const gx = x + 5 + i, c = pat[i];
+      if (c === '_') { if (o.lava) L.lava(gx, gx, top + 1); continue; }
+      L.ground(gx, gx, top);
+      if (c === '#') L.put(gx, top - 1, o.ch || 'S');
+      if (c === 'e') L.enemy(gx, o.e || 'goomy');
+      if (c === 'o') L.row(gx, top - 3, 'o');
+      if (c === '*') L.put(gx, hi(top - 4), '*');
+    }
+    const end = x + 5 + pat.length;
+    L.hazard(x, 'rails', { w: pat.length + 5 });
+    L.ground(end, end + 5, top); L.put(end, top - 1, o.ch || 'S');
+    return end + 6;
+  };
+  // しおの みちひき: ひくい ゆかの 道に 高い かべ。みちた ときに およいで かべを こえる。ひいた ときは ゆかの コイン
+  S.tide = (x, w, o = {}) => {
+    const lo = 10, hi2 = o.hi ?? 4;
+    if (o.hint) L.hint(x, 'しおの みちひき', 'みずが ふえたら およいで かべの 上へ');
+    L.ground(x, x + w - 1, 10);
+    (o.walls || []).forEach(([dx, h]) => L.fill(x + dx, x + dx + 1, 10 - h, 9, 'S'));
+    (o.ledges || []).forEach(([dx, y, n]) => L.fill(x + dx, x + dx + (n || 3) - 1, y, y, 'S'));
+    (o.logs || []).forEach(dx => L.hazard(x + dx, 'log', { y: 9, tide: true, sink: 30 }));
+    L.hazard(x, 'tide', { w, lo, hi: hi2, per: o.per || 9, phase: o.phase || 0 });
+    L.row(x + 2, 9, 'o'.repeat(Math.min(6, w - 4)));
+    (o.fugu || []).forEach(([dx, y]) => L.enemy(x + dx, 'fugu', { y }));
+    if (o.star) L.put(x + o.star[0], o.star[1], '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // しずむ うきぎ: 穴(ようがん か 水)の 上の 丸太。のると しずむ。とまらずに わたる
+  S.logs = (x, n, o = {}) => {
+    const top = o.top ?? 10, w = 3 + n * 4 + 3;
+    if (o.hint) L.hint(x, 'しずむ うきぎ', 'のると しずんで いく。とまらずに わたろう');
+    L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
+    if (o.water) { L.ground(x + 3, x + w - 4, 11); L.water(x + 3, x + w - 4, top, 10); } else L.lava(x + 3, x + w - 4, top + 1);
+    for (let i = 0; i < n; i++) L.hazard(x + 4 + i * 4, 'log', { y: top, sink: o.water ? 60 : 40, sp: o.water ? 40 : 28 });
+    L.row(x + 4, top - 3, 'o'.repeat(w - 8));
+    if (o.star) L.put(x + Math.floor(w / 2), hi(top - 5), '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // ぴょんぴょん ブロックの 橋: pat の ':' ピンク / ';' 水色 / ' ' 穴。ジャンプする たびに 入れかわる
+  S.jumpBridge = (x, pat, o = {}) => {
+    const top = o.top ?? 10, w = pat.length + 6;
+    if (o.hint) L.hint(x, 'ぴょんぴょん ブロック', 'ジャンプする たびに ピンクと 水色が 入れかわる');
+    L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
+    if (o.lava) L.lava(x + 3, x + w - 4, top + 1);
+    for (let i = 0; i < pat.length; i++) if (pat[i] === ':' || pat[i] === ';') L.put(x + 3 + i, top - (o.rise ? Math.floor(i / 4) % 2 : 0), pat[i]);
+    L.row(x + 3, top - 3, pat.replace(/[:;]/g, 'o').replace(/[^o]/g, ' '));
+    if (o.star) L.put(x + Math.floor(w / 2), hi(top - 5), '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // ぴょんぴょん ブロックの かべ: ピンクの かべ(:)は ジャンプで きえる。上は 石で ふさぐ
+  S.jumpWalls = (x, n, o = {}) => {
+    const top = o.top ?? 10, w = n * 5 + 3;
+    L.ground(x, x + w - 1, top);
+    for (let i = 0; i < n; i++) { const wx = x + 3 + i * 5, c = i % 2 ? ';' : ':'; L.fill(wx, wx, top - 3, top - 1, c); L.fill(wx, wx, 0, top - 4, o.ch || 'S'); L.row(wx + 2, top - 2, 'o'); }
+    en(x, o.en);
+    return x + w;
+  };
+  // ぴょんぴょん ブロックの 塔: ピンクと 水色の 足場を ジグザグに のぼる(星は てっぺん)
+  S.jumpTower = (x, o = {}) => {
+    const top = o.top ?? 10, w = 12;
+    L.ground(x, x + w - 1, top);
+    const steps = [[2, top - 3, ';'], [6, top - 5, ':'], [2, top - 7, ';'], [6, hi(top - 9), ':']];
+    for (const [dx, y, c] of steps) if (y >= 2) L.row(x + dx, y, c + c + c);
+    if (o.star) L.put(x + 7, hi(top - 10), '*'); else L.row(x + 6, hi(top - 10), 'ooo');
+    en(x, o.en);
+    return x + w;
+  };
+  // ぶらんこ: 穴の 上に つるの ぶらんこを ならべる
+  S.swings = (x, n, o = {}) => {
+    const top = o.top ?? 10, gap = o.gap || 6, w = 4 + n * gap + 4;
+    if (o.hint) L.hint(x, 'ぶらんこ', 'とびついて ←→で こぐ。ジャンプで とびだす');
+    L.ground(x, x + 3, top); L.ground(x + w - 4, x + w - 1, top);
+    if (o.lava) L.lava(x + 4, x + w - 5, top + 1);
+    if (o.safe) L.ground(x + 4, x + w - 5, top);
+    for (let i = 0; i < n; i++) { const ax = x + 4 + Math.floor(gap / 2) + i * gap; L.hazard(ax, 'swing', { y: Math.max(1, top - 9), len: o.len || 4, th0: (i % 2 ? -1 : 1) * (o.th0 || 0.8) }); L.row(ax - 1, top - 6, 'o o'); }
+    if (o.star) L.put(x + 4 + Math.floor(gap / 2) + (n - 1) * gap + 1, top - 5, '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // あわ ふきだし: 高い かべの 手前で あわが のぼってくる。ふんで はねて かべの 上へ
+  S.bubbleWall = (x, o = {}) => {
+    const top = o.top ?? 10, w = 14, wh = o.h || 6;
+    if (o.hint) L.hint(x, 'あわ ふきだし', 'のぼってくる あわを ふむと たかく はねる');
+    L.ground(x, x + w - 1, top);
+    L.hazard(x + 4, 'bvent', { every: o.every || 1.5, cargo: o.cargo || ['', 'coin', ''], top: 1 });
+    L.fill(x + 8, x + 9, top - wh, top - 1, o.ch || 'S');
+    L.row(x + 8, top - wh - 1, 'oo');
+    if (o.star) L.put(x + 4, hi(top - 8), '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // あわの 穴: 穴の 底から あわが のぼる。あわを ふんで わたる
+  S.bubbleGap = (x, o = {}) => {
+    const top = o.top ?? 10, w = 14;
+    L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
+    L.ground(x + 6, x + 7, 11); L.hazard(x + 6, 'bvent', { every: o.every || 1.3, cargo: o.cargo || ['', '', 'goomy'], top: 1, sp: 95 });
+    L.row(x + 4, top - 5, 'oooooo');
+    if (o.star) L.put(x + 7, hi(top - 7), '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // ぶくガニの はま: あるく カニが あわを ふいてくる
+  S.crabs = (x, w, o = {}) => { const top = o.top ?? 10; L.ground(x, x + w - 1, top); for (let k = 6; k < w - 2; k += 7) L.enemy(x + k, 'bukugani'); if (o.coins) L.row(x + 2, top - 3, 'o'.repeat(Math.min(6, w - 4))); if (o.cp !== undefined) L.put(x + o.cp, top - 1, 'C'); return x + w; };
+  // どかん ブロック: 上の どうかせん(どかん ブロックの 列)を 下から たたくと、つながった かべまで つぎつぎ ばくはつ
+  S.fuseWall = (x, o = {}) => {
+    const top = o.top ?? 10, w = 14, wx = x + 8;
+    if (o.hint) L.hint(x, 'どかん ブロック', 'したから たたくと ひが つく。となりの ブロックへ つぎつぎ ばくはつ');
+    L.ground(x, x + w - 1, top);
+    L.row(x + 3, top - 4, '+++++');
+    L.fill(wx, wx, top - 4, top - 1, '+');
+    L.fill(wx, wx, 0, top - 5, o.ch || 'S');
+    L.row(wx + 2, top - 1, 'oo');
+    if (o.star) L.put(wx + 3, top - 1, '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // おせる いわと おもし スイッチ: いわを スイッチに のせると とびら(|)が ひらく
+  S.pushGate = (x, o = {}) => {
+    const top = o.top ?? 10, w = 16;
+    if (o.hint) L.hint(x, 'おもし スイッチ', 'いわを おして スイッチの 上に のせよう');
+    L.ground(x, x + w - 1, top);
+    L.hazard(x + 3, 'pblock', {});
+    L.hazard(x + 11, 'wplate', {});
+    L.fill(x + 12, x + 12, top - 4, top - 1, '|'); L.fill(x + 12, x + 12, 0, top - 5, o.ch || 'S');
+    L.row(x + 13, top - 1, 'oo');
+    en(x, o.en);
+    return x + w;
+  };
+  // おせる いわを ようがんに おとして 足場に する(星への 近道)
+  S.pushLava = (x, o = {}) => {
+    const top = o.top ?? 10, w = 14;
+    L.ground(x, x + 4, top); L.ground(x + 10, x + w - 1, top);
+    L.lava(x + 5, x + 9, top + 1);
+    L.hazard(x + 2, 'pblock', {});
+    if (o.star) L.put(x + 6, hi(top - 6), '*'); else L.row(x + 5, top - 4, 'ooooo');
+    en(x, o.en);
+    return x + w;
+  };
+  // さかさま スイッチの へや: pat の 1文字が 6マス。'F' ゆかを あるく(てんじょうに 穴)/ 'C' てんじょうを あるく(ゆかに 穴)
+  S.grav = (x, pat, o = {}) => {
+    const top = o.top ?? 10, seg = 8, w = 4 + pat.length * seg + 4;
+    if (o.hint) L.hint(x, 'さかさま スイッチ', 'うえむきの 玉に さわると てんじょうが ゆかに なる');
+    L.ground(x, x + w - 1, top); L.fill(x, x + w - 1, 0, 2, o.ch || 'S');
+    let cur = 'F';
+    for (let i = 0; i < pat.length; i++) {
+      const sx = x + 4 + i * seg, c = pat[i];
+      if (c !== cur) { L.hazard(sx - 1, 'gorb', { y: c === 'C' ? top - 1 : 3, dir: c === 'C' ? -1 : 1 }); cur = c; }
+      if (c === 'C') { for (let k = 1; k < seg - 1; k++) for (let y = top; y < 12; y++) L.put(sx + k, y, ' '); L.row(sx + 2, 4, 'oooo'); }
+      else { L.fill(sx + 1, sx + seg - 2, 0, 2, ' '); L.row(sx + 2, top - 2, 'oooo'); }
+    }
+    if (cur === 'C') L.hazard(x + 4 + pat.length * seg, 'gorb', { y: 3, dir: 1 });
+    if (o.star) L.put(x + 4 + (o.starSeg ?? 1) * seg + 2, o.starY ?? 6, '*');
+    en(x, o.en);
+    return x + w;
+  };
+  // ゆきだまの かべ: ゆきだまを けって レンガの かべを こわす(上は 石で ふさぐ)
+  S.snowWall = (x, o = {}) => {
+    const top = o.top ?? 10, w = 16;
+    if (o.hint) L.hint(x, 'ゆきだま', 'けると ころがって 大きく なる。レンガの かべも こわせる');
+    L.ground(x, x + w - 1, top);
+    if (o.ice) L.fill(x + 1, x + w - 2, top, top, 'I');
+    L.hazard(x + 3, 'snowb', { r: 22 });
+    L.fill(x + 11, x + 11, top - 3, top - 1, 'B'); L.fill(x + 11, x + 11, 0, top - 4, o.ch || 'S');
+    L.row(x + 12, top - 1, 'ooo');
+    en(x, o.en);
+    return x + w;
+  };
+  // ゆきの さか道: ころりん が ゆきだまを ころがしてくる。すべりん も
+  S.snowRun = (x, w, o = {}) => {
+    const top = o.top ?? 10;
+    L.ground(x, x + w - 1, top);
+    if (o.ice) L.fill(x + 1, x + w - 2, top, top, 'I');
+    L.enemy(x + w - 2, 'kororin', { every: o.every || 3.0 });
+    (o.pen || []).forEach(dx => L.enemy(x + dx, 'suberin'));
+    if (o.coins) L.row(x + 2, top - 3, 'o'.repeat(Math.min(6, w - 6)));
+    if (o.cp !== undefined) L.put(x + o.cp, top - 1, 'C');
+    en(x, o.en);
+    return x + w;
+  };
+  // くらやみの 道: ランタン と ひかりの はな。穴の まわりを はなで てらす
+  S.darkPath = (x, w, o = {}) => {
+    const top = o.top ?? 10;
+    L.ground(x, x + w - 1, top);
+    (o.pits || []).forEach(([dx, n]) => { for (let gx = x + dx; gx < x + dx + n; gx++) for (let y = top; y < 12; y++) L.put(gx, y, ' '); });
+    (o.flowers || []).forEach(dx => L.hazard(x + dx, 'lflower', {}));
+    if (o.lantern !== undefined) L.hazard(x + o.lantern, 'lantern', {});
+    (o.flies || []).forEach(([dx, y]) => L.enemy(x + dx, 'hotarun', { y }));
+    if (o.coins) L.row(x + 2, top - 3, 'o'.repeat(Math.min(6, w - 4)));
+    if (o.cp !== undefined) L.put(x + o.cp, top - 1, 'C');
+    if (o.star) L.put(x + o.star[0], o.star[1], '*');
+    (o.deco || []).forEach(([dx, n]) => L.deco(x + dx, n, 1));
+    en(x, o.en);
+    return x + w;
   };
   // ゴール・ボス部屋の前に「つづきの区間」を足す(下の extendLevel)
   if (L._def && !L._def.secret && !L._def.noExtend) for (const nm of ['goal', 'boss', 'boss2', 'boss3', 'fortBoss']) {
@@ -1318,7 +1557,7 @@ const LEVELS = [
       x = S.crushers(x, 3, { coins: true });
       x = S.blinkTower(x);
       x = S.timer(x, 16, { gap: 2, dur: 5 });
-      x = S.fortBoss(x, 3);
+      x = S.fortBoss(x, 5);
     },
   },
   {
@@ -2173,7 +2412,7 @@ const LEVELS = [
       const S = sections(L);
       let x = 0;
       x = S.start(x, { deco: 'pillar' });
-      L.hint(x - 2, 'みずの なか', 'ジャンプで およぐ。ぷくぷくは ふくらむと トゲが でる');
+      L.hint(x - 2, 'みずの なか', 'ジャンプで およぐ。ぷっくんは ふくらむと トゲが でる');
       x = S.deep(x, 24, { coins: true, fugu: [[12, 6]], pillars: [[16, 1, 5]] });
       x = S.deep(x, 22, { coinY: 9, coins: true, fugu: [[6, 8], [16, 4]], star: [11, 2], cp: 3 });
       x = S.deep(x, 26, { pillars: [[6, 6, 10], [14, 1, 5], [20, 6, 10]], coins: true, coinY: 3, fugu: [[10, 7]] });
@@ -2192,7 +2431,7 @@ const LEVELS = [
       const S = sections(L);
       let x = 0;
       x = S.start(x, { deco: 'tree' });
-      L.hint(x - 2, 'たきつぼ', 'ぷくぷくが ふくらんでいない ときは ふめる');
+      L.hint(x - 2, 'たきつぼ', 'ぷっくんが ふくらんでいない ときは ふめる');
       x = S.deep(x, 24, { coins: true, fugu: [[8, 5], [16, 8]], pillars: [[12, 1, 6]] });
       x = S.deep(x, 26, { pillars: [[5, 6, 10], [11, 1, 5], [17, 6, 10]], coins: true, coinY: 3, star: [21, 9], cp: 2 });
       x = S.deep(x, 24, { coins: true, fugu: [[5, 3], [10, 8], [16, 5], [20, 2]] });
@@ -2229,7 +2468,7 @@ const LEVELS = [
       x = S.run(x, 4, { star: false });
       L.put(x - 2, 6, '*');
       x = S.run(x, 6, { cp: 2 });
-      x = S.fortBoss(x, 3);
+      x = S.fortBoss(x, 5);
     },
   },
   {
@@ -2253,7 +2492,7 @@ const LEVELS = [
       x = S.run(x, 8, { cp: 2, en: [[5, 'spiky']] });
       x = S.rail(x, 16, { lava: true, star: true });
       x = S.run(x, 6, { cp: 2 });
-      x = S.fortBoss(x, 4);
+      x = S.fortBoss(x, 6, { low: true });
     },
   },
   {
@@ -2276,7 +2515,7 @@ const LEVELS = [
       x = S.run(x, 8, { cp: 2 });
       x = S.rail(x, 18, { lava: true, sp: 150, star: true });
       x = S.run(x, 6, { cp: 2 });
-      x = S.fortBoss(x, 5);
+      x = S.fortBoss(x, 6);
     },
   },
   // ---- そらの みち(強制スクロール) ----
@@ -2432,6 +2671,415 @@ const LEVELS = [
       x = S.goal(x, {});
     },
   },
+  // ===================== 第5段階(2026-10-13): 新しい しかけが 主役の 面(1面に 1つの 主役。はじめは 安全な 所で 見せて、だんだん 組み合わせる) =====================
+  {
+    id: 70, world: 1, noExtend: true, name: 'ぎっこん シーソーの おか', theme: 'grass', bgm: 'bgm_1', time: 420,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'sign' });
+      x = S.run(x, 10, { en: [[7, 'goomy']], deco: [[2, 'tree']] });
+      x = S.seesaws(x, 1, { hint: true, safe: true });
+      x = S.run(x, 8, { cp: 2, coins: 4 });
+      x = S.seesaws(x, 2, {});
+      x = S.blocks(x, 'B?BvB', { en: [[6, 'goomy']] });
+      x = S.tubeUp(x, { star: true });
+      L.hint(x - 14, 'すいこみ つつ', 'つつの 口の 上で ↓ を おすと 中を とおって とびだす');
+      x = S.run(x, 10, { cp: 3, en: [[6, 'goomy', { v: 'para' }]], deco: [[8, 'tree']] });
+      x = S.seesaws(x, 2, { star: true, en: [[2, 'bee', { y: 5 }]] });
+      x = S.gap(x, 3, { coins: 3 });
+      x = S.tubeWall(x, {});
+      x = S.run(x, 10, { cp: 3, en: [[4, 'goomy'], [8, 'goomy']] });
+      x = S.seesaws(x, 3, {});
+      x = S.spring(x, { star: true });
+      x = S.run(x, 8, { cp: 2, en: [[5, 'shell']] });
+      x = S.seesaws(x, 2, { en: [[1, 'bee', { y: 5 }]] });
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { deco: 'tree' });
+    },
+  },
+  {
+    id: 71, world: 2, noExtend: true, name: 'しおかぜの どうくつ', theme: 'seacave', bgm: 'bgm_2', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'crystal' });
+      x = S.run(x, 8, {});
+      L.hint(x - 4, 'ぶくガニ', 'ふく あわは ふむと はねる。よこから だと おされる');
+      x = S.crabs(x, 14, { coins: true });
+      x = S.tide(x, 22, { hint: true, walls: [[11, 5]], per: 9 });
+      x = S.run(x, 8, { cp: 2 });
+      x = S.logs(x, 3, { water: true, hint: true });
+      x = S.tide(x, 30, { walls: [[8, 5], [20, 6]], logs: [14], fugu: [[16, 6]], per: 9, phase: 3 });
+      x = S.run(x, 8, { cp: 3, en: [[5, 'bukugani']] });
+      x = S.tide(x, 28, { walls: [[6, 5], [16, 6]], ledges: [[21, 3, 4]], star: [22, 2], per: 10, phase: 1 });
+      x = S.crabs(x, 16, { coins: true, cp: 2 });
+      x = S.logs(x, 4, { water: true, star: true });
+      x = S.tide(x, 26, { walls: [[12, 6]], fugu: [[6, 6]], star: [12, 3], per: 9, phase: 5 });
+      x = S.run(x, 8, { cp: 2, en: [[5, 'bukugani']] });
+      x = S.logs(x, 3, { water: true });
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { ch: 'S', deco: 'crystal' });
+    },
+  },
+  {
+    id: 72, world: 2, noExtend: true, secretGoal: true, name: 'ゆきだまの さか', theme: 'ice', bgm: 'bgm_1', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'tree' });
+      x = S.run(x, 8, { fill: 'I' });
+      x = S.snowWall(x, { hint: true, ice: true });
+      x = S.run(x, 8, { cp: 2, fill: 'I' });
+      L.hint(x, 'すべりん と ころりん', 'すべってくる ペンギンと、ゆきだまを ころがす ゆきだるま');
+      x = S.snowRun(x, 18, { ice: true, pen: [6], coins: true });
+      x = S.tower(x, { ch: 'I', star: true });
+      x = S.snowWall(x, { ice: true });
+      x = S.gap(x, 3);
+      x = S.run(x, 8, { cp: 3, items: [[2, 'h']] });
+      x = S.snowRun(x, 16, { pen: [5, 10] });
+      x = S.icicles(x, 12, { en: [[8, 'suberin']] });
+      // ひみつの かぎ: 高い たなの 上(つららの 先)
+      L.fill(x - 5, x - 2, 5, 5, 'S'); L.hazard(x - 4, 'skey', { y: 3 });
+      x = S.snowWall(x, {});
+      x = S.gap(x, 7, { star: true, starY: 4 });
+      x = S.run(x, 8, { cp: 2, fill: 'I' });
+      x = S.snowRun(x, 22, { ice: true, pen: [6, 12], every: 2.6 });
+      x = S.power(x, 'A', { en: [[6, 'suberin']] });
+      x = S.snowWall(x, { ice: true });
+      x = S.spring(x, { star: true });
+      x = S.snowRun(x, 14, { pen: [4] });
+      x = S.run(x, 6, { coins: 4 });
+      // かぎあな(ゴールの 手前の たかい だい)
+      L.fill(x - 3, x - 1, 7, 9, 'S'); L.hazard(x - 2, 'keyhole', { y: 3 });
+      x = S.goal(x, { deco: 'crystal' });
+    },
+  },
+  {
+    id: 73, world: 3, noExtend: true, name: 'トロッコの こうざん', theme: 'mine', bgm: 'bgm_2', time: 480,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'torch' });
+      x = S.run(x, 8, { en: [[6, 'skeleton']] });
+      x = S.cart(x, '........__........o.o.o......___......', { hint: true });
+      x = S.run(x, 8, { cp: 2 });
+      x = S.fuseWall(x, { hint: true });
+      x = S.run(x, 6, { en: [[4, 'bomb']] });
+      x = S.cart(x, '.....e.....__....#.....e....___...o*o...__......', {});
+      x = S.run(x, 8, { cp: 2, deco: [[5, 'torch']] });
+      x = S.tower(x, { ch: 'S', star: true });
+      x = S.cart(x, '....__...e..__...#...___..e...__..___.....', { lava: true });
+      x = S.run(x, 8, { cp: 2 });
+      x = S.fuseWall(x, { star: true });
+      x = S.cart(x, '...e...__.#..__..e..___..#...__.....', { lava: true, sp: 470 });
+      x = S.run(x, 6, { coins: 4, deco: [[3, 'torch']] });
+      x = S.goal(x, { ch: 'S', deco: 'torch' });
+    },
+  },
+  {
+    id: 74, world: 4, noExtend: true, name: 'ぴょこぴょこ ブロックの とう', theme: 'crystal', bgm: 'bgm_3', time: 500,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'crystal' });
+      x = S.run(x, 8, { coins: 3 });
+      x = S.jumpBridge(x, ':: ;; :: ;;', { hint: true });
+      L.hint(x - 2, 'いろが ちがう ときは', 'その場で ジャンプすると きりかわる');
+      x = S.run(x, 8, { cp: 2, en: [[5, 'goomy']] });
+      x = S.jumpWalls(x, 3, {});
+      x = S.jumpTower(x, { star: true });
+      x = S.run(x, 8, { en: [[5, 'bat', { y: 5 }]] });
+      x = S.jumpBridge(x, ':: ;; :: ;; ::', { lava: true });
+      x = S.run(x, 8, { cp: 3 });
+      x = S.blocks(x, 'B?BAB', { en: [[7, 'skeleton']] });
+      x = S.jumpWalls(x, 4, { en: [[6, 'goomy']] });
+      x = S.jumpBridge(x, ';; :: ;; :: ;;', { lava: true, rise: true, star: true });
+      x = S.run(x, 8, { cp: 2, items: [[2, 'h']] });
+      x = S.jumpTower(x, {});
+      x = S.windGap(x, 5);
+      x = S.jumpBridge(x, ': ; : ; : ; :', { lava: true });
+      x = S.tower(x, { ch: 'S', star: true });
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { ch: 'S', deco: 'crystal' });
+    },
+  },
+  {
+    id: 75, world: 5, noExtend: true, dark: true, name: 'まっくらの どうくつ', theme: 'cave', bgm: 'bgm_3', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'torch' });
+      L.hint(x - 6, 'まっくら!', 'ランタンを もって すすもう(C を おしたまま さわる)');
+      x = S.darkPath(x, 14, { lantern: 3, flowers: [10], coins: true });
+      L.hint(x, 'ひかりの はな', 'さわると ひかって まわりを てらす');
+      x = S.darkPath(x, 18, { pits: [[6, 3]], flowers: [4, 11], coins: true });
+      x = S.darkPath(x, 10, { cp: 3, deco: [[6, 'torch']] });
+      L.hint(x, 'ほたるん', 'ひかる ホタル。真下に いると とびかかってくる');
+      x = S.darkPath(x, 22, { pits: [[5, 3], [14, 3]], flowers: [3, 10, 19], flies: [[8, 5], [16, 4]] });
+      x = S.darkPath(x, 16, { star: [9, 4], flowers: [6], en: [[12, 'skeleton']] });
+      L.fill(x - 9, x - 6, 6, 6, 'S');
+      x = S.darkPath(x, 10, { cp: 3, deco: [[2, 'torch']] });
+      x = S.darkPath(x, 24, { pits: [[4, 3], [11, 4], [19, 3]], flowers: [9, 17], flies: [[13, 5]], coins: true });
+      x = S.fuseWall(x, {});
+      x = S.darkPath(x, 10, { cp: 3, lantern: 6 });
+      x = S.darkPath(x, 22, { pits: [[6, 4], [15, 3]], flowers: [4, 13, 20], flies: [[10, 4], [18, 5]], en: [[3, 'bat', { y: 6 }]] });
+      x = S.tower(x, { ch: 'S', star: true });
+      x = S.darkPath(x, 16, { star: [12, 5], flowers: [8], pits: [[4, 3]] });
+      L.fill(x - 6, x - 3, 7, 7, 'S');
+      x = S.run(x, 6, { coins: 3, deco: [[3, 'torch']] });
+      x = S.goal(x, { ch: 'S', deco: 'torch' });
+    },
+  },
+  {
+    id: 76, world: 5, noExtend: true, name: 'おもし いわの いせき', theme: 'ruins', bgm: 'bgm_2', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'pillar' });
+      x = S.run(x, 8, { en: [[6, 'skeleton']] });
+      x = S.pushGate(x, { hint: true });
+      x = S.run(x, 8, { cp: 2, deco: [[5, 'pillar']] });
+      x = S.pushLava(x, { star: true });
+      L.hint(x - 14, 'いわを ようがんへ', 'おとすと 足場に なる');
+      x = S.run(x, 8, { en: [[5, 'skeleton']] });
+      x = S.fuseWall(x, { hint: true });
+      x = S.run(x, 8, { cp: 3 });
+      x = S.pushGate(x, { en: [[6, 'goomy']] });
+      x = S.rocks(x, 14, {});
+      x = S.blocks(x, 'S?SvS', { en: [[7, 'skeleton']] });
+      x = S.run(x, 8, { cp: 2, items: [[2, 'h']] });
+      x = S.pushLava(x, {});
+      x = S.fuseWall(x, { star: true });
+      x = S.timer(x, 14, { dur: 6 });
+      x = S.run(x, 8, { cp: 2 });
+      x = S.pushGate(x, { en: [[14, 'skeleton']] });
+      x = S.tower(x, { ch: 'S', star: true });
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { ch: 'S', deco: 'pillar' });
+    },
+  },
+  {
+    id: 77, world: 6, noExtend: true, secretGoal: true, name: 'ぶらんこの たに', theme: 'jungle', bgm: 'bgm_1', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'tree' });
+      x = S.run(x, 8, { en: [[6, 'goomy']] });
+      x = S.swings(x, 1, { hint: true, safe: true });
+      x = S.run(x, 8, { cp: 2 });
+      x = S.swings(x, 1, {});
+      x = S.run(x, 6, { en: [[4, 'plant']] });
+      x = S.swings(x, 2, { star: true });
+      x = S.run(x, 8, { cp: 3, deco: [[2, 'tree']] });
+      x = S.notes(x, '7 7 7', {});
+      x = S.swings(x, 2, { en: [[5, 'bee', { y: 4 }]] });
+      x = S.run(x, 8, { cp: 2, items: [[2, 'h']] });
+      x = S.seed(x, { star: true });
+      // ひみつの かぎ: つるの 上の たな
+      L.hazard(x - 6, 'skey', { y: 1 });
+      x = S.swings(x, 3, { lava: true });
+      x = S.zip(x, 18, {});
+      x = S.run(x, 8, { cp: 2, en: [[5, 'spiky']] });
+      x = S.swings(x, 2, { lava: true });
+      L.hazard(x - 2, 'keyhole', {});
+      x = S.tower(x, { star: true });
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { deco: 'tree' });
+    },
+  },
+  {
+    id: 78, world: 6, noExtend: true, name: 'あわの たき', theme: 'falls', bgm: 'bgm_2', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'tree' });
+      x = S.run(x, 8, { coins: 3 });
+      x = S.bubbleWall(x, { hint: true, h: 4, cargo: ['', 'coin'] });
+      x = S.run(x, 8, { cp: 2 });
+      L.hint(x, 'ぶくガニ', 'ふく あわは ふむと はねる。よこから だと おされる');
+      x = S.crabs(x, 16, { coins: true });
+      x = S.bubbleGap(x, { star: true });
+      x = S.run(x, 8, { cp: 3, en: [[5, 'goomy']] });
+      x = S.bubbleWall(x, { h: 6, cargo: ['', 'goomy', 'coin'] });
+      x = S.notes(x, '7 7 7', {});
+      x = S.bubbleGap(x, { cargo: ['coin', '', 'bee'] });
+      x = S.run(x, 8, { cp: 2, items: [[2, 'h']] });
+      x = S.crabs(x, 18, {});
+      x = S.bubbleWall(x, { h: 6, star: true, every: 1.3 });
+      x = S.zip(x, 18, {});
+      x = S.bubbleGap(x, {});
+      x = S.run(x, 8, { cp: 2 });
+      x = S.tower(x, { star: true });
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { deco: 'tree' });
+    },
+  },
+  {
+    id: 79, world: 7, noExtend: true, name: 'さかさまの とう', theme: 'space', bgm: 'bgm_3', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, {});
+      x = S.run(x, 8, { coins: 3 });
+      x = S.grav(x, 'FCF', { hint: true });
+      x = S.run(x, 8, { cp: 2, en: [[5, 'goomy']] });
+      x = S.grav(x, 'FCFC', { star: true, starSeg: 1, starY: 4 });
+      x = S.run(x, 8, { en: [[5, 'slime']] });
+      x = S.moon(x, 2, {});
+      x = S.run(x, 8, { cp: 3 });
+      x = S.grav(x, 'CFCCF', { star: true, starSeg: 3, starY: 4 });
+      x = S.cannon(x, 9, {});
+      x = S.run(x, 8, { cp: 2, items: [[2, 'h']] });
+      x = S.grav(x, 'FCFCFC', {});
+      x = S.tower(x, { ch: 'S', star: true });
+      x = S.grav(x, 'CC', {});
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { ch: 'S' });
+    },
+  },
+  {
+    id: 80, world: 8, noExtend: true, name: 'からくりの かげとう', theme: 'kagecastle', bgm: 'bgm_3', time: 600,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'torch' });
+      x = S.run(x, 8, { en: [[6, 'skeleton']] });
+      x = S.jumpBridge(x, ':: ;; :: ;;', { lava: true });
+      x = S.fuseWall(x, {});
+      x = S.run(x, 8, { cp: 2 });
+      x = S.swings(x, 2, { lava: true, star: true });
+      x = S.grav(x, 'FCF', {});
+      x = S.run(x, 8, { cp: 3, en: [[5, 'wizard']] });
+      x = S.logs(x, 3, {});
+      x = S.pushGate(x, {});
+      x = S.cart(x, '....__..e..___..#..__...o*o..___....', { lava: true, ch: 'S' });
+      x = S.run(x, 8, { cp: 2, items: [[2, 'h']] });
+      x = S.jumpTower(x, { star: true });
+      x = S.seesaws(x, 2, { lava: true });
+      x = S.bubbleWall(x, { h: 6 });
+      x = S.run(x, 6, { coins: 4 });
+      x = S.goal(x, { ch: 'S', deco: 'torch' });
+    },
+  },
+  // ===================== おまけの ワールド「ほしの はての にわ」(ほしの みちを ぜんぶ まわると ひらく。むずかしい くみあわせ) =====================
+  {
+    id: 81, world: 10, noExtend: true, name: 'ほしの はての にわ いち', theme: 'space', music: 'starroad', bgm: 'bgm_3', time: 420,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, {});
+      x = S.grav(x, 'FCFCF', { star: true, starSeg: 1, starY: 4 });
+      x = S.run(x, 6, { cp: 2 });
+      x = S.jumpBridge(x, ':: ;; :: ;; :: ;;', { lava: true, rise: true });
+      x = S.swings(x, 2, { lava: true, star: true });
+      x = S.run(x, 6, { cp: 2, items: [[3, 'i', 2]] });
+      x = S.shells(x, { e3: 'spiky' });
+      x = S.jumpTower(x, { star: true });
+      x = S.run(x, 6);
+      x = S.goal(x, { ch: 'S' });
+    },
+  },
+  {
+    id: 82, world: 10, noExtend: true, name: 'ほしの はての にわ に', theme: 'mine', music: 'starroad', bgm: 'bgm_3', time: 420,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'torch' });
+      x = S.cart(x, '...__..e..___..#..__..e..___...o*o..__.._..#...___....', { lava: true, sp: 480 });
+      x = S.run(x, 6, { cp: 2 });
+      x = S.logs(x, 4, { star: true });
+      x = S.bubbleGap(x, { cargo: ['', 'bee', 'coin'] });
+      x = S.run(x, 6, { cp: 2 });
+      x = S.fuseWall(x, { star: true });
+      x = S.seesaws(x, 3, { lava: true });
+      x = S.run(x, 6);
+      x = S.goal(x, { ch: 'S', deco: 'torch' });
+    },
+  },
+  {
+    id: 83, world: 10, noExtend: true, dark: true, name: 'ほしの はての にわ さん', theme: 'cave', music: 'dark', bgm: 'bgm_3', time: 460,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'torch' });
+      x = S.darkPath(x, 16, { lantern: 3, flowers: [12], pits: [[7, 3]] });
+      x = S.jumpWalls(x, 3, {});
+      x = S.darkPath(x, 20, { pits: [[4, 3], [12, 4]], flowers: [2, 10, 17], flies: [[8, 5], [15, 4]], star: [9, 4] });
+      L.fill(x - 13, x - 10, 6, 6, 'S');
+      x = S.run(x, 6, { cp: 2, deco: [[3, 'torch']] });
+      x = S.pushGate(x, {});
+      x = S.darkPath(x, 22, { pits: [[5, 3], [13, 3]], flowers: [3, 11, 19], flies: [[9, 4]] });
+      x = S.tower(x, { ch: 'S', star: true });
+      x = S.darkPath(x, 14, { flowers: [6], star: [10, 5] });
+      L.fill(x - 5, x - 3, 7, 7, 'S');
+      x = S.run(x, 6, { deco: [[3, 'torch']] });
+      x = S.goal(x, { ch: 'S', deco: 'torch' });
+    },
+  },
+  {
+    id: 84, world: 10, noExtend: true, name: 'ほしの はての にわ さいご', theme: 'kagecastle', music: 'finalboss', bgm: 'bgm_3', time: 520,
+    build(L) {
+      const S = sections(L);
+      let x = 0;
+      x = S.start(x, { deco: 'torch' });
+      x = S.tide(x, 24, { walls: [[10, 6]], logs: [5, 16], star: [10, 3], per: 8 });
+      x = S.run(x, 6, { cp: 2 });
+      x = S.grav(x, 'CFCFC', {});
+      x = S.snowWall(x, {});
+      x = S.run(x, 6, { cp: 2, items: [[3, 'i', 2]] });
+      x = S.swings(x, 2, { lava: true });
+      x = S.jumpBridge(x, ': ; : ; : ; :', { lava: true, star: true });
+      x = S.bubbleWall(x, { h: 6 });
+      x = S.run(x, 6, { cp: 2 });
+      x = S.cart(x, '..e..__..#..___..e..__..o*o..___....', { lava: true, sp: 500 });
+      x = S.goal(x, { ch: 'S', deco: 'torch' });
+    },
+  },
+  // ばったり バトル: 地図を うろつく 敵に ぶつかると 入る みじかい 面(ワールドに 合わせて 敵と けしきが かわる)
+  {
+    id: 85, world: 1, noExtend: true, noShards: true, noStars: true, roam: true, name: 'ばったり バトル', theme: 'grass', music: 'boss', bgm: 'bgm_2', time: 200,
+    build(L) {
+      const S = sections(L);
+      const d = L._def, en = EXT_ENEMIES[d.world] || EXT_ENEMIES[1], t = d.roamType || en[0];
+      let x = 0;
+      x = S.start(x, {});
+      x = S.run(x, 22, { coins: 5, en: [[6, t], [10, en[1]], [14, t], [18, en[2]]] });
+      x = S.blocks(x, 'B?B?B', { en: [[5, en[3] || t]] });
+      x = S.run(x, 10, { items: [[5, 'c']], en: [[3, t]] });
+      x = S.goal(x, {});
+    },
+  },
+  // れんしゅうの はらっぱ(はじめて 1-1 に 入る 前。やってみたら 柵が ひらいて つぎへ)
+  {
+    id: 86, world: 1, noExtend: true, noShards: true, noStars: true, tutorial: true, name: 'れんしゅうの はらっぱ', theme: 'grass', music: 'grass', bgm: 'bgm_1', time: 999,
+    build(L) {
+      const S = sections(L);
+      const gate = (x, n) => { L.fill(x, x, 0, 4, 'S'); L.hazard(x, 'tgate', { n }); };
+      const step = (x, w, n, cond, text, sub, subT, arrow, arrowY) => L.hazard(x, 'tstep', { w, n, cond, text, sub, subT, arrow, arrowY });
+      let x = 0;
+      x = S.start(x, { deco: 'sign' });
+      step(x - 8, 14, 1, 'move', 'あるこう', '← → で あるく(ずっと おすと はしる)', '左下の ◀ ▶ で あるく');
+      x = S.run(x, 6, { coins: 3 }); gate(x - 1, 1);
+      step(x, 12, 2, 'jump', 'ジャンプ', 'スペース か Z で ジャンプ。ながおしで たかく とぶ', 'みぎ下の「ジャンプ」。ながおしで たかく', x + 5, 6);
+      x = S.run(x, 12, {}); L.fill(x - 7, x - 7, 8, 9, 'S'); L.row(x - 8, 6, 'ooo'); gate(x - 1, 2);
+      step(x, 12, 3, 'dash', 'ダッシュ', 'ブーツを とって C か Shift で ダッシュ', 'ブーツを とって「ダッシュ」', x + 3, 8);
+      x = S.run(x, 12, {}); L.put(x - 9, 9, 'b'); gate(x - 1, 3);
+      step(x, 12, 4, 'stomp', 'てきを ふもう', 'てきの 上に おりると たおせる', 'ジャンプして てきの 上に おりる');
+      x = S.run(x, 12, { en: [[7, 'goomy']] }); gate(x - 1, 4);
+      step(x, 12, 5, 'bump', 'ブロックを たたこう', 'ブロックの 下で ジャンプ。なにかが でてくる', 'ブロックの 下で ジャンプ', x + 6, 4);
+      x = S.run(x, 12, {}); L.row(x - 7, 6, 'B?B'); gate(x - 1, 5);
+      step(x, 14, 6, 'spin', 'スピンジャンプ', 'V で くるくる。トゲの てきも ふめる', '「スピン」ボタンで くるくる');
+      x = S.run(x, 14, { en: [[8, 'spiky']] }); gate(x - 1, 6);
+      step(x, 14, 7, 'hip', 'ヒップドロップ', 'くうちゅうで ↓。じめんを たたいて レンガを こわす', 'くうちゅうで ◀▶の 下を おす', x + 7, 8);
+      x = S.run(x, 14, {}); L.row(x - 8, 10, 'BBB'); L.row(x - 8, 11, '###'); L.row(x - 8, 9, 'ooo'); gate(x - 1, 7);
+      step(x, 14, 8, 'shard', 'ほしの かけら', '1つの ステージに 5まい。たかい ところを さがそう', '1つの ステージに 5まい', x + 8, 4);
+      x = S.run(x, 14, {}); L.fill(x - 9, x - 4, 7, 7, 'S'); L.put(x - 6, 5, '@'); L.row(x - 12, 9, 'S'); gate(x - 1, 8);
+      L.hint(x, 'これで れんしゅうは おしまい!', 'ゴールの はたへ。あとは ぼうけんで おぼえよう');
+      x = S.run(x, 6, { coins: 3 });
+      x = S.goal(x, { deco: 'tree' });
+    },
+  },
 ];
 
 // ---------- 面を のばす(2026-10-12 夜: 持ち主「もうちょっと1ステージ長めでも」) ----------
@@ -2472,14 +3120,14 @@ function extActs(S, wn, top, R, e1, fly) {
     ['kumo', x => S.run(x, 12, { top, en: [[4, 'kumo', { top: 2, drop: top - 3 }], [9, 'kumo', { top: 2, drop: top - 3 }]], coins: 4 })],
   ] : [['turn', x => S.turn(x, { top })], ['shells', x => S.shells(x, { top, coins: true, e3: e1() })]];
   const W = {
-    1: [['tramp', x => S.tramp(x, { top })], ['tower', x => S.tower(x, { top, ch })], ['chest', x => S.chest(x, { top, ch: 'S' })]],
-    2: [['icicles', x => S.icicles(x, 12, { top })], ['shaft', x => S.shaft(x, { top, ch: 'I' })], ['firebars', x => S.firebars(x, 12, 2, { top })], ['bubbles', x => S.bubbles(x, 3, { top })]],
-    3: [['updraft', x => S.updraft(x, { top })], ['conveyor', x => S.conveyor(x, 12, R() < 0.5 ? 1 : -1, { top, en: [[6, e1()]] })], ['zappers', x => S.zappers(x, 3, { top })], ['saws', x => S.saws(x, 12, { top, coins: true })], ['crushers', x => S.crushers(x, 3, { top, coins: true })]],
-    4: [['windRun', x => S.windRun(x, 12, R() < 0.5 ? 1 : -1, { top, v: 140, coins: 4, en: [[7, e1()]] })], ['windGap', x => S.windGap(x, 5, { top })], ['swGate', x => S.swGate(x, { top })], ['swBridge', x => S.swBridge(x, { top })], ['warpWall', x => S.warpWall(x, { top })], ['warpUp', x => S.warpUp(x, { top })]],
-    5: [['rocks', x => S.rocks(x, 14, { top, coins: 4 })], ['blink', x => S.blink(x, pick(['S33S44S', 'S333S', 'S44S33S']), { top })], ['timer', x => S.timer(x, 14, { top, dur: 6 })], ['timerCage', x => S.timerCage(x, { top })], ['blinkTower', x => S.blinkTower(x, { top })]],
-    6: [['seed', x => S.seed(x, { top })], ['zip', x => S.zip(x, 16, { top })], ['notes', x => S.notes(x, '7 7 7', { top })], ['noteCliff', x => S.noteCliff(x, { top })]],
-    7: [['moon', x => S.moon(x, 2, { top })], ['cannon', x => S.cannon(x, 9, { top })], ['comets', x => S.comets(x, 16, { top, coins: 4 })], ['cannonUp', x => S.cannonUp(x, { top })]],
-    8: [['wheel', x => S.wheel(x, { top })], ['bridge', x => S.bridge(x, 7, { top })], ['shadowRun', x => S.shadowRun(x, 18, { top })]],
+    1: [['tramp', x => S.tramp(x, { top })], ['tower', x => S.tower(x, { top, ch })], ['chest', x => S.chest(x, { top, ch: 'S' })], ['seesaws', x => S.seesaws(x, 2, { top })], ['tubeUp', x => S.tubeUp(x, { top })]],
+    2: [['icicles', x => S.icicles(x, 12, { top })], ['shaft', x => S.shaft(x, { top, ch: 'I' })], ['firebars', x => S.firebars(x, 12, 2, { top })], ['bubbles', x => S.bubbles(x, 3, { top })], ['snowWall', x => S.snowWall(x, { top })], ['logsW', x => S.logs(x, 2, { top, water: true })]],
+    3: [['updraft', x => S.updraft(x, { top })], ['conveyor', x => S.conveyor(x, 12, R() < 0.5 ? 1 : -1, { top, en: [[6, e1()]] })], ['zappers', x => S.zappers(x, 3, { top })], ['saws', x => S.saws(x, 12, { top, coins: true })], ['crushers', x => S.crushers(x, 3, { top, coins: true })], ['cart', x => S.cart(x, '.....__.....e....__.....', { top })], ['pushGate', x => S.pushGate(x, { top })]],
+    4: [['windRun', x => S.windRun(x, 12, R() < 0.5 ? 1 : -1, { top, v: 140, coins: 4, en: [[7, e1()]] })], ['windGap', x => S.windGap(x, 5, { top })], ['swGate', x => S.swGate(x, { top })], ['swBridge', x => S.swBridge(x, { top })], ['warpWall', x => S.warpWall(x, { top })], ['warpUp', x => S.warpUp(x, { top })], ['jumpBridge', x => S.jumpBridge(x, ':: ;; ::', { top })], ['jumpWalls', x => S.jumpWalls(x, 2, { top })]],
+    5: [['rocks', x => S.rocks(x, 14, { top, coins: 4 })], ['blink', x => S.blink(x, pick(['S33S44S', 'S333S', 'S44S33S']), { top })], ['timer', x => S.timer(x, 14, { top, dur: 6 })], ['timerCage', x => S.timerCage(x, { top })], ['blinkTower', x => S.blinkTower(x, { top })], ['fuseWall', x => S.fuseWall(x, { top })], ['pushLava', x => S.pushLava(x, { top })]],
+    6: [['seed', x => S.seed(x, { top })], ['zip', x => S.zip(x, 16, { top })], ['notes', x => S.notes(x, '7 7 7', { top })], ['noteCliff', x => S.noteCliff(x, { top })], ['swings', x => S.swings(x, 2, { top })], ['bubbleWall', x => S.bubbleWall(x, { top, h: 5 })]],
+    7: [['moon', x => S.moon(x, 2, { top })], ['cannon', x => S.cannon(x, 9, { top })], ['comets', x => S.comets(x, 16, { top, coins: 4 })], ['cannonUp', x => S.cannonUp(x, { top })], ['grav', x => S.grav(x, 'FCF', { top })]],
+    8: [['wheel', x => S.wheel(x, { top })], ['bridge', x => S.bridge(x, 7, { top })], ['shadowRun', x => S.shadowRun(x, 18, { top })], ['jumpBridgeL', x => S.jumpBridge(x, ':: ;; ::', { top, lava: true })], ['logsL', x => S.logs(x, 3, { top })]],
   };
   // ここの しかけ(いまの ワールド)と、1つ前の ワールドの しかけ
   const own = (W[wn] || []).map(a => [...a, 3]);

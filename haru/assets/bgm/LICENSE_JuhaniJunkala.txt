@@ -1,0 +1,38 @@
+作者: Juhani Junkala (OpenGameArt: SubspaceAudio)
+ライセンス: CC0 1.0 Universal (Public Domain Dedication) https://creativecommons.org/publicdomain/zero/1.0/
+取得日: 2026-10-13
+取得元: OpenGameArt.org
+
+- 5 Chiptunes (Action)  ※中のファイル名は「Retro Game Music Pack」
+  ページ: https://opengameart.org/content/5-chiptunes-action
+  ライセンス(ページの表示): CC0
+  使っている場面: title / grass / fort / castle / ending (Title Screen, Level 1, Level 2, Level 3, Ending)
+
+- 4 Chiptunes (Adventure)
+  ページ: https://opengameart.org/content/4-chiptunes-adventure
+  ライセンス(ページの表示): CC0
+  使っている場面: sky / ride / boss (Stage 1, Stage 2, Boss Fight)
+
+- 12 Music Loops
+  ページ: https://opengameart.org/content/12-music-loops
+  ライセンス(ページの表示): CC0
+  使っている場面: lava (006 bgm_stage_F (faster)) / invincible (384 bgm_menu_title_6_sporty)
+
+- JRPG Pack 1 Exploration
+  ページ: https://opengameart.org/content/jrpg-pack-1-exploration
+  ライセンス(ページの表示): CC0
+  使っている場面: factory (Tha'el Mines) / jungle (Tropical Island)
+
+- JRPG Pack 2 Towns
+  ページ: https://opengameart.org/content/jrpg-pack-2-towns
+  ライセンス(ページの表示): CC0
+  使っている場面: desert (Bazaar)
+
+- JRPG Pack 3 Evil
+  ページ: https://opengameart.org/content/jrpg-pack-3-evil
+  ライセンス(ページの表示): CC0
+  使っている場面: dark (Catacombs)
+
+パックに同梱の INFO.txt より: "These music tracks have been released under CC0 creative commons license. You can do anything you want with these tunes."
+
+加工: 切り出し(ループ区間・頭の無音)、音量合わせ(-16 LUFS。map/dusk/ghost/gameover はピークを抑えるリミッターつき)、underwater だけループの終わり0.3秒を頭へつなぐクロスフェード、MP3 80kbps への変換。曲の中身(旋律・編曲)は変えていない。
