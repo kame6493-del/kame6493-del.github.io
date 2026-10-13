@@ -113,7 +113,7 @@ function slotInfo(n) {
   if (!d || !(d.cleared || d.stars) || (!Object.keys(d.cleared || {}).length && !Object.keys(d.stars || {}).length && !(d.seen && d.seen.intro))) return null;
   const stars = Object.values(d.stars || {}).reduce((a, s2) => a + s2.filter(Boolean).length, 0);
   const shards = Object.values(d.shards || {}).reduce((a, s2) => a + s2.filter(Boolean).length, 0);
-  const cl = Object.keys(d.cleared || {}).filter(id => { const lv = LEVELS[LV_BY_ID[id]]; return lv && !lv.roam && !lv.tutorial; }).length;
+  const cl = Object.keys(d.cleared || {}).filter(id => { const lv = LEVELS[LV_BY_ID[id]]; return lv && !lv.roam && !lv.tutorial && !lv.daily; }).length;
   const at = mapAtValid(d.mapAt) ? d.mapAt : whereIs(d.lastId || 1);
   return { stars, shards, cl, wallet: d.wallet || 0, world: at ? WORLDS[at.wi] : WORLDS[0], palace: d.palace || {} };
 }
@@ -641,6 +641,8 @@ let pauseSel = 0;
 const stageLabel = d => d.label || `${d.world}-${d.num}`;
 function startLevel(idx, fromCheckpoint = false) {
   const def = LEVELS[idx];
+  // 今日の1面: 中間から やりなおす ときは 同じ 日の 面を 組む
+  if (def.daily) def._keepDate = !!(fromCheckpoint && world && world.def === def);
   level = buildLevel(def);
   const keep = fromCheckpoint && world ? { cp: world.checkpoint, coins: world.cpCoins || 0, score: world.cpScore || 0, stars: world.cpStars || [false, false, false], shards: world.cpShards || [false, false, false, false, false], time: world.time, deaths: world.deaths + 1, cpIdx: world.cpIdx, cpCoins: world.cpCoins || 0, cpScore: world.cpScore || 0, cpStars: world.cpStars, cpShards: world.cpShards, maxHearts: world.cpMaxHearts || baseHearts(), powers: world.cpPowers || [], cpPowers: world.cpPowers } : null;
   world = {
@@ -670,12 +672,13 @@ function startLevel(idx, fromCheckpoint = false) {
     spin: false, runM: 0, fly: null, mount: null, mountCD: 0, carry: null,
     gdir: 1, starT: 0, crouch: false, slideT: 0, hipT: 0, hipFall: false, hang: null, idleT: 0, hurtT: 0,
   };
-  P.maxHearts = baseHearts(); P.hearts = P.maxHearts;
-  if (perkOn(3)) P.shield = true;
+  // 今日の1面は みんな 同じ じょうけん(ハート3つ・はじめの たて なし・おみせの 道具は つかわない)
+  P.maxHearts = def.daily ? 3 : baseHearts(); P.hearts = P.maxHearts;
+  if (perkOn(3) && !def.daily) P.shield = true;
   if (keep) { P.maxHearts = keep.maxHearts; P.hearts = keep.maxHearts; P.powers = [...(keep.powers || [])]; P.inv = 1.6; }
   // おたすけ: 同じ面で 4回 やられたら、たてを 持って やりなおす(小さい子でも 先へ すすめるように)
   if (keep && keep.deaths >= 4 && !P.shield) { P.shield = true; toast = { text: 'おたすけ たて!', sub: '1回だけ ダメージを ふせいでくれるよ', t: 2.4 }; }
-  if (!fromCheckpoint && save.bag) {
+  if (!fromCheckpoint && save.bag && !def.daily) {
     const used = [];
     if (save.bag.heart > 0) { save.bag.heart--; P.maxHearts = Math.min(6, P.maxHearts + 1); P.hearts = P.maxHearts; used.push('ハート+1'); }
     if (save.bag.shield > 0) { save.bag.shield--; P.shield = true; used.push('たて'); }
@@ -688,7 +691,10 @@ function startLevel(idx, fromCheckpoint = false) {
   parts = [];
   scene = 'play';
   world.bossBgm = null; bgm(levelBgm(def));
-  if (!fromCheckpoint) {
+  if (def.daily) dailyBegin(fromCheckpoint);
+  if (!fromCheckpoint && def.daily) {
+    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: usingTouch ? '左下でいどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん', t: 3.2 };
+  } else if (!fromCheckpoint) {
     toast = { text: `${stageLabel(def)}  ${def.name}`, sub: idx === 0 ? (usingTouch ? '左下でいどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん') : 'ほしを3つあつめよう', t: 3.2 };
   } else if (!(keep && keep.deaths >= 4 && toast && toast.text === 'おたすけ たて!')) {
     toast = null;
@@ -970,6 +976,7 @@ function gainPower(k, cx, cy) {
 }
 function hurtPlayer(fromX, big = false) {
   if (P.inv > 0 || P.dead || world.clear || P.starT > 0) return;
+  if (world.def.daily) dailyMark(1);
   P.fly = null; P.spin = false; P.hurtT = 0.45; P.hang = null; P.hipT = 0; P.hipFall = false;
   if (P.swing) swingRelease(P.swing, false);
   if (P.carry) dropCarry(false);
@@ -1002,6 +1009,7 @@ function hurtPlayer(fromX, big = false) {
 }
 function killPlayer() {
   if (P.dead) return;
+  if (world && world.def.daily) dailyMark(2);
   if (P.mount) { P.mount.gone = true; P.mount = null; P.h = 54; P.y += 26; }
   if (P.carry) dropCarry(false);
   if (P.cart) { P.cart.ridden = false; P.cart = null; }
@@ -3103,10 +3111,10 @@ function levelClear(goal) {
       world.score += pts; world.coins += coins;
       goal.tapeFall = { y: g.y, vy: -200, rot: 0 };
       popText(goal.x + 30, g.y - 20, (tape.top ? 'てっぺん! ' : 'テープ ') + '+' + pts, tape.top ? '#ffe066' : '#fff');
-      if (tape.top) { sfx('oneup'); if ((save.bag.heart || 0) < 3) save.bag.heart = (save.bag.heart || 0) + 1; }
+      if (tape.top) { sfx('oneup'); if (!world.def.daily && (save.bag.heart || 0) < 3) save.bag.heart = (save.bag.heart || 0) + 1; }
     }
   }
-  if (!world.def.roam && !world.def.tutorial) {
+  if (!world.def.roam && !world.def.tutorial && !world.def.daily) {
     const prevSh = save.shards[world.def.id] || [false, false, false, false, false];
     save.shards[world.def.id] = prevSh.map((v, i) => v || !!world.shards[i]);
   }
@@ -3119,7 +3127,8 @@ function levelClear(goal) {
   const id = world.def.id;
   const beforeStars = totalStars();
   // ばったり バトルと れんしゅうは 面の クリアに 数えない(ファイルの「クリア n」が ふえていた)
-  const extraLv = !!(world.def.roam || world.def.tutorial);
+  // 今日の1面も 数えない(セーブの クリア・星・ベスト・さいふは さわらない。きろくは 今日の1面の 保存だけ)
+  const extraLv = !!(world.def.roam || world.def.tutorial || world.def.daily);
   const firstClear = !save.cleared[id];
   if (!extraLv) {
     const prev = save.stars[id] || [false, false, false];
@@ -3130,12 +3139,13 @@ function levelClear(goal) {
   }
   const secretNew = !!goal.secret && !save.secret[id];
   if (goal.secret) save.secret[id] = true;
-  save.wallet = (save.wallet || 0) + world.coins;
+  if (!world.def.daily) save.wallet = (save.wallet || 0) + world.coins;
   writeSave();
   for (const t of ZK_TOUGH) if (world.zkSeen && world.zkSeen[t]) zukanEscape(t);
   const afterStars = totalStars();
   const newPerk = PERKS.find(pk => beforeStars < pk.need && afterStars >= pk.need);
   clearInfo = { timeBonus, heartBonus: P.hearts * 500, newPerk, secret: !!goal.secret, secretNew, firstClear, tape, palace: !!goal.palace, saved: ['fort', 'boss', 'switch', 'ghost'].includes(world.def.kind) };
+  if (world.def.daily) clearInfo.daily = dailyFinish();
 }
 
 // =====================================================================
@@ -4036,7 +4046,7 @@ function zkMigrate() {
   const tough = [...ZK_TOUGH].filter(t => save.zukan[t] && !zkGot(t) && !save.zukan[t].chk);
   if (tough.length) {
     for (const d of LEVELS) {
-      if (d.roam || d.tutorial || !isCleared(d.id)) continue;
+      if (d.roam || d.tutorial || d.daily || !isCleared(d.id)) continue;
       let lv; try { lv = buildLevel(d); } catch (e) { continue; }
       for (const e of lv.ents) if (e.kind === 'enemy' && tough.includes(e.type)) save.zukan[e.type].n = 1;
     }
@@ -4052,7 +4062,7 @@ let zkWorlds = null;
 function zkComputeWorlds() {
   zkWorlds = {};
   for (const d of LEVELS) {
-    if (d.roam || d.tutorial) continue;
+    if (d.roam || d.tutorial || d.daily) continue;
     let lv; try { lv = buildLevel(d); } catch (e) { continue; }
     for (const e of lv.ents) if (e.kind === 'enemy') { (zkWorlds[e.type] = zkWorlds[e.type] || new Set()).add(d.world); }
   }
@@ -4222,7 +4232,7 @@ function drawHelp(t) {
     const sx = 140, sy = 120, sw = 680, sh = 382, k = sw / VW;
     rr(sx - 10, sy - 10, sw + 20, sh + 20, 26); ctx.fillStyle = '#20202a'; ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip(); drawBackground('grass', 0, t); ctx.restore();
-    const lab = { left: '◀ いどう', right: 'いどう ▶', attack: 'けん', jump: 'ジャンプ', dash: 'ダッシュ・もつ', spin: 'スピン' };
+    const lab = { left: '◀ いどう', right: 'いどう ▶', up: '▲', down: '▼', attack: 'けん', jump: 'ジャンプ', dash: 'ダッシュ・もつ', spin: 'スピン' };
     for (const [nm, b] of Object.entries(TOUCH)) {
       const x = sx + b.x * k, y = sy + b.y * k * (sh / (VH * k));
       ctx.beginPath(); ctx.arc(x, y, b.r * k, 0, 7); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2; ctx.stroke();
@@ -4230,6 +4240,10 @@ function drawHelp(t) {
     }
     outlined('よびの はこ(タップで だす)', sx + 330 * k, sy + 34, '#fff', '#2a1a3a', 4, font(14, 800));
     outlined('Ⅱ いちじていし', sx + (VW - 60) * k, sy + 100 * k, '#fff', '#2a1a3a', 4, font(13, 800));
+    // ボタンの みえかた(ふつう / うすい / ほぼ見えない)
+    rr(sx + 150, sy + 62, 380, 92, 16); ctx.fillStyle = 'rgba(20,12,40,.72)'; ctx.fill();
+    outlined('ボタンの みえかた', sx + 340, sy + 82, '#ffe9a8', '#2a1a3a', 4, fitFont('ボタンの みえかた', 340, 16));
+    TOUCH_VIS_NAMES.forEach((nm, i) => button(sx + 162 + i * 122, sy + 100, 114, 42, nm, () => setTouchVis(i), { sel: touchVis === i, size: nm.length > 4 ? 14 : 17 }));
     ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont('スマホは よこむき。ジャンプは ながおしで たかく。↓は ◀▶の 下を おす', 500, 15); ctx.textAlign = 'center'; ctx.fillText('スマホは よこむき。ジャンプは ながおしで たかく。↓は ◀▶の 下を おす', VW / 2, 526);
   } else if (p === 2) {
     const P0 = scene === 'help' && help.from === 'pause' && P ? P : null;
@@ -4305,6 +4319,176 @@ function drawTutGate(o, t) {
   ctx.restore();
 }
 
+// ---------- 今日の1面(2026-10-13) ----------
+// 日本の 日づけで 毎日 かわる 1面(みんな 同じ)。クリアしたら 区画ごとの ようすを ■の ならびで X に シェアできる。
+// きろくは haru_daily_v1(日づけごと: ちょうせんの かず・はじめての クリア・ベスト)。ふつうの セーブ(ファイル1〜3)は さわらない。
+const DAILY_URL = /[?&]daily=1\b/.test(location.search || '');
+const DAILY_KEY = 'haru_daily_v1';
+const DAILY_IDX = LV_BY_ID[DAILY_ID];
+const DAILY_SHARE_URL = 'https://yurustudio.github.io/haru/?daily=1';
+const DAILY_COL = ['#5fd35f', '#ffd84a', '#ff5a5a'];
+const daily = { t: 0, msg: null, from: 'title', auto: false, run: null, last: null };
+function dailyLoad() { try { const d = JSON.parse(localStorage.getItem(DAILY_KEY) || '{}'); return d && typeof d === 'object' && !Array.isArray(d) ? d : {}; } catch (e) { return {}; } }
+function dailyStore(all) { try { const ks = Object.keys(all).sort(); while (ks.length > 40) delete all[ks.shift()]; localStorage.setItem(DAILY_KEY, JSON.stringify(all)); } catch (e) { /* 保存が つかえなくても あそべる */ } }
+function dailyInfo(ds) {
+  ds = ds || dailyDate();
+  const d = dailyLoad()[ds] || {};
+  return { date: ds, num: dailyNum(ds), tries: d.tries || 0, cleared: !!d.first, first: d.first || null, best: d.best || null };
+}
+function startDaily(from) {
+  if (DAILY_IDX === undefined) return;
+  daily.from = from || (scene === 'map' ? 'map' : 'title');
+  if (daily.from === 'map') rememberMapAt();
+  sfx('select');
+  startLevel(DAILY_IDX);
+}
+function dailyLeave() { sfx('select'); if (daily.from === 'map') goMap(); else { scene = 'title'; titleT = 0.7; toast = null; bgm('title'); } }
+// あたらしい ちょうせん(はじめから・やられて やりなおし)ごとに ちょうせんの かずを 1つ ふやす
+function dailyBegin(fromCp) {
+  const def = world.def, ds = def._date;
+  const all = dailyLoad(), d = all[ds] && typeof all[ds] === 'object' ? all[ds] : (all[ds] = {});
+  d.tries = (d.tries || 0) + 1; dailyStore(all);
+  // 区画の ようすは はじめから ゴールまでの 1回ぶん(中間からの やりなおしも ふくむ)
+  if (!fromCp || !daily.run || daily.run.date !== ds) daily.run = { date: ds, num: def._num, secs: (def._secs || []).map(() => 0) };
+  daily.run.tries = d.tries;
+}
+function dailySecAt(px) { const secs = (world && world.def._secs) || []; const tx = px / TILE; for (let i = 0; i < secs.length; i++) if (tx < secs[i].x1) return i; return secs.length - 1; }
+// 1 = ダメージ / 2 = やられた
+function dailyMark(v) { if (!daily.run || !P) return; const i = dailySecAt(P.x + P.w / 2); if (i >= 0 && i < daily.run.secs.length) daily.run.secs[i] = Math.max(daily.run.secs[i], v); }
+function dailyFinish() {
+  const def = world.def, r = daily.run;
+  const res = { date: def._date, num: def._num, time: Math.round(world.time * 10) / 10, stars: world.stars.filter(Boolean).length, tries: r ? r.tries : 1, row: r ? r.secs.slice() : (def._secs || []).map(() => 0) };
+  const all = dailyLoad(), d = all[res.date] && typeof all[res.date] === 'object' ? all[res.date] : (all[res.date] = { tries: res.tries });
+  res.firstClear = !d.first;
+  if (!d.first) d.first = { time: res.time, stars: res.stars, tries: res.tries, row: res.row };
+  const b = d.best || {};
+  res.newTime = !res.firstClear && !(b.time <= res.time);
+  res.newStars = !res.firstClear && !(b.stars >= res.stars);
+  d.best = { time: Math.min(typeof b.time === 'number' ? b.time : Infinity, res.time), stars: Math.max(b.stars || 0, res.stars) };
+  d.clears = (d.clears || 0) + 1;
+  dailyStore(all);
+  res.best = d.best;
+  daily.last = res;
+  return res;
+}
+function dailyShareText(res) {
+  res = res || daily.last;
+  if (!res) return '';
+  const sq = res.row.map(v => ['🟩', '🟨', '🟥'][v] || '🟩').join('');
+  const st = '⭐'.repeat(res.stars) + '☆'.repeat(3 - res.stars), tm = Number(res.time).toFixed(1);
+  if (isEN()) return `Haru's Adventure Daily #${res.num}\n⏱ ${tm}s ${st} try ${res.tries}\n${sq}\n#HaruDaily\n${DAILY_SHARE_URL}&lang=en`;
+  return `ハルの冒険 今日の1面 #${res.num}\n⏱ ${tm}秒 ${st} ${res.tries}回目\n${sq}\n#ハルの今日の1面\n${DAILY_SHARE_URL}`;
+}
+function dailyCopy(text) {
+  const ok = () => { daily.msg = { text: 'コピーしました', t: 2.4 }; };
+  const legacy = () => {
+    try {
+      const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); const r = document.execCommand('copy'); document.body.removeChild(ta); if (r) ok();
+    } catch (e) { /* コピーできない 環境 */ }
+  };
+  try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, legacy); return; } } catch (e) { /* 下で ためす */ }
+  legacy();
+}
+function dailyShare() {
+  const text = dailyShareText();
+  if (!text) return;
+  sfx('select');
+  dailyCopy(text);
+  const intent = 'https://x.com/intent/post?text=' + encodeURIComponent(text);
+  const openIntent = () => { let w = null; try { w = window.open(intent, '_blank'); } catch (e) { w = null; } if (!w && window.Capacitor) { try { location.href = intent; } catch (e) { /* 無視 */ } } };
+  // スマホ・タブレット(iPad は Mac の ふりを するので タッチの 数で みる)。タッチの ある Windows の パソコンは X の ページを ひらく
+  const ua = navigator.userAgent || '', mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (navigator.share && (window.Capacitor || mobile)) {
+    try { navigator.share({ text }).catch(e => { if (!(e && e.name === 'AbortError')) openIntent(); }); } catch (e) { openIntent(); }
+    return;
+  }
+  openIntent();
+}
+function updateDailyResult(dt) {
+  daily.t += dt; world.clearT += dt;
+  if (daily.msg) { daily.msg.t -= dt; if (daily.msg.t <= 0) daily.msg = null; }
+  if (Math.random() < dt * 1.6) firework(cam.x + rnd(80, VW - 80), cam.y + rnd(40, 160));
+  if (daily.t > 0.9) {
+    if (consume('ok') || consume('jump')) dailyShare();
+    else if (consume('attack')) startDaily(daily.from);
+    else if (consume('pause')) dailyLeave();
+  }
+}
+// ■の ならび
+function drawDailyRow(row, cx, y, s, t0, t) {
+  const gap = Math.round(s * 0.2), w = row.length * s + (row.length - 1) * gap;
+  row.forEach((v, i) => {
+    const k = t0 === null ? 1 : clamp((t - t0 - i * 0.07) * 6, 0, 1);
+    if (k <= 0) return;
+    const x = cx - w / 2 + i * (s + gap) + s / 2, sc = k < 1 ? 0.6 + k * 0.5 : 1;
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+    rr(-s / 2, -s / 2, s, s, s * 0.18); ctx.fillStyle = DAILY_COL[v] || DAILY_COL[0]; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = '#2a1a3a'; ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.35)'; rr(-s / 2 + 4, -s / 2 + 4, s - 8, s * 0.22, 3); ctx.fill();
+    ctx.restore();
+  });
+}
+function drawDailyResult(t) {
+  const res = clearInfo && clearInfo.daily;
+  if (!res) return;
+  const dt0 = daily.t;
+  ctx.fillStyle = 'rgba(15,10,35,.58)'; ctx.fillRect(0, 0, VW, VH);
+  const k = Math.min(1, dt0 * 4), pop = 1 + Math.sin(Math.min(1, dt0 * 3) * Math.PI) * 0.05;
+  ctx.save(); ctx.translate(VW / 2, VH / 2); ctx.scale((0.75 + k * 0.25) * pop, (0.75 + k * 0.25) * pop); ctx.translate(-VW / 2, -VH / 2);
+  ctx.globalAlpha = Math.max(0, k);
+  ctx.save(); ctx.translate(VW / 2, 170); ctx.rotate(t * 0.5);
+  for (let i = 0; i < 12; i++) { ctx.rotate(Math.PI / 6); ctx.fillStyle = 'rgba(255,230,120,.09)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-40, -420); ctx.lineTo(40, -420); ctx.fill(); }
+  ctx.restore();
+  woodPlate(VW / 2 - 300, 26, 600, 410);
+  const title = `今日の1面 #${res.num} クリア!`;
+  outlined(title, VW / 2, 70, '#fff36b', '#3a1a08', 9, fitFont(title, 560, 38, titleFont));
+  // タイム・ほし・ちょうせん の 3つの 札
+  const box = (cx, label) => { rr(cx - 88, 104, 176, 96, 14); ctx.fillStyle = 'rgba(40,18,8,.38)'; ctx.fill(); ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont(label, 160, 17, p => font(p, 800)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, cx, 122); };
+  box(VW / 2 - 190, 'タイム'); box(VW / 2, 'あつめた ほし'); box(VW / 2 + 190, 'ちょうせん');
+  const tm = res.time.toFixed(1) + 'びょう';
+  outlined(tm, VW / 2 - 190, 162, '#fff', '#3a1a08', 7, fitFont(tm, 164, 30, titleFont));
+  for (let i = 0; i < 3; i++) {
+    const got = i < res.stars, since = dt0 - 0.35 - i * 0.18, ap = since < 0 ? 0 : Math.min(1.2, since * 6) - Math.max(0, Math.min(0.2, (since - 0.2) * 2));
+    ctx.save(); ctx.translate(VW / 2 - 52 + i * 52, 164); ctx.scale(ap, ap);
+    if (got) { ctx.shadowColor = '#ffe14d'; ctx.shadowBlur = 18; } else ctx.filter = 'grayscale(1) brightness(0.45)';
+    drawImg('star', -23, -22, 46, 44, false, got ? 1 : 0.55); ctx.filter = 'none'; ctx.restore();
+  }
+  const tr = res.tries + 'かいめ';
+  outlined(tr, VW / 2 + 190, 162, '#fff', '#3a1a08', 7, fitFont(tr, 164, 30, titleFont));
+  // 区画ごとの ようす
+  drawDailyRow(res.row, VW / 2, 238, 38, 0.6, dt0);
+  // 見かた
+  const lg = [['ノーダメージ', 0], ['ダメージ', 1], ['やられた', 2]];
+  ctx.font = font(15, 800);
+  const lw = lg.map(([s]) => ctx.measureText(s).width + 30), lt = lw.reduce((a, b) => a + b, 0) + 24 * 2;
+  let lx = VW / 2 - lt / 2;
+  lg.forEach(([s, v], i) => { rr(lx, 274, 16, 16, 4); ctx.fillStyle = DAILY_COL[v]; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#2a1a3a'; ctx.stroke(); ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = font(15, 800); ctx.fillText(s, lx + 22, 283); lx += lw[i] + 24; });
+  // きょうの ベスト
+  rr(VW / 2 - 250, 304, 500, 46, 14); ctx.fillStyle = 'rgba(40,18,8,.38)'; ctx.fill();
+  ctx.textBaseline = 'middle'; ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont('きょうの ベスト', 150, 18, p => font(p, 800)); ctx.textAlign = 'right'; ctx.fillText('きょうの ベスト', VW / 2 - 70, 327);
+  const bt = res.best.time.toFixed(1) + 'びょう';
+  outlined(bt, VW / 2 - 50, 327, '#fff', '#3a1a08', 5, fitFont(bt, 150, 22, titleFont), 'left');
+  for (let i = 0; i < 3; i++) { ctx.save(); if (i >= res.best.stars) ctx.filter = 'grayscale(1) brightness(0.55)'; drawImg('ui_star', VW / 2 + 110 + i * 30, 314, 26, 25, false, i < res.best.stars ? 1 : 0.5); ctx.restore(); }
+  if (res.newTime || res.newStars) { ctx.save(); ctx.translate(VW / 2 + 238, 300); ctx.rotate(-0.12); outlined('ベスト こうしん!', 0, 0, '#ff8fb0', '#3a1a08', 5, fitFont('ベスト こうしん!', 150, 17)); ctx.restore(); }
+  const note = res.firstClear ? 'はじめての クリア! シェアして くらべっこ しよう' : 'あしたは べつの 1めんが まってるよ';
+  if (!daily.msg) outlined(note, VW / 2, 384, res.firstClear ? '#7dff8a' : '#fff', '#3a1a08', 5, fitFont(note, 560, 19));
+  ctx.restore();
+  if (dt0 > 0.9) {
+    button(VW / 2 - 330, 452, 220, 56, 'Xで シェア', () => dailyShare(), { sel: true, size: 24 });
+    button(VW / 2 - 100, 452, 200, 56, 'もういちど', () => startDaily(daily.from), { size: 24 });
+    button(VW / 2 + 110, 452, 220, 56, daily.from === 'map' ? 'ちずへ もどる' : 'タイトルへ', () => dailyLeave(), { size: 24 });
+    if (!usingTouch) { ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = font(13, 700); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(daily.from === 'map' ? 'Enter シェア   X もういちど   Esc ちずへ' : 'Enter シェア   X もういちど   Esc タイトルへ', VW / 2, 526); }
+  }
+  if (daily.msg) {
+    const a = Math.min(1, daily.msg.t * 3);
+    ctx.save(); ctx.globalAlpha = a; rr(VW / 2 - 150, 362, 300, 44, 14); ctx.fillStyle = 'rgba(30,20,60,.92)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#7dff8a'; ctx.stroke();
+    outlined(daily.msg.text, VW / 2, 384, '#7dff8a', '#2a1a3a', 5, fitFont(daily.msg.text, 280, 20)); ctx.restore();
+  }
+}
+// タイトルと ちずの 「今日の1面」ボタンの 文字
+function dailyBtnLabel() { const inf = dailyInfo(); return `今日の1面 #${inf.num}` + (inf.cleared ? ' ✔' : ''); }
+
 // ---------- タイトル(一枚絵の 上に 雲・星・かけら・ハルと もこりゅう) ----------
 function anySlot() { for (let n = 1; n <= 3; n++) if (slotInfo(n)) return true; return false; }
 function continueGame() { sfx('select'); selectSlot(saveSlot); if (!slotInfo(saveSlot)) { openFiles(); return; } if (!save.seen.intro) startGame(); else goMap(); }
@@ -4351,8 +4535,13 @@ function drawTitle(t) {
   button(VW / 2 + 120, 314, 210, 46, 'オープニング', () => startOpening(() => { scene = 'title'; titleT = 0.7; bgm('title'); }), { size: 18 });
   button(VW - 150, 14, 136, 40, save.sound ? 'おと: オン' : 'おと: オフ', () => setSound(!save.sound), { size: 16 });
   langToggle(14, 16);
-  ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.font = font(15, 700); ctx.textAlign = 'center';
-  ctx.fillText(usingTouch ? 'ボタンを タップしてね' : 'Enter / スペースで ' + (cont ? 'つづきから' : 'はじめる'), VW / 2, 384);
+  // 今日の1面(まいにち かわる。みんな 同じ)
+  { const inf = dailyInfo(), lb = dailyBtnLabel();
+    button(VW / 2 - 165, 380, 330, 56, lb, () => startDaily('title'), { size: 26, c1: inf.cleared ? '#c8f5ff' : '#9dffb0', c2: inf.cleared ? '#6ec8ff' : '#2fc46a' });
+    if (!inf.cleared) { ctx.save(); ctx.translate(VW / 2 + 150, 382); ctx.rotate(0.12); rr(-26, -12, 52, 24, 10); ctx.fillStyle = '#ff5a7a'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#2a1a3a'; ctx.stroke(); outlined('NEW', 0, 1, '#fff', '#2a1a3a', 3, titleFont(14)); ctx.restore(); }
+    const cap = inf.cleared ? 'クリアずみ!  きょうの ベスト ' + inf.best.time.toFixed(1) + 'びょう' : 'まいにち かわる 1めん。みんなで おなじ ステージ';
+    outlined(cap, VW / 2, 452, '#fff', '#2a1a3a', 4, fitFont(cap, 440, 16, p => font(p, 800))); }
+  { const hint = usingTouch ? 'ボタンを タップしてね' : 'Enter / スペースで ' + (cont ? 'つづきから' : 'はじめる'); outlined(hint, VW / 2, 480, 'rgba(255,255,255,.9)', '#2a1a3a', 4, font(13, 700)); }
 }
 
 // ---------- オープニング(紙芝居) ----------
@@ -4495,12 +4684,13 @@ function update(dt) {
     updateCamera(dt);
     // ゴールの演出は 1.2秒 たったら ボタンで とばせる
     if (world.clear && world.clearT > 1.2 && world.clearT < 3.4 && (consume('ok') || consume('jump'))) world.clearT = 3.39;
-    if (world.clear) { world.clearT += dt; world.flash = Math.max(0, (world.flash || 0) - dt * 2.5); if (world.clearT > 3.4 && scene === 'play') { scene = 'clear'; world.shownScore = 0; world.shownCoins = 0; world.starPop = [false, false, false]; } }
+    if (world.clear) { world.clearT += dt; world.flash = Math.max(0, (world.flash || 0) - dt * 2.5); if (world.clearT > 3.4 && scene === 'play') { if (world.def.daily) { scene = 'daily'; daily.t = 0; daily.msg = null; return; } scene = 'clear'; world.shownScore = 0; world.shownCoins = 0; world.starPop = [false, false, false]; } }
   } else if (scene === 'pause') {
     if (consume('pause')) resume();
-    if (consume('down')) pauseSel = (pauseSel + 1) % PAUSE_ITEMS.length;
-    if (consume('up')) pauseSel = (pauseSel + PAUSE_ITEMS.length - 1) % PAUSE_ITEMS.length;
-    if (consume('ok') || consume('jump')) PAUSE_ITEMS[pauseSel].fn();
+    { const its = pauseItems(); pauseSel = Math.min(pauseSel, its.length - 1);
+    if (consume('down')) pauseSel = (pauseSel + 1) % its.length;
+    if (consume('up')) pauseSel = (pauseSel + its.length - 1) % its.length;
+    if (consume('ok') || consume('jump')) its[pauseSel].fn(); }
   } else if (scene === 'zukan') { updateZukan(dt);
   } else if (scene === 'help') { updateHelp();
   } else if (scene === 'opening') { titleT += dt; updateOpening(dt);
@@ -4528,6 +4718,8 @@ function update(dt) {
     for (let i = 0; i < 3; i++) if (!world.starPop[i] && world.clearT > 3.8 + i * 0.4) { world.starPop[i] = true; if (world.stars[i]) { sfx('star', 1 + i * 0.12); burstScreen(VW / 2 - 90 + i * 90, 190); } else sfx('bump', 0.8); }
     if (Math.random() < dt * 2.5) firework(cam.x + rnd(80, VW - 80), cam.y + rnd(60, 200));
     if (world.clearT > 4.4 && (consume('ok') || consume('jump'))) nextFromClear();
+  } else if (scene === 'daily') {
+    updateDailyResult(dt);
   } else if (scene === 'shop') {
     titleT += dt;
     if (consume('pause')) goMap();
@@ -4552,13 +4744,15 @@ let hitStopT = 0;
 function hitStop(t) { hitStopT = Math.max(hitStopT, t); }
 function goSelect() { goMap(); }
 function resume() { scene = 'play'; sfx('pause'); if (bgmEl && save.sound && !P.dead && !world.clear) bgmEl.play().catch(() => {}); }
+const pauseItems = () => PAUSE_ITEMS.filter(it => !it.touchOnly || usingTouch);
 const PAUSE_ITEMS = [
   { label: 'つづける', fn: () => resume() },
   { label: 'さいしょから', fn: () => startLevel(world.idx) },
   { label: () => save.sound ? 'おと: オン' : 'おと: オフ', fn: () => setSound(!save.sound) },
   { label: 'そうさ ほうほう', fn: () => openHelp('pause') },
   { label: 'モンスターずかん', fn: () => openZukan('pause') },
-  { label: () => world && world.def.tutorial ? 'れんしゅうを おわる' : 'ちずに もどる', fn: () => { if (world.def.tutorial) endTutorial(); else if (world.def.roam) backToMapSpot(); else goMap(world.def.id); } },
+  { label: () => world && world.def.tutorial ? 'れんしゅうを おわる' : world && world.def.daily && daily.from !== 'map' ? 'タイトルへ' : 'ちずに もどる', fn: () => { if (world.def.tutorial) endTutorial(); else if (world.def.daily) dailyLeave(); else if (world.def.roam) backToMapSpot(); else goMap(world.def.id); } },
+  { label: () => 'ボタン: ' + TOUCH_VIS_NAMES[touchVis], fn: () => setTouchVis(touchVis + 1), touchOnly: true },
 ];
 function burstScreen(x, y) {
   // 画面の座標で光る(カメラ分をずらして粒を置く)
@@ -6036,6 +6230,8 @@ function drawHUD() {
   drawHUD0();
   ctx.restore();
   drawProgress();
+  // 今日の1面: タイム
+  if (world.def.daily) outlined('⏱ ' + world.time.toFixed(1), VW / 2, 84, '#fff', '#2a1a3a', 5, titleFont(18));
 }
 // すすみぐあい: 面の はじめから ゴールまでの 棒。中間ポイントと 取った星を しるす
 function drawProgress() {
@@ -6112,32 +6308,58 @@ function drawHUD0() {
   woodPlate(VW - 228, 12, 212, 46);
   outlined(String(world.score).padStart(7, '0'), VW - 122, 36, '#fff', '#3a1a08', 6, titleFont(28));
   woodPlate(VW / 2 - 100, 12, 200, 42);
-  outlined((world.def.label && !/^ほし|^おまけ/.test(world.def.label) ? '' : 'World ') + stageLabel(world.def), VW / 2, 34, '#fff', '#3a1a08', 6, titleFont(22));
+  { const lb = world.def.daily ? stageLabel(world.def) + ' ' + world.def.name : (world.def.label && !/^ほし|^おまけ/.test(world.def.label) ? '' : 'World ') + stageLabel(world.def);
+    outlined(lb, VW / 2, 34, '#fff', '#3a1a08', 6, fitFont(lb, 184, 22, titleFont)); }
   // 一時停止
   button(VW - 66, 66, 50, 44, 'Ⅱ', () => { if (scene === 'play') { scene = 'pause'; pauseSel = 0; sfx('pause'); if (bgmEl) bgmEl.pause(); } }, { size: 22 });
 }
 
+// タッチの ボタンの みえかた(2026-10-13 持ち主「ボタンが こくて ハルが かくれる」)
+// 0 ふつう / 1 うすい(はじめは これ)/ 2 ほぼ見えない(うすい わくだけ)。おせる はんいは どれも 同じ。保存は haru_touch_vis
+const TOUCH_VIS_KEY = 'haru_touch_vis';
+const TOUCH_VIS_NAMES = ['ふつう', 'うすい', 'ほぼ見えない'];
+let touchVis = 1;
+try { const r = localStorage.getItem(TOUCH_VIS_KEY), v = r === null ? NaN : Number(r); if (v === 0 || v === 1 || v === 2) touchVis = v; } catch (e) { /* 保存が つかえない */ }
+function setTouchVis(v) { touchVis = ((v % 3) + 3) % 3; try { localStorage.setItem(TOUCH_VIS_KEY, String(touchVis)); } catch (e) { /* 無視 */ } }
+const touchFade = {};
+const TOUCH_LOOK = [
+  { fill: 0.2, stroke: 0.55, label: 0.7, lw: 3 },
+  { fill: 0.08, stroke: 0.32, label: 0.42, lw: 2.5 },
+  { fill: 0, stroke: 0.16, label: 0, lw: 2 },
+];
 function drawTouch() {
   if (!usingTouch) return;
-  const draw = (b, label, on) => {
+  const look = TOUCH_LOOK[touchVis] || TOUCH_LOOK[1];
+  // ハルの 画面の 上の 四角(すこし ひろめ)
+  const hr = P ? { x: P.x - cam.x - 14, y: P.y - cam.y - 14, w: P.w + 28, h: P.h + 28 } : null;
+  const hits = b => { if (!hr) return false; const cx = clamp(b.x, hr.x, hr.x + hr.w), cy = clamp(b.y, hr.y, hr.y + hr.h); return Math.hypot(b.x - cx, b.y - cy) < b.r; };
+  const draw = (k, label, on) => {
+    const b = TOUCH[k];
+    // ハルが うしろに いる ボタンは ゆっくり もっと うすく(3わり)
+    const want = hits(b) ? 0.3 : 1;
+    touchFade[k] = touchFade[k] === undefined ? want : touchFade[k] + (want - touchFade[k]) * 0.18;
+    const f = on ? 1 : touchFade[k];
     ctx.save();
-    // ふだんは うすく(下の 敵や アイテムが 見えるように)、押している間だけ こく
-    ctx.globalAlpha = on ? 0.7 : 0.26;
-    ctx.fillStyle = on ? '#ffe066' : '#ffffff';
-    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 0.9; ctx.lineWidth = 4; ctx.strokeStyle = '#2a1a3a'; ctx.stroke();
-    ctx.fillStyle = '#2a1a3a'; ctx.font = font(label.length > 1 ? 22 : 34); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(label, b.x, b.y + 2);
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    if (on) { ctx.globalAlpha = touchVis === 2 ? 0.4 : 0.55; ctx.fillStyle = '#ffe066'; ctx.fill(); }
+    else if (look.fill > 0) { ctx.globalAlpha = look.fill * f; ctx.fillStyle = '#ffffff'; ctx.fill(); }
+    ctx.globalAlpha = (on ? Math.max(0.6, look.stroke) : look.stroke) * f; ctx.lineWidth = look.lw; ctx.strokeStyle = on ? '#2a1a3a' : '#ffffff'; ctx.stroke();
+    const la = on ? Math.max(0.75, look.label) : look.label * f;
+    if (la > 0.01) {
+      ctx.globalAlpha = la; ctx.font = font(label.length > 1 ? 22 : 34); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(30,20,60,.55)'; ctx.strokeText(label, b.x, b.y + 2);
+      ctx.fillStyle = on ? '#2a1a3a' : '#ffffff'; ctx.fillText(label, b.x, b.y + 2);
+    }
     ctx.restore();
   };
-  draw(TOUCH.left, '◀', touchKeys.left);
-  draw(TOUCH.right, '▶', touchKeys.right);
-  draw(TOUCH.up, '▲', touchKeys.up);
-  draw(TOUCH.down, '▼', touchKeys.down);
-  draw(TOUCH.attack, 'けん', touchKeys.attack);
-  draw(TOUCH.jump, 'ジャンプ', touchKeys.jump);
-  draw(TOUCH.spin, 'スピン', touchKeys.spin);
-  if (hasPower('dash') || nearCarry()) draw(TOUCH.dash, nearCarry() ? 'もつ' : 'ダッシュ', touchKeys.dash);
+  draw('left', '◀', touchKeys.left);
+  draw('right', '▶', touchKeys.right);
+  draw('up', '▲', touchKeys.up);
+  draw('down', '▼', touchKeys.down);
+  draw('attack', 'けん', touchKeys.attack);
+  draw('jump', 'ジャンプ', touchKeys.jump);
+  draw('spin', 'スピン', touchKeys.spin);
+  if (hasPower('dash') || nearCarry()) draw('dash', nearCarry() ? 'もつ' : 'ダッシュ', touchKeys.dash);
 }
 
 function drawToast() {
@@ -6568,6 +6790,7 @@ function drawMap(t) {
   button(VW / 2 + 130, 476, 120, 46, 'おみせ', () => { scene = 'shop'; bgm('shop'); sfx('select'); }, { size: 20 });
   button(24, 476, 120, 46, 'もどる', () => { scene = 'title'; bgm('bgm_title'); }, { size: 20 });
   button(24, 420, 140, 42, 'そうさ', () => openHelp('map'), { size: 18 });
+  { const inf = dailyInfo(); button(156, 476, 202, 46, inf.cleared ? '今日の1面 ✔' : '今日の1面', () => { if (!map.walk && !map.path.length && !map.pick) startDaily('map'); }, { size: 18, c1: inf.cleared ? '#c8f5ff' : '#9dffb0', c2: inf.cleared ? '#6ec8ff' : '#2fc46a' }); }
   button(VW - 214, 476, 200, 46, 'モンスターずかん', () => openZukan('map'), { size: 17 });
   if (DEV) button(VW - 200, 76, 186, 30, '(テスト)ぜんぶ ひらく', () => { for (const L2 of LEVELS) save.cleared[L2.id] = true; for (const W2 of WORLDS) for (const e of W2.extra || []) if (e.cond === 'secret') save.secret[e.from] = true; save.full = true; save.starOpen = true; writeSave(); }, { size: 13 });
   if (!usingTouch) { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.font = font(12, 700); ctx.textAlign = 'right'; ctx.fillText('←→↑↓ いどう  Enter あそぶ', VW - 16, 398); }
@@ -6742,10 +6965,10 @@ function drawFiles(t) {
       drawFit('hero_idle', x + w / 2, y + 260, 80, false, 0.8);
     } else {
       ctx.font = font(18, 800);
-      drawImg('ui_star', x + 30, y + 70, 28, 26); ctx.textAlign = 'left'; ctx.fillText(info.stars + ' / ' + LEVELS.length * 3, x + 66, y + 90);
-      drawShardIcon(x + 44, y + 122, 13, t); ctx.fillText(info.shards + ' / ' + LEVELS.length * 5, x + 66, y + 130);
+      drawImg('ui_star', x + 30, y + 70, 28, 26); ctx.textAlign = 'left'; ctx.fillText(info.stars + ' / ' + LEVELS.filter(lv => !lv.daily).length * 3, x + 66, y + 90);
+      drawShardIcon(x + 44, y + 122, 13, t); ctx.fillText(info.shards + ' / ' + LEVELS.filter(lv => !lv.daily).length * 5, x + 66, y + 130);
       drawImg('ui_coin', x + 30, y + 146, 28, 28); ctx.fillText('×' + info.wallet, x + 66, y + 168);
-      ctx.fillText('クリア ' + info.cl + ' / ' + LEVELS.filter(lv => !lv.roam && !lv.tutorial).length, x + 30, y + 206);
+      ctx.fillText('クリア ' + info.cl + ' / ' + LEVELS.filter(lv => !lv.roam && !lv.tutorial && !lv.daily).length, x + 30, y + 206);
       ctx.textAlign = 'center'; ctx.font = font(15, 800); ctx.fillStyle = '#ffe9a8';
       { const wl = info.world.star ? 'ほしの みち' : 'ワールド' + info.world.n + ' ' + info.world.name; if (isEN()) ctx.font = fitFont(wl, w - 24, 15); ctx.fillText(wl, x + w / 2, y + 240); }
       ['y', 'g', 'b', 'p'].forEach((c, k) => { ctx.save(); ctx.globalAlpha = info.palace[c] ? 1 : 0.22; ctx.fillStyle = PALACE_COL[c]; ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2; rr(x + w / 2 - 52 + k * 27, y + 256, 22, 16, 5); ctx.fill(); ctx.stroke(); ctx.restore(); });
@@ -6761,9 +6984,10 @@ function drawPause() {
   ctx.fillStyle = 'rgba(15,10,35,.6)'; ctx.fillRect(0, 0, VW, VH);
   woodPlate(VW / 2 - 200, 40, 400, 470);
   outlined('いちじていし', VW / 2, 84, '#fff', '#3a1a08', 8, titleFont(34));
-  PAUSE_ITEMS.forEach((it, i) => {
+  const its = pauseItems(), sp = its.length > 6 ? 54 : 62, bh = its.length > 6 ? 46 : 50;
+  its.forEach((it, i) => {
     const label = typeof it.label === 'function' ? it.label() : it.label;
-    button(VW / 2 - 150, 116 + i * 62, 300, 50, label, () => { pauseSel = i; it.fn(); }, { sel: i === pauseSel, size: 22 });
+    button(VW / 2 - 150, 116 + i * sp, 300, bh, label, () => { pauseSel = i; it.fn(); }, { sel: i === pauseSel, size: 22 });
   });
   langToggle(16, VH - 50);
 }
@@ -6831,6 +7055,8 @@ function frame(now) {
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
   uiButtons = [];
   if (loaded < total || !TB.groundTop) { drawLoading(); requestAnimationFrame(frame); return; }
+  // ?daily=1 の リンクから きた ときは そのまま 今日の1面へ
+  if (DAILY_URL && !daily.auto) { daily.auto = true; if (scene === 'title') startDaily('title'); }
   acc += real;
   const STEP = 1 / 120;
   while (acc >= STEP) { update(STEP); acc -= STEP; }
@@ -6843,7 +7069,7 @@ function frame(now) {
   else if (scene === 'zukan') drawZukan(t0);
   else if (scene === 'help') drawHelp(t0);
   else if (scene === 'opening') drawOpening(t0);
-  else { drawPlay(t0); if (scene === 'pause') drawPause(); if (scene === 'clear') drawClear(t0); }
+  else { drawPlay(t0); if (scene === 'pause') drawPause(); if (scene === 'clear') drawClear(t0); if (scene === 'daily') drawDailyResult(t0); }
   if (usingTouch && innerHeight > innerWidth * 1.1) {
     // スマホを縦に持っているときは横向きをすすめる
     ctx.fillStyle = 'rgba(20,15,40,.88)'; ctx.fillRect(0, 0, VW, VH);
@@ -6876,4 +7102,7 @@ window.__game = {
   step(n) { for (let i = 0; i < n; i++) update(1 / 120); },
   snapshot() { const { def, ...rest } = world; return structuredClone({ w: rest, P: { ...P, standOn: null }, tiles: level.tiles, scene }); },
   restore(snap) { const c = structuredClone(snap); world = { ...c.w, def: level.def }; P = c.P; level.tiles = c.tiles; scene = c.scene; parts = []; toast = null; },
+  // 今日の1面
+  startDaily: from => startDaily(from), dailyInfo: ds => dailyInfo(ds), dailyShareText: r => dailyShareText(r), dailyShare: () => dailyShare(), get daily() { return daily; },
+  setDailyDate(ds) { DAILY_DATE = ds || null; }, dailyToday: () => dailyDate(), dailyNum: ds => dailyNum(ds), DAILY_IDX,
 };

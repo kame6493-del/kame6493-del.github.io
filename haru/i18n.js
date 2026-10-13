@@ -42,6 +42,31 @@ applyLangDoc();
 
 // 英語の 辞書(キーは 日本語の 文そのまま)
 const EN_DICT = {
+  // タッチの ボタンの みえかた(2026-10-13)
+  "ボタン: ふつう": "Buttons: Normal",
+  "ボタン: うすい": "Buttons: Light",
+  "ボタン: ほぼ見えない": "Buttons: Almost hidden",
+  "ボタンの みえかた": "Button visibility",
+  "ふつう": "Normal",
+  "うすい": "Light",
+  "ほぼ見えない": "Almost hidden",
+  // 今日の1面(2026-10-13)
+  "今日の1面": "Daily Stage",
+  "今日の1面 ✔": "Daily Stage ✔",
+  "Xで シェア": "Share on X",
+  "タイトルへ": "Back to Title",
+  "あつめた ほし": "Stars",
+  "ちょうせん": "Tries",
+  "ノーダメージ": "No damage",
+  "ダメージ": "Got hit",
+  "やられた": "Lost a life",
+  "きょうの ベスト": "Today's best",
+  "はじめての クリア! シェアして くらべっこ しよう": "First clear! Share it and compare with friends",
+  "あしたは べつの 1めんが まってるよ": "A new stage is waiting tomorrow",
+  "コピーしました": "Copied!",
+  "Enter シェア   X もういちど   Esc タイトルへ": "Enter: Share   X: Try Again   Esc: Title",
+  "Enter シェア   X もういちど   Esc ちずへ": "Enter: Share   X: Try Again   Esc: Map",
+  "まいにち かわる 1めん。みんなで おなじ ステージ": "A new stage every day, the same for everyone",
   "とりで": "Fort",
   "おばけ": "Ghost",
   "しんでん": "Temple",
@@ -1296,6 +1321,11 @@ const theName = (n, cap) => { const s = EN_THE.has(n) ? 'the ' + n : n; return c
 const enList = s => s.split('・').map(x => T(x)).join(', ');
 // 組み立てた 文の きまり(上から じゅんに ためす)
 const EN_PAT = [
+  [/^今日の1面 #(-?\d+)( ✔)?$/, m => 'Daily #' + m[1] + (m[2] || '')],
+  [/^今日の1面 #(-?\d+) クリア!$/, m => 'Daily #' + m[1] + ' Clear!'],
+  [/^クリアずみ! +きょうの ベスト (\d+\.\d)びょう$/, m => "Cleared! Today's best: " + m[1] + ' sec'],
+  [/^(\d+\.\d)びょう$/, m => m[1] + ' sec'],
+  [/^(\d+)かいめ$/, m => m[1]],
   [/^つかった: (.+)$/, m => 'Used: ' + enList(m[1])],
   [/^(.+)を しまった$/, m => 'Stored: ' + T(m[1])],
   [/^(.+)を てにいれた!$/, m => 'Got the ' + T(m[1]) + '!'],

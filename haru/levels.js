@@ -3161,6 +3161,92 @@ function extendLevel(S, L, def, x, top) {
   return x;
 }
 
+// ---------- 今日の1面(2026-10-13): 日本の 日づけ(UTC+9)から みんな 同じ 1面を 組む ----------
+// 日づけの 文字(YYYY-MM-DD)を ハッシュして 乱数の たねに する。#1 は 2026-10-14。
+// しかけは はじめの ワールドで 出てくる 物だけ(力・カギ・ワープ・水・ボス・ひみつ なし)。区画は 8〜11こ、星は 3つ、中間は 1つ。
+// 区画ごとの はんい(マス)は def._secs に のこす(ゲームの 方で ダメージ・やられた 場所を しらべる)。
+const DAILY_ID = 900, DAILY_EPOCH = '2026-10-14';
+function dailyToday(ms) { return new Date((ms === undefined ? Date.now() : ms) + 9 * 3600000).toISOString().slice(0, 10); }
+function dailyNum(ds) { return Math.round((Date.parse(ds + 'T00:00:00Z') - Date.parse(DAILY_EPOCH + 'T00:00:00Z')) / 86400000) + 1; }
+function dailyHash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+// 試験用: 日づけを きめうち できる(null なら 今日)
+let DAILY_DATE = null;
+const dailyDate = () => DAILY_DATE || dailyToday();
+const DAILY_THEMES = [
+  { theme: 'grass', deco: ['tree', 'fence'] }, { theme: 'sky' }, { theme: 'ice' }, { theme: 'sand' }, { theme: 'night' },
+  { theme: 'jungle', deco: ['tree'] }, { theme: 'falls', deco: ['tree'] }, { theme: 'dusk' }, { theme: 'ruins' }, { theme: 'cave', deco: ['torch', 'crystal'] },
+];
+function buildDaily(L, ds) {
+  const S = sections(L);
+  const R = extRng(dailyHash('haru-daily:' + ds));
+  const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+  const pick = a => a[Math.floor(R() * a.length)];
+  const th = DAILY_THEMES[Math.floor(R() * DAILY_THEMES.length)];
+  const e1 = () => pick(['goomy', 'goomy', 'slime', 'goomy', 'slime']);
+  const deco = () => (th.deco ? [[1, pick(th.deco)]] : []);
+  // 区画: [おもさ, 1面に いくつまで, 組み立て(x) → つぎの x]。星の 区画は 星を 1つ 置く
+  const K = {
+    field: [3, 3, x => S.run(x, ri(10, 13), { coins: ri(3, 5), en: [[ri(4, 6), e1()]].concat(R() < 0.5 ? [[ri(8, 9), e1()]] : []), deco: deco() })],
+    pits: [2, 2, x => { x = S.run(x, 3); x = S.gap(x, ri(2, 3), { coins: 3 }); x = S.run(x, 4, { en: R() < 0.4 ? [[2, 'goomy']] : [] }); x = S.gap(x, ri(3, 4), { coins: 4, coinY: 6 }); return S.run(x, 3); }],
+    plank: [2, 2, x => { x = S.run(x, 3); x = S.gap(x, 5, { plank: 2 }); x = S.run(x, 4, { coins: 0 }); x = S.gap(x, 3, { coins: 3 }); return S.run(x, 3); }],
+    blocks: [2, 2, x => { x = S.blocks(x, pick(['?B?B?', 'B?B?B', 'B??B', '?BBB?']), { en: [[ri(5, 6), e1()]], coins: 3 }); return S.run(x, 3); }],
+    flyers: [2, 2, x => S.run(x, ri(11, 13), { coins: 4, en: [[5, ...(R() < 0.5 ? ['bee', { y: 6 }] : ['goomy', { v: 'para' }])], [10, 'goomy']], deco: deco() })],
+    fallers: [1, 1, x => { x = S.run(x, 3); x = S.fallers(x, 3); return S.run(x, 3); }],
+    crushers: [1, 1, x => { x = S.run(x, 2); x = S.crushers(x, ri(2, 3), { coins: true }); return S.run(x, 2); }],
+    firebars: [1, 1, x => { x = S.firebars(x, 12, 1, { speed: 1.5, en: [[9, 'goomy']] }); return S.run(x, 2); }],
+    saws: [1, 1, x => { x = S.run(x, 2); x = S.saws(x, 12); return S.run(x, 2); }],
+  };
+  const STAR = {
+    spring: x => { x = S.spring(x, { star: true }); return S.run(x, 2); },
+    tramp: x => { x = S.tramp(x, { star: true }); return S.run(x, 2); },
+    tower: x => { x = S.tower(x, { star: true, h: ri(4, 5), ch: th.theme === 'ice' ? 'I' : 'S' }); return S.run(x, 2); },
+    movers: x => { x = S.run(x, 2); x = S.movers(x, 2, { star: true, kind: R() < 0.5 ? 'lift' : 'move' }); return S.run(x, 3); },
+  };
+  const n = ri(8, 11);
+  // 星の 区画は 前・まん中・うしろ に 1つずつ
+  const third = n / 3;
+  const starAt = new Set([ri(1, Math.max(1, Math.floor(third) - 1)), ri(Math.ceil(third), Math.floor(2 * third) - 1), ri(Math.ceil(2 * third), n - 1)]);
+  const used = {};
+  const secs = [];
+  let x = S.start(0, { deco: 'sign' }), last = '';
+  const mid = Math.floor(n / 2);
+  const starKinds = Object.keys(STAR);
+  for (let i = 0; i < n; i++) {
+    const x0 = i === 0 ? 0 : x;
+    if (i === mid) x = S.run(x, 6, { cp: 3, coins: 2 });
+    let kind;
+    if (starAt.has(i)) {
+      const c = starKinds.filter(k => k !== last && !used[k]);
+      kind = pick(c.length ? c : starKinds);
+      x = STAR[kind](x);
+    } else {
+      const easy = i === 0 ? ['field', 'blocks', 'flyers'] : null;
+      const cand = Object.keys(K).filter(k => k !== last && (used[k] || 0) < K[k][1] && (!easy || easy.includes(k)));
+      const tot = cand.reduce((s, k) => s + K[k][0], 0);
+      let r = R() * tot; kind = cand[0];
+      for (const k of cand) { r -= K[k][0]; if (r <= 0) { kind = k; break; } }
+      x = K[kind][2](x);
+    }
+    used[kind] = (used[kind] || 0) + 1; last = kind;
+    secs.push({ kind, x0, x1: x });
+  }
+  // みじかすぎる 日は さいごの 区画の あとに 少し 道を たす(120マス より 長く)
+  if (x + 14 < 120) x = S.run(x, 120 - 14 - x, { coins: 3 });
+  x = S.goal(x, { deco: th.deco ? th.deco[0] : undefined });
+  secs[secs.length - 1].x1 = x;
+  return { theme: th.theme, secs, W: x };
+}
+LEVELS.push({
+  id: DAILY_ID, world: 1, num: '★', daily: true, noExtend: true, noShards: true, noStars: true, name: '', label: '今日の1面', theme: 'grass', bgm: 'bgm_1', time: 600,
+  build(L) {
+    const d = L._def;
+    // 中間から やりなおす ときは 同じ 日の 面(夜中の 12時を またいでも かわらない)
+    const ds = d._keepDate && d._date ? d._date : dailyDate();
+    const r = buildDaily(L, ds);
+    d._date = ds; d._num = dailyNum(ds); d._secs = r.secs; d.theme = r.theme; d.name = '#' + d._num;
+  },
+});
+
 LEVELS.forEach(d => { const b = d.build; d.build = L => { L._def = d; b(L); (L._post || []).forEach(f => f()); }; });
 // 面の ならびは id の 順(試験の 道具は「id = 番号」で 面を えらぶ)
 LEVELS.sort((p, q) => p.id - q.id);
