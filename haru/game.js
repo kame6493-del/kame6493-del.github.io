@@ -427,27 +427,37 @@ function canvasPos(e) {
   return { x: (e.clientX - r.left) / r.width * VW, y: (e.clientY - r.top) / r.height * VH };
 }
 const TOUCH = {
-  left: { x: 84, y: 470, r: 50 }, right: { x: 204, y: 470, r: 50 },
+  // 左下は 十字キー(はしご・とびら・いど・つつ・しゃがみ・ヒップドロップに ↑↓ が いる)
+  left: { x: 70, y: 446, r: 44 }, right: { x: 218, y: 446, r: 44 }, up: { x: 144, y: 378, r: 34 }, down: { x: 144, y: 504, r: 34 },
   attack: { x: 752, y: 476, r: 46 }, jump: { x: 870, y: 436, r: 58 }, dash: { x: 772, y: 366, r: 40 }, spin: { x: 650, y: 488, r: 34 },
 };
+const PAD = { x: 144, y: 446 };
 function touchButtonAt(p) {
+  // いちばん 近い ボタン(ボタンの ふちからの きょりで くらべる)
+  let best = null, bd = 14;
   for (const [k, b] of Object.entries(TOUCH)) {
     if (k === 'dash' && !hasPower('dash') && !nearCarry()) continue;
-    if (Math.hypot(p.x - b.x, p.y - b.y) < b.r + 14) return k;
+    const d = Math.hypot(p.x - b.x, p.y - b.y) - b.r;
+    if (d < bd) { bd = d; best = k; }
   }
-  // 左右の帯はゆるく取る(指がずれても動けるように)
-  if (p.y > 340 && p.x < 300) return p.x < 154 ? 'left' : 'right';
+  if (best) return best;
+  // 十字キーの まわりは ゆるく取る(指が ずれても うごけるように)。中心からの 向きで きめる
+  if (p.y > 320 && p.x < 300) {
+    const dx = p.x - PAD.x, dy = p.y - PAD.y;
+    if (Math.abs(dy) > Math.abs(dx) * 1.2) return dy < 0 ? 'up' : 'down';
+    return dx < 0 ? 'left' : 'right';
+  }
   return null;
 }
 function refreshTouchKeys() {
   const held = new Set([...pointers.values()].filter(Boolean));
-  for (const k of ['left', 'right', 'jump', 'attack', 'dash', 'spin']) {
+  for (const k of ['left', 'right', 'up', 'down', 'jump', 'attack', 'dash', 'spin']) {
     const on = held.has(k);
     if (on && !touchKeys[k]) pressed[k] = true;
     touchKeys[k] = on;
   }
 }
-const touchKeys = { left: false, right: false, jump: false, attack: false, dash: false, spin: false };
+const touchKeys = { left: false, right: false, up: false, down: false, jump: false, attack: false, dash: false, spin: false };
 cv.addEventListener('pointerdown', e => {
   e.preventDefault();
   initAudio();
@@ -6122,6 +6132,8 @@ function drawTouch() {
   };
   draw(TOUCH.left, '◀', touchKeys.left);
   draw(TOUCH.right, '▶', touchKeys.right);
+  draw(TOUCH.up, '▲', touchKeys.up);
+  draw(TOUCH.down, '▼', touchKeys.down);
   draw(TOUCH.attack, 'けん', touchKeys.attack);
   draw(TOUCH.jump, 'ジャンプ', touchKeys.jump);
   draw(TOUCH.spin, 'スピン', touchKeys.spin);
@@ -6849,7 +6861,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && sce
 // 試験用: 画面の外から状態を読めるようにする
 window.__game = {
   get scene() { return scene; }, get P() { return P; }, get world() { return world; }, get level() { return level; }, get save() { return save; }, get cam() { return cam; },
-  startLevel, LEVELS, keys, pressed, WORLDS, BOSS_TYPES,
+  startLevel, LEVELS, keys, pressed, touchKeys, WORLDS, BOSS_TYPES,
   goMap, playStory, get map() { return map; },
   toast(v) { toast = v; },
   get clearInfo() { return clearInfo; },
