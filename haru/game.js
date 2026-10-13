@@ -60,8 +60,8 @@ const isCleared = id => !!save.cleared[id];
 // 製作者が手元(127.0.0.1 / localhost)で遊ぶときは完全版。ネット版(github.io)は体験版のまま。
 // アプリ(Capacitor)の中も hostname が localhost になるので、アプリでは手元あつかいにしない
 const CREATOR_FULL = /^(127.0.0.1|localhost)$/.test(location.hostname) && !window.Capacitor;
-// テスト版(2026-10 持ち主「課金版じゃなくて無料版で、あくまでテスター」): ぜんぶの面を無料で遊べる。本番で課金を戻すときは false にする
-const TESTER_FREE = true;
+// テスト版(2026-10-13 持ち主と決定): Android のテスト版(アプリの中)だけ ぜんぶの面を無料で遊べる。ブラウザ版はワールド1だけの体験版のまま。本番で課金を戻すときは false にする
+const TESTER_FREE = !!window.Capacitor;
 const needsFull = i => LEVELS[i].world > 1 && !save.full && !CREATOR_FULL && !TESTER_FREE;
 const canPlay = i => isOpenId(LEVELS[i].id) && !needsFull(i);
 const SHOP_ITEMS = [
