@@ -3378,7 +3378,21 @@ function drawBossUI(t) {
   const bs = world.bossSay;
   if (bs && bs.t > 0 && bs.o && !bs.o.gone) {
     const o = bs.o, x = clamp(o.x + o.w / 2, cam.x + 170, cam.x + VW - 170), y = Math.max(cam.y + 120, o.y - 26);
-    ctx.save(); ctx.font = font(17, 800); const w = Math.min(320, ctx.measureText(bs.text).width + 30), lines = ctx.measureText(bs.text).width > 290 ? 2 : 1;
+    ctx.save(); ctx.font = font(17, 800);
+    if (isEN()) {
+      // English: ことばの 切れ目で 2〜3行に
+      const tx2 = T(bs.text); let ls = wrapWords(ctx, tx2, 300);
+      // 行の 長さを そろえる(さいごの 行に 1語だけ のこらないように)
+      if (ls.length > 1) { const n0 = ls.length; for (let mw = Math.ceil(ctx.measureText(tx2).width / n0) + 8; mw < 300; mw += 8) { const t2 = wrapWords(ctx, tx2, mw); if (t2.length === n0) { ls = t2; break; } } }
+      const w2 = Math.min(330, Math.max(...ls.map(s => ctx.measureText(s).width)) + 30), n = ls.length;
+      ctx.globalAlpha = Math.min(1, bs.t * 3);
+      rr(x - w2 / 2, y - 24 - n * 22, w2, 16 + n * 22, 14); ctx.fillStyle = '#fffdf2'; ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - 8, y - 9); ctx.lineTo(clamp(o.x + o.w / 2, x - 30, x + 30), y + 6); ctx.lineTo(x + 8, y - 9); ctx.closePath(); ctx.fillStyle = '#fffdf2'; ctx.fill();
+      ctx.fillStyle = '#2a1a3a'; ctx.textAlign = 'center';
+      ls.forEach((s, i) => ctx.fillText(s, x, y - 20 - (n - 1 - i) * 22));
+      ctx.restore(); return;
+    }
+    const w = Math.min(320, ctx.measureText(bs.text).width + 30), lines = ctx.measureText(bs.text).width > 290 ? 2 : 1;
     ctx.globalAlpha = Math.min(1, bs.t * 3);
     rr(x - w / 2, y - 24 - lines * 22, w, 16 + lines * 22, 14); ctx.fillStyle = '#fffdf2'; ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 3; ctx.stroke();
     ctx.beginPath(); ctx.moveTo(x - 8, y - 9); ctx.lineTo(clamp(o.x + o.w / 2, x - 30, x + 30), y + 6); ctx.lineTo(x + 8, y - 9); ctx.closePath(); ctx.fillStyle = '#fffdf2'; ctx.fill();
@@ -3394,7 +3408,7 @@ function drawBossCard(t) {
   ctx.rotate(-0.03);
   rr(-260, -56, 520, 104, 20); ctx.fillStyle = 'rgba(30,10,40,.88)'; ctx.fill(); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 5; ctx.stroke();
   outlined(c.title || 'ボス', 0, -22, '#ffd84a', '#2a1a3a', 5, font(18, 800));
-  outlined(c.name, 0, 22, '#fff', '#2a1a3a', 9, titleFont(40));
+  outlined(c.name, 0, 22, '#fff', '#2a1a3a', 9, fitFont(c.name, 490, 40, titleFont));
   ctx.restore();
 }
 
@@ -4087,7 +4101,7 @@ function drawZukan(t) {
       ctx.lineWidth = sel ? 4 : 2; ctx.strokeStyle = sel ? '#ffd84a' : 'rgba(255,255,255,.25)'; ctx.stroke();
       drawZkArt(k, x + cw / 2, y + ch - 28 + (sel ? Math.sin(t * 6) * 2 : 0), ch - 44, !seen, cw - 16);
       ctx.fillStyle = seen ? '#fff' : 'rgba(255,255,255,.5)'; ctx.font = font(12, 800); ctx.textAlign = 'center';
-      ctx.fillText((i + 1 < 10 ? '0' : '') + (i + 1) + ' ' + (seen ? zkName(k) : '???'), x + cw / 2, y + ch - 12);
+      { const lb = (i + 1 < 10 ? '0' : '') + (i + 1) + ' ' + (seen ? zkName(k) : '???'); if (isEN()) ctx.font = fitFont(lb, cw - 14, 12); ctx.fillText(lb, x + cw / 2, y + ch - 12); }
       uiButtons.push({ x: x + 4, y: y + 4, w: cw - 8, h: ch - 8, fn: () => { if (zk.i === i) zk.grid = false; else zk.i = i; } });
     });
   } else drawZukanPage(list[zk.i], t);
@@ -4100,6 +4114,7 @@ function drawZukan(t) {
 }
 function zkWrap(text, x, y, maxW, lh, f) {
   ctx.font = f; let line = '', yy = y;
+  if (isEN()) { for (const ln of wrapWords(ctx, T(String(text || '')), maxW)) { ctx.fillText(ln, x, yy); yy += lh; } return yy; }
   for (const ch of String(text || '')) {
     if (ctx.measureText(line + ch).width > maxW && line) { ctx.fillText(line, x, yy); yy += lh; line = ch === ' ' ? '' : ch; }
     else line += ch;
@@ -4150,7 +4165,7 @@ function drawZukanPage(k, t) {
   ctx.fillStyle = '#fff'; y = zkWrap(info.how || ((d.stomp ? 'ふめる' : 'ふめない') + '・' + (d.sword ? 'けんで たおせる' : 'けんは きかない')), x, y, w, 24, font(16, 700)) + 8;
   // ふめる・けん・スピン の しるし
   const tags = [[d.stomp ? 'ふめる' : 'ふめない', d.stomp ? '#7dff8a' : '#ff8a8a'], [d.sword ? 'けん ○' : 'けん ×', d.sword ? '#7dff8a' : '#ff8a8a'], ['スピン ○', '#7dff8a']];
-  tags.forEach(([tx, c], j) => { rr(x + j * 112, y, 104, 30, 12); ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = c; ctx.font = font(14, 800); ctx.textAlign = 'center'; ctx.fillText(tx, x + j * 112 + 52, y + 20); ctx.textAlign = 'left'; });
+  tags.forEach(([tx, c], j) => { rr(x + j * 112, y, 104, 30, 12); ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = c; ctx.font = fitFont(tx, 94, 14); ctx.textAlign = 'center'; ctx.fillText(tx, x + j * 112 + 52, y + 20); ctx.textAlign = 'left'; });
   y += 50;
   const ws = zkWorlds && zkWorlds[k] ? [...zkWorlds[k]].sort((a, b) => a - b) : [];
   ctx.fillStyle = '#9fe0ff'; ctx.font = font(15, 800); ctx.fillText('でてくる ワールド', x, y); y += 24;
@@ -4169,7 +4184,7 @@ function updateHelp() {
   else if (consume('pause') || consume('ok')) closeHelp();
 }
 function keyCap(x, y, label, w) {
-  w = w || Math.max(34, label.length * 15 + 16);
+  w = w || Math.max(34, (isEN() ? (ctx.font = font(15, 900), ctx.measureText(label).width) : label.length * 15) + 16);
   rr(x, y + 3, w, 32, 8); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fill();
   const g = ctx.createLinearGradient(0, y, 0, y + 32); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#cfd8ee'); rr(x, y, w, 32, 8); ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2.5; ctx.stroke();
   ctx.fillStyle = '#2a1a3a'; ctx.font = font(15, 900); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x + w / 2, y + 17); ctx.textBaseline = 'alphabetic';
@@ -4205,7 +4220,7 @@ function drawHelp(t) {
     }
     outlined('よびの はこ(タップで だす)', sx + 330 * k, sy + 34, '#fff', '#2a1a3a', 4, font(14, 800));
     outlined('Ⅱ いちじていし', sx + (VW - 60) * k, sy + 100 * k, '#fff', '#2a1a3a', 4, font(13, 800));
-    ctx.fillStyle = '#ffe9a8'; ctx.font = font(15, 800); ctx.textAlign = 'center'; ctx.fillText('スマホは よこむき。ジャンプは ながおしで たかく。↓は ◀▶の 下を おす', VW / 2, 526);
+    ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont('スマホは よこむき。ジャンプは ながおしで たかく。↓は ◀▶の 下を おす', 500, 15); ctx.textAlign = 'center'; ctx.fillText('スマホは よこむき。ジャンプは ながおしで たかく。↓は ◀▶の 下を おす', VW / 2, 526);
   } else if (p === 2) {
     const P0 = scene === 'help' && help.from === 'pause' && P ? P : null;
     const rows = [
@@ -4267,7 +4282,7 @@ function drawTutStep(o, t) {
   ctx.save(); ctx.globalAlpha = 0.95;
   rr(cx - 280, y, 560, 82, 18); ctx.fillStyle = o.done ? 'rgba(30,90,40,.88)' : 'rgba(30,20,60,.88)'; ctx.fill(); ctx.strokeStyle = o.done ? '#7dff8a' : '#ffd84a'; ctx.lineWidth = 3; ctx.stroke();
   outlined((o.done ? '✔ ' : o.n + '. ') + o.text, cx, y + 28, '#fff', '#2a1a3a', 5, titleFont(22));
-  ctx.fillStyle = '#ffe9a8'; ctx.font = font(15, 800); ctx.textAlign = 'center'; ctx.fillText(usingTouch ? o.subT || o.sub : o.sub, cx, y + 62);
+  ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont(usingTouch ? o.subT || o.sub : o.sub, 540, 15); ctx.textAlign = 'center'; ctx.fillText(usingTouch ? o.subT || o.sub : o.sub, cx, y + 62);
   ctx.restore();
   if (!o.done && o.arrow !== undefined) { const ax = o.arrow * TILE + 24, ay = (o.arrowY || 7) * TILE + Math.sin(t * 6) * 6; outlined('▼', ax, ay, '#ffd84a', '#2a1a3a', 5, titleFont(28)); }
 }
@@ -4308,7 +4323,7 @@ function drawTitle(t) {
   if (ART.title_logo) { const w = 560, h = ART.title_logo.naturalHeight / ART.title_logo.naturalWidth * w; ctx.drawImage(ART.title_logo, -w / 2, -h / 2, w, h); }
   else {
     ctx.shadowColor = 'rgba(255,200,80,.6)'; ctx.shadowBlur = 24;
-    outlined('ハルの冒険', 0, 0, '#fff', '#2a1a3a', 16, titleFont(84));
+    outlined('ハルの冒険', 0, 0, '#fff', '#2a1a3a', 16, isEN() ? fitFont('ハルの冒険', 780, 72, titleFont) : titleFont(84));
     ctx.shadowBlur = 0;
     const g = ctx.createLinearGradient(0, -40, 0, 40); g.addColorStop(0, '#fff36b'); g.addColorStop(1, '#ff8a1f');
     ctx.fillStyle = g; ctx.fillText('ハルの冒険', 0, 0);
@@ -4325,6 +4340,7 @@ function drawTitle(t) {
   button(VW / 2 - 105, 314, 210, 46, 'モンスターずかん', () => { if (!slotInfo(saveSlot)) selectSlot(saveSlot); openZukan('title'); }, { size: 18 });
   button(VW / 2 + 120, 314, 210, 46, 'オープニング', () => startOpening(() => { scene = 'title'; titleT = 0.7; bgm('title'); }), { size: 18 });
   button(VW - 150, 14, 136, 40, save.sound ? 'おと: オン' : 'おと: オフ', () => setSound(!save.sound), { size: 16 });
+  langToggle(14, 16);
   ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.font = font(15, 700); ctx.textAlign = 'center';
   ctx.fillText(usingTouch ? 'ボタンを タップしてね' : 'Enter / スペースで ' + (cont ? 'つづきから' : 'はじめる'), VW / 2, 384);
 }
@@ -4343,7 +4359,7 @@ function endOpening() { save.seen.opening = true; save.seen.intro = true; writeS
 function updateOpening(dt) {
   op.t += dt;
   if (consume('pause')) { endOpening(); return; }
-  if (consume('ok') || consume('jump') || consume('attack')) { const sl = OPEN_SLIDES[op.i]; const full = sl.lines.join('').length / 22 + 0.6; if (op.t < full) op.t = full; else openingNext(); }
+  if (consume('ok') || consume('jump') || consume('attack')) { const sl = OPEN_SLIDES[op.i]; const full = sl.lines.map(T).join('').length / (isEN() ? 40 : 22) + 0.6; if (op.t < full) op.t = full; else openingNext(); }
   else if (op.t > 7.5) openingNext();
 }
 function drawOpening(t) {
@@ -4360,10 +4376,10 @@ function drawOpening(t) {
   }
   ctx.restore();
   // 文の まど
-  const text = sl.lines, shown = Math.floor(op.t * 22);
+  const text = sl.lines.map(T), shown = Math.floor(op.t * (isEN() ? 40 : 22));
   rr(60, VH - 124, VW - 120, 100, 20); ctx.fillStyle = 'rgba(10,6,30,.78)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,230,160,.7)'; ctx.lineWidth = 2; ctx.stroke();
   let used = 0;
-  text.forEach((ln, i) => { const part = ln.slice(0, Math.max(0, shown - used)); used += ln.length; ctx.fillStyle = '#fff'; ctx.font = font(22, 800); ctx.textAlign = 'center'; ctx.fillText(part, VW / 2, VH - 84 + i * 34); });
+  text.forEach((ln, i) => { const part = ln.slice(0, Math.max(0, shown - used)); used += ln.length; ctx.fillStyle = '#fff'; ctx.font = fitFont(ln, VW - 150, 22); ctx.textAlign = 'center'; ctx.fillText(part, VW / 2, VH - 84 + i * 34); });
   for (let i = 0; i < OPEN_SLIDES.length; i++) { ctx.beginPath(); ctx.arc(VW / 2 - (OPEN_SLIDES.length - 1) * 9 + i * 18, VH - 12, i === op.i ? 5 : 3.5, 0, 7); ctx.fillStyle = i === op.i ? '#ffd84a' : 'rgba(255,255,255,.5)'; ctx.fill(); }
   button(VW - 150, 14, 136, 40, 'スキップ ▶▶', endOpening, { size: 16 });
 }
@@ -4391,7 +4407,7 @@ function drawEnding(t) {
     else drawBackground(r.theme || W.theme, u * 40, t);
     ctx.restore();
     ctx.fillStyle = 'rgba(10,6,30,.35)'; ctx.fillRect(0, 0, VW, VH);
-    outlined('ワールド' + W.n + '  ' + W.name, VW / 2, 120, '#ffe14d', '#2a1a3a', 8, titleFont(34));
+    outlined('ワールド' + W.n + '  ' + W.name, VW / 2, 120, '#ffe14d', '#2a1a3a', 8, fitFont('ワールド' + W.n + '  ' + W.name, 900, 34, titleFont));
     rr(80, VH - 130, VW - 160, 84, 20); ctx.fillStyle = 'rgba(10,6,30,.75)'; ctx.fill();
     ctx.fillStyle = '#fff'; ctx.font = font(22, 800); ctx.textAlign = 'center'; ctx.fillText(r.line || '', VW / 2, VH - 80);
     drawFit('hero_run', 140 + k * 680, 400 - Math.abs(Math.sin(t * 8)) * 6, 70);
@@ -4492,7 +4508,7 @@ function update(dt) {
     titleT += dt;
     updateMap(dt);
   } else if (scene === 'story') {
-    titleT += dt; story.shown += dt * 28;
+    titleT += dt; story.shown += dt * (isEN() ? 55 : 28);
     if (consume('ok') || consume('jump') || consume('attack')) storyNext();
     if (consume('pause')) storyEnd();
   } else if (scene === 'clear') {
@@ -4870,7 +4886,7 @@ function playStory(key, then) {
 }
 function storyNext() {
   const st = STORY[story.key]; const line = st.lines[story.i];
-  if (story.shown < line[1].length) { story.shown = line[1].length; return; }
+  { const len = T(line[1]).length; if (story.shown < len) { story.shown = len; return; } }
   story.i++; story.shown = 0; sfx('click', 1.2);
   if (story.i >= st.lines.length) storyEnd();
 }
@@ -4885,6 +4901,18 @@ function storyEnd() {
 // ---------- 描画 ----------
 function font(px, w = 800) { return `${w} ${px}px "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`; }
 function titleFont(px) { return `${px}px "Dela Gothic One", "M PLUS Rounded 1c", sans-serif`; }
+// English のときだけ: 文が maxW に おさまるまで 文字を 小さくした font を かえす(日本語は mk(px) のまま)
+function fitFont(text, maxW, px, mk = font) {
+  if (!isEN()) return mk(px);
+  let p = px; ctx.font = mk(p);
+  while (p > 9 && ctx.measureText(text).width > maxW) { p--; ctx.font = mk(p); }
+  return mk(p);
+}
+// ことばの きりかえ(English / 日本語)
+function langToggle(x, y) {
+  button(x, y, 104, 34, 'English', () => setLang('en'), { sel: isEN(), size: 15 });
+  button(x + 110, y, 104, 34, '日本語', () => setLang('ja'), { sel: !isEN(), size: 15 });
+}
 function outlined(text, x, y, fill, stroke = '#2a1a3a', lw = 6, f = null, align = 'center') {
   if (f) ctx.font = f;
   ctx.textAlign = align; ctx.textBaseline = 'middle';
@@ -4915,7 +4943,7 @@ function button(x, y, w, h, label, fn, opts = {}) {
   rr(x, y, w, h, h / 2); ctx.fillStyle = g; ctx.fill();
   ctx.restore();
   ctx.lineWidth = 4; ctx.strokeStyle = '#2a1a3a'; rr(x, y, w, h, h / 2); ctx.stroke();
-  ctx.fillStyle = '#2a1a3a'; ctx.font = font(opts.size || 26); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#2a1a3a'; ctx.font = isEN() ? fitFont(label, w - 16, opts.size || 26) : font(opts.size || 26); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(label, x + w / 2, y + h / 2 + 1);
 }
 function drawImg(name, x, y, w, h, flip = false, alpha = 1) {
@@ -5302,7 +5330,7 @@ function drawPlayer0() {
   if (p.inCannon) return;
   // はしる メーター(マント): 頭の 上に 小さく
   if (hasPower('cape') && p.runM > 0.05 && !p.fly && !p.dead) { const w = 40, x = p.x + p.w / 2 - w / 2, y = p.y - 16; ctx.save(); ctx.globalAlpha = 0.85; rr(x, y, w, 7, 3); ctx.fillStyle = 'rgba(20,10,40,.6)'; ctx.fill(); rr(x, y, w * p.runM, 7, 3); ctx.fillStyle = p.runM >= 1 ? (Math.floor(performance.now() / 80) % 2 ? '#ffe066' : '#ff8a3a') : '#c78bff'; ctx.fill(); ctx.restore(); }
-  if (p.inv > 0 && !p.dead && Math.floor(p.inv * 20) % 2 === 0) return;
+  if (p.inv > 0 && !p.dead && !window.__noBlink && Math.floor(p.inv * 20) % 2 === 0) return; // __noBlink: 宣伝動画の撮影で無敵にしたときに点滅させない
   // ほしの マント(せなか)
   if (hasPower('cape') && !p.dead && !p.climb && !(p.fly && ART.hero_fly)) { // とぶ 絵には マントが 入って いる
     const air = !p.onGround, fl = Math.sin(performance.now() / 90) * (air ? 0.25 : 0.08), ang = p.fly ? 1.25 : air ? 0.7 + fl : 0.25 + Math.min(0.5, Math.abs(p.vx) / 900) + fl;
@@ -6109,7 +6137,10 @@ function drawToast() {
   const bossBar = inPlay && world.ents.some(o => o.t === 'enemy' && o.d && o.d.boss && o.state !== 'sleep' && !o.dying);
   // 主人公が 画面の上の方に いるときは 札を 下に出す
   const heroHigh = inPlay && P && P.y - cam.y < 240;
-  const w = 440, h = toast.sub ? 66 : 44, x = VW / 2 + 30 - w / 2;
+  let w = 440;
+  // English は 文が ながいので 札を ひろげる(それでも はみ出すときは 文字を 小さく)
+  if (isEN()) { ctx.font = font(23); let mw = ctx.measureText(toast.text).width + 40; if (toast.sub) { ctx.font = font(16, 700); mw = Math.max(mw, ctx.measureText(toast.sub).width + 40); } w = clamp(Math.ceil(mw), 440, 700); }
+  const h = toast.sub ? 66 : 44, x = VW / 2 + 30 - w / 2;
   let y = !inPlay ? 120 : heroHigh ? VH - h - 96 : (bossBar ? 136 : (world.gateT > 0 ? 110 : 74));
   if (inPlay) {
     // 札の 下に 星・ワープ・道具が かくれるときは 反対がわ(上⇔下)に うつす
@@ -6118,8 +6149,8 @@ function drawToast() {
   }
   rr(x, y, w, h, 14); ctx.fillStyle = 'rgba(30,20,60,.66)'; ctx.fill();
   ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.stroke();
-  outlined(toast.text, x + w / 2, y + 22, '#fff', '#2a1a3a', 5, font(23));
-  if (toast.sub) { ctx.fillStyle = '#ffe9a8'; ctx.font = font(16, 700); ctx.textAlign = 'center'; ctx.fillText(toast.sub, x + w / 2, y + 50); }
+  outlined(toast.text, x + w / 2, y + 22, '#fff', '#2a1a3a', 5, fitFont(toast.text, w - 24, 23));
+  if (toast.sub) { ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont(toast.sub, w - 24, 16, p => font(p, 700)); ctx.textAlign = 'center'; ctx.fillText(toast.sub, x + w / 2, y + 50); }
   ctx.restore();
 }
 
@@ -6262,7 +6293,7 @@ function drawPlay(t) {
     ctx.fillStyle = 'rgba(10,6,24,.72)'; ctx.fillRect(0, VH / 2 - 62, VW, 116);
     const kindName = { fort: 'とりで', ghost: 'おばけやしき', switch: 'しんでん', boss: 'ボスの しろ', water: 'みずの なか', sky: 'そらの みち' }[d.kind] || '';
     outlined((d.label || (d.kind === 'switch' ? 'しんでん' : 'World ' + stageLabel(d))) + (kindName && /^\d+$/.test(String(d.num)) ? '  ' + kindName : ''), VW / 2, VH / 2 - 30, '#ffe14d', '#2a1a3a', 7, titleFont(28));
-    outlined(d.name, VW / 2, VH / 2 + 20, '#fff', '#2a1a3a', 9, titleFont(44));
+    outlined(d.name, VW / 2, VH / 2 + 20, '#fff', '#2a1a3a', 9, fitFont(d.name, 920, 44, titleFont));
     ctx.restore();
   }
   if (world.clear && scene === 'play') {
@@ -6487,7 +6518,7 @@ function drawMap(t) {
   ctx.restore();
   // 上の札
   woodPlate(VW / 2 - 230, 10, 460, 50);
-  outlined((W.star ? '' : 'ワールド' + W.n + '  ') + W.name, VW / 2, 36, '#fff', '#3a1a08', 6, titleFont(24));
+  outlined((W.star ? '' : 'ワールド' + W.n + '  ') + W.name, VW / 2, 36, '#fff', '#3a1a08', 6, fitFont((W.star ? '' : 'ワールド' + W.n + '  ') + W.name, 436, 24, titleFont));
   for (let i = 0; i < 8; i++) {
     const open2 = nodeOpen(i, 0), x = VW / 2 - 7 * 11 + i * 22, y = 72;
     ctx.beginPath(); ctx.arc(x, y, i === map.wi ? 7 : 5, 0, 7); ctx.fillStyle = i === map.wi ? '#ffd84a' : open2 ? '#ffffff' : 'rgba(255,255,255,.3)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#2a1a3a'; ctx.stroke();
@@ -6498,7 +6529,7 @@ function drawMap(t) {
   drawImg('ui_star', 16, 16, 30, 28); outlined(`${total}/${LEVELS.filter(d => !d.noStars).length * 3}`, 52, 31, '#ffe14d', '#2a1a3a', 5, titleFont(18), 'left');
   const next = PERKS.find(pk => total < pk.need);
   ctx.textAlign = 'left'; ctx.font = font(13, 800); ctx.fillStyle = '#fff';
-  ctx.fillText(next ? `つぎの せいちょう ★${next.need}: ${next.name}` : 'せいちょう コンプリート!', 16, 62);
+  { const nx = next ? `つぎの せいちょう ★${next.need}: ${next.name}` : 'せいちょう コンプリート!'; if (isEN()) ctx.font = fitFont(nx, 226, 13); ctx.fillText(nx, 16, 62); }
   drawImg('ui_coin', VW - 130, 16, 28, 28); outlined('×' + save.wallet, VW - 96, 31, '#fff', '#2a1a3a', 5, titleFont(18), 'left');
   // しんでんの スイッチ(おした 色)
   ['y', 'g', 'b', 'p'].forEach((c, i) => { ctx.save(); ctx.globalAlpha = save.palace[c] ? 1 : 0.25; ctx.fillStyle = PALACE_COL[c]; ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2; rr(VW - 130 + i * 26, 50, 20, 16, 5); ctx.fill(); ctx.stroke(); ctx.restore(); });
@@ -6543,7 +6574,7 @@ function drawMap(t) {
       uiButtons.push({ x: x - 42, y: y - 42, w: 84, h: 84, fn: () => { pk.i = i; pressed.ok = true; } });
     });
     const Wsel = WORLDS[pk.list[pk.i]];
-    outlined(Wsel ? Wsel.name : '', VW / 2, 350, '#fff', '#2a1a3a', 6, titleFont(26));
+    outlined(Wsel ? Wsel.name : '', VW / 2, 350, '#fff', '#2a1a3a', 6, fitFont(Wsel ? Wsel.name : '', 900, 26, titleFont));
     ctx.fillStyle = '#ffe9a8'; ctx.font = font(15, 700); ctx.textAlign = 'center'; ctx.fillText('←→ えらぶ   Enter ワープ   Esc やめる', VW / 2, 392);
     ctx.restore();
     button(VW / 2 - 70, 420, 140, 46, 'やめる', () => { map.pick = null; }, { size: 20 });
@@ -6558,7 +6589,7 @@ function drawWorldCard(W, t) {
   const k = Math.min(1, (2.6 - map.card) * 3);
   ctx.translate(VW / 2, 230); ctx.scale(0.8 + k * 0.2, 0.8 + k * 0.2);
   outlined(W.star ? 'ほしの みち' : 'ワールド ' + W.n, 0, -40, '#ffe14d', '#2a1a3a', 10, titleFont(40));
-  outlined(W.star ? '〜 じょうきゅう コース 〜' : W.name, 0, 20, '#fff', '#2a1a3a', 9, titleFont(48));
+  outlined(W.star ? '〜 じょうきゅう コース 〜' : W.name, 0, 20, '#fff', '#2a1a3a', 9, fitFont(W.star ? '〜 じょうきゅう コース 〜' : W.name, 880, 48, titleFont));
   ctx.fillStyle = '#ffe9a8'; ctx.font = font(20, 800); ctx.textAlign = 'center'; ctx.fillText(W.line || '', 0, 84);
   for (let i = 0; i < 7; i++) { const an = t * 0.8 + i * 0.9; drawImg('ui_star', Math.cos(an) * 330 - 10, Math.sin(an) * 120 - 10, 20, 18, false, 0.6); }
   ctx.restore();
@@ -6593,7 +6624,20 @@ function drawStory(t) {
     ctx.save(); rr(bx + 18, by + 18, 112, 112, 18); ctx.clip(); if (sp.filter && !ART[sp.face]) ctx.filter = sp.filter; drawFit(img, bx + 74, by + 128 + (ART[sp.face] ? 0 : 8), ART[sp.face] ? 110 : 96); ctx.restore();
     tx = bx + 150;
   }
-  if (sp.name) { rr(tx - 6, by - 20, 160, 38, 14); ctx.fillStyle = sp.col; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#2a1a3a'; ctx.stroke(); outlined(sp.name, tx + 74, by - 1, '#fff', '#2a1a3a', 5, font(20)); }
+  if (sp.name) { rr(tx - 6, by - 20, 160, 38, 14); ctx.fillStyle = sp.col; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#2a1a3a'; ctx.stroke(); outlined(sp.name, tx + 74, by - 1, '#fff', '#2a1a3a', 5, fitFont(sp.name, 146, 20)); }
+  if (isEN()) {
+    // English: ことばの 切れ目で 折りかえし、1文字ずつ 出す
+    const full = T(line[1]), maxW2 = bx + bw - 30 - tx;
+    ctx.font = font(24, 800); let lines = wrapWords(ctx, full, maxW2), fs = 24;
+    while (lines.length > 3 && fs > 17) { fs--; ctx.font = font(fs, 800); lines = wrapWords(ctx, full, maxW2); }
+    ctx.fillStyle = '#2a1a3a'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    let left = Math.floor(story.shown), y2 = by + (lines.length > 3 ? 22 : 34);
+    for (const ln of lines) { if (left <= 0) break; ctx.fillText(ln.slice(0, left), tx, y2); left -= ln.length + 1; y2 += fs * 1.45; }
+    ctx.textBaseline = 'middle';
+    if (story.shown >= full.length) { ctx.fillStyle = '#ff7a1f'; ctx.beginPath(); const ay = by + bh - 22 + Math.sin(t * 8) * 3; ctx.moveTo(bx + bw - 40, ay); ctx.lineTo(bx + bw - 24, ay); ctx.lineTo(bx + bw - 32, ay + 10); ctx.fill(); }
+    button(VW - 150, 14, 130, 40, 'スキップ', () => storyEnd(), { size: 18 });
+    return;
+  }
   const text = line[1].slice(0, Math.floor(story.shown));
   ctx.fillStyle = '#2a1a3a'; ctx.font = font(24, 800); ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   // 折り返し
@@ -6620,10 +6664,10 @@ function drawShop(t) {
   outlined('× ' + save.wallet, VW - 140, 40, '#fff', '#2a1a3a', 6, titleFont(26));
   // 完全版
   woodPlate(40, 80, 400, 380);
-  outlined('ハルの冒険 完全版', 240, 118, '#fff36b', '#3a1a08', 7, titleFont(26));
+  outlined('ハルの冒険 完全版', 240, 118, '#fff36b', '#3a1a08', 7, fitFont('ハルの冒険 完全版', 370, 26, titleFont));
   ctx.fillStyle = '#fff'; ctx.font = font(18, 800); ctx.textAlign = 'center';
   const lines = ['ワールド2〜8・ほしの みちの ' + LEVELS.filter(d => d.world > 1).length + 'ステージが あそべる', 'まおうの城・あらしの城 ほか', 'かいきり(1かいだけ)'];
-  lines.forEach((l, i) => ctx.fillText(l, 240, 170 + i * 32));
+  lines.forEach((l, i) => { if (isEN()) ctx.font = fitFont(l, 372, 18); ctx.fillText(l, 240, 170 + i * 32); });
   drawFit('wizard', 165, 340, 64); drawFit('goal', 315, 340, 78);
   if (TESTER_FREE) { outlined('テスト版は ぜんぶ むりょう', 240, 382, '#7dff8a', '#3a1a08', 6, font(22)); }
   else {
@@ -6653,7 +6697,7 @@ function drawShop(t) {
   if (shopMsg) {
     shopMsg.t -= 1 / 60;
     if (shopMsg.t <= 0) shopMsg = null;
-    else { rr(VW / 2 - 260, 230, 520, shopMsg.sub ? 90 : 60, 18); ctx.fillStyle = 'rgba(30,20,60,.9)'; ctx.fill(); outlined(shopMsg.text, VW / 2, 262, '#fff', '#2a1a3a', 6, font(26)); if (shopMsg.sub) { ctx.fillStyle = '#ffe9a8'; ctx.font = font(17, 700); ctx.textAlign = 'center'; ctx.fillText(shopMsg.sub, VW / 2, 300); } }
+    else { rr(VW / 2 - 260, 230, 520, shopMsg.sub ? 90 : 60, 18); ctx.fillStyle = 'rgba(30,20,60,.9)'; ctx.fill(); outlined(shopMsg.text, VW / 2, 262, '#fff', '#2a1a3a', 6, fitFont(shopMsg.text, 496, 26)); if (shopMsg.sub) { ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont(shopMsg.sub, 496, 17, p => font(p, 700)); ctx.textAlign = 'center'; ctx.fillText(shopMsg.sub, VW / 2, 300); } }
   }
 }
 // ---------- セーブの ファイル(3つ) ----------
@@ -6691,7 +6735,7 @@ function drawFiles(t) {
       drawImg('ui_coin', x + 30, y + 146, 28, 28); ctx.fillText('×' + info.wallet, x + 66, y + 168);
       ctx.fillText('クリア ' + info.cl + ' / ' + LEVELS.filter(lv => !lv.roam && !lv.tutorial).length, x + 30, y + 206);
       ctx.textAlign = 'center'; ctx.font = font(15, 800); ctx.fillStyle = '#ffe9a8';
-      ctx.fillText(info.world.star ? 'ほしの みち' : 'ワールド' + info.world.n + ' ' + info.world.name, x + w / 2, y + 240);
+      { const wl = info.world.star ? 'ほしの みち' : 'ワールド' + info.world.n + ' ' + info.world.name; if (isEN()) ctx.font = fitFont(wl, w - 24, 15); ctx.fillText(wl, x + w / 2, y + 240); }
       ['y', 'g', 'b', 'p'].forEach((c, k) => { ctx.save(); ctx.globalAlpha = info.palace[c] ? 1 : 0.22; ctx.fillStyle = PALACE_COL[c]; ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2; rr(x + w / 2 - 52 + k * 27, y + 256, 22, 16, 5); ctx.fill(); ctx.stroke(); ctx.restore(); });
     }
     ctx.restore();
@@ -6709,6 +6753,7 @@ function drawPause() {
     const label = typeof it.label === 'function' ? it.label() : it.label;
     button(VW / 2 - 150, 116 + i * 62, 300, 50, label, () => { pauseSel = i; it.fn(); }, { sel: i === pauseSel, size: 22 });
   });
+  langToggle(16, VH - 50);
 }
 
 function drawClear(t) {
@@ -6746,7 +6791,7 @@ function drawClear(t) {
   outlined('スコア ' + sc, 0, 0, done ? '#fff36b' : '#ffffff', '#3a1a08', 7, titleFont(34));
   ctx.restore();
   if (clearInfo.secret && world.clearT > 4.2) { ctx.save(); ctx.translate(VW / 2, 136); ctx.scale(1 + Math.sin(t * 5) * 0.05, 1 + Math.sin(t * 5) * 0.05); outlined(clearInfo.secretNew ? 'ひみつの ゴール! かくれた みちが ひらいた!' : 'ひみつの ゴール!', 0, 0, '#e6b8ff', '#3a1a08', 6, font(20)); ctx.restore(); }
-  if (clearInfo.newPerk && world.clearT > 5) { ctx.save(); ctx.translate(VW / 2, 446); ctx.scale(1 + Math.sin(t * 5) * 0.04, 1 + Math.sin(t * 5) * 0.04); outlined('せいちょう! ' + clearInfo.newPerk.name + '(' + clearInfo.newPerk.desc + ')', 0, 0, '#7dff8a', '#3a1a08', 6, font(19)); ctx.restore(); }
+  if (clearInfo.newPerk && world.clearT > 5) { ctx.save(); ctx.translate(VW / 2, 446); ctx.scale(1 + Math.sin(t * 5) * 0.04, 1 + Math.sin(t * 5) * 0.04); outlined('せいちょう! ' + clearInfo.newPerk.name + '(' + clearInfo.newPerk.desc + ')', 0, 0, '#7dff8a', '#3a1a08', 6, fitFont('せいちょう! ' + clearInfo.newPerk.name + '(' + clearInfo.newPerk.desc + ')', 520, 19)); ctx.restore(); }
   const best = save.best[world.def.id];
   if (done && best === world.score) { ctx.save(); ctx.translate(VW / 2 + 200, 430); ctx.rotate(-0.12); outlined('ベスト こうしん!', 0, 0, '#ff8fb0', '#3a1a08', 5, font(17)); ctx.restore(); }
   ctx.restore();
