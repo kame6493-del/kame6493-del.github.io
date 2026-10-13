@@ -144,6 +144,7 @@ def page(x, q, prev, nxt, qs=(), latest=None):
 {rounds_nav(x, ex) if latest else ""}
 {related(x, q, qs)}
 {app_cta(name, state, key)}
+<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 
@@ -177,6 +178,7 @@ def index_page(x, qs, latest=None):
 {app_cta(name, state, key)}
 {''.join(rows)}
 {B.srcs([(f"{org} 第{ex}回{name}国家試験", qs[0]["source"]), lic])}
+<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 

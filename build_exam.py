@@ -751,7 +751,7 @@ def exam_page(x):
     out.append(f"""<section id="note"><h2>このページについて</h2>
 <p class="disc">このページとニガテ帳は個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。試験の日程・合格基準・受験者数は、各ページに示した{org}の公表資料から取りました。アプリの問題と正答は{org}が公表したものを出典とし、<a href="{lic[1]}">{e(lic[0])}</a>にしたがって収録しています。解説は独自に作成したものです。過去問には、その後の法改正などで今の正解と合わなくなった問題が含まれることがあります。受験の手続きは、必ず公式の案内で確かめてください。</p>
 </section>""")
-    out.append("</main>")
+    out.append("<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div></main>")
     out.append(FOOT)
     return "\n".join(out)
 
@@ -801,7 +801,7 @@ def hub_page():
 <div class="btns"><a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">ニガテ帳(App Store)</a><a class="btn fill" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a><a class="btn ghost" href="/#tester">Android テスト</a></div>
 </section>
 <section><h2>このページについて</h2><p class="disc">個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。受験の手続きは、必ず公式の案内で確かめてください。</p></section>""")
-    out.append("</main>")
+    out.append("<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div></main>")
     out.append(FOOT)
     return "\n".join(out)
 

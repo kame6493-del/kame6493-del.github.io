@@ -83,6 +83,7 @@ def page(w, prev, nxt):
 {NOTE}
 {nav}
 {CTA}
+<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 
@@ -108,6 +109,7 @@ def index(ws, gs=()):
 <h2>意味のジャンルごと</h2><p>{" / ".join(f'<a href="/kobun/cat/{slug}/">{e(name)}({len(g)}語)</a>' for kind, name, slug, g in gs if kind == "cat")}</p>
 {''.join(rows)}
 {NOTE}
+<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 
@@ -133,6 +135,7 @@ def group_page(kind, name, slug, ws):
 <ul class="k-list">{items}</ul>
 {NOTE}
 {CTA}
+<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
 </main>"""
     return url, B.head(title, desc, url, ld) + body + B.FOOT
 
