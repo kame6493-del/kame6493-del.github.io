@@ -226,10 +226,11 @@
 <main>
   <section class="intro" aria-labelledby="intro-h">
     <div class="wrap">
-      <h1 id="intro-h">1人でスマホアプリを作っています。</h1>
-      <p class="lead">作業や勉強の記録、国家試験の過去問、毎日のちょっとした道具が中心です。どれもアカウント登録なしで使えます。iPhone はニガテ帳を公開していて、ほかのアプリも1本ずつ審査に出しているところです。Android はテスト中のものが多く、テスターを募集しています。</p>
+      <h1 id="intro-h">1人でアプリとゲームを作っています。</h1>
+      <p class="lead">作業や勉強の記録、国家試験の過去問、毎日のちょっとした道具が中心です。どれもアカウント登録なしで使えます。いまは横スクロールのアクションゲーム「<a href="#haru">ハルの冒険</a>」も作っています。iPhone では国試の過去問アプリ「<a href="#nigatecho">ニガテ帳</a>」を公開しています。Android はテスト中のものが多く、テスターを募集しています。</p>
       <p class="toc-h">アプリへ飛ぶ</p>
       <ul class="toc">
+        <li><a href="#haru" style="--c:#2f8fd8"><img src="img/haru-icon.png" alt="" width="44" height="44"><span><b>ハルの冒険</b><small>アクションゲーム</small></span></a></li>
         <li><a href="#kotsubin" style="--c:#a8743f"><img src="img/kotsubin-icon.png" alt="" width="44" height="44"><span><b>こつびん</b><small>作業の記録</small></span></a></li>
         <li><a href="#tekuami" style="--c:#b0523a"><img src="img/tekuami-icon.png" alt="" width="44" height="44"><span><b>てくあみ</b><small>歩いて編む</small></span></a></li>
         <li><a href="#negairo" style="--c:#c2551e"><img src="img/negairo-icon.png" alt="" width="44" height="44"><span><b>ネガイロ</b><small>フィルム風</small></span></a></li>
@@ -248,6 +249,38 @@
     </div>
   </section>
 
+  <section class="hero" id="haru" aria-labelledby="haru-h">
+    <div class="wrap grid">
+      <div>
+        <span class="badge">いま作っているゲーム</span>
+        <div class="name">
+          <img src="img/haru-icon.png" alt="" width="76" height="76">
+          <div>
+            <h2 id="haru-h" class="round">ハルの冒険</h2>
+            <p>横スクロールのアクションゲーム</p>
+          </div>
+        </div>
+        <ul class="tags"><li class="tag live">ブラウザで体験版</li><li class="tag review">Android テスト審査中</li></ul>
+        <p class="copy round">剣とジャンプで、<br><em>ほしのかけら</em>を集める旅。</p>
+        <p class="lead">ハルが剣を手に、草原やほらあな、ほのおの山、そらの島を進みます。ワールドマップで道を選んで、とりでやおばけやしき、ボスのしろにも入れます。まだ作りかけで、遊んでくれた人の声を聞きながら直しています。</p>
+        <ul class="points">
+          <li style="--c:#7fb6ff">走る・ジャンプ・剣・スピンの4つの操作</li>
+          <li style="--c:#ffb36b">面ごとに3つの星と、ほしのかけら</li>
+          <li style="--c:#9be38b">ボスとのたたかい、モンスターずかん</li>
+          <li>ブラウザ版はワールド1を遊べる体験版。スマホでもPCでも動きます</li>
+        </ul>
+        <div class="btns">
+          <a class="btn fill" href="/haru/">ブラウザで遊ぶ(体験版)</a>
+        </div>
+        <p class="note">Android 版のテストは、いま Google の審査を待っています。通ったら、ここからテストに参加できるようにします。</p>
+      </div>
+      <div class="shots" style="display:grid;grid-template-columns:1fr;gap:14px;align-content:center;transform:none">
+        <img src="img/haru-1.jpg" alt="ハルの冒険のタイトル画面" width="960" height="540" style="width:100%;max-width:560px;height:auto;aspect-ratio:16/9;border-radius:14px;transform:none;margin:0">
+        <img src="img/haru-2.jpg" alt="ほらあなのステージを進むハル" width="960" height="540" style="width:100%;max-width:560px;height:auto;aspect-ratio:16/9;border-radius:14px;transform:none;margin:0">
+      </div>
+    </div>
+  </section>
+
   <section class="hero" id="kotsubin" aria-labelledby="kb">
     <div class="wrap grid">
       <div>
@@ -259,7 +292,7 @@
             <p>ハムスターと作業・勉強の記録</p>
           </div>
         </div>
-        <ul class="tags"><li class="tag review">iPhone 審査中</li><li class="tag test">Android テスト中</li></ul>
+        <ul class="tags"><li class="tag test">Android テスト中</li></ul>
         <p class="copy round">がんばった時間が、<br><em>こんぺいとう</em>になってたまる。</p>
         <p class="lead">「はじめる」を押すと、となりでハムスターがこんぺいとうを磨きはじめます。10分ごとに1粒、びんの中へころんと落ちます。</p>
         <ul class="points">
@@ -273,7 +306,7 @@
           <a class="btn fill" href="https://play.google.com/apps/testing/jp.kotsubin.app">Android でテストに参加</a>
           <a class="btn ghost" href="/kotsubin/">使い方とサポート</a>
         </div>
-        <p class="note">先に <a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a> に入ってから、ボタンを押してください。iPhone 版は審査に出しています。</p>
+        <p class="note">先に <a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a> に入ってから、ボタンを押してください。</p>
       </div>
       <div class="shots">
         <img src="img/kotsubin-1.jpg" alt="ハムスターがこんぺいとうを磨いている作業中の画面" width="540" height="960">
@@ -303,7 +336,7 @@
           <div class="pic"><img src="img/negairo-card.jpg" alt="ネガイロの画面" width="480" height="853" loading="lazy"></div>
           <div class="body">
             <div class="t"><img src="img/negairo-icon.png" alt="" width="44" height="44"><div><h3>ネガイロ</h3><p class="k">フィルムカメラ風・日付入り</p></div></div>
-            <ul class="tags"><li class="tag review">iPhone 審査中</li><li class="tag test">Android テスト中</li></ul>
+            <ul class="tags"><li class="tag test">Android テスト中</li></ul>
             <p class="d">フィルムや使い捨てカメラの色で撮れるカメラ。仕上がりを見ながら撮れます。</p>
           </div>
           <div class="acts"><a class="btn fill" href="https://play.google.com/apps/testing/jp.negairo.app">Android でテストに参加</a><a class="btn line" href="/negairo-site/">サポート</a></div>
@@ -457,13 +490,13 @@
         </li>
         <li>
           <div class="t"><img src="img/kachimake-icon.png" alt="" width="52" height="52"><div><h3>カチマケ</h3><p class="k">パチンコ・競馬などの収支管理(18歳以上)</p></div></div>
-          <ul class="tags"><li class="tag review">iPhone 審査中</li><li class="tag test">Android テスト中</li></ul>
+          <ul class="tags"><li class="tag test">Android テスト中</li></ul>
           <p class="d">投資と回収を入れるだけで、今月いくら勝って、どこで負けているかが分かります。</p>
           <div class="acts"><a class="btn" href="https://kame6493-del.github.io/kachimake-site/support.html">使い方・よくある質問</a></div>
         </li>
         <li>
           <div class="t"><img src="img/uchiwakirari-icon.png" alt="" width="52" height="52"><div><h3>うちわキラリ</h3><p class="k">うちわ文字・ファンサうちわ作成</p></div></div>
-          <ul class="tags"><li class="tag review">iPhone 審査中</li><li class="tag test">Android テスト中</li></ul>
+          <ul class="tags"><li class="tag test">Android テスト中</li></ul>
           <p class="d">推しの名前を入れるだけで、うちわ文字を原寸で作れます。</p>
           <div class="acts"><a class="btn" href="https://play.google.com/apps/testing/jp.uchiwakirari.app">Android でテストに参加</a><a class="btn" href="/uchiwa/">ウェブで作る</a></div>
         </li>
