@@ -1528,6 +1528,8 @@ function updatePlayer(dt) {
   // ベルトコンベアも 外から押す速さとして足す(壁に めりこまないように)
   const belt = wasGround && (p.groundTile === '}' || p.groundTile === '{') ? (p.groundTile === '}' ? 130 : -130) : 0;
   if (p.hipT > 0) { p.hipT -= dt; p.vx = 0; p.vy = 0; if (p.hipT <= 0) { p.hipFall = true; } }
+  // バネ・トランポリンなどで 上へ はじかれたら ヒップドロップは おわり(前は 毎フレーム 下向きに もどして バネの 上で ふるえて 動けなくなった)
+  if (p.hipFall && p.vy < 0) p.hipFall = false;
   if (p.hipFall) { p.vx = 0; p.vy = 1100; if (p.swim || p.climb) p.hipFall = false; }
   moveBody(p, dt, { ents: true, drop: p.dropT > 0, ext: wind + belt, corner: gd > 0, flip: gd < 0 });
   if (p.hipFall && p.onGround) hipLand(p);
@@ -3049,7 +3051,7 @@ function collect(o) {
       P.hearts = Math.min(P.maxHearts, P.hearts + 1); world.score += 200; sfx('powerup'); sparkle(cx, cy, 10); break;
     case 'shard': {
       tutFlag('shard');
-      world.shards[o.idx] = true;
+      world.shards[o.idx] = true; world.shardPopI = o.idx; world.shardPopAt = world.time;
       const n = world.shards.filter(Boolean).length, pts = [1000, 2000, 4000, 8000, 10000][n - 1] || 1000;
       world.score += pts; sfx('star', 0.9 + n * 0.1); sparkle(cx, cy, 24); burst(cx, cy, '#d8b8ff', 14, 260, 5);
       popText(cx, cy - 24, 'かけら ' + n + '/5  +' + pts, '#e6c8ff');
@@ -6310,7 +6312,7 @@ function drawHUD() {
   // HUD の 後ろに 主人公・星・敵が 入ったら うすくする(見切れ対策)
   // (左上の ハート・コイン、まんなかの 面の札、右上の 点数と 一時停止の 3か所)
   const under = (o) => { const x = o.x - cam.x, y = o.y - cam.y, r = x + (o.w || 0), b = y + (o.h || 0); if (b <= 0) return false;
-    return (x < 330 && y < 140 && r > 0) || (x < VW / 2 + 110 && r > VW / 2 - 110 && y < 70) || (r > VW - 240 && x < VW && y < 115); };
+    return (x < 330 && y < 140 && r > 0) || (x < VW / 2 + 225 && r > VW / 2 - 110 && y < 70) || (r > VW - 240 && x < VW && y < 115); };
   const hudFade = under(P) || world.ents.some(o => (o.t === 'star' || o.t === 'enemy' || o.t === 'magic' || o.t === 'spit' || o.t === 'cometx') && under(o));
   world.hudA = lerp(world.hudA ?? 1, hudFade ? 0.4 : 1, 0.15);
   ctx.save(); ctx.globalAlpha = world.hudA;
@@ -6388,9 +6390,20 @@ function drawHUD0() {
     uiButtons.push({ x: bx, y: by, w: 60, h: 52, fn: () => { if (scene === 'play') dropReserve(); } });
   }
   // 大きな ほしの かけら(5まい)
-  for (let i = 0; i < 5; i++) { const got = world.shards[i]; ctx.save(); if (!got) ctx.globalAlpha = 0.3; drawShardIcon(VW / 2 + 118 + i * 21, 30, 9, performance.now() / 1000, !got); ctx.restore(); }
+  // 2026-10-14 テスターから「星の エフェクトの 跡が 右上に のこる」。わくの ない うすい 星が 5つ 空に うかんで いて、
+  // 取った 星の 光が のこって いるように 見えた → 札に 入れて くぼみを 描き、下に「かけら」と 書いて 数の 表示だと わかるように
+  { const sx0 = VW / 2 + 126, sy0 = 33;
+    rr(sx0 - 16, 14, 116, 38, 10); ctx.fillStyle = 'rgba(20,10,40,.55)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(216,184,255,.55)'; ctx.stroke();
+    for (let i = 0; i < 5; i++) {
+      const got = world.shards[i], cx = sx0 + i * 21;
+      ctx.beginPath(); ctx.arc(cx, sy0, 9, 0, Math.PI * 2); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fill();
+      if (!got) continue;
+      const pop = world.shardPopI === i ? Math.max(0, 1 - (world.time - (world.shardPopAt || 0)) / 0.5) : 0;
+      ctx.save(); ctx.translate(cx, sy0); ctx.scale(1 + pop * 0.8, 1 + pop * 0.8); drawShardIcon(0, 0, 9, performance.now() / 1000, false); ctx.restore();
+    }
+    outlined('かけら', sx0 + 42, 60, '#e6c8ff', '#2a1a3a', 4, font(12)); }
   // もこりゅうの ちから
-  if (P.mount) { const m = P.mount; let mx = VW / 2 + 118; if (m.fire > 0) { for (let i = 0; i < m.fire; i++) drawImg('firespirit', mx + i * 18, 44, 18, 20); mx += m.fire * 18 + 6; } if (m.flyT > 0) { drawImg('p_wing', mx, 44, 24, 20); ctx.fillStyle = '#fff'; ctx.font = font(13, 800); ctx.textAlign = 'left'; ctx.fillText(Math.ceil(m.flyT) + '', mx + 26, 56); } }
+  if (P.mount) { const m = P.mount; let mx = VW / 2 + 118; if (m.fire > 0) { for (let i = 0; i < m.fire; i++) drawImg('firespirit', mx + i * 18, 70, 18, 20); mx += m.fire * 18 + 6; } if (m.flyT > 0) { drawImg('p_wing', mx, 70, 24, 20); ctx.fillStyle = '#fff'; ctx.font = font(13, 800); ctx.textAlign = 'left'; ctx.fillText(Math.ceil(m.flyT) + '', mx + 26, 82); } }
   // 点数の札と面の札
   woodPlate(VW - 228, 12, 212, 46);
   outlined(String(world.score).padStart(7, '0'), VW - 122, 36, '#fff', '#3a1a08', 6, titleFont(28));
