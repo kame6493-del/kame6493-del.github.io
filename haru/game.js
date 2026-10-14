@@ -132,12 +132,14 @@ const SPRITES = ['hero_idle', 'hero_run', 'hero_jump', 'hero_attack', 'goomy', '
 const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
+// 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
+const SPRITE_V = '20261014b';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
   // 読みこみに失敗したら 1回だけ やりなおす(それでも だめなら その絵なしで進める)
-  im.onerror = () => { if (!im.retried) { im.retried = true; setTimeout(() => { im.src = 'assets/sprites/' + n + '.png?r=1'; }, 200); return; } loaded++; if (loaded === total) bakeTiles(); };
-  im.src = 'assets/sprites/' + n + '.png';
+  im.onerror = () => { if (!im.retried) { im.retried = true; setTimeout(() => { im.src = 'assets/sprites/' + n + '.png?v=' + SPRITE_V + '&r=1'; }, 200); return; } loaded++; if (loaded === total) bakeTiles(); };
+  im.src = 'assets/sprites/' + n + '.png?v=' + SPRITE_V;
   IMG[n] = im;
 }
 
