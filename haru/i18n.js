@@ -58,6 +58,7 @@ const EN_DICT = {
   "#ハルの今日の1面 で結果を投稿してね": "Post your result with #ハルの今日の1面",
   "今日の1面 ✔": "Daily Stage ✔",
   "Xで シェア": "Share on X",
+  "Xで フォロー": "Follow on X",
   "タイトルへ": "Back to Title",
   "あつめた ほし": "Stars",
   "ちょうせん": "Tries",

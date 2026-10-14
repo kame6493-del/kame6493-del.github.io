@@ -5,6 +5,7 @@
 const CFG = {
   SHARE_URL: 'https://yurustudio.github.io/rakugaki/', // 公開したら本番の URL を入れる(空ならこのページの URL)
   TAGS: '#らくがき百鬼夜行ゲーム #ハロウィン2026',
+  AUTHOR: '@apkderete', // 共有文に作った人を入れる(遊んだ人の投稿に気づける)
   STORE_KEY: 'rakugaki_hyakki_v1',
   GHOST_SIZE: 270,       // おばけの大きさ(世界の単位、画面の高さ=1000)
   ROUTE_START: 250,
@@ -596,7 +597,7 @@ function shareUrl() {
   return location.href.split(/[?#]/)[0].replace(/index\.html$/, '');
 }
 function intentUrl(info) {
-  const text = `わたしのおばけ「${info.name}」が商店街を練り歩きました(今夜の驚かせ度 ${info.score}%)\n${CFG.TAGS}`;
+  const text = `わたしのおばけ「${info.name}」が商店街を練り歩きました(今夜の驚かせ度 ${info.score}%)\n${CFG.TAGS}\n作った人 ${CFG.AUTHOR}`;
   return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(shareUrl());
 }
 

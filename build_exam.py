@@ -589,6 +589,7 @@ def head(title, desc, url, jsonld):
 
 
 FOOT = """
+<div class="xfollow" style="margin:24px auto 8px;padding:8px 12px;max-width:560px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;font-size:14px;line-height:1.5;text-align:center"><style>@media print{.xfollow{display:none!important}}</style><span>新しいアプリやゲームの話は X で → <a href="https://x.com/apkderete" target="_blank" rel="noopener" style="color:inherit;font-weight:700">@apkderete</a></span><a href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener" style="display:inline-block;padding:4px 14px;border-radius:999px;background:#0f1419;color:#fff;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">X でフォロー</a></div>
 <footer>
   <div class="wrap">
     <p>作っている人: YURU(個人) / お知らせは X <a href="https://x.com/apkderete">@apkderete</a></p>

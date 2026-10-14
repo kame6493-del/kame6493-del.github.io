@@ -464,7 +464,12 @@ cv.addEventListener('pointerdown', e => {
   if (e.pointerType === 'touch') usingTouch = true;
   const p = canvasPos(e);
   for (const b of uiButtons) {
-    if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) { sfx('click'); b.fn(); return; }
+    if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
+      sfx('click');
+      // X を ひらく ボタンは、タッチだと 指を はなした 時でないと ブラウザが 新しい タブを ゆるさない
+      if (b.gesture && e.pointerType !== 'mouse') { gesturePending = { id: e.pointerId, fn: b.fn }; return; }
+      b.fn(); return;
+    }
   }
   if (scene === 'title') { openFiles(); return; }
   if (scene === 'ending') { endingTap(); return; }
@@ -482,6 +487,9 @@ cv.addEventListener('pointermove', e => {
   refreshTouchKeys();
 });
 const endPointer = e => { pointers.delete(e.pointerId); refreshTouchKeys(); };
+let gesturePending = null;
+cv.addEventListener('pointerup', e => { const g = gesturePending; if (g && g.id === e.pointerId) { gesturePending = null; g.fn(); } });
+cv.addEventListener('pointercancel', () => { gesturePending = null; });
 cv.addEventListener('pointerup', endPointer);
 cv.addEventListener('pointercancel', endPointer);
 const held = k => keys[k] || touchKeys[k];
@@ -4382,13 +4390,13 @@ function dailyShareText(res) {
 ⏱ ${tm} ${st} try ${res.tries}
 ${sq}
 Fastest time goes on tomorrow's sign
-#HaruDaily #ハルの今日の1面
+#HaruDaily #ハルの今日の1面 @apkderete
 ${DAILY_SHARE_URL}&lang=en`;
   return `ハルの冒険 今日の1面 #${res.num} ${ds}
 ⏱ ${tm} ${st} ${res.tries}回目
 ${sq}
 1位はあしたの看板にのります
-#ハルの今日の1面
+#ハルの今日の1面 @apkderete
 ${DAILY_SHARE_URL}`;
 }
 // ---------- きのうの1位の 看板(2026-10-13) ----------
@@ -4470,6 +4478,14 @@ function dailyShare() {
   }
   openIntent();
 }
+// ---------- 作った人を X で フォロー(2026-10-14) ----------
+const FOLLOW_URL = 'https://x.com/intent/follow?screen_name=apkderete';
+function followX() {
+  let w = null; try { w = window.open(FOLLOW_URL, '_blank'); } catch (e) { w = null; }
+  if (!w && window.Capacitor) { try { location.href = FOLLOW_URL; } catch (e) { /* 無視 */ } }
+}
+// 右上の すみに 小さく(タイトル・クリア・今日の1面の けっか・おしまい)
+function followBtn(x, y) { button(x, y, 136, 36, 'Xで フォロー', followX, { size: 15, gesture: true, c1: '#ffffff', c2: '#bfe3ff' }); }
 function updateDailyResult(dt) {
   daily.t += dt; world.clearT += dt;
   if (daily.msg) { daily.msg.t -= dt; if (daily.msg.t <= 0) daily.msg = null; }
@@ -4540,7 +4556,8 @@ function drawDailyResult(t) {
   if (!daily.msg) outlined(note, VW / 2, 384, res.firstClear ? '#7dff8a' : '#fff', '#3a1a08', 5, fitFont(note, 560, 19));
   ctx.restore();
   if (dt0 > 0.9) {
-    button(VW / 2 - 330, 452, 220, 56, 'Xで シェア', () => dailyShare(), { sel: true, size: 24 });
+    button(VW / 2 - 330, 452, 220, 56, 'Xで シェア', () => dailyShare(), { sel: true, size: 24, gesture: true });
+    followBtn(VW - 150, 14);
     button(VW / 2 - 100, 452, 200, 56, 'もういちど', () => startDaily(daily.from), { size: 24 });
     button(VW / 2 + 110, 452, 220, 56, daily.from === 'map' ? 'ちずへ もどる' : 'タイトルへ', () => dailyLeave(), { size: 24 });
     if (!usingTouch) { ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = font(13, 700); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(daily.from === 'map' ? 'Enter シェア   X もういちど   Esc ちずへ' : 'Enter シェア   X もういちど   Esc タイトルへ', VW / 2, 526); }
@@ -4599,6 +4616,7 @@ function drawTitle(t) {
   button(VW / 2 - 105, 314, 210, 46, 'モンスターずかん', () => { if (!slotInfo(saveSlot)) selectSlot(saveSlot); openZukan('title'); }, { size: 18 });
   button(VW / 2 + 120, 314, 210, 46, 'オープニング', () => startOpening(() => { scene = 'title'; titleT = 0.7; bgm('title'); }), { size: 18 });
   button(VW - 150, 14, 136, 40, save.sound ? 'おと: オン' : 'おと: オフ', () => setSound(!save.sound), { size: 16 });
+  followBtn(VW - 150, 62);
   langToggle(14, 16);
   // 今日の1面(まいにち かわる。みんな 同じ)
   { const inf = dailyInfo(), lb = dailyBtnLabel();
@@ -4707,7 +4725,7 @@ function drawEnding(t) {
     rr(70, VH - 196, VW - 140, 120, 20); ctx.fillStyle = 'rgba(10,6,30,.72)'; ctx.fill();
     lines.slice(0, 3).forEach((ln, i) => { ctx.fillStyle = '#fff'; ctx.font = font(21, 800); ctx.textAlign = 'center'; ctx.fillText(ln, VW / 2, VH - 160 + i * 32); });
     ctx.fillStyle = '#ffe9a8'; ctx.font = font(16, 800); ctx.fillText(`ほし ${c.st}/${c.maxSt}   かけら ${c.sh}/${c.maxSh}   ずかん ${c.zkN}/${c.zkAll}`, VW / 2, VH - 58);
-    if (u > 2) button(VW / 2 - 110, VH - 52, 220, 44, 'ちずへ もどる', () => goMap(), { sel: true, size: 20 });
+    if (u > 2) { button(VW / 2 - 110, VH - 52, 220, 44, 'ちずへ もどる', () => goMap(), { sel: true, size: 20 }); followBtn(VW - 150, 14); }
   }
   if (ph !== 'last') button(VW - 150, 14, 136, 40, 'つぎへ ▶▶', endingTap, { size: 16 });
 }
@@ -5201,7 +5219,7 @@ function woodPlate(x, y, w, h) {
   rr(x + 4, y + 4, w - 8, h - 8, 7); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,220,160,.35)'; ctx.stroke();
 }
 function button(x, y, w, h, label, fn, opts = {}) {
-  uiButtons.push({ x, y, w, h, fn });
+  uiButtons.push({ x, y, w, h, fn, gesture: !!opts.gesture });
   const sel = opts.sel;
   const g = ctx.createLinearGradient(0, y, 0, y + h);
   const c1 = opts.c1 || (sel ? '#ffd84a' : '#ffffff'), c2 = opts.c2 || (sel ? '#ff9f1a' : '#d9e6ff');
@@ -7103,6 +7121,7 @@ function drawClear(t) {
   if (world.clearT > 4.4) {
     button(VW / 2 + 10, 456, 240, 54, 'ちずへ すすむ', nextFromClear, { sel: true, size: 24 });
     button(VW / 2 - 250, 456, 240, 54, 'もういちど', () => startLevel(world.idx), { size: 24 });
+    followBtn(VW - 150, 14);
   }
 }
 

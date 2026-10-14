@@ -47,6 +47,7 @@ html,body{height:100%;background:var(--night);color:var(--text);font-family:var(
   -webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
 .resultBtns{display:flex;flex-direction:column;gap:8px;width:100%}
 .xbtn{display:block;text-align:center;text-decoration:none;font-size:18px;font-weight:bold;color:#fff;background:#111;border:2px solid #fff;border-radius:16px;padding:10px}
+.followbtn{align-self:center;text-decoration:none;font-size:13px;color:var(--text);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px}
 
 /* 横長の画面(PC など): 描く板を左、道具を右に */
 @media (min-aspect-ratio: 11/10){
