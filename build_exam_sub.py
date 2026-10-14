@@ -475,19 +475,20 @@ def tail(x, slug):
     if a["status"] == "live":
         app_txt = (f"過去問を解き直すためのアプリ「ニガテ帳」(iPhone)に、{nm}国家試験の{e(a['range'])}が入っています。"
                    f"{e(a['free'])}は無料で、完全版は{e(a['price'])}の買い切りです。間違えた問題が残り、日を空けて2回続けて正解すると消えます。")
-        link = f'<a href="{a["store"]}">App Store で見る</a> ・ <a href="/exam/{k}/#app">くわしい説明</a>'
+        link = f'<a href="/exam/{k}/#app">アプリのくわしい説明</a>'
     else:
         app_txt = (f"過去問を解き直すためのアプリ「ニガテ帳」(iPhone)に、{nm}国家試験の{e(a['range'])}をアップデートで追加予定(審査中)です。"
                    f"審査が通るまでは、アプリの中で{nm}を選べません。追加後は{e(a['free'])}が無料、完全版は{e(a['price'])}の買い切りです。")
         link = f'<a href="/exam/{k}/#app">くわしい説明</a>'
-    out.append(f'<section id="app"><h2>過去問アプリについて</h2><p>{app_txt}</p><p class="note">{link}</p></section>')
+    card = B.app_card(k) if a["status"] == "live" else ""
+    out.append(f'<section id="app"><h2>過去問アプリについて</h2><p>{app_txt}</p>{card}<p class="note">{link}</p></section>')
     # 注意書き
     sssc = k in ("kaigo", "shakai")
     org = "社会福祉振興・試験センターと厚生労働省" if sssc else "厚生労働省"
     out.append(f"""<section id="note"><h2>このページについて</h2>
 <p class="disc">このページは個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。数字と日付は、各項目に示した{org}の公表資料から取り、{B.UPDATED_JA}時点で確かめました。公式の資料で確かめられなかった値は載せていません。受験の手続きは、必ず公式の案内で確かめてください。</p>
 </section>""")
-    out.append("<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div></main>")
+    out.append(B.ADMAX + "\n" + B.NC_ASSETS + "\n</main>")
     out.append(B.FOOT)
     return out
 

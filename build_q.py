@@ -77,8 +77,8 @@ def app_cta(name, state, key=""):
         url, txt = B.APP_MULTI, f"{name}は「ニガテ帳」(iPhone)の次のアップデートで追加する予定です。"
     return (f'<div class="q-cta"><p><b>間違えた問題だけが残る過去問アプリ</b><br>{e(txt)}'
             "間違えた問題は「苦手」として残り、2回続けて正解すると消えます。全問に解説つき、広告なし。</p>"
-            f'<div class="btns"><a class="btn fill" href="{url}">App Store で見る</a>'
-            '<a class="btn ghost" href="/#tester">Android テスト版</a></div></div>')
+            f'<div class="btns">{B.store_btns(key)}</div>'
+            f'<p class="q-meta nc-and" style="margin-top:8px">Android は先に<a href="{B.TESTER_GROUP}">テスター用のグループ</a>に入ってから参加してください。</p></div>')
 
 
 def ans_text(q):
@@ -100,12 +100,14 @@ def related(x, q, qs, n=5):
 
 def exp_block(q, full, key, latest):
     ans = f'<p style="margin-top:12px"><b>正答: {e(ans_text(q))}</b></p>'
+    # 答えを開いた人にだけ見える、その試験のアプリのカード(解説の下)
+    card = B.app_card(key)
     if full:
         return (f'<details class="q-ans"><summary>正答と解説を見る</summary>{ans}'
-                f'<div class="q-exp">{e(q["explanation"])}</div></details>')
+                f'<div class="q-exp">{e(q["explanation"])}</div>{card}</details>')
     return (f'<details class="q-ans"><summary>正答を見る</summary>{ans}'
             f'<p class="q-meta">この回の選択肢ごとの解説は、アプリ「ニガテ帳」の完全版で読めます。'
-            f'<a href="/q/{key}/{latest}/">第{latest}回</a>は解説までここで読めます。</p></details>')
+            f'<a href="/q/{key}/{latest}/">第{latest}回</a>は解説までここで読めます。</p>{card}</details>')
 
 
 def page(x, q, prev, nxt, qs=(), latest=None):
@@ -144,7 +146,8 @@ def page(x, q, prev, nxt, qs=(), latest=None):
 {rounds_nav(x, ex) if latest else ""}
 {related(x, q, qs)}
 {app_cta(name, state, key)}
-<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 
@@ -178,7 +181,8 @@ def index_page(x, qs, latest=None):
 {app_cta(name, state, key)}
 {''.join(rows)}
 {B.srcs([(f"{org} 第{ex}回{name}国家試験", qs[0]["source"]), lic])}
-<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     return B.head(title, desc, url, ld) + body + B.FOOT
 

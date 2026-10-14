@@ -23,6 +23,64 @@ APP_CPP = {
     "pt": APP_MULTI + "?ppid=c66bda58-4649-4a61-8f7e-c97e17cb7081",
 }
 
+# Android 版はクローズドテスト中。参加ページ(先にテスター用のグループに入ってもらう)
+PLAY_MULTI = "https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi"
+PLAY_RINSHO = "https://play.google.com/apps/testing/jp.nigatecho.rinshokensa"
+TESTER_GROUP = "https://groups.google.com/g/nigatecho-testers"
+
+ADMAX = ("<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;"
+         "color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>")
+
+
+def store_urls(key):
+    """(App Store, Play のテスト参加ページ)"""
+    if key == "rinsho":
+        return APP_RINSHO, PLAY_RINSHO
+    return APP_CPP.get(key, APP_MULTI), PLAY_MULTI
+
+
+def store_btns(key, ios_label="App Store で見る", and_label="Android テスト版に参加"):
+    """iPhone には App Store、Android には Play を出す(NC_ASSETS の判定。判定できない時は両方)"""
+    ios, play = store_urls(key)
+    return (f'<a class="btn fill nc-ios" href="{ios}">{e(ios_label)}</a>'
+            f'<a class="btn ghost nc-and" href="{play}">{e(and_label)}</a>')
+
+
+def app_card(key):
+    """答えを見た直後・解説の下に置く小さなカード。値段と「無料」の字は書かない"""
+    x = next(z for z in EXAMS if z["key"] == key)
+    title = "ニガテ帳 臨床検査技師" if key == "rinsho" else "ニガテ帳"
+    return (f'<aside class="ncard" data-exam="{x["date_iso"]}">'
+            '<div class="nc-h"><img src="/img/nigatecho-icon.png" alt="" width="48" height="48" loading="lazy">'
+            f'<div><p class="nc-t">{e(title)}' + ("" if key == "rinsho" else f'<span>{e(x["name"])}</span>') + '</p>'
+            '<p class="nc-d">間違えた問題だけが残る過去問アプリ</p></div></div>'
+            f'<p class="nc-c">第{x["round"]}回の試験は{e(x["date_ja"])}<b class="nc-n"></b></p>'
+            f'<div class="nc-btns">{store_btns(key)}</div>'
+            f'<p class="nc-and nc-g">Android は先に<a href="{TESTER_GROUP}">テスター用のグループ</a>に入ってから参加してください。</p>'
+            '</aside>')
+
+
+# カードとボタンの出し分けの見た目と判定。1ページに1回だけ置く(広告の後ろ、</main> の前)
+NC_ASSETS = """<style>
+.ncard{border:1px solid var(--line);border-radius:14px;background:var(--tint);padding:14px 16px;margin:16px 0 4px;font-size:14.5px;line-height:1.6;white-space:normal}
+.ncard p{margin:0}
+.nc-h{display:flex;gap:12px;align-items:center}
+.nc-h img{width:48px;height:48px;border-radius:11px;border:1px solid var(--line);flex:none}
+.nc-t{font-weight:700;font-size:16px}
+.nc-t span{font-weight:400;font-size:12.5px;color:var(--sub);margin-left:8px}
+.nc-d{color:var(--ink)}
+.nc-c{margin-top:10px!important;font-size:13.5px;color:var(--sub)}
+.nc-n{color:var(--accent);margin-left:.4em}
+.nc-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.nc-btns .btn{min-height:42px;font-size:14px;flex:1 1 12em}
+.nc-g{margin-top:8px!important;font-size:12.5px;color:var(--sub)}
+.ua-ios .nc-and,.ua-and .nc-ios{display:none!important}
+</style>
+<script>(function(){var u=navigator.userAgent||"",r=document.documentElement;
+if(/iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1))r.classList.add("ua-ios");else if(/Android/.test(u))r.classList.add("ua-and");
+var c=document.querySelectorAll("[data-exam]");for(var i=0;i<c.length;i++){var d=Math.ceil((new Date(c[i].getAttribute("data-exam")+"T00:00:00+09:00")-Date.now())/864e5),n=c[i].querySelector(".nc-n");if(n&&d>0)n.textContent="あと"+d+"日";}})();</script>"""
+
+
 SSSC_LICENSE = ("過去問題利用にあたっての留意事項等(社会福祉振興・試験センター)",
                 "https://www.sssc.or.jp/pastissues/index.html")
 MHLW_LICENSE = ("公共データ利用規約(第1.0版)",
@@ -632,7 +690,7 @@ def app_block(x):
     pre = "" if a["status"] == "live" else f'<p class="note" style="margin-top:12px">{nm}を追加したあとの内容です。</p>'
     if a["status"] == "live":
         state = f"{nm}は App Store で公開中です。"
-        btn = f'<a class="btn fill" href="{a["store"]}">App Store で見る</a>'
+        btn = store_btns(x["key"])
     else:
         state = (f"{nm}は次のアップデートで追加する予定です。アップデートが出るまでは、アプリの中で{nm}を選べません。"
                  "いまは介護福祉士・社会福祉士・管理栄養士・理学療法士の過去問が入っています。")
@@ -752,7 +810,7 @@ def exam_page(x):
     out.append(f"""<section id="note"><h2>このページについて</h2>
 <p class="disc">このページとニガテ帳は個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。試験の日程・合格基準・受験者数は、各ページに示した{org}の公表資料から取りました。アプリの問題と正答は{org}が公表したものを出典とし、<a href="{lic[1]}">{e(lic[0])}</a>にしたがって収録しています。解説は独自に作成したものです。過去問には、その後の法改正などで今の正解と合わなくなった問題が含まれることがあります。受験の手続きは、必ず公式の案内で確かめてください。</p>
 </section>""")
-    out.append("<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div></main>")
+    out.append(ADMAX + "\n" + NC_ASSETS + "\n</main>")
     out.append(FOOT)
     return "\n".join(out)
 
@@ -799,10 +857,11 @@ def hub_page():
 </ul></section>""")
     out.append("""<section><h2>ニガテ帳について</h2>
 <p>間違えた問題が残り、日を空けて2回続けて正解すると消える、国家試験の過去問アプリです。どの試験も直近1回分は無料で、完全版は買い切りです。広告はなく、アカウント登録も要りません。iPhone では「ニガテ帳」で管理栄養士・介護福祉士・社会福祉士・精神保健福祉士・理学療法士を、「ニガテ帳 臨床検査技師」で臨床検査技師を公開中です。Android 版はテスト中です。</p>
-<div class="btns"><a class="btn fill" href="https://apps.apple.com/jp/app/id6818535389">ニガテ帳(App Store)</a><a class="btn fill" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a><a class="btn ghost" href="/#tester">Android テスト</a></div>
+<div class="btns"><a class="btn fill nc-ios" href="https://apps.apple.com/jp/app/id6818535389">ニガテ帳(App Store)</a><a class="btn fill nc-ios" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳 Android テスト版</a><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師 Android テスト版</a></div>
+<p class="note nc-and">Android は先に<a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に入ってから参加してください。</p>
 </section>
 <section><h2>このページについて</h2><p class="disc">個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。受験の手続きは、必ず公式の案内で確かめてください。</p></section>""")
-    out.append("<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div></main>")
+    out.append(ADMAX + "\n" + NC_ASSETS + "\n</main>")
     out.append(FOOT)
     return "\n".join(out)
 

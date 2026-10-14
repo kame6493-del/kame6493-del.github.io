@@ -58,8 +58,10 @@ def kanri_kisotsu():
 
 <h2>第40回の問題を1問ずつ</h2>
 <p>第40回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/kanri/40/">第40回の過去問と解説</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_CPP["kanri"]}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+{B.app_card("kanri")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第40回の200問は無料で解けます。このページとアプリは個人(YURU)の制作物で、厚生労働省とは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
@@ -103,8 +105,10 @@ def shakai_hajimekata():
 
 <h2>第38回の問題を1問ずつ</h2>
 <p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/shakai/38/">第38回の過去問と解説</a> / <a href="/exam/shakai/">第39回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+{B.app_card("shakai")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + body + B.FOOT
@@ -153,8 +157,10 @@ def kaigo_dokugaku():
 
 <h2>第38回の問題を1問ずつ</h2>
 <p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/kaigo/38/">第38回の過去問と解説</a> / <a href="/exam/kaigo/">第39回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_CPP["kaigo"]}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+{B.app_card("kaigo")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第38回の125問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + body + B.FOOT
@@ -207,8 +213,10 @@ def pt_kisotsu():
 
 <h2>第61回の問題を1問ずつ</h2>
 <p>第61回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/pt/61/">第61回の過去問と解説</a> / <a href="/exam/pt/">第62回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+{B.app_card("pt")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第61回の200問は無料で解けます。このページとアプリは個人(YURU)の制作物で、厚生労働省とは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
@@ -255,8 +263,10 @@ def rinsho_kisotsu():
 
 <h2>第72回の問題を1問ずつ</h2>
 <p>第72回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/rinsho/72/">第72回の過去問と解説</a> / <a href="/exam/rinsho/">第73回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_RINSHO}">臨床検査技師 過去問 ニガテ帳(App Store)</a></div>
+{B.app_card("rinsho")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第72回の200問は無料で解けます。このページとアプリは個人(YURU)の制作物で、厚生労働省とは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
@@ -298,8 +308,10 @@ def shakai_kisotsu():
 
 <h2>第38回の問題を1問ずつ</h2>
 <p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/shakai/38/">第38回の過去問と解説</a> / <a href="/exam/shakai/">第39回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+{B.app_card("shakai")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第38回の129問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
@@ -341,8 +353,10 @@ def kaigo_shokuba():
 
 <h2>第38回の問題を1問ずつ</h2>
 <p>第38回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/kaigo/38/">第38回の過去問と解説</a> / <a href="/exam/kaigo/">第39回の日程と合格基準</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_CPP["kaigo"]}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+{B.app_card("kaigo")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第38回の125問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
@@ -385,8 +399,10 @@ def seishin_kisotsu():
 
 <h2>第28回の問題を1問ずつ</h2>
 <p>第28回の問題は、正答と選択肢ごとの解説つきで1問ずつ載せています。<a href="/q/seishin/28/">第28回の過去問と解説</a> / <a href="/q/seishin/27/">第27回の過去問(正答まで)</a> / <a href="/exam/seishin/schedule/">第29回の日程</a> / <a href="/exam/seishin/goukakuten/">合格点の推移</a></p>
-<div class="btns"><a class="btn fill" href="{B.APP_MULTI}">過去問アプリ「ニガテ帳」(App Store)</a></div>
+{B.app_card("seishin")}
 <p class="note">ニガテ帳は、間違えた問題だけが残り、2回続けて正解すると消える過去問アプリです。第28回の132問は無料で解けます。このページとアプリは個人(YURU)の制作物で、社会福祉振興・試験センターとは関係ありません。</p>
+{B.ADMAX}
+{B.NC_ASSETS}
 </main>"""
     ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title, "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     return url, B.head(title, desc, url, ld) + "<style>.tbl{border-collapse:collapse;width:100%;margin:8px 0}.tbl th,.tbl td{border-bottom:1px solid #e3dccb;padding:8px 10px;text-align:left}</style>" + body + B.FOOT
