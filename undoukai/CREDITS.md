@@ -1,27 +1,43 @@
-# 音の出典(すべて CC0。表記は不要だが記録として残す)
+# 素材の出典(2026-10-16 に入れ替え)
 
-ハルの冒険(2026-10-13)で評判を確かめて使った物と同じ作者・同じ素材集から選んだ。新しく探した音は無い。
+10/16 に、音をすべて日本で評判の良いフリー素材に入れ替えた(前の Juhani Junkala の CC0 の 8 ビットの音は _audio_old_1016/ に退避)。
+ゲームの中ではタイトル画面の「クレジット」に同じ内容を出している。宣伝動画の最後にも入れる。
 
-## BGM
-- タイトル: Juhani Junkala「384 bgm_menu_title_6_sporty」(12 Music Loops)
-  - https://opengameart.org/content/12-music-loops / CC0
-  - 作者は OpenGameArt の CC0 音楽でお気に入り数1位(「5 Chiptunes (Action)」お気に入り 442・ダウンロード 31,921)。このパックはお気に入り 27・ダウンロード 381(2024年12月公開で新しい)
-- レース中: Juhani Junkala「129 [Retro Sports] bgm_stage_3」(同じ 12 Music Loops)
-  - https://opengameart.org/content/12-music-loops / CC0
-- 作者の記載: "These music tracks have been released under CC0 creative commons license. You can do anything you want with these tunes."
+## BGM: OpenTracks(旧 DOVA-SYNDROME) https://opentracks.com/
+- 規約の要点(音源利用ライセンス https://opentracks.com/help/articles/license/ ・2026-10-16 に読んだ): 商用・非商用を問わず無料。著作権表示は不要。ゲーム・Web サービス・YouTube などの動画での「背景音楽」としての利用は可。切り出し・ループ加工・形式の変換は可。音源そのものの再配布や、音源を主にした配信は不可。作曲者が別の条件を付けていればそちらが優先。
+- タイトル: 「かわいい運動会」 written by ゆうきわたる — https://opentracks.com/bgm/detail/14397 (DL 22,612・作曲者の利用条件「サイト準拠」)
+- レース中: 「かけっこ競争」 written by ハヤシユウ — https://opentracks.com/bgm/detail/1272 (DL 147,246・BPM150・作曲者の利用条件「サイト準拠」)
+- 加工: 音量だけそろえた(ffmpeg loudnorm -17 LUFS)、MP3 128kbps。曲の中身は変えていない。
 
-## 効果音
-- Juhani Junkala「The Essential Retro Video Game Sound Effects Collection [512 sounds]」/ CC0
-  - https://opengameart.org/content/512-sound-effects-8-bit-style
-  - 使っている音: クリック・カウントダウン・スタート・転ぶ・ぶつかる・ハードルを倒す・水しぶき・加速・ゴール・花火
-- ゴールの曲(se_clear): celestialghost8「Victory」/ CC0 — https://opengameart.org/content/victory
+## 効果音: 効果音ラボ https://soundeffect-lab.info/
+- 規約の要点(https://soundeffect-lab.info/agreement/ ・2026-10-16 に読んだ): 商用無料、報告・リンク・クレジット表記は不要(任意)。アプリに操作音・効果音として組み込むのは再配布に当たらない(ファイルがむき出しでも可)。効果音を使った YouTube 動画の公開は可(効果音だけを流す・紹介する動画は不可)。ファイルへの直リンクは禁止(このゲームは自分のサイトに置いた物を使う)。改変して使うのは可。
+- 使っている音(game/audio/se_*.mp3 ← 効果音ラボでの名前):
+  - whistle ← 警官のホイッスル1(位置について)
+  - pistol ← 拳銃を撃つ(よーい、ドン!のピストル)
+  - cheer ← 歓声(スタート・1着のゴール)
+  - clap ← スタジアムの拍手1(表彰台・タイムアタックの結果)
+  - firework ← 打ち上げ花火2(1着)
+  - fanfare ← ラッパのファンファーレ(自分が3位以内・タイムアタックのゴール)
+  - chan ← ちゃんちゃん♪1(自分が4位以下でゴール)
+  - trip ← ずっこける(転ぶ・平均台から落ちる)
+  - bonk ← ボヨン(ハードルにぶつかる)
+  - knock ← ボウリングのピンを倒す2(ハードルをなぎ倒す)
+  - item ← 食べ物をパクッ(おにぎり)
+  - gust ← 突風が吹く(追い風)
+  - splash ← 水をバシャッとかける1(水たまり)
+  - jump ← ジャンプ(ふわっと越える)
+  - spurt ← 超高速ダッシュ(ラストスパート・急な加速)
+  - kiai ← シャキーン3(応援で気合いが入る)
+  - tap ← 決定ボタンを押す22(応援ボタン)
+  - shutter ← カメラのシャッター2(写真判定)
+  - last ← キラッ1(ラスト20m)
+  - prep ← キラッ2(準備運動の画面)
+  - click ← カーソル移動7(ボタン)
+  - select ← 決定ボタンを押す34(予備)
+- 加工: 頭の無音を切り、長い物は短くしてフェードアウト、音量をそろえた(loudnorm -16 LUFS+リミッター)、MP3 96kbps モノラル。
 
-## 加工
-- BGM は頭と終わりの切り出しなし、音量だけ合わせた(ffmpeg loudnorm -17 LUFS)、MP3 96kbps。曲の中身は変えていない。
-- 効果音はハルの冒険で切り出した MP3 をそのまま使用。
-
-## 10/16 の追加
-- 新しく足した音は無い。抜いた(se_coin)・おにぎり(se_item)・ラスト20m(se_checkpoint)・写真判定と気合い(se_star)・追い風(se_swing)など、上の CC0 の効果音集から入っている物を新しい場面に割り当てただけ。
+## 声(宣伝動画だけ)
+- VOICEVOX:ずんだもん
 
 ## 絵
-- 絵はすべて ChatGPT の画像生成(チャット 6acebbef…、chatgpt_requests.md)。10/16 に hurdle・beam・item_onigiri・ribbon・flags を追加(マゼンタの地を抜いて game/assets/ に置いた。原本は assets_from_chatgpt/)。
+- 絵はすべて ChatGPT の画像生成(チャット 6acebbef…、chatgpt_requests.md)。10/16 に hurdle・beam・item_onigiri・ribbon・flags を追加。

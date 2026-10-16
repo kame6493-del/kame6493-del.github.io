@@ -41,7 +41,9 @@ function loadAssets() {
 
 // ---------- 音(すべて CC0。出典は CREDITS.md) ----------
 const SND = { ctx: null, buf: {}, master: null, bgmNode: null, bgmName: '', on: true, rec: null };
-const SND_FILES = { bgm_title: 'audio/bgm_title.mp3', bgm_race: 'audio/bgm_race.mp3', click: 'audio/se_click.mp3', select: 'audio/se_select.mp3', coin: 'audio/se_coin.mp3', jump: 'audio/se_jump.mp3', bump: 'audio/se_bump.mp3', hit: 'audio/se_hit.mp3', dash: 'audio/se_dash.mp3', firework: 'audio/se_firework.mp3', clear: 'audio/se_clear.mp3', checkpoint: 'audio/se_checkpoint.mp3', powerup: 'audio/se_powerup.mp3', spring: 'audio/se_spring.mp3', stomp: 'audio/se_stomp.mp3', swing: 'audio/se_swing.mp3', star: 'audio/se_star.mp3', gameover: 'audio/se_gameover.mp3' };
+// 曲は OpenTracks(旧 DOVA-SYNDROME)、効果音は効果音ラボ。出典は CREDITS.md
+const SND_FILES = { bgm_title: 'audio/bgm_title.mp3', bgm_race: 'audio/bgm_race.mp3' };
+for (const k of ['click', 'select', 'whistle', 'pistol', 'cheer', 'clap', 'firework', 'trip', 'bonk', 'knock', 'item', 'gust', 'splash', 'jump', 'spurt', 'tap', 'kiai', 'shutter', 'last', 'fanfare', 'chan', 'prep']) SND_FILES[k] = 'audio/se_' + k + '.mp3';
 try { SND.on = localStorage.getItem(CFG.STORE_KEY + '_snd') !== '0'; } catch (e) { }
 function audioInit() {
   if (SND.ctx) { if (SND.ctx.state === 'suspended') SND.ctx.resume(); return; }
@@ -669,7 +671,7 @@ function openPrep() {
     if (!$('prepScreen').classList.contains('hidden')) prepAnim = requestAnimationFrame(tick);
   };
   tick();
-  se('powerup', 0.4);
+  se('prep', 0.4);
 }
 function drawCourseIcon(cv, id) {
   const im = IMG['course_' + id], ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
@@ -785,17 +787,17 @@ function stepRace(dt) {
   raceClock += dt;
   const t = raceClock;
   const tc = t + CFG.COUNTDOWN;
-  if (before + CFG.COUNTDOWN < 0.9 && tc >= 0.9) se('select', 0.5);
+  if (before + CFG.COUNTDOWN < 0.9 && tc >= 0.9) se('whistle', 0.45);
   if (before + CFG.COUNTDOWN < CFG.COUNTDOWN - 0.05 && tc >= CFG.COUNTDOWN - 0.05 && false) se('select', 0.5);
-  if (before < 0 && t >= 0) { se('dash', 0.8); se('firework', 0.4); bgm('bgm_race'); say(sc.mode === 'ta' ? 'タイムアタック、スタート!' : sc.mode === 'solo' ? 'よーい、ドン!' : '3人対戦、スタート!', 9); }
+  if (before < 0 && t >= 0) { se('pistol', 0.6); se('cheer', 0.25); bgm('bgm_race'); say(sc.mode === 'ta' ? 'タイムアタック、スタート!' : sc.mode === 'solo' ? 'よーい、ドン!' : '3人対戦、スタート!', 9); }
   const evs = sc.race.events;
   while (sc.evIdx < evs.length && evs[sc.evIdx].t <= t) { onRaceEvent(evs[sc.evIdx], t); sc.evIdx++; }
   const me = sc.meIndex >= 0 ? racerAt(sc, sc.meIndex, t) : null;
   if (me && me.x > FINISH - 520 && !sc.said.last) { sc.said.last = 1; say(pickLine('last', sc.ents[sc.meIndex].name, Math.floor(sc.seed % 2)), 3); }
-  if (me && me.x > FINISH - 600 && !sc.said.final && sc.mode !== 'ta') { sc.said.final = 1; pop('ラスト20m!', '', '#ffffff', 1.1, 0.8); se('checkpoint', 0.4); }
+  if (me && me.x > FINISH - 600 && !sc.said.final && sc.mode !== 'ta') { sc.said.final = 1; pop('ラスト20m!', '', '#ffffff', 1.1, 0.8); se('last', 0.5); }
   sc.shake = Math.max(0, sc.shake - dt * 2.5);
   // 写真判定: 2匹目がゴールした瞬間に止めて光らせる
-  if (sc.slow && sc.slow.photo && !sc.said.photo && t >= sc.slow.tf) { sc.said.photo = 1; sc.freeze = 1.0; sc.flashT = performance.now(); se('star', 0.6); }
+  if (sc.slow && sc.slow.photo && !sc.said.photo && t >= sc.slow.tf) { sc.said.photo = 1; sc.freeze = 1.0; sc.flashT = performance.now(); se('shutter', 0.8); }
   const endT = sc.meIndex >= 0 ? sc.race.times[sc.meIndex] : sc.race.times[sc.race.order[0]];
   const tail = sc.slow ? Math.max(endT, sc.slow.b) : endT;
   if (!sc.ended && t > tail + 2.2) { sc.ended = true; finishRace(); }
@@ -826,32 +828,32 @@ function say(text, pri) {
 function onRaceEvent(e, t) {
   const sc = scene;
   if (e.type === 'start') return;
-  if (e.type === 'gust') { se('swing', 0.5); say(pickLine('gust', '', Math.floor(t)), (e.lanes || []).includes(sc.meIndex) ? 6 : 3); sc.gustOn = { t0: e.t, lanes: e.lanes || [] }; return; }
+  if (e.type === 'gust') { se('gust', 0.5); say(pickLine('gust', '', Math.floor(t)), (e.lanes || []).includes(sc.meIndex) ? 6 : 3); sc.gustOn = { t0: e.t, lanes: e.lanes || [] }; return; }
   const ent = sc.ents[e.who]; if (!ent) return;
   const mine = e.who === sc.meIndex;
   const pri = mine ? 5 : 1;
   const k = (sc.said[e.type] = (sc.said[e.type] || 0) + 1);
   const near = sc.meIndex < 0 || Math.abs(racerAt(sc, e.who, t).x - racerAt(sc, sc.meIndex, t).x) < 900;
   switch (e.type) {
-    case 'trip': se('bump', mine ? 0.6 : 0.25); if (mine) sc.shake = 1; if (mine || near) say(pickLine('trip', ent.name, k), pri); break;
-    case 'burst': if (mine) se('powerup', 0.45); if (mine || near) say(pickLine('burst', ent.name, k), pri); break;
+    case 'trip': se('trip', mine ? 0.6 : 0.2); if (mine) sc.shake = 1; if (mine || near) say(pickLine('trip', ent.name, k), pri); break;
+    case 'burst': if (mine) se('spurt', 0.45); if (mine || near) say(pickLine('burst', ent.name, k), pri); break;
     case 'stall': if (mine || near) say(pickLine('stall', ent.name, k), pri); break;
-    case 'flyover': se('swing', mine ? 0.5 : 0.2); if (mine || near) say(pickLine('flyover', ent.name, k), pri); break;
-    case 'bonk': se('hit', mine ? 0.6 : 0.25); if (mine) sc.shake = 0.7; if (mine || near) say(pickLine('bonk', ent.name, k), pri); break;
-    case 'knock': se('stomp', mine ? 0.6 : 0.25); if (mine || near) say(pickLine('knock', ent.name, k), pri); break;
+    case 'flyover': se('jump', mine ? 0.5 : 0.2); if (mine || near) say(pickLine('flyover', ent.name, k), pri); break;
+    case 'bonk': se('bonk', mine ? 0.6 : 0.25); if (mine) sc.shake = 0.7; if (mine || near) say(pickLine('bonk', ent.name, k), pri); break;
+    case 'knock': se('knock', mine ? 0.55 : 0.2); if (mine || near) say(pickLine('knock', ent.name, k), pri); break;
     case 'climb': if (mine) say(pickLine('climb', ent.name, k), pri); break;
-    case 'fall': se('hit', mine ? 0.6 : 0.25); if (mine) sc.shake = 1.2; if (mine || near) say(pickLine('fall', ent.name, k), pri + 1); break;
-    case 'splash': if (e.k === 1) { se('spring', mine ? 0.5 : 0.2); if (mine) say(pickLine('splash', ent.name, k), pri); } break;
+    case 'fall': se('trip', mine ? 0.6 : 0.2); if (mine) sc.shake = 1.2; if (mine || near) say(pickLine('fall', ent.name, k), pri + 1); break;
+    case 'splash': if (e.k === 1) { se('splash', mine ? 0.5 : 0.2); if (mine) say(pickLine('splash', ent.name, k), pri); } break;
     case 'item': se('item', mine ? 0.6 : 0.2); if (mine) { pop('おにぎり!', 'ダッシュ!', '#ffffff', 0.9, 0.7); say(pickLine('item', ent.name, k), pri); } break;
-    case 'spurt': if (mine) { se('powerup', 0.5); say(pickLine('spurt', ent.name, k), pri + 1); } else if (near && sc.race.rank[e.who] <= 2) say(pickLine('spurt', ent.name, k), 2); break;
+    case 'spurt': if (mine) { se('spurt', 0.5); say(pickLine('spurt', ent.name, k), pri + 1); } else if (near && sc.race.rank[e.who] <= 2) say(pickLine('spurt', ent.name, k), 2); break;
     case 'recover': if (mine) say(pickLine('recover', ent.name, k), pri); break;
-    case 'cheer': if (mine) { se('star', 0.5); pop('気合い注入!', '', '#ff8fb1', 1.1, 0.9); say(pickLine('cheer', ent.name, k), 7); } break;
+    case 'cheer': if (mine) { se('kiai', 0.5); pop('気合い注入!', '', '#ff8fb1', 1.1, 0.9); say(pickLine('cheer', ent.name, k), 7); } break;
     case 'lead': if (t > 2) say(pickLine('lead', ent.name, k), mine ? 6 : 2); break;
     case 'finish': {
       const rank = sc.race.rank[e.who];
-      if (rank === 1) { se('firework', 0.6); if (sc.mode !== 'ta') say(`${ent.name}、1着でゴール!`, 8); burstFireworks(mine ? 7 : 3); }
+      if (rank === 1) { se('firework', 0.6); se('cheer', 0.4); if (sc.mode !== 'ta') say(`${ent.name}、1着でゴール!`, 8); burstFireworks(mine ? 7 : 3); }
       if (mine) {
-        se(rank <= 3 ? 'clear' : 'checkpoint', 0.55); bgm('');
+        se(rank <= 3 || sc.mode === 'ta' ? 'fanfare' : 'chan', 0.55); bgm('');
         if (sc.mode === 'ta') { pop('ゴール!', sc.race.times[e.who].toFixed(2) + '秒', '#ffd54f', 1.4, 2.2); say(`${ent.name}、${sc.race.times[e.who].toFixed(2)}秒でゴール!`, 9); }
         else {
           say(`${ent.name}、${rank}位でゴール!`, 9);
@@ -928,7 +930,7 @@ $('cheerBtn').addEventListener('pointerdown', e => {
   if (t < 0.3 || (myT != null && t >= myT - 0.3) || sc.cheers.length >= CHEER_MAX) return;
   sc.cheerTaps++;
   sc.fx.push({ kind: 'heart', t0: performance.now(), life: 0.9, x: Math.random() });
-  se('click', 0.25);
+  se('tap', 0.3);
   if (sc.cheerTaps >= CHEER_TAPS && t - sc.lastCheerT > 4) {
     sc.cheerTaps = 0; sc.lastCheerT = t;
     sc.cheers.push({ s: Math.ceil(t * 60) + 1, who: sc.meIndex });
@@ -1004,6 +1006,7 @@ async function finishRace(opts) {
   show('resultScreen');
   $('hud').classList.add('hidden');
   bgm('bgm_title');
+  if (mine && !opts.restored && (info.rank <= 3 || sc.mode === 'ta')) se('clap', 0.35);
   if (sc.mode === 'ta' && mine && !opts.restored) submitTA(sc);
 }
 function renderBadges(badges) {
@@ -1180,8 +1183,8 @@ function makeVideo(sc, card, onProg) {
           const cam = sceneCam(sc, t, W, H);
           renderScene(ctx, W, H, sc, t, cam, { noCount: t > 0.8 });
           // 実況の帯
-          while (ei < evs.length && evs[ei].t <= t) { const e = evs[ei++]; if (sp === 1) { if (e.type === 'finish' && e.who === sc.meIndex) se('clear', 0.5); if (e.type === 'trip' || e.type === 'bonk' || e.type === 'fall') se('bump', 0.4); } if (e.who === sc.meIndex && LINES[e.type]) said.text = pickLine(e.type, sc.ents[e.who].name, 0), said.t = t; }
-          if (t >= 0 && !said.go) { said.go = 1; se('dash', 0.8); bgm('bgm_race', true); }
+          while (ei < evs.length && evs[ei].t <= t) { const e = evs[ei++]; if (sp === 1) { if (e.type === 'finish' && e.who === sc.meIndex) se('fanfare', 0.5); if (e.type === 'trip' || e.type === 'bonk' || e.type === 'fall') se('trip', 0.4); } if (e.who === sc.meIndex && LINES[e.type]) said.text = pickLine(e.type, sc.ents[e.who].name, 0), said.t = t; }
+          if (t >= 0 && !said.go) { said.go = 1; se('pistol', 0.6); bgm('bgm_race', true); }
           if (sp > 1) { tag(ctx, W, '早送り ▶▶', 24, 24, '#ffffff'); }
           if (said.text && t - said.t < 1.6) banner(ctx, W, H, said.text);
           tag(ctx, W, CFG.TAG, W - 24, H - 24, '#ffd54f', 'right');
@@ -1190,7 +1193,7 @@ function makeVideo(sc, card, onProg) {
         acc += dur;
       }
       // 結果の1枚
-      if (!said.card) { said.card = 1; bgm(''); se('clear', 0.5); }
+      if (!said.card) { said.card = 1; bgm(''); se('clap', 0.5); }
       ctx.fillStyle = '#b9e9ff'; ctx.fillRect(0, 0, W, H);
       const k = Math.min(W / card.width, H / card.height); ctx.drawImage(card, (W - card.width * k) / 2, (H - card.height * k) / 2, card.width * k, card.height * k);
     };
@@ -1439,6 +1442,7 @@ $('soloBtn').onclick = () => startDraw('solo');
 $('vsBtn').onclick = () => { $('mainMenu').classList.add('hidden'); $('vsMenu').classList.remove('hidden'); };
 $('vsBackBtn').onclick = () => { $('mainMenu').classList.remove('hidden'); $('vsMenu').classList.add('hidden'); };
 $('soundBtn').onclick = () => setSound(!SND.on);
+$('creditBtn').onclick = () => $('creditBox').classList.toggle('hidden');
 
 // ---------- ループ ----------
 function frame(dt) {

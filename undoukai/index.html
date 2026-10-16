@@ -15,7 +15,7 @@
 <meta name="theme-color" content="#35b8e8">
 <link rel="icon" href="assets/icon.png">
 <link rel="canonical" href="https://yurustudio.github.io/undoukai/">
-<link rel="stylesheet" href="style.css?v=1016c">
+<link rel="stylesheet" href="style.css?v=1016d">
 </head>
 <body>
 <canvas id="stage"></canvas>
@@ -43,7 +43,12 @@
       <div class="joinRow"><input id="roomCodeInput" maxlength="5" placeholder="部屋コード" autocomplete="off" autocapitalize="characters"><button id="roomJoinBtn" class="sub" type="button">部屋に入る</button></div>
       <button id="vsBackBtn" class="sub ghost" type="button">もどる</button>
     </div>
-    <div class="titleFoot"><button id="soundBtn" class="tiny" type="button">音: ON</button></div>
+    <div class="titleFoot"><button id="soundBtn" class="tiny" type="button">音: ON</button><button id="creditBtn" class="tiny" type="button">クレジット</button></div>
+    <div id="creditBox" class="credits hidden">
+      <p>音楽: 「かわいい運動会」ゆうきわたる /「かけっこ競争」ハヤシユウ(OpenTracks・旧 DOVA-SYNDROME)</p>
+      <p>効果音: 効果音ラボ</p>
+      <p>絵: ChatGPT の画像生成</p>
+    </div>
     <div class="admax"><p class="adLabel">広告</p><iframe class="adFrame" data-src="ad.html" title="広告" width="300" height="250" scrolling="no"></iframe></div>
   </div>
 </section>
@@ -226,7 +231,7 @@
 </section>
 
 <div id="toast" class="toast hidden"></div>
-<script src="sim.js?v=1016c"></script>
-<script src="main.js?v=1016c"></script>
+<script src="sim.js?v=1016d"></script>
+<script src="main.js?v=1016d"></script>
 </body>
 </html>
