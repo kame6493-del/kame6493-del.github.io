@@ -1,6 +1,8 @@
 // ハルの冒険 — 横スクロールアクション。素材は assets/sprites(素材集の1枚絵から切り抜き)、音は Kenney(CC0)と Juhani Junkala(CC0)。
 'use strict';
 const TILE = 48, VW = 960, VH = 540, ROWS = 12;
+// ほしの 形: 4つの とがりの きらめき(ハルの せかいの ほし。ほかの ゲームの 五芒星と にないように 2026-10-16)
+function sparkPath(c, x, y, r) { c.moveTo(x, y - r); c.quadraticCurveTo(x + r * 0.3, y - r * 0.3, x + r * 0.92, y); c.quadraticCurveTo(x + r * 0.3, y + r * 0.3, x, y + r); c.quadraticCurveTo(x - r * 0.3, y + r * 0.3, x - r * 0.92, y); c.quadraticCurveTo(x - r * 0.3, y - r * 0.3, x, y - r); c.closePath(); }
 const cv = document.getElementById('c');
 const ctx = cv.getContext('2d');
 let scale = 1;
@@ -133,7 +135,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261014b';
+const SPRITE_V = '20261016a';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -271,7 +273,7 @@ function bakeTiles() {
   bake('bombBlk', TILE, TILE, (g, w, h) => { if (ART.bomb_block) { g.drawImage(ART.bomb_block, 0, 0, w, h); return; } stoneBlock(g, w, h, '#d8403a', '#ff8a7a', '#8a1a1a'); g.fillStyle = '#1e1e28'; g.beginPath(); g.arc(w / 2, h / 2 + 4, 11, 0, 7); g.fill(); g.strokeStyle = '#ffd84a'; g.lineWidth = 3; g.beginPath(); g.moveTo(w / 2 + 6, h / 2 - 6); g.quadraticCurveTo(w / 2 + 14, h / 2 - 16, w / 2 + 8, h / 2 - 18); g.stroke(); g.fillStyle = '#fff'; g.beginPath(); g.arc(w / 2 - 4, h / 2, 3, 0, 7); g.fill(); });
   bake('pgate', TILE, TILE, (g, w, h) => { g.fillStyle = 'rgba(40,30,20,.35)'; g.fillRect(0, 0, w, h); g.fillStyle = '#c8a040'; g.strokeStyle = '#4a3010'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { g.fillRect(6 + i * 14, 0, 7, h); g.strokeRect(6 + i * 14, 0, 7, h); } g.fillRect(0, h / 2 - 3, w, 6); g.strokeRect(0, h / 2 - 3, w, 6); });
   for (const [c, base, hi2, lo] of [['y', '#e8b820', '#ffe070', '#a07c08'], ['g', '#3cb84a', '#7ae286', '#1f7a2a'], ['b', '#2a9ae0', '#7ad0ff', '#14609a'], ['p', '#8a4ad8', '#c08aff', '#5a2a9a']]) {
-    bake('blk_' + c, TILE, TILE, (g, w, h) => { if (ART['blk_' + c]) { g.drawImage(ART['blk_' + c], 0, 0, w, h); return; } stoneBlock(g, w, h, base, hi2, lo); g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); for (let a = 0; a < 10; a++) { const r2 = a % 2 ? 5 : 11, an = -Math.PI / 2 + a * Math.PI / 5; g.lineTo(w / 2 + Math.cos(an) * r2, h / 2 + Math.sin(an) * r2); } g.closePath(); g.fill(); });
+    bake('blk_' + c, TILE, TILE, (g, w, h) => { if (ART['blk_' + c]) { g.drawImage(ART['blk_' + c], 0, 0, w, h); return; } stoneBlock(g, w, h, base, hi2, lo); g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); sparkPath(g, w / 2, h / 2, 12); g.fill(); });
   }
 }
 
@@ -429,26 +431,39 @@ function canvasPos(e) {
   return { x: (e.clientX - r.left) / r.width * VW, y: (e.clientY - r.top) / r.height * VH };
 }
 const TOUCH = {
-  // 左下は 十字キー(はしご・とびら・いど・つつ・しゃがみ・ヒップドロップに ↑↓ が いる)
-  left: { x: 70, y: 446, r: 44 }, right: { x: 218, y: 446, r: 44 }, up: { x: 144, y: 378, r: 34 }, down: { x: 144, y: 504, r: 34 },
+  // 左下は ◀ ▶ だけ(上下を まちがえて おさないように。2026-10-16 テスターの 声)。
+  // ↓(しゃがむ・ヒップドロップ・いど・つつ)と ↑(はしご・つる・とびら)は みぎの ボタンの なかまに。▲ は いる ときだけ でる
+  left: { x: 78, y: 452, r: 54 }, right: { x: 216, y: 452, r: 54 },
   attack: { x: 752, y: 476, r: 46 }, jump: { x: 870, y: 436, r: 58 }, dash: { x: 772, y: 366, r: 40 }, spin: { x: 650, y: 488, r: 34 },
+  down: { x: 884, y: 318, r: 36 }, up: { x: 884, y: 230, r: 36 },
 };
-const PAD = { x: 144, y: 446 };
-function touchButtonAt(p) {
-  // いちばん 近い ボタン(ボタンの ふちからの きょりで くらべる)
+const PAD = { x: 147, y: 452 };
+// ▲ が いる ばめん: はしご・つるの そば / のぼっている / とびらの まえ / もちあげ中(↑で 上へ なげる)
+function upUseful() {
+  if (!P || !world || scene !== 'play') return false;
+  if (P.climb || P.carry) return true;
+  const cx = Math.floor((P.x + P.w / 2) / TILE);
+  for (let dy = -1; dy <= 2; dy++) if (isLadder(tileAt(cx, Math.floor((P.y + P.h / 2) / TILE) + dy))) return true;
+  return world.ents.some(o => o.t === 'wdoor' && o.near);
+}
+function touchShown(k) {
+  if (k === 'dash') return hasPower('dash') || nearCarry();
+  if (k === 'up') return upUseful();
+  return true;
+}
+function touchButtonAt(p, prev) {
+  // いちばん 近い ボタン(ボタンの ふちからの きょりで くらべる)。▲▼ は ゆとり なし(ジャンプの つもりで ふれないように)
   let best = null, bd = 14;
   for (const [k, b] of Object.entries(TOUCH)) {
-    if (k === 'dash' && !hasPower('dash') && !nearCarry()) continue;
-    const d = Math.hypot(p.x - b.x, p.y - b.y) - b.r;
+    if (!touchShown(k)) continue;
+    const d = Math.hypot(p.x - b.x, p.y - b.y) - b.r - (k === 'up' || k === 'down' ? 14 : 0);
     if (d < bd) { bd = d; best = k; }
   }
+  // ジャンプを おしている 指が ずれて ▼▲ に はいっても ジャンプの まま
+  if (prev === 'jump' && (best === 'up' || best === 'down')) return 'jump';
   if (best) return best;
-  // 十字キーの まわりは ゆるく取る(指が ずれても うごけるように)。中心からの 向きで きめる
-  if (p.y > 320 && p.x < 300) {
-    const dx = p.x - PAD.x, dy = p.y - PAD.y;
-    if (Math.abs(dy) > Math.abs(dx) * 1.2) return dy < 0 ? 'up' : 'down';
-    return dx < 0 ? 'left' : 'right';
-  }
+  // ◀ ▶ の まわりは ゆるく取る(指が ずれても うごけるように)。左か 右かだけ
+  if (p.y > 300 && p.x < 330) return p.x < PAD.x ? 'left' : 'right';
   return null;
 }
 function refreshTouchKeys() {
@@ -478,14 +493,14 @@ cv.addEventListener('pointerdown', e => {
   if (scene === 'opening') { pressed.ok = true; return; }
   if (scene === 'story') { storyNext(); return; }
   if (scene === 'play' && usingTouch) {
-    pointers.set(e.pointerId, touchButtonAt(p));
+    pointers.set(e.pointerId, touchButtonAt(p, null));
     refreshTouchKeys();
     cv.setPointerCapture(e.pointerId);
   }
 });
 cv.addEventListener('pointermove', e => {
   if (!pointers.has(e.pointerId)) return;
-  pointers.set(e.pointerId, touchButtonAt(canvasPos(e)));
+  pointers.set(e.pointerId, touchButtonAt(canvasPos(e), pointers.get(e.pointerId)));
   refreshTouchKeys();
 });
 const endPointer = e => { pointers.delete(e.pointerId); refreshTouchKeys(); };
@@ -703,9 +718,9 @@ function startLevel(idx, fromCheckpoint = false) {
   world.bossBgm = null; bgm(levelBgm(def));
   if (def.daily) dailyBegin(fromCheckpoint);
   if (!fromCheckpoint && def.daily) {
-    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: usingTouch ? '左下でいどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん', t: 3.2 };
+    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: usingTouch ? '左下の ◀▶ で いどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん', t: 3.2 };
   } else if (!fromCheckpoint) {
-    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: idx === 0 ? (usingTouch ? '左下でいどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん') : 'ほしを3つあつめよう', t: 3.2 };
+    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: idx === 0 ? (usingTouch ? '左下の ◀▶ で いどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん') : 'ほしを3つあつめよう', t: 3.2 };
   } else if (!(keep && keep.deaths >= 4 && toast && toast.text === 'おたすけ たて!')) {
     toast = null;
   }
@@ -1302,12 +1317,12 @@ function updatePlayer(dt) {
   // 第5段階: すいこみ つつ・トロッコ・ぶらんこ(うごかすのは それぞれの 関数と updateThing)
   if (p.tube) { updateTubeRide(p, dt); return; }
   if (p.cart) { updateCartRide(p, dt); return; }
-  if (p.swing) { p.vx = 0; p.vy = 0; p.onGround = false; p.climb = false; p.standOn = null; if (consume('jump') || consume('up') || consume('spin')) swingRelease(p.swing, true); consume('attack'); consume('dash'); if (p.inv > 0) p.inv -= dt; return; }
+  if (p.swing) { p.vx = 0; p.vy = 0; p.onGround = false; p.climb = false; p.standOn = null; consume('up'); if (consume('jump') || consume('spin')) swingRelease(p.swing, true); consume('attack'); consume('dash'); if (p.inv > 0) p.inv -= dt; return; }
   if (p.inv > 0 && (p.zip || p.inCannon)) p.inv -= dt;
   // ジップライン: とってに ぶらさがって すべる(うごかすのは updateThing の zip)。ジャンプで はなす
   if (p.zip) {
     p.vx = 0; p.vy = 0; p.onGround = false; p.climb = false; p.standOn = null;
-    if (consume('jump') || consume('up')) zipRelease(p.zip, true);
+    consume('up'); if (consume('jump')) zipRelease(p.zip, true);
     consume('attack'); consume('dash');
     return;
   }
@@ -1402,7 +1417,7 @@ function updatePlayer(dt) {
   // ヒップドロップ: 空中で ↓。まっすぐ おちて 地面を たたく(レンガを こわす・ちかくの 敵を たおす)
   if (gd > 0 && !p.onGround && !p.swim && !p.climb && !p.mount && !p.fly && !p.carry && !(p.hipT > 0) && !p.hipFall && pressed.down && !(p.climbUpT > 0)) {
     pressed.down = false; p.hipT = 0.2; p.spin = false; sfx('swing', 0.6);
-    if (!world.seenHip) { world.seenHip = true; toast = { text: 'ヒップドロップ!', sub: 'くうちゅうで ↓。じめんを たたいて レンガを こわす', t: 2 }; }
+    if (!world.seenHip) { world.seenHip = true; toast = { text: 'ヒップドロップ!', sub: usingTouch ? 'くうちゅうで ▼。じめんを たたいて レンガを こわす' : 'くうちゅうで ↓。じめんを たたいて レンガを こわす', t: 2 }; }
   }
   // がけの ふちに つかまる(おちている ときに かべの ほうを おしていて、手が ふちに とどいたら)
   if (gd > 0 && dir && !p.onGround && p.vy > 0 && !p.swim && !p.climb && !p.mount && !p.carry && !p.fly && !(p.hangCD > 0) && !(p.hipT > 0) && !p.hipFall) {
@@ -1411,7 +1426,7 @@ function updatePlayer(dt) {
     if (isSolid(tx, ty) && !isSolid(tx, ty - 1) && !isSolid(ownX, ty - 1) && hy - ty * TILE < 16 && !BUMPABLE.includes(tileAt(tx, ty)) && tileAt(tx, ty) !== 'K') {
       p.hang = { tx, ty, dir, t: 0 }; p.vx = 0; p.vy = 0; p.y = ty * TILE - 4; p.x = dir > 0 ? tx * TILE - p.w : (tx + 1) * TILE; p.face = dir; p.wallSlide = 0;
       sfx('click', 1.4);
-      if (!world.seenHang) { world.seenHang = true; toast = { text: 'がけに つかまった!', sub: '↑か ジャンプで のぼる・↓で はなす', t: 2.2 }; }
+      if (!world.seenHang) { world.seenHang = true; toast = { text: 'がけに つかまった!', sub: usingTouch ? 'ジャンプで のぼる・▼で はなす' : '↑か ジャンプで のぼる・↓で はなす', t: 2.2 }; }
       return;
     }
   }
@@ -1419,7 +1434,8 @@ function updatePlayer(dt) {
   if (pressed.up && p.onGround) { const dr = world.ents.find(o => o.t === 'wdoor' && o.near); if (dr) { consume('up'); dr.open = 1; warpPlayer(dr.to[0], dr.to[1], 0.2); const back = world.ents.find(o => o.t === 'wdoor' && Math.abs(o.x - dr.to[0] * TILE) < 2); if (back) { back.open = 1; back.near = true; } } }
   // ジャンプ(先行入力と崖のゆとり)。スピンジャンプは V。もこりゅうに のっているときは とびおりる(ふみ台に して 高く)
   if (consume('spin')) { if (p.mount) mountOff('jump'); else { p.jumpBuf = 0.15; p.spinReq = true; } }
-  if (consume('jump') || consume('up')) { p.jumpBuf = 0.15; p.spinReq = false; }
+  consume('up'); // ↑ / ▲ は はしご・とびら・がけ 用。ジャンプには しない(2026-10-16 テスターの 声)
+  if (consume('jump')) { p.jumpBuf = 0.15; p.spinReq = false; }
   p.jumpBuf -= dt;
   p.coyote = p.onGround ? 0.12 : p.coyote - dt;
   if (p.onGround) { p.airJumps = maxAirJumps(); p.airDash = 1; }
@@ -1505,7 +1521,7 @@ function updatePlayer(dt) {
   let g, maxFall = MAXFALL;
   if (p.swim) { g = GRAV * 0.28; maxFall = 160; }
   else if (p.dashT > 0) { g = 0; }
-  else if (p.vy * gd < 0) g = p.launchT > 0 && !p.jumping ? GRAV_LAUNCH : held('jump') || held('up') ? GRAV_UP : (p.jumping ? GRAV_CUT : GRAV_LAUNCH);
+  else if (p.vy * gd < 0) g = p.launchT > 0 && !p.jumping ? GRAV_LAUNCH : held('jump') ? GRAV_UP : (p.jumping ? GRAV_CUT : GRAV_LAUNCH);
   else {
     g = GRAV_DOWN;
     if (p.wallSlide) maxFall = 170;
@@ -3046,7 +3062,7 @@ function collect(o) {
       sfx('coin', 1 + Math.min(12, world.coinChain) * 0.035);
       if (world.coins % 50 === 0 && P.maxHearts < 5) { P.maxHearts++; P.hearts = P.maxHearts; toast = { text: 'ハートがふえた!', sub: 'コイン50まい', t: 1.6 }; sfx('powerup'); }
       break;
-    case 'star': world.stars[o.idx] = true; world.score += 1000; sfx('star'); sparkle(cx, cy, 20); burst(cx, cy, '#ffe14d', 14, 260, 5);
+    case 'star': world.stars[o.idx] = true; world.score += 1000; sfx('star'); sparkle(cx, cy, 20); burst(cx, cy, '#8fe8ff', 14, 260, 5);
       popText(cx, cy - 20, `ほし ${world.stars.filter(Boolean).length}/3`, '#ffe14d'); break;
     case 'heart':
       if (P.hearts >= P.maxHearts && !o.fromRes && !save.reserve) { stashReserve('heart', cx, cy); break; }
@@ -3280,11 +3296,12 @@ function exitCart(c, crash) {
 }
 function updateCartRide(p, dt) {
   const c = p.cart;
-  if (consume('jump') || consume('up') || consume('spin')) {
+  consume('up');
+  if (consume('jump') || consume('spin')) {
     if (c.onGround || (c.coyote || 0) > 0) { c.vy = -JUMPV * 0.97; c.jumping = true; c.coyote = 0; sfx('jump', 0.9); dust(c.x + c.w / 2, c.y + c.h, 5); onPlayerJump(); }
   }
   consume('attack'); consume('dash'); consume('item');
-  const gc = c.vy < 0 ? (c.jumping && (held('jump') || held('up')) ? GRAV_UP : GRAV_CUT) : GRAV_DOWN;
+  const gc = c.vy < 0 ? (c.jumping && held('jump') ? GRAV_UP : GRAV_CUT) : GRAV_DOWN;
   c.vy = Math.min(c.vy + gc * dt, MAXFALL);
   if (c.vy >= 0) c.jumping = false;
   c.vx = Math.min(c.sp, c.vx + 700 * dt);
@@ -4037,8 +4054,8 @@ function zukanSee(key) { if (!save.zukan) save.zukan = {}; if (!save.zukan[key])
 function zukanBeat(key) {
   if (!save.zukan) save.zukan = {};
   const z = save.zukan[key] || (save.zukan[key] = { s: 1, b: 0 }), first = !zkGot(key);
-  z.b = (z.b || 0) + 1; writeSave();
-  if (first && scene === 'play' && P && !P.dead) popText(P.x + P.w / 2, P.y - 30, 'ずかんに のった!', '#bff4ff');
+  z.b = (z.b || 0) + 1; if (first) z.nw = 1; writeSave();
+  // 「ずかんに のった!」の 字は 出さない(2026-10-16 持ち主)。ずかんの 画面で NEW の しるし
 }
 // たおせない てき(ほうだい・バチバチだま・おおおばけ)は、見かけた 面を クリアしたら(にげきったら)のる。むてき・ばくはつで たおしても のる
 const ZK_TOUGH = new Set(['turret', 'orb', 'oobake']);
@@ -4046,8 +4063,7 @@ const zkGot = k => { const z = save.zukan && save.zukan[k]; return !!(z && (z.b 
 function zukanEscape(key) {
   if (!save.zukan) save.zukan = {};
   const z = save.zukan[key] || (save.zukan[key] = { s: 1, b: 0 }), first = !zkGot(key);
-  z.n = (z.n || 0) + 1; writeSave();
-  if (first && P) popText(P.x + P.w / 2, P.y - 50, 'ずかんに のった! (' + zkName(key) + ')', '#bff4ff');
+  z.n = (z.n || 0) + 1; if (first) z.nw = 1; writeSave();
 }
 // 前の 版の セーブ: クリアした ボスの 面は たおした ことに する(ボスを たおさないと ゴールが 出ないので)
 function zkMigrate() {
@@ -4070,14 +4086,114 @@ function zkMigrate() {
 zkMigrate();
 function zkName(key) { if (String(key)[0] === 'B') { const id = +String(key).slice(1), bi = BINFO[id]; return bi ? bi.name : (ENEMY[BOSS_TYPE_OF[id]] || {}).name || '???'; } return (EINFO[key] && EINFO[key].name) || ZK_NAME[key] || key; }
 // 敵が 出てくる ワールド(はじめて ずかんを ひらいた ときに 面を 組んで しらべる)
-let zkWorlds = null;
+let zkWorlds = null, zkStages = null;
 function zkComputeWorlds() {
-  zkWorlds = {};
+  zkWorlds = {}; zkStages = {};
   for (const d of LEVELS) {
     if (d.roam || d.tutorial || d.daily) continue;
     let lv; try { lv = buildLevel(d); } catch (e) { continue; }
-    for (const e of lv.ents) if (e.kind === 'enemy') { (zkWorlds[e.type] = zkWorlds[e.type] || new Set()).add(d.world); }
+    for (const e of lv.ents) if (e.kind === 'enemy') {
+      (zkWorlds[e.type] = zkWorlds[e.type] || new Set()).add(d.world);
+      const st = zkStages[e.type] = zkStages[e.type] || []; const lb = stageLabel(d); if (!st.includes(lb)) st.push(lb);
+    }
   }
+}
+// ずかんの ひとこと せつめい(2026-10-16。ゲームの 中で ほんとうに そう うごく ことだけ。2〜3ぎょう)
+const ZK_DESC = {
+  goomy: ['いつも おこって あるいてくる ちゃいろの こ。', 'はねの ある なかまは ぴょんぴょん はねる。', 'ふんでも けんでも たおせる。'],
+  shell: ['あかい こうらの のんびり カメ。がけの はしで くるっと もどる。', 'ふむと こうらに なり、けると すべって ほかの てきを たおす。'],
+  slime: ['ぽよんと はねて ちかづいてくる。', 'おおきい ぷるんは たおすと 2つに わかれる。', 'ふんでも けんでも たおせる。'],
+  bee: ['そらを とぶ ハチ。ぐるぐる まわる ものや、', 'まっすぐ おりてくる ものが いる。', 'ふんでも けんでも たおせる。'],
+  bat: ['くらい ところに いる こうもり。', 'ちかづくと パタパタ おいかけてくる。', 'ふんでも けんでも たおせる。'],
+  spiky: ['せなかが トゲトゲで、うえから ふむと いたい。', 'がけの はしで もどる。', 'スピンジャンプか けんで たおす。'],
+  plant: ['つちから でてきて かみつく はな。ひを はく なかまも いる。', 'ふめないので、けんか スピンジャンプで。'],
+  turret: ['てつの たまを うつ ほうだい。ハルを ねらって うつ ものも いる。', 'たおせないが うえに のれる。たまは けんで けせる。'],
+  skeleton: ['たてと けんを もった ほね。ちかづくと ほねを なげる。', 'まえからの けんは たてで ふせぐ。うえから ふむのが いちばん。'],
+  firespirit: ['ぴょんと はねる ほのおの こ。おいかけてくる なかまも いる。', 'あつくて ふめない。スピンジャンプか けんで。'],
+  bomb: ['せなかに ぜんまいの ついた ばくだん。', 'ふむと ひが ついて しばらくして ばくはつ。すぐ はなれよう。'],
+  eye: ['はねで とぶ めだま。まうえに くると なみだを おとす。', 'ふんでも けんでも たおせる。'],
+  beetle: ['あしを かいてから まっすぐ とっしんしてくる。', 'からが かたくて けんは きかない。うえから ふもう。'],
+  wizard: ['きえては あらわれ、まほうの たまを うつ。', 'たまは けんで けせる。ふんでも けんでも たおせる。'],
+  fish: ['みずの したから いきおいよく とびだしてくる さかな。', 'ふめないので、けんで たおす。'],
+  orb: ['ビリビリ ひかる たま。きまった みちを まわりつづける。', 'たおせない。うごきを よく みて すりぬけよう。'],
+  ghost: ['みつめると とまり、せなかを むけると ちかづく おばけ。', 'ふめない。けんで たおせる。'],
+  mogura: ['つちに もぐって ちかづき、とびだして おいかけてくる。', 'もぐっている あいだは さわれない。でてきた ときに。'],
+  nageko: ['たかい ところから きのみを なげてくる。ときどき はねる。', 'ふんでも けんでも たおせる。'],
+  kumo: ['いとで うえから すうっと おりてくる くも。', 'トゲが あって ふめない。スピンジャンプか けんで。'],
+  fugu: ['みずの なかで ゆっくり ちかづき、ときどき ふくらむ。', 'ふくらんで いない ときだけ ふめる。けんは いつでも きく。'],
+  oobake: ['おばけやしきの おおきな おばけ。かべも すりぬける。', 'みつめると とまる。たおせないので にげきろう。'],
+  suberin: ['こおりの ペンギン。ちかづくと おなかで すべってくる。', 'すべってきたら とびこえる。ふんでも けんでも たおせる。'],
+  kororin: ['ゆきだまを ころがしてくる ゆきだるま。', 'ゆきだまは とびこえる。ふんでも けんでも たおせる。'],
+  hotarun: ['くらい どうくつで まわりを てらす ホタル。', 'まうえに くると とびかかってくる。ふんでも けんでも たおせる。'],
+  bukugani: ['あわを ふく カニ。あわは ふむと たかく はねる。', 'ふんでも けんでも たおせる。'],
+  B46: ['はねて ちかづき、ときどき 大ジャンプ。おちる ばしょに かげが でる。', 'ゆかの コインを したで すいこむ。いつでも うえから ふめる。'],
+  B8: ['きえては あらわれ、まほうだまを 3つ ひろげて うつ。', 'ゆかを たたくと みずの なみ、てんじょうからは つらら。'],
+  B58: ['ほねを やまなりに 3ぼん なげる。すなに もぐって あしもとから。', 'おじぎの あとの 大ジャンプで すなの なみが でる。'],
+  B12: ['ハルの うしろに ワープし、おいかけてくる やみだまを うつ。', 'ときどき ほんものの まおうが あばれて とまる。そこが チャンス。'],
+  B17: ['あかく ひかってから とっしん。とびこえると かべで 目を まわす。', 'かべに ぶつかると いわが おちてくる。'],
+  B21: ['なきながら いわを ころがす。なみだの あめも ふらせる。', 'ドスンの あいだは きえる ブロックが はやく いれかわる。'],
+  B23: ['みつめると とまり、目を そらすと ちかづく。', 'あかりを けしたら ひかりの ブロックを たたいて 目を まわさせよう。'],
+  B30: ['とびまわって はりを おとす。ゆかに しるしが でたら とっしん。', 'はりが ささって うごけない ときが チャンス。'],
+  B62: ['ほねが ふわふわ ただよう。ねころがって ころがってくる。', '大ジャンプの あとは いねむり。そこが チャンス。'],
+  B37: ['ハルの うえを ついてきて たまを うつ。', 'ひかりの はしらを うった あとは つかれて おりてくる。'],
+  B64: ['しゃべりながら ほねを 3ぼん なげる。', 'とばしてくる ふきだしは ふむと あしばに なる。'],
+  B44: ['じめんを はう かげの なみを なげ、ハルの うごきを おくれて まねる。', '大ジャンプの あと ふらつく ときが チャンス。'],
+};
+const ZK_DESC_EN = {
+  goomy: ['A grumpy brown critter that walks toward you.', 'Winged ones hop around.', 'Stomp it or use the sword.'],
+  shell: ['A slow turtle with a red shell. Turns around at ledges.', 'Stomp it into a shell, then kick it to knock out other enemies.'],
+  slime: ['Bounces closer and closer.', 'Big ones split in two when defeated.', 'Stomp it or use the sword.'],
+  bee: ['A flying bee. Some circle around,', 'others dive straight down.', 'Stomp it or use the sword.'],
+  bat: ['Lives in dark places.', 'Flaps after you when you get close.', 'Stomp it or use the sword.'],
+  spiky: ['Its spiky back hurts if you stomp it.', 'Turns around at ledges.', 'Use a spin jump or the sword.'],
+  plant: ['A flower that pops out of the ground and bites. Some breathe fire.', 'Cannot be stomped: use the sword or a spin jump.'],
+  turret: ['A cannon that fires iron balls. Some aim at Haru.', 'It cannot be defeated, but you can stand on it. The sword clears its shots.'],
+  skeleton: ['A skeleton with a shield and sword. Throws bones when close.', 'Its shield blocks sword hits from the front. Stomping works best.'],
+  firespirit: ['A hopping flame. Some chase you.', 'Too hot to stomp. Use a spin jump or the sword.'],
+  bomb: ['A wind-up bomb.', 'Stomp it and it lights up, then explodes. Get away fast!'],
+  eye: ['A flying eyeball. Drops tears when right above you.', 'Stomp it or use the sword.'],
+  beetle: ['Paws the ground, then charges straight at you.', 'Its shell is too hard for the sword. Stomp it.'],
+  wizard: ['Vanishes, reappears and fires magic orbs.', 'The sword clears orbs. Stomp it or use the sword.'],
+  fish: ['A fish that leaps out of the water.', 'Cannot be stomped. Use the sword.'],
+  orb: ['A crackling orb that follows a fixed path.', 'It cannot be defeated. Watch it and slip past.'],
+  ghost: ['Freezes when you face it, creeps closer when you turn away.', 'Cannot be stomped. Use the sword.'],
+  mogura: ['Burrows close, then pops out and chases you.', 'You cannot touch it underground. Hit it when it is out.'],
+  nageko: ['Throws nuts from high places. Hops now and then.', 'Stomp it or use the sword.'],
+  kumo: ['A spider that drops down on a thread.', 'Spiky, so no stomping. Use a spin jump or the sword.'],
+  fugu: ['Drifts closer underwater and puffs up now and then.', 'Stomp it only when it is not puffed up. The sword always works.'],
+  oobake: ['A huge ghost in the haunted house. Passes through walls.', 'Freezes when you face it. It cannot be defeated, so escape!'],
+  suberin: ['An ice penguin that belly-slides at you.', 'Jump over the slide. Stomp it or use the sword.'],
+  kororin: ['A snowman that rolls snowballs.', 'Jump over the snowballs. Stomp it or use the sword.'],
+  hotarun: ['A firefly that lights up dark caves.', 'Swoops when right above you. Stomp it or use the sword.'],
+  bukugani: ['A crab that blows bubbles. Bubbles bounce you up high.', 'Stomp it or use the sword.'],
+  B46: ['Hops closer and sometimes leaps high. A shadow marks the landing.', 'Slurps up coins with its tongue. You can always stomp it.'],
+  B8: ['Vanishes, reappears and fires three spreading orbs.', 'Taps the floor for water waves; icicles fall from above.'],
+  B58: ['Lobs three bones. Dives into the sand and pops up under you.', 'Bows, then leaps; sand waves roll out on landing.'],
+  B12: ['Warps behind Haru and fires homing dark orbs.', 'Sometimes the real Maou struggles and freezes. That is your chance.'],
+  B17: ['Glows red, then charges. Jump over and it hits the wall, dizzy.', 'Rocks fall when it crashes into a wall.'],
+  B21: ['Rolls rocks while crying, and rains big tears.', 'During its stomp, vanishing blocks switch faster.'],
+  B23: ['Freezes when you face it, comes closer when you look away.', 'When the lights go out, hit a light block to make it dizzy.'],
+  B30: ['Flies around dropping stingers. A mark on the floor means a charge.', 'When its stinger gets stuck, strike!'],
+  B62: ['Bones float slowly. It rolls over and over toward you.', 'It dozes after a big jump. That is your chance.'],
+  B37: ['Follows above Haru and fires shots.', 'After firing light pillars it gets tired and comes down.'],
+  B64: ['Throws three bones while chatting.', 'Its speech bubbles become platforms when you stomp them.'],
+  B44: ['Throws shadow waves along the ground and copies Haru\'s moves with a delay.', 'It wobbles after a big jump. Strike then.'],
+};
+
+// ずかんの ばんごう(てき 001〜、ボスは その つづき)
+function zkNo(k) { const e = ZK_ENEMIES.indexOf(k); const n = e >= 0 ? e + 1 : ZK_ENEMIES.length + 1 + ZK_BOSSES.indexOf(+String(k).slice(1)); return 'No.' + String(n).padStart(3, '0'); }
+// しゅべつ: ふつう / つよい / たおせない / 中ボス / ボス
+function zkKind(k) {
+  if (String(k)[0] === 'B') return BOSS_TYPE_OF[+String(k).slice(1)] === 'hone' ? ['中ボス', '#7fc8ff'] : ['ボス', '#ff7a7a'];
+  if (ZK_TOUGH.has(k)) return ['たおせない', '#c9b8ff'];
+  const d = ENEMY[k] || {};
+  return !d.stomp || !d.sword || (d.score || 0) >= 250 ? ['つよい', '#ffb15a'] : ['ふつう', '#7dff8a'];
+}
+// 小さな 素材の 絵は 4ばいに きれいに 大きくした 絵(assets/sprites_hd)を ずかんで つかう
+const IMG_HD = {};
+const ZK_HD = ['goomy', 'shell', 'slime', 'bee', 'bat', 'spiky', 'plant', 'turret', 'skeleton', 'firespirit', 'bomb', 'eye', 'beetle', 'wizard', 'fish', 'orb', 'ghost', 'hero_idle'];
+function zkLoadHD() {
+  for (const n of ZK_HD) { if (IMG_HD[n]) continue; const im = new Image(); im.onload = () => { if (im.naturalWidth) IMG_HD[n] = im; }; im.src = 'assets/sprites_hd/' + n + '.png?v=' + SPRITE_V; IMG_HD[n] = null; }
 }
 function zkArt(key) {
   if (String(key)[0] === 'B') {
@@ -4093,15 +4209,21 @@ function zkArt(key) {
 function drawZkArt(key, cx, bottom, h, silhouette, maxW) {
   const a = zkArt(key);
   // よこに ひろい 絵(コウモリの はね など)は わくから はみ出さない 大きさに
-  const im = ART[a.name] || IMG[a.name];
-  if (maxW && im && im.naturalWidth && im.naturalWidth / im.naturalHeight * h > maxW) h = maxW * im.naturalHeight / im.naturalWidth;
+  const src = ART[a.name] || IMG[a.name];
+  if (!src || !src.naturalWidth) return;
+  // 小さな 素材の 絵: もとの 2.8ばいまでに おさえ、4ばいの きれいな 絵で 描く(ぼやけ よけ 2026-10-16)
+  const hd = !ART[a.name] && IMG_HD[a.name];
+  if (!ART[a.name]) h = Math.min(h, src.naturalHeight * 2.8);
+  if (maxW && src.naturalWidth / src.naturalHeight * h > maxW) h = maxW * src.naturalHeight / src.naturalWidth;
+  const w = src.naturalWidth / src.naturalHeight * h;
   ctx.save();
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
   ctx.filter = silhouette ? 'brightness(0) opacity(0.55)' : a.filter || 'none';
-  drawFit(a.name, cx, bottom, h, false);
+  ctx.drawImage(hd || src, cx - w / 2, bottom - h, w, h);
   ctx.restore();
 }
 const zk = { tab: 'e', i: 0, grid: true, from: 'title', t: 0 };
-function openZukan(from) { zk.from = from || scene; zk.grid = true; zk.t = 0; scene = 'zukan'; sfx('select'); if (!zkWorlds) zkComputeWorlds(); }
+function openZukan(from) { zk.from = from || scene; zk.grid = true; zk.t = 0; scene = 'zukan'; sfx('select'); zkLoadHD(); if (!zkWorlds) zkComputeWorlds(); }
 function zkList() { return zk.tab === 'e' ? ZK_ENEMIES : ZK_BOSSES.map(id => 'B' + id); }
 function closeZukan() { sfx('select'); scene = zk.from === 'pause' ? 'pause' : zk.from; if (scene === 'map') bgm('map'); else if (scene === 'title') bgm('title'); }
 function updateZukan(dt) {
@@ -4133,7 +4255,8 @@ function drawZukan(t) {
       ctx.lineWidth = sel ? 4 : 2; ctx.strokeStyle = sel ? '#ffd84a' : 'rgba(255,255,255,.25)'; ctx.stroke();
       drawZkArt(k, x + cw / 2, y + ch - 28 + (sel ? Math.sin(t * 6) * 2 : 0), ch - 44, !seen, cw - 16);
       ctx.fillStyle = seen ? '#fff' : 'rgba(255,255,255,.5)'; ctx.font = font(12, 800); ctx.textAlign = 'center';
-      { const lb = (i + 1 < 10 ? '0' : '') + (i + 1) + ' ' + (seen ? zkName(k) : '???'); if (isEN()) ctx.font = fitFont(lb, cw - 14, 12); ctx.fillText(lb, x + cw / 2, y + ch - 12); }
+      { const lb = zkNo(k).slice(3) + ' ' + (seen ? zkName(k) : '???'); ctx.font = fitFont(lb, cw - 14, 12); ctx.fillText(lb, x + cw / 2, y + ch - 12); }
+      if (seen && save.zukan[k] && save.zukan[k].nw) { rr(x + cw - 50, y + 8, 40, 18, 9); ctx.fillStyle = '#ff5a7a'; ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = font(11, 900); ctx.textAlign = 'center'; ctx.fillText('NEW', x + cw - 30, y + 21); }
       uiButtons.push({ x: x + 4, y: y + 4, w: cw - 8, h: ch - 8, fn: () => { if (zk.i === i) zk.grid = false; else zk.i = i; } });
     });
   } else drawZukanPage(list[zk.i], t);
@@ -4156,16 +4279,15 @@ function zkWrap(text, x, y, maxW, lh, f) {
 }
 function drawZukanPage(k, t) {
   const seen = zkGot(k), boss = String(k)[0] === 'B';
-  const i = zkList().indexOf(k);
   // 左: 大きな 絵
   rr(40, 74, 380, 396, 22); ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fill(); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 4; ctx.stroke();
   const rg = ctx.createRadialGradient(230, 300, 20, 230, 300, 200); rg.addColorStop(0, seen ? 'rgba(255,230,140,.35)' : 'rgba(120,120,160,.2)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(40, 74, 380, 396);
-  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(230, 420, 110, 18, 0, 0, 7); ctx.fill();
-  drawZkArt(k, 230, 420 + Math.sin(t * 2) * 3, boss ? 300 : 230, !seen, 350);
-  outlined('No.' + (i + 1), 80, 104, '#ffe14d', '#2a1a3a', 5, titleFont(20), 'left');
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(230, 430, 110, 18, 0, 0, 7); ctx.fill();
+  drawZkArt(k, 230, 430 + Math.sin(t * 2) * 3, boss ? 300 : 250, !seen, 350);
+  outlined(zkNo(k), 62, 106, '#ffe14d', '#2a1a3a', 5, titleFont(22), 'left');
   // 右: 文
-  const x = 450, w = VW - x - 36;
-  rr(x - 10, 74, w + 20, 396, 22); ctx.fillStyle = 'rgba(10,6,30,.55)'; ctx.fill();
+  const x = 452, w = VW - x - 40;
+  rr(x - 12, 74, w + 24, 396, 22); ctx.fillStyle = 'rgba(10,6,30,.6)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 2; ctx.stroke();
   if (!seen) {
     outlined('???', x + w / 2, 200, '#fff', '#2a1a3a', 7, titleFont(44));
     ctx.fillStyle = '#ffe9a8'; ctx.font = font(18, 800); ctx.textAlign = 'center'; ctx.fillText('まだ たおして いない', x + w / 2, 260);
@@ -4176,33 +4298,38 @@ function drawZukanPage(k, t) {
     return;
   }
   const z = save.zukan[k];
-  ctx.textAlign = 'left'; ctx.fillStyle = '#fff';
+  if (z.nw) { delete z.nw; writeSave(); }
+  // なまえ と しゅべつ
+  const [kind, kc] = zkKind(k);
+  ctx.font = font(15, 900); const kw = Math.max(70, ctx.measureText(T(kind)).width + 26);
+  rr(x + w - kw, 90, kw, 30, 15); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fill(); ctx.strokeStyle = kc; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.fillStyle = kc; ctx.textAlign = 'center'; ctx.fillText(kind, x + w - kw / 2, 111);
+  const nm = zkName(k);
+  outlined(nm, x, 116, '#fff', '#2a1a3a', 6, fitFont(nm, w - kw - 14, 30, titleFont), 'left');
+  let y = 140;
+  if (boss) { const bi = BINFO[+String(k).slice(1)] || {}; if (bi.title) { ctx.fillStyle = '#ffd84a'; ctx.font = font(14, 800); ctx.textAlign = 'left'; ctx.fillText('「' + bi.title + '」', x, y + 4); y += 14; } }
+  // ひとこと せつめい(2〜3ぎょう)
+  const lines = (isEN() ? ZK_DESC_EN[k] : ZK_DESC[k]) || [];
+  rr(x - 2, y + 4, w + 4, 108, 14); ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
+  let yy = y + 32; for (const ln of lines) yy = zkWrap(ln, x + 12, yy, w - 20, 25, font(16, 700));
+  y += 132;
+  const row = (lab, fn) => { ctx.fillStyle = '#9fe0ff'; ctx.font = font(14, 800); ctx.textAlign = 'left'; ctx.fillText(lab, x, y); ctx.fillStyle = '#fff'; y = fn(x + 104, y) + 38; };
   if (boss) {
-    const id = +String(k).slice(1), bi = BINFO[id] || {}, d = LEVELS[LV_BY_ID[id]] || {};
-    outlined(zkName(k), x, 112, '#fff', '#2a1a3a', 6, titleFont(28), 'left');
-    ctx.fillStyle = '#ffd84a'; ctx.font = font(15, 800); ctx.fillText((bi.title ? bi.title + '  ' : '') + '(' + (d.world ? 'ワールド' + d.world + ' ' : '') + (d.name || '') + ')', x, 142);
-    let y = 172;
-    const row = (lab, val) => { if (!val) return; ctx.fillStyle = '#9fe0ff'; ctx.font = font(14, 800); ctx.fillText(lab, x, y); ctx.fillStyle = '#fff'; y = zkWrap(val, x + 92, y, w - 96, 22, font(15, 700)) + 4; };
-    row('せいかく', bi.personality); row('すきな もの', bi.likes); row('くちぐせ', bi.catch ? '「' + bi.catch + '」' : ''); row('みため', bi.look);
-    if (bi.attacks && bi.attacks.length) row('こうげき', bi.attacks.map(a => String(a).split(/[:：]/)[0]).join('・'));
-    row('ひとこと', bi.after ? '「' + bi.after + '」' : '');
-    ctx.fillStyle = '#ffe14d'; ctx.font = font(16, 800); ctx.fillText('たおした かず: ' + (z.b || 0), x, 452);
-    return;
+    const id = +String(k).slice(1), d = LEVELS[LV_BY_ID[id]] || {};
+    row('でる ばしょ', (xx, yy2) => zkWrap((d.world ? stageLabel(d) + '  ' : '') + (d.name || ''), xx, yy2, w - 108, 22, font(15, 700)) - 22);
+    const bi = BINFO[id] || {};
+    if (bi.attacks && bi.attacks.length) row('わざ', (xx, yy2) => zkWrap(bi.attacks.map(a => String(a).split(/[:：]/)[0]).filter(a => !/^たいりょく/.test(a)).join('・'), xx, yy2, w - 108, 22, font(15, 700)) - 22);
+  } else {
+    const st = (zkStages && zkStages[k]) || [];
+    const place = st.length ? (st.length > 5 ? st.slice(0, 5).join('・') + ' ほか ' + (st.length - 5) + '面' : st.join('・')) : '—';
+    row('でる ばしょ', (xx, yy2) => zkWrap(place, xx, yy2, w - 108, 22, font(15, 700)) - 22);
+    const d = ENEMY[k] || {};
+    const tags = ZK_TOUGH.has(k) ? [['たおせない', '#c9b8ff']] : [[d.stomp ? 'ふめる' : 'ふめない', d.stomp ? '#7dff8a' : '#ff8a8a'], [d.sword ? 'けん ○' : 'けん ×', d.sword ? '#7dff8a' : '#ff8a8a'], ['スピン ○', '#7dff8a']];
+    row('たおしかた', (xx, yy2) => { tags.forEach(([tx, c], j) => { const bx = xx + j * 104; rr(bx, yy2 - 19, 96, 28, 12); ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = c; ctx.font = fitFont(tx, 86, 14); ctx.textAlign = 'center'; ctx.fillText(tx, bx + 48, yy2); ctx.textAlign = 'left'; }); return yy2 + 6; });
   }
-  const info = EINFO[k] || {}, d = ENEMY[k] || {};
-  outlined(zkName(k), x, 112, '#fff', '#2a1a3a', 6, titleFont(30), 'left');
-  let y = 160;
-  ctx.fillStyle = '#fff'; y = zkWrap(info.intro || 'ふしぎな いきもの。', x, y, w, 26, font(18, 700)) + 10;
-  ctx.fillStyle = '#9fe0ff'; ctx.font = font(15, 800); ctx.fillText('たおしかた', x, y); y += 26;
-  ctx.fillStyle = '#fff'; y = zkWrap(info.how || ((d.stomp ? 'ふめる' : 'ふめない') + '・' + (d.sword ? 'けんで たおせる' : 'けんは きかない')), x, y, w, 24, font(16, 700)) + 8;
-  // ふめる・けん・スピン の しるし
-  const tags = [[d.stomp ? 'ふめる' : 'ふめない', d.stomp ? '#7dff8a' : '#ff8a8a'], [d.sword ? 'けん ○' : 'けん ×', d.sword ? '#7dff8a' : '#ff8a8a'], ['スピン ○', '#7dff8a']];
-  tags.forEach(([tx, c], j) => { rr(x + j * 112, y, 104, 30, 12); ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = c; ctx.font = fitFont(tx, 94, 14); ctx.textAlign = 'center'; ctx.fillText(tx, x + j * 112 + 52, y + 20); ctx.textAlign = 'left'; });
-  y += 50;
-  const ws = zkWorlds && zkWorlds[k] ? [...zkWorlds[k]].sort((a, b) => a - b) : [];
-  ctx.fillStyle = '#9fe0ff'; ctx.font = font(15, 800); ctx.fillText('でてくる ワールド', x, y); y += 24;
-  ctx.fillStyle = '#fff'; ctx.font = font(16, 700); ctx.fillText(ws.length ? ws.map(n => n === 9 ? 'ほしのみち' : n === 10 ? 'おまけ' : n).join('・') : '—', x, y);
-  ctx.fillStyle = '#ffe14d'; ctx.font = font(16, 800); ctx.fillText('たおした かず: ' + (z.b || 0) + (ZK_TOUGH.has(k) ? '   にげきった かず: ' + (z.n || 0) : ''), x, 452);
+  ctx.fillStyle = '#ffe14d'; ctx.font = font(17, 800); ctx.textAlign = 'left';
+  ctx.fillText('たおした かず: ' + (z.b || 0) + (ZK_TOUGH.has(k) ? '   にげきった かず: ' + (z.n || 0) : ''), x, 452);
 }
 
 // ---------- そうさほうほう ----------
@@ -4244,7 +4371,7 @@ function drawHelp(t) {
     const sx = 140, sy = 120, sw = 680, sh = 382, k = sw / VW;
     rr(sx - 10, sy - 10, sw + 20, sh + 20, 26); ctx.fillStyle = '#20202a'; ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip(); drawBackground('grass', 0, t); ctx.restore();
-    const lab = { left: '◀ いどう', right: 'いどう ▶', up: '▲', down: '▼', attack: 'けん', jump: 'ジャンプ', dash: 'ダッシュ・もつ', spin: 'スピン' };
+    const lab = { left: '◀ いどう', right: 'いどう ▶', up: '▲ のぼる', down: '▼ しゃがむ', attack: 'けん', jump: 'ジャンプ', dash: 'ダッシュ・もつ', spin: 'スピン' };
     for (const [nm, b] of Object.entries(TOUCH)) {
       const x = sx + b.x * k, y = sy + b.y * k * (sh / (VH * k));
       ctx.beginPath(); ctx.arc(x, y, b.r * k, 0, 7); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2; ctx.stroke();
@@ -4256,7 +4383,7 @@ function drawHelp(t) {
     rr(sx + 150, sy + 62, 380, 92, 16); ctx.fillStyle = 'rgba(20,12,40,.72)'; ctx.fill();
     outlined('ボタンの みえかた', sx + 340, sy + 82, '#ffe9a8', '#2a1a3a', 4, fitFont('ボタンの みえかた', 340, 16));
     TOUCH_VIS_NAMES.forEach((nm, i) => button(sx + 162 + i * 122, sy + 100, 114, 42, nm, () => setTouchVis(i), { sel: touchVis === i, size: nm.length > 4 ? 14 : 17 }));
-    ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont('スマホは よこむき。ジャンプは ながおしで たかく。↓は ◀▶の 下を おす', 500, 15); ctx.textAlign = 'center'; ctx.fillText('スマホは よこむき。ジャンプは ながおしで たかく。↓は ◀▶の 下を おす', VW / 2, 526);
+    ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont('ジャンプは ながおしで たかく。▲は はしご・とびらの そばで でる', 560, 15); ctx.textAlign = 'center'; ctx.fillText('ジャンプは ながおしで たかく。▲は はしご・とびらの そばで でる', VW / 2, 526);
   } else if (p === 2) {
     const P0 = scene === 'help' && help.from === 'pause' && P ? P : null;
     const rows = [
@@ -5783,7 +5910,7 @@ function drawThing(o, t) {
       ctx.fillStyle = '#e8e0f0'; ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 4; rr(-48, -14, 96, 14, 4); ctx.fill(); ctx.stroke();
       ctx.scale(1, 1 - o.down * 0.7);
       ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(-40, -14); ctx.quadraticCurveTo(-40, -58, 0, -58); ctx.quadraticCurveTo(40, -58, 40, -14); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#fff'; ctx.beginPath(); for (let a = 0; a < 10; a++) { const r2 = a % 2 ? 6 : 14, an = -Math.PI / 2 + a * Math.PI / 5; ctx.lineTo(Math.cos(an) * r2, -34 + Math.sin(an) * r2); } ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.beginPath(); sparkPath(ctx, 0, -34, 15); ctx.fill();
       ctx.restore();
       if (!o.pressed && Math.random() < 0.1) sparkle(cx + rnd(-40, 40), o.y - 20, 1);
       break;
@@ -5797,7 +5924,7 @@ function drawThing(o, t) {
     }
     case 'star': {
       ctx.save(); ctx.translate(cx, o.y + o.h / 2 + Math.sin(t * 3) * 4); ctx.rotate(Math.sin(t * 2) * 0.12);
-      ctx.shadowColor = 'rgba(255,230,80,.9)'; ctx.shadowBlur = 20;
+      ctx.shadowColor = 'rgba(140,235,255,.9)'; ctx.shadowBlur = 20;
       drawImg('star', -26, -26, 52, 50); ctx.restore();
       break;
     }
@@ -6456,7 +6583,7 @@ function drawTouch() {
   };
   draw('left', '◀', touchKeys.left);
   draw('right', '▶', touchKeys.right);
-  draw('up', '▲', touchKeys.up);
+  if (upUseful() || touchKeys.up) draw('up', '▲', touchKeys.up);
   draw('down', '▼', touchKeys.down);
   draw('attack', 'けん', touchKeys.attack);
   draw('jump', 'ジャンプ', touchKeys.jump);
@@ -6768,7 +6895,7 @@ function drawNodeIcon(nd, kind, open, clr, t, d) {
     ctx.fillStyle = '#e8e0f0'; ctx.fillRect(-24, 4, 48, 14); ctx.strokeRect(-24, 4, 48, 14);
     ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 4, 20, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
     if (on) { ctx.save(); ctx.globalAlpha = 0.35 + Math.sin(t * 4) * 0.2; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, -2, 34, 0, 7); ctx.fill(); ctx.restore(); }
-    ctx.fillStyle = '#fff'; ctx.beginPath(); for (let a = 0; a < 10; a++) { const r2 = a % 2 ? 4 : 9, an = -Math.PI / 2 + a * Math.PI / 5; ctx.lineTo(Math.cos(an) * r2, -6 + Math.sin(an) * r2); } ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); sparkPath(ctx, 0, -6, 10); ctx.fill();
   } else if (kind === 'pipe') {
     // 近道の つつ(ひみつの ゴールで ひらく)
     ctx.fillStyle = '#5ac8a0'; ctx.fillRect(-16, -18, 32, 36); ctx.strokeRect(-16, -18, 32, 36);
@@ -6782,7 +6909,7 @@ function drawNodeIcon(nd, kind, open, clr, t, d) {
     ctx.save(); ctx.translate(0, -14 + Math.sin(t * 3) * 3); ctx.rotate(t); drawImg('ui_star', -11, -10, 22, 20); ctx.restore();
   } else if (kind === 'secret') {
     const r = 28; ctx.fillStyle = !open ? '#8a86a0' : clr ? '#ffd84a' : '#c78bff';
-    ctx.beginPath(); for (let a = 0; a < 10; a++) { const r2 = a % 2 ? r * 0.55 : r * 1.1, an = -Math.PI / 2 + a * Math.PI / 5; ctx.lineTo(Math.cos(an) * r2, Math.sin(an) * r2); } ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); sparkPath(ctx, 0, 0, r * 1.15); ctx.fill(); ctx.stroke();
   } else {
     // ふつうの 面: まるい マス。ひみつの ゴールが まだの 面は 赤、クリア済みは 金
     const r = 22, hasSec = d && d.secretGoal && !save.secret[nd.id];
@@ -7197,6 +7324,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && sce
 window.__game = {
   get scene() { return scene; }, get P() { return P; }, get world() { return world; }, get level() { return level; }, get save() { return save; }, get cam() { return cam; },
   startLevel, LEVELS, keys, pressed, touchKeys, WORLDS, BOSS_TYPES,
+  TOUCH, touchButtonAt: (p, prev) => touchButtonAt(p, prev), upUseful: () => upUseful(), touchShown: k => touchShown(k),
+  zk: { no: k => zkNo(k), kind: k => zkKind(k), DESC: ZK_DESC, DESC_EN: ZK_DESC_EN, ENEMIES: ZK_ENEMIES, BOSSES: ZK_BOSSES, beat: k => zukanBeat(k), get parts() { return parts; }, stages: () => (zkComputeWorlds(), zkStages) },
   goMap, playStory, get map() { return map; },
   toast(v) { toast = v; },
   get clearInfo() { return clearInfo; },
