@@ -1445,7 +1445,7 @@ const LEVELS = [
     },
   },
   {
-    id: 18, world: 4, num: '★', name: 'かぜの ひみつ島', theme: 'sky', bgm: 'bgm_1', time: 400, secret: true,
+    id: 18, world: 4, num: '✦', name: 'かぜの ひみつ島', theme: 'sky', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -1611,7 +1611,7 @@ const LEVELS = [
     },
   },
   {
-    id: 24, world: 5, num: '★', name: 'ゆうやけ ひみつの いわば', theme: 'dusk', bgm: 'bgm_1', time: 400, secret: true,
+    id: 24, world: 5, num: '✦', name: 'ゆうやけ ひみつの いわば', theme: 'dusk', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -1799,7 +1799,7 @@ const LEVELS = [
     },
   },
   {
-    id: 31, world: 6, num: '★', name: 'みどりの ひみつ園', theme: 'falls', bgm: 'bgm_1', time: 400, secret: true,
+    id: 31, world: 6, num: '✦', name: 'みどりの ひみつ園', theme: 'falls', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -1962,7 +1962,7 @@ const LEVELS = [
     },
   },
   {
-    id: 38, world: 7, num: '★', name: 'ほしぞらの ひみつ', theme: 'space', bgm: 'bgm_1', time: 400, secret: true,
+    id: 38, world: 7, num: '✦', name: 'ほしぞらの ひみつ', theme: 'space', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2136,7 +2136,7 @@ const LEVELS = [
     },
   },
   {
-    id: 45, world: 8, num: '★', name: 'ほしの ランプの へや', theme: 'space', bgm: 'bgm_1', time: 400, secret: true,
+    id: 45, world: 8, num: '✦', name: 'ほしの ランプの へや', theme: 'space', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2172,7 +2172,7 @@ const LEVELS = [
     },
   },
   {
-    id: 47, world: 1, num: '★', name: 'はらっぱの ひみつ', theme: 'grass', bgm: 'bgm_1', time: 400, secret: true,
+    id: 47, world: 1, num: '✦', name: 'はらっぱの ひみつ', theme: 'grass', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2215,7 +2215,7 @@ const LEVELS = [
     },
   },
   {
-    id: 49, world: 2, num: '★', name: 'こおりの ひみつ', theme: 'ice', bgm: 'bgm_1', time: 400, secret: true,
+    id: 49, world: 2, num: '✦', name: 'こおりの ひみつ', theme: 'ice', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2258,7 +2258,7 @@ const LEVELS = [
     },
   },
   {
-    id: 51, world: 3, num: '★', name: 'すなの ひみつ', theme: 'sand', bgm: 'bgm_1', time: 400, secret: true,
+    id: 51, world: 3, num: '✦', name: 'すなの ひみつ', theme: 'sand', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -3237,7 +3237,7 @@ function buildDaily(L, ds) {
   return { theme: th.theme, secs, W: x };
 }
 LEVELS.push({
-  id: DAILY_ID, world: 1, num: '★', daily: true, noExtend: true, noShards: true, noStars: true, name: '', label: '今日の1面', theme: 'grass', bgm: 'bgm_1', time: 600,
+  id: DAILY_ID, world: 1, num: '✦', daily: true, noExtend: true, noShards: true, noStars: true, name: '', label: '今日の1面', theme: 'grass', bgm: 'bgm_1', time: 600,
   build(L) {
     const d = L._def;
     // 中間から やりなおす ときは 同じ 日の 面(夜中の 12時を またいでも かわらない)

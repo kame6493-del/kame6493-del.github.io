@@ -53,7 +53,7 @@ const KIND_LABEL = { fort: 'とりで', ghost: 'おばけ', switch: 'しんで�
 WORLDS.forEach((W, wi) => {
   let n = 0;
   W.nodes.forEach(nd => { const d = LEVELS[LV_BY_ID[nd.id]]; if (!d) return; d.world = W.n; d.kind = d.kind || nd.kind || (d.boss ? 'boss' : 'normal'); nd.kind = d.kind; if (d.boss) nd.boss = true; d.num = KIND_LABEL[d.kind] || String(++n); });
-  for (const ex of W.extra || []) { const d = LEVELS[LV_BY_ID[ex.id]]; if (!d) continue; d.world = W.n; d.kind = d.kind || ex.kind || 'normal'; ex.kind = ex.kind || d.kind; d.num = ex.kind === 'secret' ? '★' : (KIND_LABEL[d.kind] || '★'); }
+  for (const ex of W.extra || []) { const d = LEVELS[LV_BY_ID[ex.id]]; if (!d) continue; d.world = W.n; d.kind = d.kind || ex.kind || 'normal'; ex.kind = ex.kind || d.kind; d.num = ex.kind === 'secret' ? '✦' : (KIND_LABEL[d.kind] || '✦'); }
   if (W.star) W.nodes.forEach((nd, k) => { const d = LEVELS[LV_BY_ID[nd.id]]; if (d) { d.label = (W.bonus ? 'おまけ' : 'ほし') + (k + 1); } });
 });
 for (const d of LEVELS) { if (d.tutorial) d.label = 'れんしゅう'; if (d.roam) d.label = 'バトル'; }
@@ -135,7 +135,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261016x';
+const SPRITE_V = '20261016y';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -4499,7 +4499,7 @@ function dailyShareText(res) {
   res = res || daily.last;
   if (!res) return '';
   const sq = res.row.map(v => ['🟩', '🟨', '🟥'][v] || '🟩').join('');
-  const st = '⭐'.repeat(res.stars) + '☆'.repeat(3 - res.stars), tm = dailyClock(res.time), ds = res.date || '';
+  const st = '💠'.repeat(res.stars) + '◇'.repeat(3 - res.stars), tm = dailyClock(res.time), ds = res.date || '';
   if (isEN()) return `Haru's Adventure Daily #${res.num} ${ds}
 ⏱ ${tm} ${st} try ${res.tries}
 ${sq}
@@ -6940,7 +6940,7 @@ function drawMap(t) {
     if (d && !open && kind === 'normal') drawFit('key', 0, 14, 26, false, 0.9);
     else if (i !== undefined && needsFull(i) && open) drawFit('chest', 0, 14, 28, false, 0.95);
     ctx.restore();
-    const label = n.shortcut !== undefined ? 'ワープの つつ' : n.bonus ? 'おまけの あな' : n.warp ? 'ほしの あな' : n.back ? 'かえりの あな' : kind === 'switch' ? PALACE_NAME[n.color] + 'の しんでん' : d ? (d.label || (d.kind === 'boss' ? d.world + '-しろ' : d.num === '★' ? '★' : stageLabel(d))) : '';
+    const label = n.shortcut !== undefined ? 'ワープの つつ' : n.bonus ? 'おまけの あな' : n.warp ? 'ほしの あな' : n.back ? 'かえりの あな' : kind === 'switch' ? PALACE_NAME[n.color] + 'の しんでん' : d ? (d.label || (d.kind === 'boss' ? d.world + '-しろ' : d.num === '✦' ? '✦' : stageLabel(d))) : '';
     outlined(label, n.x, n.y + 36, '#fff', '#2a1a3a', 5, titleFont(kind === 'switch' || n.warp || n.back ? 13 : 16));
     if (clr) {
       // クリアの しるし: 小さな 旗
@@ -6975,7 +6975,7 @@ function drawMap(t) {
   drawImg('ui_star', 16, 16, 30, 28); outlined(`${total}/${LEVELS.filter(d => !d.noStars).length * 3}`, 52, 31, '#ffe14d', '#2a1a3a', 5, titleFont(18), 'left');
   const next = PERKS.find(pk => total < pk.need);
   ctx.textAlign = 'left'; ctx.font = font(13, 800); ctx.fillStyle = '#fff';
-  { const nx = next ? `つぎの せいちょう ★${next.need}: ${next.name}` : 'せいちょう コンプリート!'; if (isEN()) ctx.font = fitFont(nx, 226, 13); ctx.fillText(nx, 16, 62); }
+  { const nx = next ? `つぎの せいちょう ✦${next.need}: ${next.name}` : 'せいちょう コンプリート!'; if (isEN()) ctx.font = fitFont(nx, 226, 13); ctx.fillText(nx, 16, 62); }
   drawImg('ui_coin', VW - 130, 16, 28, 28); outlined('×' + save.wallet, VW - 96, 31, '#fff', '#2a1a3a', 5, titleFont(18), 'left');
   // しんでんの スイッチ(おした 色)
   ['y', 'g', 'b', 'p'].forEach((c, i) => { ctx.save(); ctx.globalAlpha = save.palace[c] ? 1 : 0.25; ctx.fillStyle = PALACE_COL[c]; ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2; rr(VW - 130 + i * 26, 50, 20, 16, 5); ctx.fill(); ctx.stroke(); ctx.restore(); });
@@ -6988,7 +6988,7 @@ function drawMap(t) {
   rr(VW / 2 - 300, 404, 600, 56, 16); ctx.fillStyle = 'rgba(30,20,60,.72)'; ctx.fill();
   if (d) {
     const kindName = { fort: 'とりで', ghost: 'おばけやしき', switch: 'しんでん', boss: 'しろ', water: 'みずの なか', sky: 'そらの みち' }[d.kind] || '';
-    outlined((d.label ? d.label + '  ' : d.kind === 'switch' ? '' : d.num === '★' ? 'ひみつ ' : stageLabel(d) + '  ') + d.name, VW / 2, 424, '#fff', '#2a1a3a', 5, font(22));
+    outlined((d.label ? d.label + '  ' : d.kind === 'switch' ? '' : d.num === '✦' ? 'ひみつ ' : stageLabel(d) + '  ') + d.name, VW / 2, 424, '#fff', '#2a1a3a', 5, font(22));
     ctx.fillStyle = '#ffe9a8'; ctx.font = font(14, 700); ctx.textAlign = 'center';
     const best = save.best[id], sh = shardCount(id);
     ctx.fillText(!isOpenId(id) ? 'まだ みちが ひらいていない' : needsFull(i) ? '完全版で あそべます' : (kindName ? '[' + kindName + ']  ' : '') + (best ? 'ベスト ' + best : 'はじめての ステージ') + '  かけら ' + sh + '/5' + (d.secretGoal && isCleared(id) && !save.secret[id] ? '  ・ひみつの ゴールが あるらしい…' : ''), VW / 2, 448);

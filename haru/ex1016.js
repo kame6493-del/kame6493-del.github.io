@@ -217,7 +217,7 @@ for (const k in XE) for (let f = 0; f < 3; f++) XART.push('xe_' + k + '_' + f);
 const XG_ART = ['g_bumper_0', 'g_bumper_1', 'g_tree_0', 'g_tree_1', 'g_paint_0', 'g_paint_1', 'g_pend', 'g_raft', 'g_fall_0', 'g_fall_1', 'g_qsand', 'g_elev',
   'g_piston_head', 'g_piston_rod', 'g_mortar', 'g_mshell', 'g_sidespring', 'g_thunder', 'g_bolt', 'g_ring', 'g_bell_0', 'g_bell_1', 'g_flip_0', 'g_flip_1', 'g_rspike',
   'g_honey', 'g_inflate_0', 'g_inflate_1', 'g_rocket', 'g_phantom'];
-const XV = '20261016x2';
+const XV = '20261016y';
 for (const n of [...XART, ...XG_ART]) {
   const im = new Image();
   im.onload = () => { if (im.naturalWidth) ART[n] = im; };
@@ -1063,8 +1063,12 @@ if (typeof EN_DICT !== 'undefined') Object.assign(EN_DICT, {
   'たたくと 敵が 5びょう ねむる': 'Ring it and enemies sleep for 5 seconds', 'うらがえると トゲ。ゆれたら 合図': 'Spikes when flipped. It shakes first', 'でたり ひっこんだり。リズムを よんで': 'Read the rhythm',
   'べたべたで おそくなる': 'Sticky and slow', 'しぼむと のれない': "Can't stand on it when it shrinks", 'のって まつと 上へ とびあがる': 'Stand and wait to blast off', 'ちかくに いる ときだけ 見えて のれる': 'Only solid when you are near',
   'のったら すぐ とびうつる': 'Jump off quickly!', 'ちゅうボス! 3かい ふむ': 'Mini boss! Stomp it 3 times', 'ちゅうボス! うしろか 上から': 'Mini boss! Hit from behind or above',
+  'ちゅうボス! こおりの なみは ジャンプで': 'Mini boss! Jump over the ice waves', 'ちゅうボス! 見えている ときに ふむ': 'Mini boss! Stomp it while it is visible',
+  'ちゅうボス! おもちに 気をつけて': 'Mini boss! Watch out for the mochi', 'カーン…': 'Clang...',
   'ぜんぶ ぬれた!': 'All painted!', 'とびらが ひらいた': 'The gate opened', 'ねむりの かね!': 'Sleep Bell!', '敵が 5びょう ねむる(トゲの 敵も ふめる)': 'Enemies sleep 5 sec (even spiky ones can be stomped)',
 });
+// 中ボスの のこりの 数(あと 3 → 3 more)。2026-10-16 夜 英語版で 日本語が 出ていた
+if (typeof EN_PAT !== 'undefined') EN_PAT.unshift([/^あと (\d+)$/, m => m[1] + ' more']);
 // しかけの 区間を 組む。x から はじめて 次の x を かえす
 function xSections(S, L) {
   // 上の HUD に かからない よう、高さは 3行目より 下に(見切れ対策)
