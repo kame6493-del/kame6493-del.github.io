@@ -1052,7 +1052,7 @@ function makeCard(sc, r, badges) {
   if (IMG.logo) { const im = IMG.logo, h = 132, w = h * im.naturalWidth / im.naturalHeight; ctx.drawImage(im, (W - w) / 2, 6, w, h); }
   else { logoTxt('らくがき', W / 2 - 110, 100, 64, '#ffffff'); logoTxt('運', W / 2 + 70, 104, 74, '#e2483d'); logoTxt('動', W / 2 + 150, 108, 74, '#ffd54f'); logoTxt('会', W / 2 + 230, 102, 74, '#35b8e8'); }
   // コースの札
-  ctx.font = `bold 30px ${FONT}`; const ctext = sc.mode === 'ta' ? `${r.course}・タイムアタック` : sc.ents.length === 6 ? `${r.course}(6匹)` : `${r.course}・3人対戦`;
+  ctx.font = `bold 30px ${FONT}`; const ctext = sc.mode === 'ta' ? `${r.course}・タイムアタック` : (sc.mode === 'solo' || sc.mode === 'gallery' && sc.ents.length !== 3) ? `${r.course}(${sc.ents.length}匹)` : `${r.course}・${sc.ents.length}人対戦`;
   const cw = ctx.measureText(ctext).width + 40; ctx.fillStyle = '#ffffff'; roundRect(ctx, (W - cw) / 2, 140, cw, 46, 23); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#19263d'; ctx.stroke();
   ctx.fillStyle = '#19263d'; ctx.fillText(ctext, W / 2, 174);
   // 順位
