@@ -18,11 +18,17 @@ POSTS = [
     ('06_社会福祉士の科目ごとの問題数.md', 'shakai-subject-counts', '2026-10-07'),
     ('07_国試5つの既卒の合格率.md', 'kisotsu-pass-rates', '2026-10-08'),
     ('08_精神保健福祉士の科目ごとの問題数.md', 'seishin-subject-counts', '2026-10-09'),
+    ('09_介護福祉士第39回に向けた過去問の回し方.md', 'kaigo-39-kakomon', '2026-10-17'),
+    ('10_臨床検査技師の画像問題の勉強のしかた.md', 'rinsho-gazou-mondai', '2026-10-17'),
+    ('11_管理栄養士の苦手科目のつぶし方.md', 'kanri-nigate-kamoku', '2026-10-17'),
+    ('12_理学療法士の過去問は何回分解くか.md', 'pt-kakomon-nankaibun', '2026-10-17'),
 ]
 
 def banner(slug):
     """国試の記事だけ、iPhone の Safari で上に出る App Store のバナーを付ける(まとめ版ニガテ帳)。"""
-    if slug.startswith(('kokushi', 'kaigo', 'kanri', 'shakai', 'kisotsu', 'seishin')):
+    if slug.startswith('rinsho'):
+        return '<meta name="apple-itunes-app" content="app-id=6818536142">\n'
+    if slug.startswith(('kokushi', 'kaigo', 'kanri', 'shakai', 'kisotsu', 'seishin', 'pt-')):
         return '<meta name="apple-itunes-app" content="app-id=6818535389">\n'
     return ''
 
@@ -32,14 +38,26 @@ def banner(slug):
 APP_URL = {
     'kaigo': 'https://apps.apple.com/jp/app/id6818535389?ppid=a40c3453-5460-4911-b67d-c67c16387fc0',
     'kanri': 'https://apps.apple.com/jp/app/id6818535389?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5',
+    'pt': 'https://apps.apple.com/jp/app/id6818535389?ppid=c66bda58-4649-4a61-8f7e-c97e17cb7081',
 }
+RINSHO_URL = 'https://apps.apple.com/jp/app/id6818536142'
 
 
 def app_box(slug):
     if not banner(slug):
         return ''
+    if slug.startswith('rinsho'):
+        # 臨床検査技師は別のアプリ(ニガテ帳 臨床検査技師)
+        return ('<aside class="appbox"><p class="ab-t">臨床検査技師の過去問を、間違えた問題だけ残して解ける iPhone アプリ</p>'
+                '<p>「ニガテ帳 臨床検査技師」で、第68回〜第72回の過去問を解けます。別冊の写真や図も画像で入っています。'
+                '間違えた問題は「苦手」として残り、2回続けて正解すると消えます。</p>'
+                f'<a class="ab-b" href="{RINSHO_URL}"><img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44"></a>'
+                f'<p class="ab-u"><a href="{RINSHO_URL}">apps.apple.com/jp/app/id6818536142</a></p>'
+                '<p class="ab-a">Android 版はテスト中です(<a href="/#tester">テスターの募集はこちら</a>)。</p>'
+                '<p class="ab-tm">Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。App Store は Apple Inc. のサービスマークです。</p>'
+                '</aside>' + chr(10))
     url = APP_URL.get(slug.split('-')[0], 'https://apps.apple.com/jp/app/id6818535389')
-    lead = ('この試験の過去問を、間違えた問題だけ残して解ける iPhone アプリ' if slug.split('-')[0] in ('kaigo', 'kanri', 'shakai', 'seishin')
+    lead = ('この試験の過去問を、間違えた問題だけ残して解ける iPhone アプリ' if slug.split('-')[0] in ('kaigo', 'kanri', 'shakai', 'seishin', 'pt')
             else '国家試験の過去問を、間違えた問題だけ残して解ける iPhone アプリ')
     return (f'<aside class="appbox"><p class="ab-t">{lead}</p>'
             '<p>「ニガテ帳」で、介護福祉士・管理栄養士・理学療法士・社会福祉士・精神保健福祉士の過去問を解けます。'

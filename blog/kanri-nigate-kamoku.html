@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか｜YURU 開発日記</title>
+<meta name="description" content=" 管理栄養士の国家試験には、科目ごとの足切りがありません。第40回の合格基準は、1問1点の200点満点で総合点120点以上、それだけです。介護福祉士のように「1科目でも0点なら不合格」という決まりはないので、極端な話、苦">
+<link rel="canonical" href="https://kame6493-del.github.io/blog/kanri-nigate-kamoku.html">
+<meta name="apple-itunes-app" content="app-id=6818535389">
+<meta property="og:title" content="管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか">
+<meta property="og:description" content=" 管理栄養士の国家試験には、科目ごとの足切りがありません。第40回の合格基準は、1問1点の200点満点で総合点120点以上、それだけです。介護福祉士のように「1科目でも0点なら不合格」という決まりはないので、極端な話、苦">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<style>
+  :root { --bg: #f4f4f1; --card: #fff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc; --link: #1b3a8a; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121211; --card: #1d1d1b; --ink: #f1f1ec; --sub: #a3a39c; --line: #33332f; --link: #8fb0ff; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.85 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
+  article { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; }
+  h1 { font-size: 23px; line-height: 1.45; margin: 0 0 6px; }
+  .date { color: var(--sub); font-size: 13px; margin: 0 0 20px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+  a { color: var(--link); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; display: block; overflow-x: auto; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; white-space: nowrap; }
+  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+  nav { margin: 0 0 16px; font-size: 14px; }
+  img { max-width: 100%; height: auto; border-radius: 10px; }
+  .appbox { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 20px 0 0; font-size: 15px; line-height: 1.7; }
+  .appbox p { margin: 0 0 8px; }
+  .ab-t { font-weight: 700; }
+  .ab-b { display: inline-flex; padding: 11px; margin: -3px 0 -11px -11px; line-height: 0; }
+  .ab-b img { height: 44px; width: auto; border-radius: 0; }
+  .ab-u { font-size: 12.5px; word-break: break-all; } .ab-u a { color: var(--sub); }
+  .ab-a { font-size: 13px; color: var(--sub); }
+  .ab-tm { font-size: 11px; color: var(--sub); margin: 10px 0 0 !important; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="../">← アプリ一覧へ</a></nav>
+<article>
+<h1>管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか</h1>
+<p class="date">2026-10-17 ・ <a href="https://x.com/apkderete">@apkderete</a></p>
+<p>管理栄養士の国家試験には、科目ごとの足切りがありません。第40回の合格基準は、1問1点の200点満点で総合点120点以上、それだけです。介護福祉士のように「1科目でも0点なら不合格」という決まりはないので、極端な話、苦手な科目がひとつ残っていても、ほかで取れていれば受かります。</p>
+<p>だからこそ、苦手科目をどこまで追いかけるかは自分で決めることになります。過去問アプリを作るときに第36回から第40回の5回分、1,000問をデータに入れたので、そこから数えた事実をもとに、苦手科目のつぶし方を考えてみます。</p>
+<h2>科目ごとの問題数は5回とも同じ</h2>
+<p>まず、科目ごとの問題数は、第36回から第40回まで5回ともまったく同じでした。いちばん多いのは応用力試験の30問。次が人体の構造と機能及び疾病の成り立ちと、臨床栄養学の26問ずつ。食べ物と健康が25問、給食経営管理論が18問、社会・環境と健康、応用栄養学、公衆栄養学が16問ずつ、基礎栄養学が14問、栄養教育論が13問です。くわしくは<a href="kanri-subject-counts.html">前に書いた記事</a>に図で載せています。</p>
+<p>人体と臨床栄養学と応用力試験の3つを足すと82問で、200問の4割を超えます。いっぽう、栄養教育論と基礎栄養学を足しても27問です。</p>
+<p>問い方も揃っていて、「最も適当なのはどれか」が各回150問から156問。「誤っているのはどれか」は各回11問から14問と少なめでした。図や表を使う問題は第36回の14問から、第37回22問、第38回26問、第39回25問、第40回27問と増えています。</p>
+<h2>どの苦手から手をつけるか</h2>
+<p>まず第40回を通しで解いて、科目ごとの正答率を出します。苦手科目というと「感覚的に嫌いな科目」を思い浮かべがちですが、ここでは数字で決めたほうが迷いません。</p>
+<p>足切りがない試験では、点の伸びしろは「問題数 ×(6割 − いまの正答率)」くらいで考えられます。たとえば、26問の臨床栄養学が正答率4割なら、6割まで上げると5点くらい増えます。13問の栄養教育論が同じ4割から6割になっても、増えるのは3点くらい。同じくらい苦手なら、問題数の多い科目から手をつけたほうが総合点は動きます。</p>
+<p>ただ、応用力試験だけは別に考えたほうがいいと思います。30問ありますが、中身は事例を読んで、臨床栄養学や給食経営管理論、公衆栄養学などの知識を使って答える問題です。応用力試験で間違えた問題は、その問題がどの科目の知識を聞いていたのかを確かめて、元の科目の苦手として数えるほうが、何を覚え直せばいいかがはっきりします。</p>
+<h2>つぶし方</h2>
+<p>苦手科目が決まったら、その科目だけを5回分まとめて解きます。人体なら26問 × 5回で130問。回の順に全科目を解くより、同じ科目を続けて解くほうが、毎回どのあたりが聞かれているかが見えてきます。</p>
+<p>間違えた問題には、なぜ間違えたかを短く書いておきます。知らなかったのか、知っていたのに読み違えたのか、2つまで絞って外したのか。知らなかった問題はテキストに戻る、読み違えた問題は問題文の読み方を直す、2択で外した問題は2つの選択肢の違いを言えるようにする、と直し方が変わるからです。「誤っているのはどれか」の問題は数が少ないぶん、「最も適当なのは」のつもりで読んでしまいやすいので、読み違いの欄に入っていないかも見ておくといいと思います。</p>
+<p>解き直しは、解説を読んだ直後ではなく、日を空けてからにします。直後に解くとほぼ必ず正解するので、覚えたかどうかがわかりません。翌日か数日後にもう一度解いて、2回続けて正解したらリストから外す。リストが短くなっていくのが、そのまま苦手がつぶれていく様子になります。</p>
+<p>最後に、古い回の問題には、その後に基準や制度が改められて今の正解と合わなくなっているものもあり得ます。気になる問題は新しいテキストや厚生労働省の資料で確かめてから覚えてください。</p>
+<p>第41回の試験は2027年2月28日(日)です。</p>
+<h2>出どころ</h2>
+<p>第40回の合格基準(総合点120点以上/200点)と合格率は、厚生労働省の<a href="https://www.mhlw.go.jp/content/10904750/001677805.pdf">第40回管理栄養士国家試験の結果について(PDF)</a>、第41回の試験日は<a href="https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/kanrieiyoushi/">管理栄養士国家試験</a>のページから取りました。2026年10月17日に開いて確かめました。</p>
+<p>科目ごとの問題数、問い方、図や表の問題の数は、厚生労働省が公表した第36〜40回の問題(たとえば<a href="https://www.mhlw.go.jp/content/10900000/001663681.pdf">第40回午前の問題(PDF)</a>)をアプリに入れたデータから数えたものです。科目は問題冊子の区分に合わせ、問い方は問題文の言葉で数えました。伸びしろの計算は考え方を示すためのたとえで、実際の点の増え方を約束するものではありません。私の入力や数え方に誤りがある可能性はあります。気づいたことがあれば X(@apkderete)で教えてください。</p>
+<p>第40回の問題は、正答と解説つきで1問ずつ置いています。<a href="https://yurustudio.github.io/q/kanri/40/">管理栄養士 第40回の過去問と解説</a> / <a href="https://yurustudio.github.io/exam/kanri/">第41回の日程と合格基準</a></p>
+<p>iPhone の過去問アプリ「ニガテ帳」では、科目ごとの正答率が出て、科目をしぼって解くこともできます。</p>
+</article>
+<aside class="appbox"><p class="ab-t">この試験の過去問を、間違えた問題だけ残して解ける iPhone アプリ</p><p>「ニガテ帳」で、介護福祉士・管理栄養士・理学療法士・社会福祉士・精神保健福祉士の過去問を解けます。間違えた問題は「苦手」として残り、2回続けて正解すると消えます。</p><a class="ab-b" href="https://apps.apple.com/jp/app/id6818535389?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5"><img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44"></a><p class="ab-u"><a href="https://apps.apple.com/jp/app/id6818535389?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5">apps.apple.com/jp/app/id6818535389</a></p><p class="ab-a">Android 版はテスト中です(<a href="/#tester">テスターの募集はこちら</a>)。</p><p class="ab-tm">Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。App Store は Apple Inc. のサービスマークです。</p></aside>
+<div class='admax' style='margin:48px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
+<div class="xfollow" style="margin:24px auto 8px;padding:8px 12px;max-width:560px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;font-size:14px;line-height:1.5;text-align:center"><style>@media print{.xfollow{display:none!important}}</style><span>新しいアプリやゲームの話は X で → <a href="https://x.com/apkderete" target="_blank" rel="noopener" style="color:inherit;font-weight:700">@apkderete</a></span><a href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener" style="display:inline-block;padding:4px 14px;border-radius:999px;background:#0f1419;color:#fff;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">X でフォロー</a></div>
+</main>
+</body>
+</html>
