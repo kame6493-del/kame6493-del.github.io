@@ -2520,7 +2520,7 @@ const LEVELS = [
   },
   // ---- そらの みち(強制スクロール) ----
   {
-    id: 59, world: 4, kind: 'sky', auto: 78, noExtend: true, name: 'あらしの そらの みち', theme: 'storm', bgm: 'bgm_2', time: 400,
+    id: 59, world: 4, kind: 'sky', auto: 115, auto2: 135, noExtend: true, name: 'あらしの そらの みち', theme: 'storm', bgm: 'bgm_2', time: 400,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2531,7 +2531,7 @@ const LEVELS = [
       x = S.movers(x, 3, { top: 9, star: true });
       x = S.clouds(x, 5, { top: 8, en: [[8, 'bat', { y: 4 }]] });
       x = S.run(x, 6, { top: 9, cp: 2 });
-      x = S.rail(x, 16, { top: 9 });
+      x = S.rail(x, 16, { top: 9, sp: 190 });  // 強制スクロールが 速く なったので せんろも 速く(2026-10-16 夜)
       x = S.clouds(x, 6, { en: [[6, 'bee', { v: 'dive', y: 3 }], [16, 'bee', { y: 5 }]] });
       x = S.windGap(x, 5, { top: 9, star: true, starY: 4 });
       x = S.run(x, 6, { top: 9, cp: 2 });
@@ -2546,7 +2546,7 @@ const LEVELS = [
     },
   },
   {
-    id: 61, world: 7, kind: 'sky', auto: 84, noExtend: true, name: 'ほうき星の ながれ', theme: 'space', bgm: 'bgm_3', time: 400,
+    id: 61, world: 7, kind: 'sky', auto: 120, auto2: 140, noExtend: true, name: 'ほうき星の ながれ', theme: 'space', bgm: 'bgm_3', time: 400,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2558,7 +2558,7 @@ const LEVELS = [
       x = S.run(x, 6, { cp: 2 });
       x = S.cannon(x, 9, {});
       x = S.comets(x, 20, { high: true, blocks: true });
-      x = S.rail(x, 16, { star: true });
+      x = S.rail(x, 16, { star: true, sp: 190 });
       x = S.run(x, 6, { cp: 2 });
       x = S.moon(x, 3, { step: true });
       x = S.clouds(x, 6, { top: 9, en: [[8, 'bat', { y: 5 }]] });

@@ -300,13 +300,16 @@ function sfx(n, rate = 1) {
   const now = actx.currentTime;
   if (sfxLast[n] !== undefined && now - sfxLast[n] < 0.04) return;
   sfxLast[n] = now;
-  const s = actx.createBufferSource();
-  s.buffer = sfxBuf[n];
-  s.playbackRate.value = rate;
-  const g = actx.createGain();
-  g.gain.value = VOL[n] ?? 0.6;
-  s.connect(g).connect(actx.destination);
-  s.start();
+  // 音で 例外が 出ても ゲームは 止めない(playbackRate に NaN を 入れると TypeError)
+  try {
+    const s = actx.createBufferSource();
+    s.buffer = sfxBuf[n];
+    s.playbackRate.value = Number.isFinite(rate) ? clamp(rate, 0.1, 8) : 1;
+    const g = actx.createGain();
+    g.gain.value = VOL[n] ?? 0.6;
+    s.connect(g).connect(actx.destination);
+    s.start();
+  } catch (e) { guardErr('sfx ' + n, e); }
 }
 // ---------- BGM(2026-10-13 作り直し) ----------
 // 曲は assets/bgm/<場面>.mp3(OpenGameArt の CC0。一覧と ループの 区間は assets/bgm/bgm_list.json)。
@@ -711,7 +714,7 @@ function startLevel(idx, fromCheckpoint = false) {
     if (save.bag.jet > 0) { save.bag.jet--; P.jetT = 20; used.push('ジェットつばさ'); }
     if (used.length) { writeSave(); toast = { text: toast ? toast.text : '', sub: 'つかった: ' + used.join('・'), t: 3.2 }; }
   }
-  if (def.auto) { world.auto = { x: fromCheckpoint && keep && keep.cp ? Math.max(0, keep.cp.x - 200) : 0, sp: def.auto }; }
+  if (def.auto) { world.auto = { x: fromCheckpoint && keep && keep.cp ? Math.max(0, keep.cp.x - 200) : 0, sp: def.auto, sp0: def.auto, sp1: def.auto2 || def.auto }; }
   cam.fx = undefined; cam.lookT = undefined; camSnap();
   parts = [];
   scene = 'play';
@@ -4163,6 +4166,88 @@ const ZK_DESC_EN = {
   B44: ['Throws shadow waves along the ground and copies Haru\'s moves with a delay.', 'It wobbles after a big jump. Strike then.'],
 };
 
+// ずかんの「せいかく・くらし」(2026-10-16 夜 持ち主「性格とか生態とか」)。ゲームの 中の せってい。うごきの 説明(ZK_DESC)と くいちがわない ように 書く
+const ZK_LORE = {
+  goomy: 'いつも おこった かおを しているけど、じつは おなかが すいている だけ。くさの みを さがして くさはらを あるきまわる。ひるねを じゃまされると、もっと ぷんぷん。',
+  shell: 'のんびりやで、いちにちに すすむのは ほんの すこし。たかい ところが こわいので、がけの はしで すぐ もどる。こうらの なかは ひんやりして きもちが いいらしい。',
+  slime: 'スライム大王の けらい。あさつゆを のんで ぷるぷるの からだを たもつ。なかまと くっついて 大きく なるのが ちょっとした じまん。',
+  bee: 'はなの みつを あつめる はたらきもの。じょおうバチの ために まいにち いっしょうけんめい とぶ。ひかる ピピを はなと まちがえて ついてくる ことも。',
+  bat: 'ひるまは さかさまに ぶらさがって ぐっすり。くらい ところが すきで、うごく ものを みると つい おいかけたく なる。まぶしい ひかりは ちょっと にがて。',
+  spiky: 'せなかの トゲは じまんの おしゃれ。まいあさ 1ぽんずつ ととのえる。うえに のられるのが いちばん きらい。',
+  plant: 'うえきばちで くらす くいしんぼうの はな。おひさまと おみずと、とおりかかる ものを かじるのが だいすき。ひを はく なかまは からい ものが すき。',
+  turret: 'むかしの とりでを まもっていた まじめな ほうだい。もちぬしが いなく なっても、きょうも たまを うちつづける。うえに のられても あまり きに しない。',
+  skeleton: 'たてと けんを たいせつに する きしの ほね。まいあさ ほねを ピカピカに みがく。なげた ほねは あとで ちゃんと ひろいに いく。',
+  firespirit: 'じっと して いられない ほのおの こ。さむいのが にがてで、はねて からだを あたためる。もこりゅうの ごはんに されないか いつも びくびく。',
+  bomb: 'せなかの ぜんまいを まいて もらうのが だいすき。あるくのは とくいだけど、とまるのは にがて。ひが つくと、じぶんでも とても あわてる。',
+  eye: 'そらから なんでも みている みはりやさん。ずっと めを あけて いるので、すぐ なみだが こぼれる。めぐすりが ほしいと おもっている。',
+  beetle: 'おおカブトの こぶん。おやぶんに あこがれて、まいにち とっしんの れんしゅうを している。かたい からと きの みつが じまん。',
+  wizard: 'まほうの ほんを よみすぎて、きえたり あらわれたり する くせが ついた おじいさん。おやつの じかんだけは ぜったいに わすれない。',
+  fish: 'みずの なかから そらを みあげるのが すきな さかな。いつか くもに とどくまで とびたいと おもっている。なかまと ジャンプの たかさを きそっている。',
+  orb: 'でんきで できた ふしぎな たま。きまった みちを まわるのが だいすきで、ほかの ことには きょうみが ない。さわると しびれるので、ともだちは すくない。',
+  ghost: 'はずかしがりの おばけ。みられると かたまって しまうけど、せなかを むけると そっと ついてくる。ほんとうは なかよく したいのかも。',
+  mogura: 'つちの なかで くらす もぐら。まぶしいのが にがてで、ふだんは もぐって いる。おいしい においが すると、がまん できずに とびだす。',
+  nageko: 'たかい ところが おきにいりの いたずらっこ。きのみを なげるのが とくいで、あたると とても よろこぶ。じぶんで たべる ぶんは ちゃんと とっておく。',
+  kumo: 'いとを はって、さかさまに ぶらさがって ひるねする くも。いとの つよさが じまん。トゲが あるので、だっこは できない。',
+  fugu: 'みずの なかを のんびり およぐ ふぐ。びっくりすると ぷくっと ふくらんで、そのあと ちょっと はずかしそう。',
+  oobake: 'おばけやしきで いちばん 大きな おばけ。かべを すりぬけて やしきを さんぽ するのが にっか。ちらりんたちの おやぶんで、やっぱり みられると かたまる。',
+  suberin: 'こおりの うえを おなかで すべるのが だいすきな ペンギン。とまりかたは まだ れんしゅうちゅう。さかなが だいこうぶつ。',
+  kororin: 'ゆきだまを ころがすのが しゅみの ゆきだるま。せかいいち 大きな ゆきだまを つくるのが ゆめ。あたたかい ひは すこし やせる。',
+  hotarun: 'くらい どうくつで おしりを ひからせる ホタル。ピピの ひかりを みて、かってに ライバルだと おもっている。ひかりの つよさは まけない つもり。',
+  bukugani: 'あわを ぶくぶく ふくのが とくいな カニ。なかまと あわの 大きさを くらべっこ している。まえに すすみたい ときも つい よこに あるく。',
+  B46: 'ぷるんたちの おうさまで、せかいいちの くいしんぼう。すきな ものは あまい もの・ゼリー・おにぎり。ひかる かけらを あめだまだと おもって いた。',
+  B8: 'いばりんぼの よるの あるじ。でも ほんとうは くらやみが こわくて、つえの ランタンは ねる ときも はなさない。ほめられると すぐ ごきげん。',
+  B58: 'すなの とりでの きどりや。いつも ハンカチで ほねを ピカピカに みがいている。すきな ものは すなどけいと こうちゃ。ほねに すなが つくと おこる。',
+  B12: 'くろい かげに のまれた まおう。いつもの いばりも、ランタンの ひも きえて しまった。ときどき なかで ほんものの まおうが あばれている。',
+  B17: 'あらしの こうげんの ちからじまん。すきな ものは うでずもうと きの みつ。まけずぎらいだけど、まけたら すなおに みとめる さっぱりや。',
+  B21: 'いわの とりでの なきむしな きょじん。ちからは つよいのに、すぐ ないて しまう。ちいさな はなと ハンカチが たからもの。',
+  B23: 'やかたの はずかしがりな あるじ。かおを みられるのが こわくて、いつも ベールで かくしている。ろうそくの ちいさな ひと、ないしょばなしが すき。',
+  B30: 'キラキラが だいすきな わがままな じょおう。かけらで じぶんだけの かんむりを つくりたかった。はちみつと ほめことばに よわい。',
+  B62: 'つきの とりでの ねぼすけ。まくらを だいて、たたかいの とちゅうでも うとうと。かけらは まくらに ちょうど いいと おもっている。',
+  B37: 'まばたきを しない きまじめな みはりばん。きそくと じかんどおりが いちばん すき。きちんと ならんだ せいざを みると ほっと する。',
+  B64: 'かげの とりでの おしゃべりな もんばん。ないしょの はなしも すぐ もらして しまう。あしもとの かげまで べつに しゃべる。',
+  B44: 'ランプの したで うまれた かげ。つよがって いるけど、ほんとうは ずっと さみしくて、だれかに みて ほしかった。',
+};
+const ZK_LORE_EN = {
+  goomy: 'It always looks angry, but most of the time it is just hungry. It wanders the meadows hunting for seeds, and gets even grumpier if you wake it from a nap.',
+  shell: 'A laid-back turtle that barely gets anywhere in a day. Heights scare it, so it turns around at every ledge. They say it is nice and cool inside the shell.',
+  slime: 'A loyal servant of the Slime King. It sips morning dew to stay wobbly, and is quietly proud of growing big by sticking to its friends.',
+  bee: 'A hard worker that gathers nectar for the Queen Bee every single day. Sometimes it mistakes glowing Pipi for a flower and follows along.',
+  bat: 'Sleeps upside down all day. It loves the dark and just has to chase anything that moves. Bright light makes it squint.',
+  spiky: 'Its spikes are its pride and joy, and it fixes them one by one every morning. Being stood on is the thing it hates most.',
+  plant: 'A hungry flower that lives in a pot. It loves sunshine, water, and nibbling on whoever walks by. The fire-breathing ones like spicy food.',
+  turret: 'A serious cannon that once guarded an old fort. Its owner left long ago, but it keeps firing anyway. It does not really mind being stood on.',
+  skeleton: 'A knight made of bones who treasures its shield and sword. It polishes its bones every morning, and always goes back for the bones it throws.',
+  firespirit: 'A little flame that can never sit still. It hates the cold and hops to keep warm. It is always nervous that Moko might eat it for lunch.',
+  bomb: 'Loves having the key on its back wound up. Great at walking, terrible at stopping. When its fuse is lit, it panics even more than you do.',
+  eye: 'A lookout that watches everything from the sky. It never closes its eye, so tears keep spilling out. It really wishes it had eye drops.',
+  beetle: 'A follower of the Great Beetle. It practices charging every day to be just like its boss, and is proud of its hard shell and its tree sap.',
+  wizard: 'An old man who read so many spell books that he picked up a habit of vanishing and reappearing. He never, ever forgets snack time.',
+  fish: 'A fish that loves gazing at the sky from underwater. It dreams of jumping all the way to the clouds, and has jumping contests with its friends.',
+  orb: 'A strange ball made of electricity. It loves going around the same path and cares about nothing else. It zaps whoever touches it, so it has few friends.',
+  ghost: 'A shy ghost. It freezes when someone looks at it, but sneaks closer when you turn away. Maybe it just wants to be friends.',
+  mogura: 'A mole that lives underground. It dislikes bright light and usually stays buried, but when something smells tasty it just has to pop out.',
+  nageko: 'A little prankster that loves high places. It is great at throwing nuts and gets very excited when one hits. It always saves some to eat later.',
+  kumo: 'A spider that naps upside down on its own thread. It is proud of how strong its silk is. Too spiky for hugs.',
+  fugu: 'A puffer fish that swims lazily underwater. When startled it puffs right up, and then looks a little embarrassed.',
+  oobake: 'The biggest ghost in the haunted house. It takes a daily stroll straight through the walls. It is boss of the Peekaboos, and it too freezes when watched.',
+  suberin: 'A penguin that loves belly-sliding across the ice. It is still practicing how to stop. Fish is its favorite food.',
+  kororin: 'A snowman whose hobby is rolling snowballs. Its dream is to make the biggest snowball in the world. It gets a little thinner on warm days.',
+  hotarun: 'A firefly whose tail lights up dark caves. It has decided all on its own that Pipi is its rival, and refuses to shine any less.',
+  bukugani: 'A crab that loves blowing bubbles and has bubble-size contests with its friends. Even when it wants to go forward, it ends up walking sideways.',
+  B46: 'King of the Wobbles and the hungriest one in the world. It loves sweets, jelly and rice balls, and thought the glowing shard was a piece of candy.',
+  B8: 'The bossy lord of the night. But he is secretly scared of the dark and never lets go of the lantern on his staff, not even in bed. A little praise cheers him right up.',
+  B58: 'The fancy-pants of the sand fort. He is always polishing his bones with a handkerchief and loves hourglasses and tea. Sand on his bones makes him cross.',
+  B12: 'The Maou, swallowed by a dark shadow. His bossy voice and the light in his lantern are both gone. Now and then the real Maou struggles inside.',
+  B17: 'The strongest bug on the stormy highlands. It loves arm wrestling and tree sap. It hates losing, but when it loses, it admits it with a grin.',
+  B21: 'A crybaby giant of the rock fort. He is very strong, yet bursts into tears at the smallest thing. His treasures are tiny flowers and a handkerchief.',
+  B23: 'The shy master of the mansion. Afraid of being seen, it keeps its face hidden behind a veil. It likes tiny candle flames and whispered secrets.',
+  B30: 'A spoiled queen who adores anything sparkly. She wanted to make a crown just for herself out of the shards. Honey and compliments are her weak spots.',
+  B62: 'The sleepyhead of the moon fort. Hugging his pillow, he dozes off even in the middle of a fight. He thinks the shard makes a perfect pillow.',
+  B37: 'A very serious guard that never blinks. It loves rules and being right on time, and feels calm when it sees neatly lined-up constellations.',
+  B64: 'The chatty gatekeeper of the shadow fort. He spills every secret right away, and even his shadow talks on its own.',
+  B44: 'A shadow born beneath the lamp. It acts tough, but it has been lonely for a very long time and just wanted someone to notice it.',
+};
+
 // ずかんの ばんごう(てき 001〜、ボスは その つづき)
 function zkNo(k) { const e = ZK_ENEMIES.indexOf(k); const n = e >= 0 ? e + 1 : ZK_ENEMIES.length + 1 + ZK_BOSSES.indexOf(+String(k).slice(1)); return 'No.' + String(n).padStart(3, '0'); }
 // しゅべつ: ふつう / つよい / たおせない / 中ボス / ボス
@@ -4250,14 +4335,21 @@ function drawZukan(t) {
   }
   if (!usingTouch) { ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = font(12, 700); ctx.textAlign = 'right'; ctx.fillText(zk.grid ? '←→↑↓ えらぶ  Enter ひらく  X てき/ボス  Esc もどる' : '←→ つぎの ページ  Enter いちらん  Esc もどる', VW - 16, 512); }
 }
-function zkWrap(text, x, y, maxW, lh, f) {
-  ctx.font = f; let line = '', yy = y;
-  if (isEN()) { for (const ln of wrapWords(ctx, T(String(text || '')), maxW)) { ctx.fillText(ln, x, yy); yy += lh; } return yy; }
+// 折り返した 行の 一覧(描かない)。英語は 単語で、日本語は 1字ずつ
+function zkLines(text, maxW, f) {
+  ctx.font = f;
+  if (isEN()) return wrapWords(ctx, T(String(text || '')), maxW);
+  const out = []; let line = '';
   for (const ch of String(text || '')) {
-    if (ctx.measureText(line + ch).width > maxW && line) { ctx.fillText(line, x, yy); yy += lh; line = ch === ' ' ? '' : ch; }
+    if (ctx.measureText(line + ch).width > maxW && line) { out.push(line); line = ch === ' ' ? '' : ch; }
     else line += ch;
   }
-  if (line) { ctx.fillText(line, x, yy); yy += lh; }
+  if (line) out.push(line);
+  return out;
+}
+function zkWrap(text, x, y, maxW, lh, f) {
+  let yy = y;
+  for (const ln of zkLines(text, maxW, f)) { ctx.fillText(ln, x, yy); yy += lh; }
   return yy;
 }
 function drawZukanPage(k, t) {
@@ -4291,22 +4383,50 @@ function drawZukanPage(k, t) {
   outlined(nm, x, 116, '#fff', '#2a1a3a', 6, fitFont(nm, w - kw - 14, 30, titleFont), 'left');
   let y = 140;
   if (boss) { const bi = BINFO[+String(k).slice(1)] || {}; if (bi.title) { ctx.fillStyle = '#ffd84a'; ctx.font = font(14, 800); ctx.textAlign = 'left'; ctx.fillText('「' + bi.title + '」', x, y + 4); y += 14; } }
-  // ひとこと せつめい(2〜3ぎょう)
+  // せいかく・くらし(上、2026-10-16 夜)と うごき・たおしかた(下)。入りきる まで 字を 小さく する
+  const lore = (isEN() ? ZK_LORE_EN[k] : ZK_LORE[k]) || '';
   const lines = (isEN() ? ZK_DESC_EN[k] : ZK_DESC[k]) || [];
-  rr(x - 2, y + 4, w + 4, 108, 14); ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
-  let yy = y + 32; for (const ln of lines) yy = zkWrap(ln, x + 12, yy, w - 20, 25, font(16, 700));
-  y += 132;
-  const row = (lab, fn) => { ctx.fillStyle = '#9fe0ff'; ctx.font = font(14, 800); ctx.textAlign = 'left'; ctx.fillText(lab, x, y); ctx.fillStyle = '#fff'; y = fn(x + 104, y) + 38; };
+  const rowW = w - 108;
+  let placeTx = '', atkTx = '';
   if (boss) {
-    const id = +String(k).slice(1), d = LEVELS[LV_BY_ID[id]] || {};
-    row('でる ばしょ', (xx, yy2) => zkWrap((d.world ? stageLabel(d) + '  ' : '') + (d.name || ''), xx, yy2, w - 108, 22, font(15, 700)) - 22);
-    const bi = BINFO[id] || {};
-    if (bi.attacks && bi.attacks.length) row('わざ', (xx, yy2) => zkWrap(bi.attacks.map(a => String(a).split(/[:：]/)[0]).filter(a => !/^たいりょく/.test(a)).join('・'), xx, yy2, w - 108, 22, font(15, 700)) - 22);
+    const id = +String(k).slice(1), d = LEVELS[LV_BY_ID[id]] || {}, bi = BINFO[id] || {};
+    placeTx = (d.world ? stageLabel(d) + '  ' : '') + (d.name || '');
+    if (bi.attacks && bi.attacks.length) atkTx = bi.attacks.map(a => String(a).split(/[:：]/)[0]).filter(a => !/^たいりょく/.test(a)).join('・');
   } else {
     const st = (zkStages && zkStages[k]) || [];
-    const place = st.length ? (st.length > 5 ? st.slice(0, 5).join('・') + ' ほか ' + (st.length - 5) + '面' : st.join('・')) : '—';
-    row('でる ばしょ', (xx, yy2) => zkWrap(place, xx, yy2, w - 108, 22, font(15, 700)) - 22);
+    placeTx = st.length ? (st.length > 5 ? st.slice(0, 5).join('・') + ' ほか ' + (st.length - 5) + '面' : st.join('・')) : '—';
+  }
+  let lay = null;
+  for (const [fz, lh] of [[16, 22], [15, 20], [14, 19], [13, 17]]) {
+    const f = font(fz, 700), rf = font(Math.min(15, fz), 700);
+    const loreL = lore ? zkLines(lore, w - 24, f) : [];
+    const descL = []; for (const ln of lines) descL.push(...zkLines(ln, w - 24, f));
+    const np = zkLines(placeTx, rowW, rf).length, na = atkTx ? zkLines(atkTx, rowW, rf).length : 0;
+    const loreH = loreL.length ? loreL.length * lh + 14 : 0, descH = descL.length * lh + 14;
+    const rowsY = y + 4 + loreH + (loreH ? 8 : 0) + descH + 26;
+    const bottom = rowsY + (np - 1) * 22 + 38 + (boss ? (atkTx ? (na - 1) * 22 : -38) : 6) + 12;
+    lay = { f, rf, lh, fz, loreL, descL, loreH, descH, rowsY, bottom };
+    if (bottom <= 434) break;
+  }
+  window.__zkLay = { k, bottom: lay.bottom, fz: lay.fz, lore: lay.loreL.length, desc: lay.descL.length };
+  ctx.textAlign = 'left';
+  let by = y + 4;
+  if (lay.loreH) {
+    rr(x - 2, by, w + 4, lay.loreH, 14); ctx.fillStyle = 'rgba(255,186,110,.13)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,200,140,.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#ffe2b8'; ctx.font = lay.f;
+    let ly = by + 7 + lay.fz; for (const ln of lay.loreL) { ctx.fillText(ln, x + 12, ly); ly += lay.lh; }
+    by += lay.loreH + 8;
+  }
+  rr(x - 2, by, w + 4, lay.descH, 14); ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = lay.f;
+  { let ly = by + 7 + lay.fz; for (const ln of lay.descL) { ctx.fillText(ln, x + 12, ly); ly += lay.lh; } }
+  y = lay.rowsY;
+  const row = (lab, fn) => { ctx.fillStyle = '#9fe0ff'; ctx.font = font(14, 800); ctx.textAlign = 'left'; ctx.fillText(lab, x, y); ctx.fillStyle = '#fff'; y = fn(x + 104, y) + 38; };
+  if (boss) {
+    row('でる ばしょ', (xx, yy2) => zkWrap(placeTx, xx, yy2, rowW, 22, lay.rf) - 22);
+    if (atkTx) row('わざ', (xx, yy2) => zkWrap(atkTx, xx, yy2, rowW, 22, lay.rf) - 22);
+  } else {
+    row('でる ばしょ', (xx, yy2) => zkWrap(placeTx, xx, yy2, rowW, 22, lay.rf) - 22);
     const d = ENEMY[k] || {};
     const tags = ZK_TOUGH.has(k) ? [['たおせない', '#c9b8ff']] : [[d.stomp ? 'ふめる' : 'ふめない', d.stomp ? '#7dff8a' : '#ff8a8a'], [d.sword ? 'けん ○' : 'けん ×', d.sword ? '#7dff8a' : '#ff8a8a'], ['スピン ○', '#7dff8a']];
     row('たおしかた', (xx, yy2) => { tags.forEach(([tx, c], j) => { const bx = xx + j * 104; rr(bx, yy2 - 19, 96, 28, 12); ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = c; ctx.font = fitFont(tx, 86, 14); ctx.textAlign = 'center'; ctx.fillText(tx, bx + 48, yy2); ctx.textAlign = 'left'; }); return yy2 + 6; });
@@ -4876,7 +4996,8 @@ function update(dt) {
     updatePlayer(dt);
     updateGrow(dt);
     updateBgm();
-    for (const o of world.ents) if (!o.gone) updateThing(o, dt);
+    // 1つの 物の 処理で 例外が 出ても ループを 止めない: その 物だけ 消して 記録する(原因は 試験で 直す)
+    for (const o of world.ents) if (!o.gone) { try { updateThing(o, dt); } catch (e) { guardErr('update ' + (o.type || o.t), e); o.gone = true; if (P.carry === o) P.carry = null; if (P.standOn === o) P.standOn = null; } }
     world.ents = world.ents.filter(o => !o.gone);
     updateCamera(dt);
     // ゴールの演出は 1.2秒 たったら ボタンで とばせる
@@ -4935,6 +5056,14 @@ function update(dt) {
   if (toast) { toast.t -= dt; if (toast.t <= 0) toast = null; }
   cam.shake = Math.max(0, cam.shake - dt);
   for (const k in pressed) pressed[k] = false;
+}
+// 守りの 記録: 例外は コンソールに 1回ずつ 出して、window.__haruErrs に ためる(試験で 0 を 確かめる)
+const haruErrs = window.__haruErrs = [];
+const haruErrSeen = new Set();
+function guardErr(where, e) {
+  const msg = where + ': ' + (e && e.message || e);
+  if (haruErrs.length < 200) haruErrs.push({ where, msg, stack: String(e && e.stack || '') });
+  if (!haruErrSeen.has(msg)) { haruErrSeen.add(msg); try { console.error('[ハル] ' + msg, e); } catch (e2) { /* なにもしない */ } }
 }
 // ヒットストップ: 当たった瞬間に ほんの少し 時間を止めて 手ごたえを出す
 let hitStopT = 0;
@@ -5851,7 +5980,13 @@ function drawMount(o, t) {
   }
   if (!ridden && o.state !== 'leave' && Math.random() < 0.04) sparkle(cx, o.y, 1);
 }
+// 1つの 物の 描画で 例外が 出ても 画面を 止めない(save/restore で キャンバスの 状態も もどす)
 function drawThing(o, t) {
+  ctx.save();
+  try { drawThing0(o, t); } catch (e) { guardErr('draw ' + (o.type || o.t), e); o.drawErr = (o.drawErr || 0) + 1; if (o.drawErr > 5 && o.t === 'enemy') o.gone = true; }
+  ctx.restore();
+}
+function drawThing0(o, t) {
   const cx = o.x + o.w / 2;
   switch (o.t) {
     case 'shard': {
@@ -6068,7 +6203,7 @@ function drawThing(o, t) {
     }
     case 'rock': {
       if (o.state === 'warn') {
-        const k = 1 - Math.max(0, o.timer) / 0.9;
+        const k = clamp(1 - Math.max(0, o.timer) / 0.9, 0, 1); // timer が 0.9 より 長いと マイナスの 半径で ellipse が 例外(ループが 止まった)
         ctx.save(); ctx.globalAlpha = 0.25 + k * 0.4; ctx.fillStyle = '#1a1028'; ctx.beginPath(); ctx.ellipse(cx, o.gy - 2, 10 + k * 20, 4 + k * 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
         break;
       }
@@ -6407,10 +6542,13 @@ function drawParts() {
     if (q.streak) { ctx.globalAlpha = Math.min(1, a * 2) * 0.7; ctx.strokeStyle = q.color; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - Math.sign(q.vx) * q.size, q.y); ctx.stroke(); ctx.globalAlpha = 1; continue; }
     if (q.ghost) { const im = IMG.hero_jump; if (im.naturalWidth) { const H = 74, W = im.naturalWidth / im.naturalHeight * H; ctx.save(); ctx.globalAlpha = a * 0.45; ctx.translate(q.x, q.y + 31); ctx.scale(q.face, 1); ctx.filter = 'brightness(1.8) saturate(0.4)'; ctx.drawImage(im, -W / 2, -H, W, H); ctx.restore(); } continue; }
     if (q.img) {
+      // 絵は IMG か ART(ChatGPT の 絵)。どちらにも 無ければ 描かない(undefined を drawImage すると 例外で ループが 止まった)
+      const qi = IMG[q.img] || ART[q.img];
+      if (!qi) continue;
       ctx.save(); ctx.globalAlpha = Math.min(1, a * 2); ctx.translate(q.x + q.size / 2, q.y + q.size / 2);
       if (q.rot) ctx.rotate(q.rot);
       if (q.spin) ctx.scale(Math.cos(q.life * 30), 1);
-      ctx.drawImage(IMG[q.img], -q.size / 2, -q.size / 2, q.size, q.size); ctx.restore(); continue;
+      ctx.drawImage(qi, -q.size / 2, -q.size / 2, q.size, q.size); ctx.restore(); continue;
     }
     ctx.globalAlpha = a; ctx.fillStyle = q.color;
     if (q.star) { ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.life * 8); ctx.fillRect(-q.size, -q.size / 4, q.size * 2, q.size / 2); ctx.fillRect(-q.size / 4, -q.size, q.size / 2, q.size * 2); ctx.restore(); }
@@ -6684,6 +6822,8 @@ function autoScroll(dt) {
   const a = world.auto, maxX = Math.max(0, level.W * TILE - VW);
   const goal = world.ents.find(o => o.t === 'goal' && !o.secret);
   const stopX = goal ? Math.min(maxX, goal.x - VW * 0.55) : maxX;
+  // 速さは 面の すすみぐあいで sp0 → sp1(後半ほど 少し 速く。2026-10-16 夜 持ち主「遅すぎる」)
+  if (a.sp1 !== undefined && stopX > 0) a.sp = a.sp0 + (a.sp1 - a.sp0) * clamp(a.x / stopX, 0, 1);
   a.x = Math.min(stopX, a.x + a.sp * dt);
   cam.x = a.x;
   const ty = clamp((P.onGround || P.swim ? P.y : Math.min(cam.gy ?? P.y, P.y)) - VH * 0.55, 0, ROWS * TILE - VH);
@@ -7272,7 +7412,14 @@ function frame(now) {
   if (DAILY_URL && !daily.auto) { daily.auto = true; if (scene === 'title') startDaily('title'); }
   acc += real;
   const STEP = 1 / 120;
+  // 更新・描画の どこかで 例外が 出ても、つぎの こまを かならず よぶ(前は 例外で requestAnimationFrame まで とどかず 画面が 固まった)
+  try {
   while (acc >= STEP) { update(STEP); acc -= STEP; }
+  } catch (e) { acc = 0; guardErr('update ' + scene, e); for (const k in pressed) pressed[k] = false; if (hitStopT > 1 || !(hitStopT >= 0)) hitStopT = 0; }
+  try { drawScene(); } catch (e) { guardErr('draw ' + scene, e); try { if (ctx.reset) ctx.reset(); else for (let i = 0; i < 30; i++) ctx.restore(); } catch (e2) { /* なにもしない */ } }
+  requestAnimationFrame(frame);
+}
+function drawScene() {
   if (scene === 'title') drawTitle(titleT);
   else if (scene === 'map') drawMap(titleT);
   else if (scene === 'story') drawStory(titleT);
@@ -7295,7 +7442,6 @@ function frame(now) {
       outlined(b, VW / 2, VH / 2 + (c ? 186 : 182), c ? '#fff36b' : '#fff', '#2a1a3a', 8, fitAny(b, 900, c ? 52 : 34, c ? titleFont : (p => font(p, 800)), 14));
     }
   }
-  requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 // 最初の操作で音を出せるようにする
