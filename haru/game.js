@@ -135,7 +135,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261016a';
+const SPRITE_V = '20261016x';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -176,7 +176,7 @@ for (const n of ART_NAMES) {
   const im = new Image();
   im.onload = () => { if (im.naturalWidth) ART[n] = im; if (TB.groundTop && ['seed_block', 'vine_tile', 'note_block', 'egg_block', 'cape_block', 'turn_block', 'silver_block', 'blk_y', 'blk_g', 'blk_b', 'blk_p', 'jump_block', 'bomb_block'].includes(n)) bakeTiles(); };
   im.onerror = () => {};
-  im.src = 'assets/chatgpt/' + n + '.png';
+  im.src = 'assets/chatgpt/' + n + '.png?v=' + SPRITE_V;
 }
 
 // マス目の絵は 48px に焼いておく(毎フレームの縮小を避ける)
@@ -432,7 +432,7 @@ function canvasPos(e) {
 }
 const TOUCH = {
   // 左下は ◀ ▶ だけ(上下を まちがえて おさないように。2026-10-16 テスターの 声)。
-  // ↓(しゃがむ・ヒップドロップ・いど・つつ)と ↑(はしご・つる・とびら)は みぎの ボタンの なかまに。▲ は いる ときだけ でる
+  // ↓(しゃがむ・いど・つつ)と ↑(はしご・つる・とびら)は みぎの ボタンの なかまに。▲ は いる ときだけ でる
   left: { x: 78, y: 452, r: 54 }, right: { x: 216, y: 452, r: 54 },
   attack: { x: 752, y: 476, r: 46 }, jump: { x: 870, y: 436, r: 58 }, dash: { x: 772, y: 366, r: 40 }, spin: { x: 650, y: 488, r: 34 },
   down: { x: 884, y: 318, r: 36 }, up: { x: 884, y: 230, r: 36 },
@@ -862,6 +862,7 @@ function spawn(e) {
       if (e.type === 'ceil') { const gy = groundYBelow(e.x + 1); return { id, t: 'ceil', x: X, y: 0, w: (o.w || 6) * TILE, h: 1, gy, stop: (gy - 1) * TILE, notch: o.notch || [], yb: (o.top || 2) * TILE, y0: (o.top || 2) * TILE, state: 'wait', timer: o.phase || 1.2 }; }
       if (e.type === 'crumb') { const gy = e.y; return { id, t: 'crumb', x: X, y: gy * TILE, w: TILE, h: 18, x0: X, y0: gy * TILE, g: o.g, i: o.i, n: o.n, state: 'idle', plat: true, dx: 0, dy: 0, vy: 0 }; }
       { const g5 = spawn5(e, X, Y, o, id); if (g5) return g5; }
+      { const gx = typeof spawnX === 'function' && spawnX(e, X, Y, o, id); if (gx) return gx; }
       if (e.type === 'wind') {
         // 横風: 扇風機から dir の向きに吹く。on/off を決めると吹く・止むをくり返す(止む前後は弱く吹いて知らせる)
         const dir = o.dir || 1, w = (o.w || 5) * TILE, fx = o.fx !== undefined ? o.fx : (dir > 0 ? e.x - 1 : e.x + (o.w || 5));
@@ -902,6 +903,7 @@ function spawn(e) {
       if (e.type === 'hotarun') { o.y = (e.y !== undefined ? e.y : 5) * TILE; o.y0 = o.y; o.x0 = o.x; o.vx = 0; o.timer = 1; }
       if (e.type === 'suberin' || e.type === 'bukugani') { o.timer = rnd(1, 2); }
       if (d.solid) o.solid = true;
+      if (d.ex && typeof initEnemyX === 'function') initEnemyX(o, e);
       return o;
     }
   }
@@ -1414,11 +1416,6 @@ function updatePlayer(dt) {
   // まちの 動き(なにも しないで いると すわる・あくび)
   const anyKey = held('left') || held('right') || held('jump') || held('down') || held('up') || held('attack') || held('dash') || held('spin');
   p.idleT = p.onGround && !anyKey && Math.abs(p.vx) < 5 && !p.crouch && !p.swim && !p.mount ? (p.idleT || 0) + dt : 0;
-  // ヒップドロップ: 空中で ↓。まっすぐ おちて 地面を たたく(レンガを こわす・ちかくの 敵を たおす)
-  if (gd > 0 && !p.onGround && !p.swim && !p.climb && !p.mount && !p.fly && !p.carry && !(p.hipT > 0) && !p.hipFall && pressed.down && !(p.climbUpT > 0)) {
-    pressed.down = false; p.hipT = 0.2; p.spin = false; sfx('swing', 0.6);
-    if (!world.seenHip) { world.seenHip = true; toast = { text: 'ヒップドロップ!', sub: usingTouch ? 'くうちゅうで ▼。じめんを たたいて レンガを こわす' : 'くうちゅうで ↓。じめんを たたいて レンガを こわす', t: 2 }; }
-  }
   // がけの ふちに つかまる(おちている ときに かべの ほうを おしていて、手が ふちに とどいたら)
   if (gd > 0 && dir && !p.onGround && p.vy > 0 && !p.swim && !p.climb && !p.mount && !p.carry && !p.fly && !(p.hangCD > 0) && !(p.hipT > 0) && !p.hipFall) {
     const tx = Math.floor((dir > 0 ? p.x + p.w + 5 : p.x - 5) / TILE), hy = p.y + 4, ty = Math.floor(hy / TILE);
@@ -1504,6 +1501,7 @@ function updatePlayer(dt) {
       if ((o.t === 'magic' || o.t === 'ball' || o.t === 'bone' || o.t === 'spit') && overlap(hb, o)) { o.gone = true; sparkle(o.x + 12, o.y + 12, 8); sfx('hit', 1.3); world.score += 50; continue; }
       if (o.t !== 'enemy' || o.dying || p.hitIds.has(o.id) || !overlap(hb, o)) continue;
       p.hitIds.add(o.id);
+      if (typeof swordX === 'function' && swordX(o, p)) continue;
       if (!o.d.sword) { sfx('bump', 1.3); burst(o.x + o.w / 2, o.y + o.h / 2, '#ddd', 5, 150, 3); continue; }
       if (o.type === 'skeleton' && o.face === -p.face && o.state !== 'stun') {
         sfx('bump', 1.4); sparkle(hb.x + (p.face > 0 ? hb.w : 0), hb.y + 20, 6);
@@ -1545,19 +1543,19 @@ function updatePlayer(dt) {
   const vyBefore = p.vy;
   // ベルトコンベアも 外から押す速さとして足す(壁に めりこまないように)
   const belt = wasGround && (p.groundTile === '}' || p.groundTile === '{') ? (p.groundTile === '}' ? 130 : -130) : 0;
-  if (p.hipT > 0) { p.hipT -= dt; p.vx = 0; p.vy = 0; if (p.hipT <= 0) { p.hipFall = true; } }
-  // バネ・トランポリンなどで 上へ はじかれたら ヒップドロップは おわり(前は 毎フレーム 下向きに もどして バネの 上で ふるえて 動けなくなった)
-  if (p.hipFall && p.vy < 0) p.hipFall = false;
-  if (p.hipFall) { p.vx = 0; p.vy = 1100; if (p.swim || p.climb) p.hipFall = false; }
   moveBody(p, dt, { ents: true, drop: p.dropT > 0, ext: wind + belt, corner: gd > 0, flip: gd < 0 });
-  if (p.hipFall && p.onGround) hipLand(p);
   if (p.onGround) p.launchT = 0;
   // スピンジャンプで 落ちてきたら、下の レンガ・くるくるブロックを こわして そのまま おちる / トゲの ブロックの 上では はねる
   if (gd > 0 && p.spin && p.onGround && vyBefore > 150) {
     const fy = Math.floor((p.y + p.h + 2) / TILE), xa = Math.floor((p.x + 4) / TILE), xb = Math.floor((p.x + p.w - 4) / TILE);
     let broke = false;
-    for (let tx = xa; tx <= xb; tx++) { const c = tileAt(tx, fy); if (c === 'B' || c === 'j') { level.tiles[fy][tx] = ' '; debris(tx * TILE, fy * TILE, c === 'B' ? 'brick' : 'metal'); broke = true; } }
-    if (broke) { sfx('break'); world.score += 50; cam.shake = Math.max(cam.shake, 0.1); p.onGround = false; p.vy = Math.max(260, vyBefore * 0.7); }
+    for (let tx = xa; tx <= xb; tx++) {
+      const c = tileAt(tx, fy);
+      if (c === 'B' || c === 'j') { level.tiles[fy][tx] = ' '; debris(tx * TILE, fy * TILE, c === 'B' ? 'brick' : 'metal'); broke = true; }
+      else if (c === '+') lightFuse(tx, fy, 0.5);
+      else if ('?HQAERONeqv'.includes(c)) bumpTile(tx, fy);
+    }
+    if (broke) { tutFlag('spinbrk'); sfx('break'); world.score += 50; cam.shake = Math.max(cam.shake, 0.1); p.onGround = false; p.vy = Math.max(260, vyBefore * 0.7); }
     else if (p.groundTile === 'K') { p.vy = -620; p.onGround = false; p.spinSafe = 0.15; sfx('stomp', 1.3); sparkle(p.x + p.w / 2, p.y + p.h, 8); }
   }
   if (p.spinSafe > 0) p.spinSafe -= dt;
@@ -1897,6 +1895,7 @@ function updateEnemy(o, dt) {
   if (!o.zk && (d.boss ? o.state !== 'sleep' : Math.abs(ex - (cam.x + VW / 2)) < VW / 2 + 20)) { o.zk = 1; zukanSee(zkKeyOf(o)); if (o.t === 'enemy' && !d.boss) (world.zkSeen = world.zkSeen || {})[o.type] = 1; }
   if (d.boss && o.state !== 'sleep' && !o.dying && bossExtra(o, dt, px, py, ex, ey)) return;
   if (updateEnemy5(o, dt, px, py, ex, ey)) return;
+  if (typeof updateEnemyX === 'function' && updateEnemyX(o, dt, px, py, ex, ey)) return;
   switch (o.type) {
     case 'goomy': case 'spiky': case 'skeleton': case 'bomb': case 'shell': case 'beetle': {
       // 羽つきグーミーは跳ねながら近づく
@@ -2515,6 +2514,7 @@ function playerVsEnemy(o) {
     return;
   }
   const falling = p.vy > 60 && p.y + p.h - p.vy * (1 / 60) <= o.y + 14;
+  if (typeof pveX === 'function' && pveX(o, falling)) return;
   // スピンジャンプ・もこりゅうなら トゲの 敵も ふめる
   if (falling && (p.spin || p.mount) && SPIKY_T.has(o.type) && !o.d.boss && !(o.type === 'plant' && o.rise < 0.5)) {
     p.vy = held('jump') || held('spin') ? -560 : -400; p.jumping = held('jump');
@@ -3041,7 +3041,7 @@ function updateThing(o, dt) {
       if (!p.dead && overlap(p, { x: o.x + 4, y: o.y + 6, w: o.w - 8, h: o.h - 6 })) hurtPlayer(o.x + o.w / 2);
       break;
     }
-    default: updateThing5(o, dt); break;
+    default: if (!(typeof updateThingX === 'function' && updateThingX(o, dt))) updateThing5(o, dt); break;
     case 'axe': {
       o.ang = Math.sin(o.ph * 1.8) * 1.1;
       const hx = o.px + Math.sin(o.ang) * o.len, hy = o.py + Math.cos(o.ang) * o.len;
@@ -3340,23 +3340,6 @@ function updateTubeRide(p, dt) {
     if (Math.abs(ux) > 0.3) p.face = Math.sign(ux);
     sfx('jump2', 1.3); sfx('powerup', 1.6); sparkle(b[0], b[1], 16); burst(b[0], b[1], '#bff4ff', 10, 200, 4);
   }
-}
-
-// ヒップドロップの 着地: 足の 下の レンガ・くるくる・どかん ブロックを たたき、ちかくの 地面の 敵を たおす
-function hipLand(p) {
-  tutFlag('hip');
-  p.hipFall = false; p.vy = -280; p.onGround = false; p.jumping = false;
-  sfx('boom', 1.2); sfx('stomp', 0.7); cam.shake = Math.max(cam.shake, 0.25); hitStop(0.05);
-  dust(p.x + p.w / 2 - 20, p.y + p.h, 6); dust(p.x + p.w / 2 + 20, p.y + p.h, 6);
-  const fy = Math.floor((p.y + p.h + 4) / TILE), xa = Math.floor((p.x + 4) / TILE), xb = Math.floor((p.x + p.w - 4) / TILE);
-  for (let tx = xa; tx <= xb; tx++) {
-    const c = tileAt(tx, fy);
-    if (c === 'B' || c === 'j') { level.tiles[fy][tx] = ' '; debris(tx * TILE, fy * TILE, c === 'B' ? 'brick' : 'metal'); world.score += 50; sfx('break'); p.vy = 200; }
-    else if (c === '+') lightFuse(tx, fy, 0.5);
-    else if ('?HQAERONeqv'.includes(c)) bumpTile(tx, fy);
-  }
-  let n = 0;
-  for (const o of world.ents) if (o.t === 'enemy' && !o.dying && !o.d.boss && !o.d.fly && Math.abs(o.x + o.w / 2 - (p.x + p.w / 2)) < 2.2 * TILE && Math.abs(o.y + o.h - (p.y + p.h)) < TILE) defeat(o, true, ++n);
 }
 
 // ---------- ボスの 個性(第5段階): 名前の 札・せりふ・その ボスらしい 技(台本は story5.js の BOSS_INFO) ----------
@@ -4364,7 +4347,7 @@ function drawHelp(t) {
   const p = help.page, y0 = 116;
   if (p === 0) {
     const rows = [[['←', '→'], 'あるく(はしる)', 'hero_run'], [['スペース', 'Z'], 'ジャンプ(ながおしで たかく)', 'hero_jump'], [['V'], 'スピンジャンプ(トゲの てきも ふめる)', 'spiky'], [['X'], 'けん', 'hero_attack'],
-      [['C', 'Shift'], 'ダッシュ(ブーツ)・おしたまま さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる・くうちゅうで ヒップドロップ', null], [['↑'], 'とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
+      [['C', 'Shift'], 'ダッシュ(ブーツ)・おしたまま さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる', null], [['↑'], 'とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
     rows.forEach((r, i) => helpRow(y0 - 4 + i * 40, r[0], r[1], r[2]));
   } else if (p === 1) {
     // スマホの 画面の ボタンの ならび(小さな 画面の 絵)
@@ -4397,7 +4380,7 @@ function drawHelp(t) {
     rows.forEach((r, i) => helpRow(y0 + i * 48, r[0], r[1], ART[r[2]] || IMG[r[2]] ? r[2] : null, r[3]));
     if (P0) { ctx.fillStyle = '#ffd84a'; ctx.font = font(14, 800); ctx.textAlign = 'center'; ctx.fillText('きいろの わくが いまの ばめんで つかえる そうさ', VW / 2, 512); }
   } else if (p === 3) {
-    const rows = [[['↓'], 'しゃがむ(ひくい すきまを とおる)', 'hero_crouch'], [['はしって', '↓'], 'しゃがみすべり: すべって てきを たおす', 'hero_slide'], [['くうちゅうで', '↓'], 'ヒップドロップ: レンガを こわす・てきを たおす', 'hero_hipdrop'],
+    const rows = [[['↓'], 'しゃがむ(ひくい すきまを とおる)', 'hero_crouch'], [['はしって', '↓'], 'しゃがみすべり: すべって てきを たおす', 'hero_slide'], [['V', 'おりる'], 'スピンジャンプで おりると レンガを わる', 'hero_spin'],
       [['かべへ', '→'], 'がけに つかまる → ↑・ジャンプで のぼる', 'hero_hang'], [['かべへ', 'ジャンプ'], 'かべジャンプ(かべを すべりおりる)', null], [['↑', 'ながく'], 'うえを みる', 'hero_lookup'], [['↓', 'ながく'], 'したを みる', null], [['…'], 'なにも しないと すわって ひとやすみ', 'hero_sit']];
     rows.forEach((r, i) => helpRow(y0 + i * 48, r[0], r[1], ART[r[2]] ? r[2] : null));
   } else {
@@ -5786,7 +5769,6 @@ function drawPlayer0() {
   let alt = null;
   if (p.dead || p.hurtT > 0) alt = 'hero_hurt';
   else if (p.hang) alt = 'hero_hang';
-  else if (p.hipT > 0 || p.hipFall) alt = 'hero_hipdrop';
   else if (p.crouch) alt = p.slideT > 0 ? 'hero_slide' : 'hero_crouch';
   else if (p.swim && !p.onGround) alt = 'hero_swim';
   else if (world.clear && p.onGround) alt = 'hero_win';
@@ -6221,7 +6203,7 @@ function drawThing(o, t) {
       if (o.on) { ctx.save(); ctx.globalAlpha = 0.6 + Math.sin(t * 8) * 0.4; outlined('↓', o.x + 24, o.y - 70, '#fff', '#2a1a3a', 5, titleFont(26)); ctx.restore(); }
       break;
     }
-    default: drawThing5(o, t); break;
+    default: if (!(typeof drawThingX === 'function' && drawThingX(o, t))) drawThing5(o, t); break;
     case 'wdoor': {
       drawImg('door', o.x - 6, o.y - 4, o.w + 12, o.h + 6, false, 1 - (o.open || 0) * 0.6);
       if (o.near) { ctx.save(); ctx.globalAlpha = 0.6 + Math.sin(t * 8) * 0.4; outlined('↑', o.x + 24, o.y - 18, '#fff', '#2a1a3a', 5, titleFont(26)); ctx.restore(); }
@@ -6232,6 +6214,7 @@ function drawThing(o, t) {
 
 function drawEnemy(o, t) {
   const d = o.d;
+  if (d.ex && typeof drawEnemyX === 'function' && drawEnemyX(o, t)) return;
   const cx = o.x + o.w / 2, bottom = o.y + o.h + 3;
   let name = d.art && ART[d.art] ? d.art : d.img, h = d.dh, flip = o.face > 0;
   ctx.save();
