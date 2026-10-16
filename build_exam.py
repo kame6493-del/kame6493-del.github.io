@@ -28,7 +28,7 @@ PLAY_MULTI = "https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi"
 PLAY_RINSHO = "https://play.google.com/apps/testing/jp.nigatecho.rinshokensa"
 TESTER_GROUP = "https://groups.google.com/g/nigatecho-testers"
 
-ADMAX = ("<div class='admax' style='margin:28px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;"
+ADMAX = ("<div class='admax' style='margin:48px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;"
          "color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>")
 
 
@@ -39,10 +39,27 @@ def store_urls(key):
     return APP_CPP.get(key, APP_MULTI), PLAY_MULTI
 
 
+# Apple 公式の「App Store からダウンロード」バッジ(日本語・黒)。toolbox.marketingtools.apple.com から取ったものを手を加えずに置く。
+# 決まり: 画面で高さ40px以上・周りに高さの1/4以上の余白・App Store のページへのリンクにする・商標の表記を添える。
+AS_BADGE = '<img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44" loading="lazy">'
+AS_TM = ('<p class="as-tm">Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。'
+         'App Store は Apple Inc. のサービスマークです。</p>')
+IOS_LEAD = "この試験の過去問を、間違えた問題だけ残して解ける iPhone アプリ"
+
+
+def as_badge(url):
+    return f'<a class="as-b nc-ios" href="{url}">{AS_BADGE}</a>'
+
+
+def as_url(url):
+    """バッジの下に出す、App Store のページの URL(?ppid= は表示から外す)"""
+    return f'<p class="as-u nc-ios"><a href="{url}">{e(url.split("?")[0].replace("https://", ""))}</a></p>'
+
+
 def store_btns(key, ios_label="App Store で見る", and_label="Android テスト版に参加"):
-    """iPhone には App Store、Android には Play を出す(NC_ASSETS の判定。判定できない時は両方)"""
+    """iPhone には App Store のバッジ、Android には Play を出す(NC_ASSETS の判定。判定できない時は両方)"""
     ios, play = store_urls(key)
-    return (f'<a class="btn fill nc-ios" href="{ios}">{e(ios_label)}</a>'
+    return (as_badge(ios) +
             f'<a class="btn ghost nc-and" href="{play}">{e(and_label)}</a>')
 
 
@@ -53,9 +70,9 @@ def app_card(key):
     return (f'<aside class="ncard" data-exam="{x["date_iso"]}">'
             '<div class="nc-h"><img src="/img/nigatecho-icon.png" alt="" width="48" height="48" loading="lazy">'
             f'<div><p class="nc-t">{e(title)}' + ("" if key == "rinsho" else f'<span>{e(x["name"])}</span>') + '</p>'
-            '<p class="nc-d">間違えた問題だけが残る過去問アプリ</p></div></div>'
+            f'<p class="nc-d">{e(IOS_LEAD)}</p></div></div>'
             f'<p class="nc-c">第{x["round"]}回の試験は{e(x["date_ja"])}<b class="nc-n"></b></p>'
-            f'<div class="nc-btns">{store_btns(key)}</div>'
+            f'<div class="nc-btns">{store_btns(key)}</div>{as_url(store_urls(key)[0])}'
             f'<p class="nc-and nc-g">Android は先に<a href="{TESTER_GROUP}">テスター用のグループ</a>に入ってから参加してください。</p>'
             '</aside>')
 
@@ -74,8 +91,14 @@ NC_ASSETS = """<style>
 .nc-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .nc-btns .btn{min-height:42px;font-size:14px;flex:1 1 12em}
 .nc-g{margin-top:8px!important;font-size:12.5px;color:var(--sub)}
+.as-b{display:inline-flex;align-items:center;padding:11px;margin:-11px 0 -11px -11px;line-height:0}
+.as-b img{height:44px;width:auto;display:block}
+.as-u{margin:6px 0 0!important;font-size:12.5px;word-break:break-all}
+.as-u a{color:var(--sub)}
+.as-tm{font-size:11px;color:var(--mute,#8a919c);margin:14px 0 0;line-height:1.6}
 .ua-ios .nc-and,.ua-and .nc-ios{display:none!important}
 </style>
+""" + AS_TM + """
 <script>(function(){var u=navigator.userAgent||"",r=document.documentElement;
 if(/iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1))r.classList.add("ua-ios");else if(/Android/.test(u))r.classList.add("ua-and");
 var c=document.querySelectorAll("[data-exam]");for(var i=0;i<c.length;i++){var d=Math.ceil((new Date(c[i].getAttribute("data-exam")+"T00:00:00+09:00")-Date.now())/864e5),n=c[i].querySelector(".nc-n");if(n&&d>0)n.textContent="あと"+d+"日";}})();</script>"""
@@ -684,13 +707,13 @@ def app_block(x):
     a = x["app"]
     nm = x["name"]
     if x["key"] == "rinsho":
-        title, kind = "ニガテ帳 臨床検査技師", "臨床検査技師国家試験の過去問(iPhone)"
+        title, kind = "ニガテ帳 臨床検査技師", IOS_LEAD
     else:
-        title, kind = "ニガテ帳", "国家試験の過去問(iPhone)。アプリの中で試験を選べます"
+        title, kind = "ニガテ帳", IOS_LEAD + "(アプリの中で試験を選べます)"
     pre = "" if a["status"] == "live" else f'<p class="note" style="margin-top:12px">{nm}を追加したあとの内容です。</p>'
     if a["status"] == "live":
         state = f"{nm}は App Store で公開中です。"
-        btn = store_btns(x["key"])
+        btn = store_btns(x["key"]) + "</div>" + as_url(store_urls(x["key"])[0]) + "<div>"
     else:
         state = (f"{nm}は次のアップデートで追加する予定です。アップデートが出るまでは、アプリの中で{nm}を選べません。"
                  "いまは介護福祉士・社会福祉士・管理栄養士・理学療法士の過去問が入っています。")
@@ -857,7 +880,7 @@ def hub_page():
 </ul></section>""")
     out.append("""<section><h2>ニガテ帳について</h2>
 <p>間違えた問題が残り、日を空けて2回続けて正解すると消える、国家試験の過去問アプリです。どの試験も直近1回分は無料で、完全版は買い切りです。広告はなく、アカウント登録も要りません。iPhone では「ニガテ帳」で管理栄養士・介護福祉士・社会福祉士・精神保健福祉士・理学療法士を、「ニガテ帳 臨床検査技師」で臨床検査技師を公開中です。Android 版はテスト中です。</p>
-<div class="btns"><a class="btn fill nc-ios" href="https://apps.apple.com/jp/app/id6818535389">ニガテ帳(App Store)</a><a class="btn fill nc-ios" href="https://apps.apple.com/jp/app/id6818536142">臨床検査技師(App Store)</a><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳 Android テスト版</a><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師 Android テスト版</a></div>
+<div class="btns"><span class="nc-ios" style="display:inline-flex;flex-direction:column;font-size:13px">ニガテ帳(5試験)<a class="as-b" href="https://apps.apple.com/jp/app/id6818535389">""" + AS_BADGE + """</a></span><span class="nc-ios" style="display:inline-flex;flex-direction:column;font-size:13px">臨床検査技師<a class="as-b" href="https://apps.apple.com/jp/app/id6818536142">""" + AS_BADGE + """</a></span><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳 Android テスト版</a><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師 Android テスト版</a></div>
 <p class="note nc-and">Android は先に<a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に入ってから参加してください。</p>
 </section>
 <section><h2>このページについて</h2><p class="disc">個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。受験の手続きは、必ず公式の案内で確かめてください。</p></section>""")

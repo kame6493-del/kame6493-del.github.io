@@ -59,7 +59,7 @@ details.q-ans summary{cursor:pointer;font-weight:700;font-size:1.05rem}
 ul.q-list{list-style:none;padding:0}
 ul.q-list li{border-bottom:1px solid #eee5d3;padding:10px 2px}
 ul.q-list li a{text-decoration:none}
-.q-cta{border-radius:16px;background:#f3ede0;padding:16px 18px;margin:26px 0}
+.q-cta{border-radius:16px;background:var(--tint);border:1px solid var(--line);padding:16px 18px;margin:26px 0}
 """
 
 
@@ -69,15 +69,17 @@ def label(q):
 
 
 def app_cta(name, state, key=""):
+    """問題の下(関連の問題の後、広告の前)に置く案内。値段と「無料」の字は書かない"""
     if state == "rinsho_live":
-        url, txt = B.APP_RINSHO, "「ニガテ帳 臨床検査技師」は App Store で公開中です。"
+        txt = "「ニガテ帳 臨床検査技師」(iPhone)で、臨床検査技師の過去問を解けます。"
     elif state == "multi_live":
-        url, txt = B.APP_CPP.get(key, B.APP_MULTI), f"「ニガテ帳」(iPhone)で、{name}の過去問を解けます。"
+        txt = f"「ニガテ帳」(iPhone)で、{name}の過去問を解けます。"
     else:
-        url, txt = B.APP_MULTI, f"{name}は「ニガテ帳」(iPhone)の次のアップデートで追加する予定です。"
-    return (f'<div class="q-cta"><p><b>間違えた問題だけが残る過去問アプリ</b><br>{e(txt)}'
+        txt = f"{name}は「ニガテ帳」(iPhone)の次のアップデートで追加する予定です。"
+    ios = B.store_urls(key)[0]
+    return (f'<div class="q-cta"><p><b>{e(B.IOS_LEAD)}</b><br>{e(txt)}'
             "間違えた問題は「苦手」として残り、2回続けて正解すると消えます。全問に解説つき、広告なし。</p>"
-            f'<div class="btns">{B.store_btns(key)}</div>'
+            f'<div class="btns">{B.store_btns(key)}</div>{B.as_url(ios)}'
             f'<p class="q-meta nc-and" style="margin-top:8px">Android は先に<a href="{B.TESTER_GROUP}">テスター用のグループ</a>に入ってから参加してください。</p></div>')
 
 
