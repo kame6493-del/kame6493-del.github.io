@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>らくがき運動会 描いた形のとおりに走るかけっこ</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9843093495011329" crossorigin="anonymous"></script>
+<meta name="description" content="指で生き物を描くと、その形のとおりに走って運動会のかけっこに出ます。足を10本描けばワシャワシャ、丸ならコロコロ。友だち3人で対戦もできます。">
+<meta property="og:title" content="らくがき運動会">
+<meta property="og:description" content="描いた形のとおりに走る、へんてこ運動会">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yurustudio.github.io/undoukai/">
+<meta property="og:image" content="https://yurustudio.github.io/undoukai/assets/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#35b8e8">
+<link rel="icon" href="assets/icon.png">
+<link rel="canonical" href="https://yurustudio.github.io/undoukai/">
+<link rel="stylesheet" href="style.css?v=1016c">
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<!-- タイトル -->
+<section id="titleScreen" class="screen">
+  <div class="col">
+    <div class="titleTop">
+      <h1 class="logo" id="logoText"><span class="l1">らくがき</span><span class="l2">運</span><span class="l3">動</span><span class="l4">会</span></h1>
+      <img id="logoImg" class="logoImg hidden" alt="らくがき運動会">
+      <p class="lead">描いた形のとおりに走る、へんてこかけっこ</p>
+    </div>
+    <div id="inviteBox" class="card invite hidden"></div>
+    <div class="menu" id="mainMenu">
+      <button id="soloBtn" class="go" type="button">ひとりで走る</button>
+      <button id="vsBtn" class="go blue" type="button">3人で対戦する</button>
+      <button id="galleryBtn" class="sub" type="button">みんなのらくがき</button>
+      <div class="menuRow"><button id="albumBtn" class="sub mini" type="button">きろく・アルバム</button><button id="rankBtn" class="sub mini" type="button">ランキング</button></div>
+    </div>
+    <div class="menu hidden" id="vsMenu">
+      <p class="note strong">友だちと3人で1つのレース</p>
+      <button id="linkVsBtn" class="go blue" type="button">挑戦状リンクを回す</button>
+      <p class="note">描いてリンクを送る → 2人目が描き足して回す → 3人目が描いたらレース。時間がばらばらでも遊べます</p>
+      <button id="roomMakeBtn" class="go green" type="button">部屋をつくる(同時に遊ぶ)</button>
+      <div class="joinRow"><input id="roomCodeInput" maxlength="5" placeholder="部屋コード" autocomplete="off" autocapitalize="characters"><button id="roomJoinBtn" class="sub" type="button">部屋に入る</button></div>
+      <button id="vsBackBtn" class="sub ghost" type="button">もどる</button>
+    </div>
+    <div class="titleFoot"><button id="soundBtn" class="tiny" type="button">音: ON</button></div>
+    <div class="admax"><p class="adLabel">広告</p><iframe class="adFrame" data-src="ad.html" title="広告" width="300" height="250" scrolling="no"></iframe></div>
+  </div>
+</section>
+
+<!-- 描く -->
+<section id="drawScreen" class="screen hidden">
+  <div class="drawWrap">
+    <header class="head">
+      <p id="drawTitle" class="h2">生き物を1匹描いてね</p>
+      <p id="drawHint" class="hint">どんな形でも走ります。どう描けば速いかは、走らせて確かめよう</p>
+      <div id="rivalStrip" class="rivals hidden"></div>
+    </header>
+    <div class="padBox"><canvas id="pad" width="600" height="600"></canvas><p id="padHint">ここに描く</p><div id="drawTimer" class="timer hidden"></div></div>
+    <div class="side">
+      <div class="tools">
+        <div class="colors" id="colors"></div>
+        <button id="widthBtn" class="tool" type="button">太い線</button>
+        <button id="undoBtn" class="tool" type="button">もどす</button>
+        <button id="clearBtn" class="tool" type="button">ぜんぶ消す</button>
+      </div>
+      <div class="nameRow"><input id="nameInput" type="text" maxlength="10" placeholder="名前(なくてもOK)" autocomplete="off"></div>
+      <button id="drawDoneBtn" class="go" type="button" disabled>この子で走る!</button>
+      <button id="drawBackBtn" class="sub ghost" type="button">もどる</button>
+    </div>
+  </div>
+</section>
+
+<!-- 身体測定とコース選び -->
+<section id="prepScreen" class="screen hidden">
+  <div class="prepWrap">
+    <div class="measure card">
+      <p class="h2">スタート前の準備運動</p>
+      <div class="measureIn">
+        <canvas id="prepCanvas" width="360" height="300"></canvas>
+        <div class="prepInfo">
+          <p id="prepName" class="prepName"></p>
+          <p id="prepRec" class="prepRec"></p>
+        </div>
+      </div>
+    </div>
+    <div id="courseBox">
+      <p class="h2" id="courseTitle">コースをえらぶ</p>
+      <div class="courses" id="courses"></div>
+    </div>
+    <div class="prepBtns">
+      <button id="prepGoBtn" class="go" type="button">このコースに決定!</button>
+      <button id="prepBackBtn" class="sub ghost" type="button">描きなおす</button>
+    </div>
+  </div>
+</section>
+
+<!-- 挑戦状リンク -->
+<section id="linkScreen" class="screen hidden">
+  <div class="col">
+    <p class="h2" id="linkTitle">挑戦状ができました</p>
+    <div id="linkEntrants" class="entrants"></div>
+    <p id="linkNote" class="note strong"></p>
+    <input id="linkText" class="linkText" readonly>
+    <button id="linkShareBtn" class="go blue" type="button">友だちに送る</button>
+    <a id="linkXBtn" class="xbtn" href="#" target="_blank" rel="noopener">X で挑戦状を出す</a>
+    <button id="linkCopyBtn" class="sub" type="button">リンクをコピー</button>
+    <button id="linkCpuBtn" class="sub" type="button">待たずに CPU を入れて走る</button>
+    <button id="linkHomeBtn" class="sub ghost" type="button">タイトルへ</button>
+  </div>
+</section>
+
+<!-- 部屋 -->
+<section id="roomScreen" class="screen hidden">
+  <div class="col">
+    <p class="h2">部屋 <span id="roomCode" class="code"></span></p>
+    <p id="roomStatus" class="note strong"></p>
+    <div id="roomMembers" class="entrants"></div>
+    <button id="roomShareBtn" class="go blue hidden" type="button">部屋のリンクを送る</button>
+    <button id="roomStartBtn" class="go hidden" type="button">みんなで描きはじめる</button>
+    <p id="roomHelp" class="note"></p>
+    <button id="roomLeaveBtn" class="sub ghost" type="button">部屋を出る</button>
+  </div>
+</section>
+
+<!-- みんなのらくがき -->
+<section id="galleryScreen" class="screen hidden">
+  <div class="galWrap">
+    <p class="h2">みんなのらくがき</p>
+    <p id="galStatus" class="note"></p>
+    <div id="galGrid" class="galGrid"></div>
+    <div class="galBtns">
+      <button id="galMoreBtn" class="sub" type="button">もっと見る</button>
+      <button id="galRandomBtn" class="go blue" type="button">ランダムな相手と走る</button>
+      <button id="galBackBtn" class="sub ghost" type="button">もどる</button>
+    </div>
+  </div>
+</section>
+
+<!-- レース中 -->
+<section id="hud" class="hidden">
+  <div class="hudTop"><div id="rankNow" class="rankNow"></div><div class="prog" id="prog"></div><button id="skipBtn" type="button">スキップ</button></div>
+  <div class="hudSub"><div id="order" class="order"></div><div id="leftM" class="leftM"></div></div>
+  <div id="ticker" class="ticker"></div>
+  <button id="cheerBtn" class="cheer hidden" type="button"><span class="cg"><i id="cheerFill"></i></span><b>がんばれ!</b><small id="cheerLeft"></small></button>
+</section>
+
+<!-- 結果 -->
+<section id="resultScreen" class="screen hidden">
+  <div class="resultWrap">
+    <img id="resultImg" alt="レースの結果の画像">
+    <div class="resultBtns">
+      <div id="resBadges" class="badges"></div>
+      <button id="retryBtn" class="go big" type="button">もう一回!</button>
+      <div class="row2"><button id="againBtn" class="sub" type="button">コースを変える</button><button id="newBtn" class="sub" type="button">もう1匹描く</button></div>
+      <button id="taBtn" class="sub" type="button">この子でタイムアタック(ランキング)</button>
+      <a id="xBtn" class="xbtn" href="#" target="_blank" rel="noopener">X で見せびらかす</a>
+      <button id="saveBtn" class="go" type="button">画像を保存</button>
+      <button id="videoBtn" class="go blue" type="button">動画を保存</button>
+      <p id="videoNote" class="note"></p>
+      <a class="followbtn" href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener">作った人を X でフォロー</a>
+      <div id="vsResultBox" class="hidden">
+        <button id="resLinkBtn" class="sub" type="button">この結果のリンクを送る</button>
+        <button id="nextChallengeBtn" class="sub" type="button">この子で次の人に挑戦状</button>
+      </div>
+      <button id="postBtn" class="sub" type="button">みんなのらくがきに出す</button>
+      <button id="albumBtn2" class="sub" type="button">きろく・アルバム</button>
+      <button id="homeBtn" class="sub ghost" type="button">タイトルへ</button>
+    </div>
+    <div class="admax"><p class="adLabel">広告</p><iframe class="adFrame" data-src="ad.html" title="広告" width="300" height="250" scrolling="no"></iframe></div>
+  </div>
+</section>
+
+<!-- きろく・アルバム -->
+<section id="albumScreen" class="screen hidden">
+  <div class="galWrap">
+    <p class="h2 pill">きろく・アルバム</p>
+    <div id="albumTotals" class="totals"></div>
+    <div id="albumGrid" class="galGrid"></div>
+    <div class="galBtns"><button id="albumBackBtn" class="sub ghost" type="button">もどる</button></div>
+  </div>
+</section>
+
+<!-- 1匹のきろく -->
+<section id="petScreen" class="screen hidden">
+  <div class="galWrap">
+    <div class="petHead card"><canvas id="petCanvas" width="240" height="200"></canvas><div><p id="petName" class="h2"></p><p id="petBorn" class="note"></p><div id="petTotals" class="totals"></div></div></div>
+    <p class="h3">コースごとの自己ベスト</p>
+    <div id="petBests" class="bests"></div>
+    <p class="h3">出たレース</p>
+    <div id="petRaces" class="races"></div>
+    <div class="galBtns">
+      <button id="petRunBtn" class="go" type="button">この子で走る</button>
+      <button id="petTaBtn" class="go blue" type="button">この子でタイムアタック</button>
+      <button id="petBackBtn" class="sub ghost" type="button">アルバムへ</button>
+    </div>
+  </div>
+</section>
+
+<!-- タイムアタックのコース選び -->
+<section id="taScreen" class="screen hidden">
+  <div class="col">
+    <p class="h2 pill">タイムアタック</p>
+    <p class="note strong">1匹だけで走って、タイムをきそいます。だれが走らせても同じ結果になるので、ランキングはみんなの端末で走らせ直して確かめています</p>
+    <div id="taCourses" class="taCourses"></div>
+    <button id="taAll4Btn" class="go blue" type="button">4種目まとめて走る(合計タイム)</button>
+    <p id="taNote" class="note"></p>
+    <button id="taBackBtn" class="sub ghost" type="button">もどる</button>
+  </div>
+</section>
+
+<!-- ランキング -->
+<section id="rankScreen" class="screen hidden">
+  <div class="galWrap">
+    <p class="h2 pill">ランキング</p>
+    <div id="rankCourseTabs" class="tabs"></div>
+    <div id="rankPeriodTabs" class="tabs small"></div>
+    <p id="rankStatus" class="note"></p>
+    <div id="rankMine" class="rankMine hidden"></div>
+    <ol id="rankList" class="rankList"></ol>
+    <div class="galBtns">
+      <button id="rankJoinBtn" class="go" type="button">自分の子で挑戦する</button>
+      <button id="rankBackBtn" class="sub ghost" type="button">もどる</button>
+    </div>
+  </div>
+</section>
+
+<div id="toast" class="toast hidden"></div>
+<script src="sim.js?v=1016c"></script>
+<script src="main.js?v=1016c"></script>
+</body>
+</html>
