@@ -35,7 +35,18 @@ function markBusy(ms) { LS.set(BUSY_KEY, Date.now() + ms); }
 export function isQuotaError(e) { const t = String(e && (e.code || '')) + ' ' + String(e && e.message || ''); return /resource-exhausted|quota|429/i.test(t); }
 function busyError() { const e = new Error(BUSY_MSG); e.code = 'busy'; e.busy = true; return e; }
 const TIMEOUT_MS = 9000;
-async function guard(fn, ms) {
+// 読み(retry=true)は、混み合い・控えしか返らない時に3秒待って1回だけやり直す
+async function guard(fn, ms, retry) {
+  if (retry) {
+    if (isBusy()) throw busyError();
+    try { return await guard(fn, ms); }
+    catch (e) {
+      if (!(e && e.busy) || e.timeout === 'long') throw e;
+      LS.del(BUSY_KEY);
+      await new Promise(r => setTimeout(r, 3000));
+      return guard(fn, ms);
+    }
+  }
   if (isBusy()) throw busyError();
   let tm;
   try {
@@ -45,7 +56,7 @@ async function guard(fn, ms) {
     return r;
   } catch (e) {
     if (isQuotaError(e)) { markBusy(5 * 60 * 1000); throw busyError(); }
-    if (e && (e.code === 'timeout' || e.code === 'unavailable')) { markBusy(2 * 60 * 1000); const b = busyError(); b.timeout = true; throw b; }
+    if (e && (e.code === 'timeout' || e.code === 'unavailable')) { markBusy(2 * 60 * 1000); const b = busyError(); b.timeout = e.message === 'timeout' ? 'long' : true; throw b; }
     throw e;
   } finally { clearTimeout(tm); }
 }
@@ -123,7 +134,7 @@ export async function listCreatures(cursor) {
   let q = F.query(F.collection(db, 'creatures'), F.where('visible', '==', true), F.orderBy('created', 'desc'), F.limit(12));
   if (cursor && cursor.snap) q = F.query(q, F.startAfter(cursor.snap));
   else if (cursor && cursor.cached) q = F.query(q, F.startAfter(F.Timestamp.fromMillis(cursor.cached)));
-  const snap = await guard(() => F.getDocs(q));
+  const snap = await guard(() => F.getDocs(q), 0, true);
   const items = snap.docs.map(toItem).filter(Boolean);
   if (!cursor) {
     const lastDoc = snap.docs[snap.docs.length - 1];
@@ -140,7 +151,7 @@ export async function poolCreatures() {
 export async function randomCreature() {
   const pool = await poolCreatures().catch(e => { if (e && e.busy) throw e; return []; });
   if (pool.length >= 4) return pool[Math.floor(Math.random() * pool.length)];
-  return guard(randomRaw);
+  return guard(randomRaw, 0, true);
 }
 async function randomRaw() {
   const r = Math.random();
@@ -189,6 +200,7 @@ export async function joinRoom(code) {
     const s = await tx.get(ref);
     if (!s.exists()) throw new Error('その部屋はありません');
     const d = s.data();
+    if (d.created && d.created.toMillis && Date.now() - d.created.toMillis() > 3 * 3600 * 1000) throw new Error('その部屋はもう終わっています');
     if ((d.members || []).includes(uid())) return;
     if (d.state !== 'lobby') throw new Error('その部屋はもう始まっています');
     if ((d.members || []).length >= 3) throw new Error('その部屋はいっぱいです');
@@ -284,7 +296,7 @@ export async function listRank(course, period, verify) {
   for (let page = 0; page < 3; page++) {
     let q = F.query(F.collection(db, 'rank', b, 'entries'), F.orderBy('t'), F.limit(RANK_LIMIT));
     if (last) q = F.query(q, F.startAfter(last));
-    const snap = await guard(() => F.getDocs(q));
+    const snap = await guard(() => F.getDocs(q), 0, true);
     for (const d of snap.docs) {
       const x = d.data(); rows.push({ uid: d.id, name: x.name, data: x.data, t: x.t });
       if (!verify || !staleEntry(x, verify)) ok++;
