@@ -71,11 +71,19 @@ function setSound(on) { SND.on = on; if (SND.master) SND.master.gain.value = on 
 document.addEventListener('pointerdown', () => audioInit(), { capture: true });
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('button')) se('click', 0.35); }, { capture: true });
 
+const BUSY_MSG = 'いまは混み合っていて、みんなの絵とランキングが一時的に見られません';
 // ---------- 生き物の保存・読み込み(ここ1か所にまとめる。みんなのらくがきは online.js) ----------
 const Store = {
   saveMine(cr) { try { const a = Store.listMine(); a.unshift(cr); localStorage.setItem(CFG.STORE_KEY + '_mine', JSON.stringify(a.slice(0, 12))); } catch (e) { } },
   listMine() { try { const a = JSON.parse(localStorage.getItem(CFG.STORE_KEY + '_mine') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } },
   online: null,
+  busyShown: false,
+  // 無料枠切れ(混み合い)の時は短く1回だけ知らせる。ひとりで遊ぶ・描く・共有はそのまま
+  busy(e) {
+    if (!(e && e.busy)) return false;
+    if (!Store.busyShown) { Store.busyShown = true; toast(BUSY_MSG, 4000); }
+    return true;
+  },
   async remote() {
     if (Store.online) return Store.online;
     const m = await import('./online.js');
@@ -664,6 +672,7 @@ function openPrep() {
   $('courseTitle').textContent = link ? '挑戦状のコースをえらぶ' : 'コースをえらぶ';
   $('prepGoBtn').textContent = link ? 'このコースで挑戦状をつくる' : 'このコースに決定!';
   show('prepScreen');
+  if (G.mode === 'solo') prefetchGalleryPool();
   const d = new Doodle(G.me, G.meInfo, 210);
   const cv = $('prepCanvas'), ctx = cv.getContext('2d');
   cancelAnimationFrame(prepAnim);
@@ -702,10 +711,18 @@ $('prepGoBtn').onclick = () => {
 // ひとりで: 毎回ちがう相手5匹(みんなのらくがきから取れていれば、そのうち最大3匹は本物の絵)
 G.cpuRecent = { kinds: [], names: [] };
 G.galPool = [];
+// みんなのらくがきは起動の時には読まない(ひとりで走るコースえらびの時だけ。online.js が端末に60分覚えて使い回す)。
+// 混み合っている時・つながらない時は G.galPool が空のままで、CPU は作った絵だけで走る。
+let galPoolAt = 0;
 async function prefetchGalleryPool() {
-  try { const m = await Store.remote(); const r = await m.listCreatures(null); G.galPool = (r.items || []).map(it => it.creature).filter(c => c && c.strokes && c.strokes.length); } catch (e) { }
+  if (Date.now() - galPoolAt < 5 * 60 * 1000) return;
+  galPoolAt = Date.now();
+  try {
+    const m = await Store.remote();
+    const items = m.poolCreatures ? await m.poolCreatures() : (await m.listCreatures(null)).items;
+    G.galPool = (items || []).map(it => it.creature).filter(c => c && c.strokes && c.strokes.length);
+  } catch (e) { Store.busy(e); }
 }
-setTimeout(() => { prefetchGalleryPool(); }, 2500);
 function soloRace() {
   const seed = newSeed();
   const pool = G.galPool.filter(c => !(G.me && c.name === G.me.name && JSON.stringify(c.strokes).length === JSON.stringify(G.me.strokes).length));
@@ -1173,7 +1190,7 @@ $('postBtn').onclick = async () => {
   if (!G.me) return;
   $('postBtn').disabled = true;
   try { const m = await Store.remote(); await m.postCreature(G.me, G.meInfo); toast('みんなのらくがきに出しました'); $('postBtn').textContent = '出しました'; }
-  catch (e) { toast(e && e.message ? e.message : '出せませんでした'); $('postBtn').disabled = false; }
+  catch (e) { toast(e && e.busy ? 'いまは混み合っていて出せません。少したってからもう一度どうぞ' : (e && e.message ? e.message : '出せませんでした'), 3500); $('postBtn').disabled = false; }
 };
 
 // ---------- 動画(レースの見どころ + 結果の1枚。MediaRecorder) ----------
@@ -1353,11 +1370,11 @@ const Room = {
     show('roomScreen');
     history.replaceState(null, '', location.pathname + location.search + '#room=' + code);
     Room.unsub && Room.unsub();
-    Room.unsub = m.watchRoom(code, (data, entries) => Room.onUpdate(data, entries));
+    Room.unsub = m.watchRoom(code, (data, entries, err) => Room.onUpdate(data, entries, err));
   },
-  onUpdate(data, entries) {
+  onUpdate(data, entries, err) {
     Room.data = data; Room.entries = entries || {};
-    if (!data) { $('roomStatus').textContent = 'この部屋は見つかりません'; return; }
+    if (!data) { $('roomStatus').textContent = err && /resource-exhausted|quota/i.test(String(err.code || err.message)) ? 'いまは混み合っていて部屋につながりません。「挑戦状リンクを回す」なら遊べます' : 'この部屋は見つかりません'; return; }
     const m = Store.online;
     const members = data.members || [];
     const mineIn = members.includes(m.uid());
@@ -1382,6 +1399,7 @@ const Room = {
     }
     if (data.state === 'race' && !Room.raced) {
       Room.raced = true; clearInterval(Room.timer);
+      setTimeout(() => { if (Room.raced && Room.unsub) { Room.unsub(); Room.unsub = null; } }, 0);
       const order = data.order || [];
       const crs = order.map(u => entries[u] && entries[u].creature).filter(Boolean);
       const meIdx = order.indexOf(m.uid());
@@ -1416,6 +1434,7 @@ const Room = {
 };
 function roomFail(e) {
   console.error(e);
+  if (e && e.busy) { toast('いまは混み合っていて部屋につながりません。「挑戦状リンクを回す」なら遊べます', 4500); goTitle(); return; }
   toast((e && e.message ? e.message + '。' : '') + '部屋につながりません。「挑戦状リンクを回す」なら遊べます', 4500);
   goTitle();
 }
@@ -1429,7 +1448,7 @@ $('roomLeaveBtn').onclick = () => { Room.leave(); goTitle(); };
 const Gal = { cursor: null, items: [] };
 async function openGallery() {
   show('galleryScreen'); $('galStatus').textContent = '読みこみ中…'; $('galGrid').innerHTML = ''; Gal.cursor = null; Gal.items = [];
-  try { await galleryMore(); } catch (e) { $('galStatus').textContent = 'いまは読みこめません(' + (e.message || e) + ')'; }
+  try { await galleryMore(); } catch (e) { $('galStatus').textContent = e && e.busy ? BUSY_MSG + '。ひとりで走る・描く・共有はそのまま遊べます' : 'いまは読みこめません(' + (e.message || e) + ')。ひとりで走る・描く・共有はそのまま遊べます'; $('galMoreBtn').classList.add('hidden'); }
 }
 async function galleryMore() {
   const m = await Store.remote();
@@ -1453,8 +1472,8 @@ async function galleryMore() {
 }
 function vsGallery(cr) { G.opponent = cr; startDraw('gallery', { title: `「${cr.name}」と走る生き物を描いてね`, rivals: [cr] }); }
 $('galleryBtn').onclick = () => openGallery();
-$('galMoreBtn').onclick = () => galleryMore().catch(e => toast(e.message));
-$('galRandomBtn').onclick = async () => { try { const m = await Store.remote(); const it = await m.randomCreature(); if (!it) { toast('まだだれもいません'); return; } vsGallery(it.creature); } catch (e) { toast(e.message || '読みこめません'); } };
+$('galMoreBtn').onclick = () => galleryMore().catch(e => toast(e && e.busy ? BUSY_MSG : e.message, 3500));
+$('galRandomBtn').onclick = async () => { try { const m = await Store.remote(); const it = await m.randomCreature(); if (!it) { toast('まだだれもいません'); return; } vsGallery(it.creature); } catch (e) { toast(e && e.busy ? BUSY_MSG : (e.message || '読みこめません'), 3500); } };
 $('galBackBtn').onclick = () => goTitle();
 
 // ---------- タイトル ----------
@@ -1823,7 +1842,7 @@ $('taAll4Btn').onclick = async () => {
   const sum = Math.round(ts.reduce((a, b) => a + b, 0) * 1000) / 1000;
   $('taNote').textContent = `4種目の合計 ${sum.toFixed(2)}秒(${RU.COURSE_IDS.map((c, i) => fmtCourse(c) + ' ' + ts[i].toFixed(2)).join(' / ')})。送っています…`;
   try { const m = await Store.remote(); const r = await m.submitRank('all4', cr, sum, st => verifyTime('all4', st)); $('taNote').textContent += r.improved ? ' ランキングに登録しました' : ' (前のタイムの方が速いので、そのまま)'; G.rankTab = { course: 'all4', period: 'all' }; }
-  catch (e) { $('taNote').textContent += ' ランキングに送れませんでした(ネットにつながっていないかも)。'; }
+  catch (e) { $('taNote').textContent += e && e.busy ? ' いまは混み合っていてランキングに送れません(記録は端末に残ります)。' : ' ランキングに送れませんでした(ネットにつながっていないかも)。'; }
 };
 $('taBackBtn').onclick = () => { if (G.petId) openPet(G.petId) || openAlbum(); else goTitle(); };
 $('taBtn').onclick = () => { if (G.me) openTA(G.me); };
@@ -1835,7 +1854,7 @@ async function submitTA(sc) {
     const m = await Store.remote();
     const r = await m.submitRank(sc.course, e.cr, Math.round(t * 1000) / 1000, st => verifyTime(sc.course, st));
     add(r.improved ? 'ランキングに登録しました' : 'ランキングは前のタイムのまま', 'blue');
-  } catch (err) { add('ランキングに送れませんでした(オフラインかも)', ''); }
+  } catch (err) { add(err && err.busy ? 'いまは混み合っていてランキングに送れません' : 'ランキングに送れませんでした(オフラインかも)', ''); }
 }
 
 // ---------- ランキング ----------
@@ -1861,13 +1880,14 @@ async function openRank() {
   try {
     const m = await Store.remote();
     const { course, period } = G.rankTab;
-    const rows = await m.listRank(course, period);
+    const rows = await m.listRank(course, period, st => verifyTime(course, st));
     if (myTurn !== G.rankSeq) return;
     let shown = 0, dropped = 0, mine = null;
     for (const r of rows) {
       let cr = null; try { cr = m.unpackCreature(r.data); } catch (e) { }
       const tv = cr ? verifyTime(course, cr.strokes) : null;
       if (tv == null || Math.abs(tv - r.t) > 0.002) { dropped++; continue; }
+      if (shown >= (m.RANK_LIMIT || 50)) break;
       shown++;
       const li = document.createElement('li'); li.className = 'rk' + (r.uid === m.uid() ? ' me' : '') + (shown <= 3 ? ' top' + shown : '');
       const c = document.createElement('canvas'); c.width = 72; c.height = 56; drawThumb(c, cr);
@@ -1881,11 +1901,11 @@ async function openRank() {
     $('rankStatus').textContent = shown ? `${label}の上位 ${shown} 匹(みんなの端末で走らせ直して確かめたタイムだけ)` + (dropped ? ` / 合わない ${dropped} 件は出していません` : '') : `${label}はまだだれも記録していません。一番乗りのチャンス!`;
     const mb = $('rankMine');
     if (mine) { mb.innerHTML = `あなたは <b>${mine.rank}位</b>(${mine.name}・${mine.t.toFixed(2)}秒)`; mb.classList.remove('hidden'); }
-    else { const my = await m.myRank(course, period).catch(() => null); if (my) { mb.innerHTML = `あなたの記録 ${my.t.toFixed(2)}秒(上位50位の外)`; mb.classList.remove('hidden'); } }
+    else { const my = await m.myRank(course, period).catch(() => null); if (my) { mb.innerHTML = `あなたの記録 ${my.t.toFixed(2)}秒(上位${m.RANK_LIMIT || 20}位の外)`; mb.classList.remove('hidden'); } }
   } catch (e) {
     console.error(e);
     const perm = /permission/i.test(String(e && (e.code || e.message)));
-    $('rankStatus').textContent = perm ? 'ランキングはただいま準備中です。ほかの遊びはそのまま遊べます' : 'いまはランキングを読みこめません(ネットにつながっていないかも)。ほかの遊びはそのまま遊べます';
+    $('rankStatus').textContent = e && e.busy ? BUSY_MSG + '。ひとりで走る・描く・共有はそのまま遊べます' : perm ? 'ランキングはただいま準備中です。ほかの遊びはそのまま遊べます' : 'いまはランキングを読みこめません(ネットにつながっていないかも)。ほかの遊びはそのまま遊べます';
   }
 }
 $('rankBtn').onclick = () => openRank();
