@@ -137,6 +137,7 @@ def build():
         body = markdown.markdown(body_md, extensions=['tables', 'fenced_code'])
         (OUT / f'{slug}.html').write_text(PAGE.format(title=html.escape(title), desc=html.escape(desc), slug=slug, date=date, body=body, banner=banner(slug), app=app_box(slug)), encoding='utf-8', newline=chr(10))
         items.append((slug, title, date))
+    import inject_tester_box  # 全記事に同じ Android テスター募集の箱を入れる
     return items
 
 
