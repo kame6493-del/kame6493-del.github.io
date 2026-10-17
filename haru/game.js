@@ -1363,7 +1363,7 @@ function updatePlayer(dt) {
       p.vx += dir * acc * dt;
       if (p.attackT <= 0) p.face = dir;
     } else if (p.onGround) {
-      const f = (p.slideT > 0 ? (onIce ? 90 : 380) : onIce ? 420 : FRICT) * dt;
+      const f = (onIce ? 420 : FRICT) * dt;
       p.vx = Math.abs(p.vx) <= f ? 0 : p.vx - Math.sign(p.vx) * f;
     } else if (!(p.launchT > 0)) {
       // 空中で手を離したら少しずつ止まる(動きを決めやすく)
@@ -1408,15 +1408,15 @@ function updatePlayer(dt) {
   const wallR = wj(Math.floor((p.x + p.w + 3) / TILE), midY) || wj(Math.floor((p.x + p.w + 3) / TILE), lowY);
   p.wallSlide = !p.onGround && !p.swim && p.vy * gd > 0 && ((dir < 0 && wallL) || (dir > 0 && wallR)) ? dir : 0;
   if (p.wallSlide) { p.airJumps = Math.max(p.airJumps, 0); if (Math.random() < dt * 14) dust(p.wallSlide > 0 ? p.x + p.w : p.x, p.y + p.h - 10, 1); }
-  // しゃがみ(↓)。はやく 走っていたら しゃがみすべり(ぶつかった 敵を たおす)
+  // しゃがみ(↓)
   if (gd > 0 && p.onGround && held('down') && !p.swim && !p.mount && !p.carry && !p.fly) {
-    if (!p.crouch) { p.crouch = true; p.y += 18; p.h = 36; if (Math.abs(p.vx) > 250) { p.slideT = 1; sfx('dash', 0.8); dust(p.x + p.w / 2, p.y + p.h, 4); if (!world.seenSlide) { world.seenSlide = true; toast = { text: 'しゃがみすべり!', sub: 'すべって ぶつかった てきを たおす', t: 2 }; } } }
+    if (!p.crouch) { p.crouch = true; p.y += 18; p.h = 36; if (!onIce) p.vx = 0; }
   } else if (p.crouch && (!held('down') || !p.onGround || p.swim || p.mount)) {
     const x0 = Math.floor((p.x + 2) / TILE), x1 = Math.floor((p.x + p.w - 2) / TILE), ty = Math.floor((p.y - 18) / TILE);
     let free = true; for (let tx = x0; tx <= x1; tx++) if (isSolid(tx, ty)) free = false;
     if (free || !p.onGround) { p.crouch = false; p.y -= 18; p.h = 54; p.slideT = 0; }
   }
-  if (p.crouch) { if (p.slideT > 0) { dir = 0; if (Math.abs(p.vx) < 60) p.slideT = 0; else if (Math.random() < dt * 20) dust(p.x + p.w / 2, p.y + p.h, 1); } else dir = 0; }
+  if (p.crouch) dir = 0;
   // 上を 見る / 下を 見る(とまって 0.5びょう おしつづけると 画面が 少し うごく)
   p.lookU = gd > 0 && p.onGround && !dir && Math.abs(p.vx) < 10 && held('up') && !p.crouch ? (p.lookU || 0) + dt : 0;
   p.lookD = gd > 0 && p.onGround && p.crouch && !p.slideT && Math.abs(p.vx) < 10 ? (p.lookD || 0) + dt : 0;
@@ -2510,7 +2510,7 @@ function playerVsEnemy(o) {
   if (o.type === 'wizard' && o.alpha < 0.6) return;
   // 当たり判定は 見た目より 少し小さく(かすっただけで やられないように)。ふむ判定は 今のまま
   if (!overlap(p, o)) return;
-  if ((p.starT > 0 || (p.slideT > 0 && !SPIKY_T.has(o.type))) && !o.d.boss) { p.starCombo = (p.starCombo || 0) + 1; defeat(o, true, Math.min(8, p.starCombo)); sfx('hit', 1.2); hitStop(0.03); return; }
+  if ((p.starT > 0) && !o.d.boss) { p.starCombo = (p.starCombo || 0) + 1; defeat(o, true, Math.min(8, p.starCombo)); sfx('hit', 1.2); hitStop(0.03); return; }
   const fair = { x: p.x + 4, y: p.y + 6, w: p.w - 8, h: p.h - 8 };
   if ((p.gdir || 1) < 0) {
     // さかさまの ときは 下から(上へ おちながら)ふむ
@@ -4551,7 +4551,7 @@ function drawHelp(t) {
     rows.forEach((r, i) => helpRow(y0 + i * 48, r[0], r[1], ART[r[2]] || IMG[r[2]] ? r[2] : null, r[3]));
     if (P0) { ctx.fillStyle = '#ffd84a'; ctx.font = font(14, 800); ctx.textAlign = 'center'; ctx.fillText('きいろの わくが いまの ばめんで つかえる そうさ', VW / 2, 512); }
   } else if (p === 3) {
-    const rows = [[['↓'], 'しゃがむ(ひくい すきまを とおる)', 'hero_crouch'], [['はしって', '↓'], 'しゃがみすべり: すべって てきを たおす', 'hero_slide'], [['V', 'おりる'], 'スピンジャンプで おりると レンガを わる', 'hero_spin'],
+    const rows = [[['↓'], 'しゃがむ', 'hero_crouch'], [['V', 'おりる'], 'スピンジャンプで おりると レンガを わる', 'hero_spin'],
       [['かべへ', '→'], 'がけに つかまる → ↑・ジャンプで のぼる', 'hero_hang'], [['かべへ', 'ジャンプ'], 'かべジャンプ(かべを すべりおりる)', null], [['↑', 'ながく'], 'うえを みる', 'hero_lookup'], [['↓', 'ながく'], 'したを みる', null], [['…'], 'なにも しないと すわって ひとやすみ', 'hero_sit']];
     rows.forEach((r, i) => helpRow(y0 + i * 48, r[0], r[1], ART[r[2]] ? r[2] : null));
   } else {
@@ -5954,7 +5954,7 @@ function drawPlayer0() {
   let alt = null;
   if (p.dead || p.hurtT > 0) alt = 'hero_hurt';
   else if (p.hang) alt = 'hero_hang';
-  else if (p.crouch) alt = p.slideT > 0 ? 'hero_slide' : 'hero_crouch';
+  else if (p.crouch) alt = 'hero_crouch';
   else if (p.swim && !p.onGround) alt = 'hero_swim';
   else if (world.clear && p.onGround) alt = 'hero_win';
   else if (p.onGround && p.idleT > 6) alt = p.idleT % 7 > 5.2 ? 'hero_yawn' : 'hero_sit';

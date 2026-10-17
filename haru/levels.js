@@ -545,7 +545,6 @@ function sections(L) {
     L.put(x + 2, top - 1, '&');
     L.fill(x + 8, x + 8, top - 3, top - 1, 'B'); L.fill(x + 8, x + 14, top - 4, top - 4, 'S'); L.fill(x + 14, x + 14, top - 3, top - 1, 'S');
     L.put(x + 11, top - 1, 'c'); L.row(x + 9, top - 3, 'ooooo');
-    L.row(x + 9, top - 6, 'BBBBB');
     en(x, o.en);
     return x + 16;
   };
