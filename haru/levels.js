@@ -114,9 +114,17 @@ function sections(L) {
   S.axe = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 9, top); L.hazard(x + 5, 'axe', { y: top - 7 }); L.row(x + 3, top - 2, 'ooo'); return x + 10; };
   S.chest = (x, o = {}) => { const top = o.top ?? 10, ch = o.ch || 'S'; L.ground(x, x + 9, top); L.fill(x + 4, x + 6, top - 3, top - 3, ch); L.put(x + 5, top - 4, 'c'); en(x, o.en); return x + 10; };
   S.power = (x, blockCh, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 7, top); L.row(x + 2, top - 4, 'B' + blockCh + 'B'); en(x, o.en); return x + 8; };
-  S.updraftGap = (x, w, o = {}) => { L.hazard(x + Math.floor(w / 2) - 1, 'updraft', { h: 10, w: 2 }); L.row(x + 1, 3, 'o'.repeat(w - 2)); if (o.star) L.put(x + Math.floor(w / 2), 2, '*'); return x + w; };
-  S.bubbles = (x, n, o = {}) => { const top = o.top ?? 10, w = n * 4 + 2; for (let i = 0; i < n; i++) L.mover(x + 1 + i * 4, top - 3 - (i % 2), 'bubble'); if (o.star) L.put(x + Math.floor(w / 2), hi(top - 8), '*'); en(x, o.en); return x + w; };
-  S.balloon = (x, o = {}) => { const top = o.top ?? 10, py = Math.max(top - 7, 3); L.mover(x + 1, top - 2, 'balloon', { range: Math.min(6, top - 2 - py + 1) }); L.row(x + 4, py, '~~~~'); if (o.star) L.put(x + 6, py - 1, '*'); else L.row(x + 4, py - 1, 'oooo'); return x + 9; };
+  S.updraftGap = (x, w, o = {}) => { w = Math.max(w, 18); L.hazard(x + Math.floor(w / 3) - 1, 'updraft', { h: 10, w: 2 }); L.hazard(x + Math.floor(w * 2 / 3) - 1, 'updraft', { h: 10, w: 2 }); L.row(x + 1, 3, 'o'.repeat(w - 2)); if (o.star) L.put(x + Math.floor(w / 2), 2, '*'); return x + w; };
+  S.bubbles = (x, n, o = {}) => { n = Math.max(n, 7); const top = o.top ?? 10, w = n * 4 + 2; for (let i = 0; i < n; i++) L.mover(x + 1 + i * 4, top - 3 - (i % 2), 'bubble'); if (o.star) L.put(x + Math.floor(w / 2), hi(top - 8), '*'); en(x, o.en); return x + w; };
+  // 2026-10-17: ふうせんは のると 上がってから 右へ ながれて 大きな 穴(28マス)を こえる。おりると しばらくして もとの 場所に もどる
+  S.balloon = (x, o = {}) => { const top = o.top ?? 10, gap = 28, py = Math.max(top - 5, 3);
+    if (!L.cpNear(x)) L.put(x + 1, top - 1, 'C');
+    L.ground(x, x + 3, top); if (o.lava) L.lava(x + 4, x + 3 + gap, top + 1);
+    L.mover(x + 3, top - 1, 'balloon', { range: top - 1 - py, drift: gap - 1 });
+    L.row(x + 9, py - 2, 'oooo'); L.row(x + 18, py - 2, 'oooo');
+    if (o.star) L.put(x + 14, hi(py - 3), '*');
+    L.ground(x + 4 + gap, x + 8 + gap, top);
+    return x + 9 + gap; };
   S.water = (x, w, o = {}) => { L.ground(x, x + w - 1, 11); L.water(x, x + w - 1, 7); L.row(x + 2, 10, 'o'.repeat(Math.min(5, w - 4))); if (o.fish) o.fish.forEach((dx, i) => L.enemy(x + dx, 'fish', { jump: 680, phase: i * 0.7 })); if (o.pillars) o.pillars.forEach(dx => L.fill(x + dx, x + dx + 1, 4, 8, 'S')); if (o.star) L.put(x + o.star, 10, '*'); return x + w; };
   S.door = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 5, top); L.wall(x + 2, top - 8, top - 3); L.door(x + 2, top - 1); if (o.star) L.put(x + 4, top - 1, '*'); L.row(x + 3, top - 3, 'gg'); return x + 6; };
   S.goal = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 13, top); L.stairs(x + 1, top, 5, +1, o.ch || '#'); L.put(x + 10, top - 1, 'G'); if (o.deco) L.deco(x + 12, o.deco, 1); return x + 14; };
@@ -337,8 +345,9 @@ function sections(L) {
     const top = o.top ?? 10;
     L.ground(x, x + 11, top);
     L.put(x + 3, top - 3, 'N');
-    L.fill(x + 4, x + 5, 3, top - 1, o.ch || 'S');
-    L.row(x + 4, 2, 'oo');
+    // 2026-10-17: かべは 上まで(2行目から)。左の 面は トゲ → つるで のぼるしか ない
+    L.fill(x + 5, x + 5, 2, top - 1, o.ch || 'S'); L.fill(x + 4, x + 4, 2, top - 1, 'K');
+    L.row(x + 4, 1, 'oo');
     if (o.star) L.put(x + 9, hi(top - 6), '*');
     en(x, o.en);
     return x + 12;
@@ -346,6 +355,8 @@ function sections(L) {
   // ジップライン: 台の上で ジャンプして とってに つかまると、穴の むこうまで すべる
   S.zip = (x, w, o = {}) => {
     const top = o.top ?? 10, ch = o.ch || '#';
+    w = Math.max(w, 38); // 2026-10-17: ジャンプでは とどかない 長さ(穴 28マス)
+    if (!L.cpNear(x)) L.put(x + 1, top - 1, 'C');
     if (o.hint) L.hint(x, 'ジップライン', 'ジャンプして とってに つかまろう');
     L.ground(x, x + 4, top); L.fill(x + 2, x + 4, top - 2, top - 1, ch);
     L.ground(x + w - 5, x + w - 1, top);
@@ -393,6 +404,8 @@ function sections(L) {
   // ほしの たいほう: はいると ななめ上へ とばされて 大きな 穴を こえる
   S.cannon = (x, gap, o = {}) => {
     const top = o.top ?? 10;
+    const gap0 = gap; gap = Math.max(gap, 28); o = Object.assign({}, o, { power: Math.round((o.power || 1100) * Math.sqrt(gap / Math.max(8, gap0)) * 1.0) });
+    if (!L.cpNear(x)) L.put(x + 1, top - 1, 'C');
     if (o.hint) L.hint(x, 'ほしの たいほう', 'はいると とびだすよ(ジャンプで すぐ うてる)');
     L.ground(x, x + 3, top);
     L.hazard(x + 2, 'cannon', { ang: o.ang ?? -55, power: o.power || 1100 });
@@ -430,9 +443,12 @@ function sections(L) {
   // ---------- ワールド8: かんらんしゃ・くずれる つりばし・かげハル ----------
   // かんらんしゃの 足場で 穴を わたる
   S.wheel = (x, o = {}) => {
+    if (!o.one) { if (!L.cpNear(x)) L.put(x, (o.top ?? 10) - 1, 'C'); const r0 = Math.min(o.r || 3, 3), step = 2 * r0 + 4; L.ground(x, x + 1, o.top ?? 10); if (o.lava) L.lava(x + 2, x + 2 + step * 3, (o.top ?? 10) + 1);
+      for (let i = 0; i < 3; i++) S.wheel(x + 2 + i * step - 2, Object.assign({}, o, { one: true, mid: true, hint: o.hint && i === 0, star: o.star && i === 1, en: i === 2 ? o.en : null }));
+      const ex = x + 2 + step * 3; L.ground(ex, ex + 3, o.top ?? 10); return ex + 4; }
     const top = o.top ?? 10, r = Math.min(o.r || 3, 3), w = 2 * r + 6, cx = x + Math.floor(w / 2), cy = top - r - 1;
-    L.ground(x, x + 1, top); L.ground(x + w - 2, x + w - 1, top);
-    if (o.lava) L.lava(x + 2, x + w - 3, top + 1);
+    if (!o.mid) { L.ground(x, x + 1, top); L.ground(x + w - 2, x + w - 1, top); }
+    if (o.lava && !o.mid) L.lava(x + 2, x + w - 3, top + 1);
     if (o.hint) L.hint(x, 'かんらんしゃ', 'まわる 足場に のって わたろう');
     L.hazard(cx, 'wheelhub', { y: cy, r, n: o.n || 4, sp: o.sp || 0.6 });
     const n = o.n || 4;
@@ -715,6 +731,7 @@ function sections(L) {
   };
   // しずむ うきぎ: 穴(ようがん か 水)の 上の 丸太。のると しずむ。とまらずに わたる
   S.logs = (x, n, o = {}) => {
+    n = Math.max(n, 7); if (!L.cpNear(x)) L.put(x + 1, (o.top ?? 10) - 1, 'C');
     const top = o.top ?? 10, w = 3 + n * 4 + 3;
     if (o.hint) L.hint(x, 'しずむ うきぎ', 'のると しずんで いく。とまらずに わたろう');
     L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
@@ -757,12 +774,14 @@ function sections(L) {
   };
   // ぶらんこ: 穴の 上に つるの ぶらんこを ならべる
   S.swings = (x, n, o = {}) => {
-    const top = o.top ?? 10, gap = o.gap || 6, w = 4 + n * gap + 4;
+    // 2026-10-17: ぶらんこは 6つ・間かく 5マス(穴 30マス)。間かく 6だと 力の 1わり 弱い 試験で わたれなかった
+    n = o.safe ? n : Math.max(n, 6); if (!L.cpNear(x)) L.put(x + 1, (o.top ?? 10) - 1, 'C');
+    const top = o.top ?? 10, gap = o.gap || (o.safe ? 6 : 5), w = 4 + n * gap + 4;
     if (o.hint) L.hint(x, 'ぶらんこ', 'とびついて ←→で こぐ。ジャンプで とびだす');
     L.ground(x, x + 3, top); L.ground(x + w - 4, x + w - 1, top);
     if (o.lava) L.lava(x + 4, x + w - 5, top + 1);
     if (o.safe) L.ground(x + 4, x + w - 5, top);
-    for (let i = 0; i < n; i++) { const ax = x + 4 + Math.floor(gap / 2) + i * gap; L.hazard(ax, 'swing', { y: Math.max(1, top - 9), len: o.len || 4, th0: (i % 2 ? -1 : 1) * (o.th0 || 0.8) }); L.row(ax - 1, top - 6, 'o o'); }
+    for (let i = 0; i < n; i++) { const ax = x + 4 + Math.floor(gap / 2) + i * gap; L.hazard(ax, 'swing', { y: Math.max(1, top - 9), len: o.len || (o.safe ? 4 : 5), th0: (i % 2 ? -1 : 1) * (o.th0 || 0.8) }); L.row(ax - 1, top - 6, 'o o'); }
     if (o.star) L.put(x + 4 + Math.floor(gap / 2) + (n - 1) * gap + 1, top - 5, '*');
     en(x, o.en);
     return x + w;

@@ -808,8 +808,10 @@ function updateThingX(o, dt) {
     }
     case 'x_raft': {
       const prevX = o.x, prevY = o.y;
-      if (pFeetOn(o, 8)) o.moving = true;
-      if (o.moving && o.x < o.xEnd) o.x = Math.min(o.xEnd, o.x + 110 * dt);
+      // 2026-10-17: のって いる 間だけ すすむ。だれも のって いないと 1.5びょうで もとの 岸へ もどる(水に おちても やりなおせる)
+      const onR = pFeetOn(o, 8); if (onR) { o.moving = true; o.idleT = 0; } else o.idleT = (o.idleT || 0) + dt;
+      if (onR && o.x < o.xEnd) o.x = Math.min(o.xEnd, o.x + 110 * dt);
+      else if (!onR && o.idleT > 1.5 && o.x > o.x0) o.x = Math.max(o.x0, o.x - 220 * dt);
       o.y = o.y0 + Math.sin(o.ph * 2.2) * 3;
       o.dx = o.x - prevX; o.dy = o.y - prevY; return true;
     }
@@ -1167,8 +1169,8 @@ function xSections(S, L) {
   X.bumper = (x, top, w) => { L.ground(x, x + 15, top); L.hazard(x + 5, 'x_bumper', { y: H(top - 4) }); L.hazard(x + 10, 'x_bumper', { y: H(top - 6) + 1 }); L.row(x + 9, H(top - 8), 'ooo'); en(x, [[13, w.g[0]]]); return x + 16; };
   X.tree = (x, top, w) => { L.ground(x, x + 11, top); L.hazard(x + 5, 'x_tree', { y: top - 1 }); en(x, [[10, w.g[1 % w.g.length]]]); return x + 12; };
   X.paint = (x, top, w, g) => { L.ground(x, x + 19, top); for (const k of [2, 5, 8, 11]) L.hazard(x + k, 'x_paint', { y: top - 1, g }); L.fill(x + 14, x + 17, top - 4, top - 4, 'S'); L.fill(x + 17, x + 17, top - 3, top - 1, 'S'); L.hazard(x + 14, 'x_gate', { y: top - 3, h: 3, g }); L.put(x + 16, top - 1, 'c'); en(x, [[7, w.g[0]]]); return x + 20; };
-  X.pend = (x, top) => { L.ground(x, x + 2, top); L.hazard(x + 6, 'x_pend', { y: H(top - 7), len: Math.min(5, top - 2 - H(top - 7)), amp: 0.75, sp: 1.5 }); L.row(x + 5, H(top - 5), 'ooo'); L.ground(x + 11, x + 13, top); return x + 14; };
-  X.raft = (x, top, w) => { L.ground(x, x + 2, top); L.fill(x + 3, x + 16, top, ROWS - 1, ' '); L.water(x + 3, x + 16, top + 1, ROWS - 1); L.hazard(x + 3, 'x_raft', { y: top - 0, dist: 11 }); L.row(x + 6, top - 3, 'oooo'); L.ground(x + 17, x + 19, top); return x + 20; };
+  X.pend = (x, top) => { L.ground(x, x + 2, top); if (!L.cpNear(x)) L.put(x + 1, top - 1, 'C'); for (let i = 0; i < 4; i++) { L.hazard(x + 6 + i * 8, 'x_pend', { y: H(top - 7), len: Math.min(5, top - 2 - H(top - 7)), amp: 0.75, sp: 1.5, phase: i * 1.1 }); L.row(x + 5 + i * 8, H(top - 5), 'ooo'); } L.ground(x + 37, x + 39, top); return x + 40; };
+  X.raft = (x, top, w) => { L.ground(x, x + 2, top); if (!L.cpNear(x)) L.put(x + 1, top - 1, 'C'); L.fill(x + 3, x + 30, top, ROWS - 1, ' '); L.water(x + 3, x + 30, top + 1, ROWS - 1); L.hazard(x + 3, 'wind', { y: top + 1, h: ROWS - top - 1, w: 28, dir: -1, v: 420, fx: x + 30, water: true }); L.hazard(x + 3, 'x_raft', { y: top - 0, dist: 25 }); L.row(x + 8, top - 3, 'oooo'); L.row(x + 20, top - 3, 'oooo'); L.ground(x + 31, x + 33, top); return x + 34; };
   X.fall = (x, top, w) => { L.ground(x, x + 15, top); L.fill(x + 7, x + 9, top - 2, top - 1, 'S'); L.hazard(x + 4, 'x_fall', { w: 2, per: 4 }); L.hazard(x + 11, 'x_fall', { w: 2, per: 4, phase: 2 }); L.row(x + 7, top - 4, 'ooo'); en(x, [[14, w.g[0]]]); return x + 16; };
   X.qsand = (x, top, w) => { L.ground(x, x + 3, top); L.fill(x + 4, x + 6, top, ROWS - 1, ' '); L.hazard(x + 4, 'x_qsand', { y: top, w: 3 }); L.ground(x + 7, x + 10, top); L.fill(x + 11, x + 13, top, ROWS - 1, ' '); L.hazard(x + 11, 'x_qsand', { y: top, w: 3 }); L.ground(x + 14, x + 17, top); L.row(x + 4, top - 3, 'ooo'); en(x, [[15, w.g[0]]]); return x + 18; };
   X.elev = (x, top) => { const wh = Math.min(6, top - 4); L.ground(x, x + 13, top); L.fill(x + 8, x + 13, top - wh, top - 1, 'S'); L.hazard(x + 5, 'x_elev', { y: top - 1, rise: wh - 1 }); L.row(x + 9, H(top - wh - 2), 'oooo'); L.ground(x + 14, x + 17, top - wh); L.fill(x + 14, x + 17, top - wh + 1, ROWS - 1, 'S'); L.ground(x + 18, x + 22, top); down(x + 18, top, wh - 1); return x + 23; };
