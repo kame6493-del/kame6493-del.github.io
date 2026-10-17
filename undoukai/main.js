@@ -990,7 +990,7 @@ async function finishRace(opts) {
   const vs = sc.mode === 'link' || sc.mode === 'room' || sc.mode === 'view';
   $('vsResultBox').classList.toggle('hidden', !vs);
   result.link = vs && sc.challengeStr ? shareBase() + '#c=' + sc.challengeStr : '';
-  $('xBtn').href = intentUrl(result);
+  $('xBtn').href = intentUrl(result); $('xNote').textContent = '';
   $('videoNote').textContent = '';
   $('videoBtn').disabled = !canRecord();
   if (!canRecord()) $('videoNote').textContent = 'この端末のブラウザでは動画を作れません';
@@ -1015,7 +1015,7 @@ function renderBadges(badges) {
   box.classList.toggle('hidden', !badges.length);
 }
 function shareBase() { const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === 'file:'; return (!local && CFG.SHARE_URL) || location.href.split(/[?#]/)[0].replace(/index\.html$/, ''); }
-function intentUrl(res) {
+function shareParts(res) {
   const r = res.info, sc = res.scene;
   let text;
   if (sc.mode === 'ta') text = `わたしのらくがき「${r.name}」が${r.course}のタイムアタックで${r.time != null ? r.time.toFixed(2) : '-'}秒!\n${CFG.TAG}`;
@@ -1026,8 +1026,11 @@ function intentUrl(res) {
     text = `${others.length ? others.join('・') + ' と' : ''}3人対戦で「${r.name}」が${r.rank}位でした${won ? '。勝った!' : ''}\n${CFG.TAG} ${r.rank}位`;
   } else text = `らくがき3人対戦の結果: 1位は「${sc.ents[sc.race.order[0]].name}」\n${CFG.TAG}`;
   text += `\n作った人 ${CFG.AUTHOR}`;
-  const url = res.link || shareBase();
-  return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+  return { text, url: res.link || shareBase() };
+}
+function intentUrl(res) {
+  const p = shareParts(res);
+  return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(p.text) + '&url=' + encodeURIComponent(p.url);
 }
 
 // 結果の1枚(1080x1350)
@@ -1117,6 +1120,22 @@ async function shareOrSave(blob, name, type) {
   try { const file = new File([blob], name, { type }); if (touch && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   downloadBlob(blob, name);
 }
+// X で見せびらかす: 画像が付けられる端末(スマホ)は共有シートに画像+本文+URL。出来なければ今までどおり投稿画面を開き、画像の保存を案内する
+$('xBtn').addEventListener('click', async (ev) => {
+  if (!result || !result.blob) return;
+  const note = $('xNote'); note.textContent = '';
+  const touch = matchMedia('(pointer:coarse)').matches;
+  try {
+    const file = new File([result.blob], fileBase() + '.png', { type: 'image/png' });
+    if (touch && navigator.canShare && navigator.canShare({ files: [file] })) {
+      ev.preventDefault();
+      const p = shareParts(result);
+      try { await navigator.share({ files: [file], text: p.text, url: p.url }); } catch (e) { if (!e || e.name !== 'AbortError') window.open(intentUrl(result), '_blank', 'noopener'); }
+      return;
+    }
+  } catch (e) { /* 下の通常の動きへ */ }
+  note.textContent = '投稿画面が開いたら、「画像を保存」した絵を添えてください';
+});
 $('saveBtn').onclick = () => { if (result && result.blob) shareOrSave(result.blob, fileBase() + '.png', 'image/png'); };
 $('videoBtn').onclick = async () => {
   if (!result || $('videoBtn').disabled) return;
