@@ -103,7 +103,7 @@ class Doodle {
       const role = info.roles[i] || 'other';
       let pivot = null;
       if (role === 'leg') { let top = s.p[0]; for (const q of s.p) if (q[1] < top[1]) top = q; pivot = T(top); legs.push(i); }
-      if (role === 'wing') { let best = s.p[0], bd = 1e9; for (const q of s.p) { const d = (q[0] - bcx) ** 2 + (q[1] - bcy) ** 2; if (d < bd) { bd = d; best = q; } } pivot = T(best); }
+      if (role === 'wing' || role === 'tail') { let best = s.p[0], bd = 1e9; for (const q of s.p) { const d = (q[0] - bcx) ** 2 + (q[1] - bcy) ** 2; if (d < bd) { bd = d; best = q; } } pivot = T(best); }
       return { c: s.c, w: clamp(s.w * k * 1.1, 2.6, 8) * (size > 200 ? size / 210 : 1), role, pivot, li: 0, side: pivot ? (pivot[0] < 0 ? -1 : 1) : 1, p: s.p.map(T) };
     });
     // 足の番号は左から
@@ -158,6 +158,11 @@ class Doodle {
       }
       if (part.role === 'wing' && part.pivot) {
         const a = Math.sin(t * (mode === 'fly' ? 16 : 6) + (part.side > 0 ? 0 : 0)) * 0.55 * part.side;
+        const ox = part.pivot[0], oy = part.pivot[1], ddx = px - ox, ddy = py - oy, c = Math.cos(a), s = Math.sin(a);
+        px = ox + ddx * c - ddy * s; py = oy + ddx * s + ddy * c;
+      }
+      if (part.role === 'tail' && part.pivot && (moving || o.idle)) { // しっぽ・ひれをふる
+        const a = Math.sin(t * (o.idle ? 4 : 11) + j) * 0.22 * runK;
         const ox = part.pivot[0], oy = part.pivot[1], ddx = px - ox, ddy = py - oy, c = Math.cos(a), s = Math.sin(a);
         px = ox + ddx * c - ddy * s; py = oy + ddx * s + ddy * c;
       }
@@ -1817,7 +1822,7 @@ $('taAll4Btn').onclick = async () => {
   if (ts.some(x => x == null)) { toast('走りきれませんでした'); return; }
   const sum = Math.round(ts.reduce((a, b) => a + b, 0) * 1000) / 1000;
   $('taNote').textContent = `4種目の合計 ${sum.toFixed(2)}秒(${RU.COURSE_IDS.map((c, i) => fmtCourse(c) + ' ' + ts[i].toFixed(2)).join(' / ')})。送っています…`;
-  try { const m = await Store.remote(); const r = await m.submitRank('all4', cr, sum); $('taNote').textContent += r.improved ? ' ランキングに登録しました' : ' (前のタイムの方が速いので、そのまま)'; G.rankTab = { course: 'all4', period: 'all' }; }
+  try { const m = await Store.remote(); const r = await m.submitRank('all4', cr, sum, st => verifyTime('all4', st)); $('taNote').textContent += r.improved ? ' ランキングに登録しました' : ' (前のタイムの方が速いので、そのまま)'; G.rankTab = { course: 'all4', period: 'all' }; }
   catch (e) { $('taNote').textContent += ' ランキングに送れませんでした(ネットにつながっていないかも)。'; }
 };
 $('taBackBtn').onclick = () => { if (G.petId) openPet(G.petId) || openAlbum(); else goTitle(); };
@@ -1828,7 +1833,7 @@ async function submitTA(sc) {
   const add = (txt, c) => { const box = $('resBadges'); const d = document.createElement('span'); d.className = 'badge ' + (c || ''); d.textContent = txt; box.appendChild(d); box.classList.remove('hidden'); };
   try {
     const m = await Store.remote();
-    const r = await m.submitRank(sc.course, e.cr, Math.round(t * 1000) / 1000);
+    const r = await m.submitRank(sc.course, e.cr, Math.round(t * 1000) / 1000, st => verifyTime(sc.course, st));
     add(r.improved ? 'ランキングに登録しました' : 'ランキングは前のタイムのまま', 'blue');
   } catch (err) { add('ランキングに送れませんでした(オフラインかも)', ''); }
 }

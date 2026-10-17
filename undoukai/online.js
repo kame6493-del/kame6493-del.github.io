@@ -184,14 +184,23 @@ export function boardId(course, period) {
   const d = jstDay();
   return course + '_' + (period === 'd' ? 'd' + d : period === 'w' ? 'w' + Math.floor((d + 3) / 7) : 'all');
 }
-export async function submitRank(course, cr, t) {
+// verify(strokes) → 今の計算でのタイム。前の版の計算で登録した自分の記録(今は走らせ直すと合わず、表に出ない)は、
+// 遅くなっても置きかえる(ルールは「速くなった時だけ書きかえ」なので、いったん消してから書く)。
+function staleEntry(d, verify) {
+  if (!verify) return false;
+  try { const tv = verify(unpackCreature(d.data).strokes); return tv == null || Math.abs(tv - d.t) > 0.002; } catch (e) { return true; }
+}
+export async function submitRank(course, cr, t, verify) {
   const data = packCreature(cr);
   const name = String(cr.name || '').slice(0, 12);
   let improved = false;
   for (const per of ['all', 'w', 'd']) {
     const ref = F.doc(db, 'rank', boardId(course, per), 'entries', uid());
     const s = await F.getDoc(ref);
-    if (s.exists() && !(t < s.data().t)) continue;
+    if (s.exists()) {
+      if (staleEntry(s.data(), verify)) await F.deleteDoc(ref);
+      else if (!(t < s.data().t)) continue;
+    }
     await F.setDoc(ref, { name, data, t, at: F.serverTimestamp(), v: 2 });
     improved = true;
   }

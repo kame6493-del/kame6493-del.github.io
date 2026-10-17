@@ -218,18 +218,38 @@
     const bcx = body.cx, bcy = body.cy, bw = Math.max(10, body.w);
     const roles = infos.map(() => 'other');
     roles[bi] = 'body';
-    let legs = 0, wings = 0; const legPeaks = []; let legH = 0, legN = 0, wingSpan = 0;
+    let legs = 0, wings = 0, tails = 0, bodyLines = 0; const legPeaks = []; let legH = 0, legN = 0, wingSpan = 0;
     infos.forEach((f, i) => {
       if (i === bi) return;
       if (f.len < 0.07 * M) { roles[i] = 'dot'; return; }
-      const pk = f.closed ? [] : footPeaks(S[i].p, y0, H, bodyClosed ? body.y1 - 0.1 * body.h : -1e9);
+      const bodyLine = !f.closed && f.w > 0.5 * W && f.w > 2.5 * f.h; // 横に長く波打つ線(ヘビの体の線)は足にしない
+      if (bodyLine) bodyLines++;
+      const pk = f.closed || bodyLine ? [] : footPeaks(S[i].p, y0, H, bodyClosed ? body.y1 - 0.1 * body.h : -1e9);
       if (pk.length) { roles[i] = 'leg'; legs += pk.length; for (const q of pk) legPeaks.push(q); legH += f.h; legN++; return; }
       const upper = f.cy < bcy + 0.05 * H;
       const out = f.x0 < body.x0 - 0.12 * bw || f.x1 > body.x1 + 0.12 * bw;
       const wide = f.w >= 0.6 * f.h;
       let wingShape = true;
       if (f.closed) { const [A, P] = polyAreaPerim(S[i].p); wingShape = P > 0 && 4 * Math.PI * A / (P * P) < 0.72; }
-      if (upper && out && wide && wingShape && f.len >= 0.15 * M) { roles[i] = 'wing'; wings++; wingSpan = Math.max(wingSpan, Math.max(body.x0 - f.x0, f.x1 - body.x1) / Math.max(bw, 0.3 * M)); }
+      if (upper && out && wide && wingShape && f.len >= 0.15 * M) { roles[i] = 'wing'; wings++; wingSpan = Math.max(wingSpan, Math.max(body.x0 - f.x0, f.x1 - body.x1) / Math.max(bw, 0.3 * M)); return; }
+      // しっぽ・ひれ: 体の横(上下の真ん中あたり)から外へ突き出た線
+      const midY = f.cy > body.y0 - 0.1 * body.h && f.cy < body.y1 + 0.1 * body.h;
+      let finShape = true; // まるい輪(頭など)は数えない。三角のひれ・線のしっぽは数える
+      if (f.closed) { const [A, P] = polyAreaPerim(S[i].p); finShape = P > 0 && 4 * Math.PI * A / (P * P) < 0.8; }
+      else finShape = f.h >= 0.3 * f.w; // ほぼ水平の短い線(ひげ)は数えない
+      if (out && midY && finShape && f.len >= 0.12 * M) { roles[i] = 'tail'; tails++; }
+    });
+    // とがり: 線の向きが鋭く折れ返る角(70度より鋭い)の数。トゲ・耳・くちばし・ヒレの先
+    let sharpN = 0;
+    S.forEach((s, i) => {
+      if (roles[i] === 'dot' || roles[i] === 'leg') return;
+      const p = rdp(s.p, 0.03 * M), mn = 0.04 * M;
+      for (let k = 1; k < p.length - 1; k++) {
+        const ax = p[k - 1][0] - p[k][0], ay = p[k - 1][1] - p[k][1], bx = p[k + 1][0] - p[k][0], by = p[k + 1][1] - p[k][1];
+        const la = Math.sqrt(ax * ax + ay * ay), lb = Math.sqrt(bx * bx + by * by);
+        if (la < mn || lb < mn) continue;
+        if ((ax * bx + ay * by) / (la * lb) > 0.34) sharpN++;
+      }
     });
     // ぐちゃぐちゃ度: 線どうしの交わり
     let crossings = 0;
@@ -267,7 +287,7 @@
     return {
       mode, typeName: TYPE_NAMES[mode], typeDesc: TYPE_DESC[mode],
       legs, wings, roundness, aspect, crossings, density, sym, size, ink, strokes: S.length,
-      legLen: legN ? legH / legN / H : 0, wingSpan, bodyClosed, bodyFill: clamp((body.w * body.h) / (W * H), 0, 1), M,
+      legLen: legN ? legH / legN / H : 0, wingSpan, tails, bodyLines, sharp: sharpN, W, H, bodyClosed, bodyFill: clamp((body.w * body.h) / (W * H), 0, 1), M,
       bbox: [x0, y0, x1, y1], roles, bodyIndex: bi, legPeaks,
     };
   }
@@ -303,19 +323,19 @@
   // まず「生き物らしく、速そう・凄そうに描けているか」(出来ばえ)で能力の合計が決まる。
   //   はっきりした体の輪郭 / 足や羽がある / 線が絡まっていない / ほどよい大きさ / 目などの描き込み
   //   描き込みの量そのもの(塗りつぶし)では増えない。ぐちゃぐちゃ・線1本・小さすぎ は低い。
-  // その合計を、形に合わせて6つの能力に配る(合計はほぼ一定なので、どれかが伸びると他が下がる)。
-  //  spd はやさ   : 足の数(2〜6本がいちばん)と足の長さ、前後に長い流れる体
-  //  roll ころがり : 体の丸さと、丸が絵に占める大きさ。下り坂。上りは苦手
-  //  swim およぎ   : 横に長い。水たまり・あみくぐり
-  //  jump とぶ     : 羽の広がり・縦に高い。ハードル・水の上
-  //  sta ちから    : しっかりした体(閉じた輪郭の大きさ)と大きさ。上り坂と終盤のバテにくさ
-  //  bal バランス  : 左右対称で線が絡まない。転ばない・平均台
-  const AB_KEYS = ['spd', 'roll', 'swim', 'jump', 'sta', 'bal'];
+  // 10/18 から: その合計を4種目に配る(合計はほぼ一定なので、ある種目で強い形は別の種目で弱くなる。万能の形は作らない)。
+  //  track かけっこ  : 足が2〜6本で長い・前後に伸びた体・とがった形(トゲ・耳・くちばし)。大きすぎる体は重い
+  //  obstacle 障害物 : 縦に高い・体が小さめ・跳ねそうな足(1〜4本)・羽。横に長すぎる体と足の多さはハードルに引っかかる
+  //  slope 坂道      : 足が多い(短くてよい)・低く横に広い・どっしりした大きな体。細長く背が高いと転げやすい。丸いと下りで転がって速い
+  //  water 水たまり  : 平たい・横に長い・しっぽやひれ・大きな体。足だけ長いと沈む
+  //  bal バランス    : 左右対称で線が絡まない。平均台と転びにくさ(種目の得意とは別)
+  const AB_KEYS = ['track', 'obstacle', 'slope', 'water'];
   function quality(info) {
     const guru = info.mode === 'guru';
     const clean = clamp(1 - info.crossings / 40, 0, 1);
-    const outline = info.bodyClosed ? clamp(info.bodyFill / 0.18, 0, 1) : clamp(info.ink / (3 * info.M), 0, 1) * 0.3;
-    const limbs = guru ? 0 : (info.legs >= 4 ? 1 : info.legs >= 2 ? 0.85 : info.legs === 1 ? 0.4 : 0) * 0.75 + (info.wings ? 0.35 : 0);
+    let outline = info.bodyClosed ? clamp(info.bodyFill / 0.18, 0, 1) : clamp(info.ink / (3 * info.M), 0, 1) * 0.3;
+    if (!guru && info.bodyLines && info.strokes >= 3) outline = Math.max(outline, 0.75); // 長い体を線でなぞって頭も描いた(ヘビ)
+    const limbs = guru ? 0 : (info.legs >= 4 ? 1 : info.legs >= 2 ? 0.85 : info.legs === 1 ? 0.4 : 0) * 0.75 + (info.wings ? 0.35 : 0) + (info.tails ? 0.35 : 0); // しっぽ・ひれも体の部品
     const size = clamp((info.size - 0.012) / 0.1, 0, 1) * (1 - 0.3 * clamp((info.size - 0.6) / 0.35, 0, 1));
     const detail = clamp((info.strokes - 1) / 4, 0, 1) * (info.strokes > 40 ? 0.5 : 1);
     return clamp(0.3 * outline + 0.33 * clamp(limbs, 0, 1) + 0.24 * clean + 0.13 * detail, 0, 1) * (0.5 + 0.5 * size) * (guru ? 0.75 : 1);
@@ -324,36 +344,51 @@
     if (info._ab) return info._ab;
     const guru = info.mode === 'guru';
     const L = guru ? 0 : info.legs;
-    const legK = L === 0 ? 0 : L === 1 ? 0.35 : L === 2 ? 0.75 : L <= 6 ? 0.8 + 0.03 * (L - 3) : L <= 10 ? 0.89 - 0.08 * (L - 6) : 0.35;
-    const legLen = clamp((info.legLen || 0) / 0.4, 0, 1);
-    const big = clamp((info.size - 0.35) / 0.5, 0, 1);
-    const flow = L ? clamp((info.aspect - 1.0) / 1.2, 0, 1) * (1 - clamp((info.aspect - 3) / 3, 0, 1)) : 0; // 前後に長い走る体
+    const asp = info.aspect, inv = 1 / Math.max(0.05, asp);
+    const legK = L === 0 ? 0 : L === 1 ? 0.35 : L === 2 ? 0.82 : L === 3 ? 0.9 : L === 4 ? 0.97 : L === 5 ? 0.78 : L === 6 ? 0.62 : L <= 10 ? 0.62 - 0.08 * (L - 6) : 0.3; // 2〜4本足がいちばん走りやすい。多いと足がもつれる
+    const legLong = L ? clamp((info.legLen || 0) / 0.42, 0, 1) : 0;
+    const long = clamp((asp - 1.0) / 1.0, 0, 1) * (1 - clamp((asp - 3) / 2, 0, 1)); // 前後に伸びた体
+    const tall = clamp((inv - 0.75) / 0.9, 0, 1);                                   // 縦に高い
+    const tallThin = clamp((inv - 1.15) / 0.9, 0, 1);                               // 細くて背が高い(坂で転げる)
+    const wide = clamp((asp - 1.05) / 0.9, 0, 1) * (1 - clamp((asp - 3.5) / 3, 0, 1)); // 低く横に広い
+    const flat = clamp((asp - 1.3) / 1.5, 0, 1);                                    // 平たい
+    const big = clamp((info.size - 0.06) / 0.3, 0, 1);
+    const bigBody = info.bodyClosed ? big * clamp(info.bodyFill / 0.3, 0, 1) : 0.3 * big;
+    const small = (1 - clamp((info.size - 0.05) / 0.25, 0, 1)) * (1 - clamp((info.bodyFill - 0.2) / 0.5, 0, 1)) * clamp(info.size / 0.06, 0, 1); // 体が小さく身軽(塊・点は身軽ではない)
+    const heavy = (info.bodyClosed ? clamp(info.bodyFill / 0.35, 0, 1) : 0.3) * clamp((info.size - 0.03) / 0.25, 0, 1);
+    const sharp = clamp((info.sharp || 0) / 5, 0, 1);
+    const fins = clamp(((info.tails || 0) + 0.5 * (info.wings || 0)) / 2, 0, 1);
+    const wingK = info.wings ? 0.5 + 0.5 * clamp(info.wingSpan, 0, 1) : 0;
+    const spring = L === 0 ? 0.55 : L <= 2 ? 1 : L <= 4 ? 0.8 : L <= 6 ? 0.4 : 0.15;  // 跳ねそうな足
+    const manyLegs = clamp((L - 1) / 7, 0, 1) * (L > 14 ? 0.6 : 1); // 多いほど坂を踏んばれる(8本まで)
+    const roll = info.bodyClosed ? info.roundness * info.roundness * info.roundness * clamp(info.bodyFill * 1.5, 0, 1) : 0;
     const raw = {
-      spd: legK * (0.4 + 0.45 * legLen + 0.35 * flow) * (1 - 0.4 * big),
-      roll: info.bodyClosed ? info.roundness * info.roundness * info.roundness * clamp(info.bodyFill * 1.5, 0, 1) : 0,
-      swim: clamp((info.aspect - 1.15) / 2.2, 0, 1) * (L >= 3 ? 0.3 : L ? 0.6 : 1),
-      jump: clamp(Math.max(info.wings && !guru ? 0.45 + 0.5 * clamp(info.wingSpan, 0, 1) : 0, clamp((1 / Math.max(0.05, info.aspect) - 1.15) / 1.6, 0, 1) * 0.85) + (L ? 0.2 * legLen : 0), 0, 1),
-      sta: (info.bodyClosed ? clamp(info.bodyFill / 0.35, 0, 1) * 0.6 : 0) + 0.4 * clamp(info.size / 0.5, 0, 1),
-      bal: clamp(info.sym * 0.85 + 0.1 - clamp(info.crossings / 60, 0, 1) * 0.8, 0, 1),
+      track: legK * (0.3 + 0.7 * legLong) + 0.4 * long * (L ? 1 : 0.4) + 0.3 * sharp - 0.25 * big - 0.3 * tall,
+      obstacle: 0.5 * tall + 0.35 * small + 0.3 * spring + 0.35 * wingK - 0.55 * clamp((asp - 1.5) / 1.2, 0, 1) - 0.5 * clamp((L - 3) / 4, 0, 1),
+      slope: 0.6 * manyLegs + 0.3 * (L >= 2 ? 1 - legLong : 0) + 0.35 * wide + 0.45 * heavy + 0.15 * roll - 0.55 * tallThin, // 短い足をたくさん踏んばる
+      water: 0.45 * flat + 0.45 * fins + 0.4 * bigBody + 0.3 * long * (L ? 0.2 : 1) - 0.45 * legLong * (1 - 0.5 * flat), // 足のない長い体はくねって泳ぐ
     };
-    if (guru) { for (const k of ['spd', 'roll', 'swim', 'jump', 'sta']) raw[k] = 0.1; } // 塗りつぶし・ぐちゃぐちゃは形にならない(どれも伸びない)
+    if (guru) { for (const k of AB_KEYS) raw[k] = 0.1; } // 塗りつぶし・ぐちゃぐちゃは形にならない(どれも伸びない)
     const q = quality(info);
-    const budget = (1.85 + 1.25 * q) * (guru ? 0.85 : 1);
-    let sum = 0; for (const k of AB_KEYS) sum += 0.15 + raw[k];
-    const ab = { q };
-    for (const k of AB_KEYS) ab[k] = clamp((0.15 + raw[k]) * budget / sum, 0.04, 1);
+    // 出来ばえ Q が土台。4種目への配り方(share、合計1)で得意・不得意が決まる。
+    // 手抜きの絵は得意な種目でも、ちゃんと描いた絵の不得意な種目と同じくらいにしかならない。
+    const Q = (0.05 + 0.95 * q) * (guru ? 0.85 : 1);
+    let sum = 0; for (const k of AB_KEYS) sum += 0.15 + Math.max(0, raw[k]);
+    const ab = { q, roll, tip: tallThin, bal: clamp(info.sym * 0.85 + 0.1 - clamp(info.crossings / 60, 0, 1) * 0.8, 0, 1) };
+    for (const k of AB_KEYS) ab[k] = clamp(Q * (0.35 + 1.9 * (0.15 + Math.max(0, raw[k])) / sum), 0.04, 1.4);
     Object.defineProperty(info, '_ab', { value: ab, enumerable: false });
     return ab;
   }
-  // 能力 → 地面ごとの速さの倍率
-  function terrainMul(ab, terr) {
+  // 能力 → 地面ごとの速さの倍率。a = その種目の得意さ
+  function terrainMul(ab, terr, courseId) {
+    const a = ab[courseId] != null ? ab[courseId] : ab.track;
     switch (terr) {
-      case 'up': return 0.87 + 0.12 * ab.spd + 0.26 * ab.sta - 0.2 * ab.roll;
-      case 'down': return 0.93 + 0.75 * ab.roll + 0.06 * ab.spd;
-      case 'water': return 0.74 + 0.42 * ab.swim + 0.10 * ab.jump + 0.10 * ab.spd - 0.08 * ab.roll;
-      case 'net': return 0.84 + 0.30 * ab.swim - 0.12 * ab.jump + 0.05 * ab.bal;
-      case 'beam': return 0.85 + 0.26 * ab.bal + 0.05 * ab.spd;
-      default: return 0.885 + 0.26 * ab.spd + 0.12 * ab.roll;
+      case 'up': return 0.92 + 0.22 * a - 0.10 * ab.roll;
+      case 'down': return 0.98 + 0.14 * a + 0.40 * ab.roll;
+      case 'water': return 0.83 + 0.27 * a;
+      case 'net': return 0.93 + 0.12 * a;
+      case 'beam': return 0.87 + 0.12 * a + 0.18 * ab.bal;
+      default: return 0.95 + 0.16 * a;
     }
   }
 
@@ -397,7 +432,7 @@
       const info = e.info, m = MODE[info.mode] || MODE.jelly, ab = abilities(info);
       const knots = []; for (let k = 0; k < 140; k++) knots.push((rnd() - 0.5) * 2);
       return {
-        i, info, m, ab, x: 0, v: 0, air: 0, phase: rnd(), state: 'run', stun: 0, cross: null, burstT: 0, stallT: 0, itemT: 0, recT: 0, cheerT: 0,
+        i, info, m, ab, apt: ab[course.id] != null ? ab[course.id] : ab.track, x: 0, v: 0, air: 0, phase: rnd(), state: 'run', stun: 0, cross: null, burstT: 0, stallT: 0, itemT: 0, recT: 0, cheerT: 0,
         personal: 1 + (rnd() - 0.5) * 0.05, knots, finished: null, beamDone: false, fallAt: null, onBeam: false, offBeam: false,
         inWater: false, trips: 0, falls: 0, bonks: 0, bursts: 0, knocked: 0, splashes: 0, flyovers: 0, hurdleIdx: 0, fellOffBeam: false,
         items: 0, spurtAt: 0.70 + rnd() * 0.14, spurting: false, drafts: 0, itemIdx: 0, gust: false,
@@ -451,13 +486,13 @@
           const n = r.knots, k0 = Math.floor(t), f = t - k0;
           const noise = (n[k0 % 140] * (1 - f) + n[(k0 + 1) % 140] * f) * 0.04;
           const terrK = terr === 'beam' && r.offBeam ? 'flat' : terr;
-          let mult = terrainMul(r.ab, terrK);
+          let mult = terrainMul(r.ab, terrK, course.id);
           if (terrK === 'beam' && r.offBeam) mult = 0.9;
           mult *= r.personal * (1 + noise);
           // バテ(後半)とラストスパート
           const pr = r.x / FINISH;
-          if (pr > 0.45) mult *= 1 - 0.15 * (1 - r.ab.sta) * clamp((pr - 0.45) / 0.4, 0, 1);
-          if (pr >= r.spurtAt) { if (!r.spurting) { r.spurting = true; ev(t, 'spurt', r.i); } mult *= 1.05 + 0.10 * r.ab.sta; }
+          if (pr > 0.45) mult *= 1 - 0.12 * (1 - Math.min(1, r.apt)) * clamp((pr - 0.45) / 0.4, 0, 1);
+          if (pr >= r.spurtAt) { if (!r.spurting) { r.spurting = true; ev(t, 'spurt', r.i); } mult *= 1.05 + 0.08 * Math.min(1, r.apt); }
           // すぐ前に誰かいると風よけ(抜きつ抜かれつ)
           let draft = false;
           for (let j = 0; j < N; j++) { if (j === r.i) continue; const gap = prevX[j] - r.x; if (gap > 25 && gap < 200 && R[j].finished == null) { draft = true; break; } }
@@ -469,7 +504,7 @@
           if (r.cheerT > 0) { r.cheerT -= DT; mult *= 1.10; }
           if (r.stallT > 0) { r.stallT -= DT; mult *= 0.55; }
           const target = Math.max(25, BASE * mult);
-          const acc = 1.7 + 1.9 * r.ab.spd;
+          const acc = 1.7 + 1.9 * Math.min(1, r.apt);
           r.v += (target - r.v) * Math.min(1, DT * acc);
           const nx = r.x + r.v * DT;
           // ハードル
@@ -477,8 +512,8 @@
           if (r.hurdleIdx < hs.length && nx >= hs[r.hurdleIdx] - 34) {
             const hx = hs[r.hurdleIdx];
             let kind = r.m.hurdle;
-            const lack = 1 - r.ab.jump;
-            let cost = 0.05 + 0.75 * lack * lack;
+            const lack = 1 - Math.min(1, r.ab.obstacle);
+            let cost = 0.05 + 0.28 * lack * lack;
             if (kind === 'random') { const q = rnd(); kind = q < 0.4 ? 'jump' : q < 0.7 ? 'bonk' : 'climb'; cost += rnd() * 0.3; }
             let x0 = r.x, x1 = hx + 40, h = 70;
             if (kind === 'bonk') {
@@ -517,7 +552,7 @@
           // 偶然の出来事
           if (t > 1.2) {
             const lb = 1 - r.ab.bal;
-            const tripRate = (0.006 + 0.075 * lb * lb) * (terr === 'down' ? 1.4 : 1);
+            const tripRate = (0.006 + 0.075 * lb * lb) * (terr === 'down' ? 1.4 + 3 * r.ab.tip : terr === 'up' ? 1 + 2 * r.ab.tip : 1); // 細長く背が高いと坂で転げる
             if (rnd() < tripRate * DT) { r.stun = 0.75 + rnd() * 0.45; r.trips++; ev(t, 'trip', r.i); }
             else if (rnd() < r.m.burst * DT && r.burstT <= 0) { r.burstT = 1.2 + rnd() * 0.8; r.bursts++; ev(t, 'burst', r.i); }
             else if (r.m.stall && rnd() < r.m.stall * DT && r.stallT <= 0) { r.stallT = 0.9; ev(t, 'stall', r.i); }
