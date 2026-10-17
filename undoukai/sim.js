@@ -630,12 +630,121 @@
       return S;
     } },
   ];
+
+  // ---------- 毎回ちがう CPU(10/17): 手で決めた12種の骨組み × 大きさ・向き・足の数・線のくせ・色の組み合わせ ----------
+  const CRAYON = ['#e2483d', '#f08a24', '#e8b920', '#2fa35a', '#2f6fe0', '#8a4fd8', '#d94f9b', '#19263d', '#7a4a2b', '#12a3a3', '#5b6b7a', '#c0392b'];
+  const NAME_A = ['ぽよ', 'ころ', 'もぐ', 'ふわ', 'どた', 'すい', 'ちび', 'でか', 'のそ', 'ぱた', 'もこ', 'ぴょん', 'てく', 'ぐる', 'ぷに', 'ばた', 'ほわ', 'ずん', 'にょろ', 'ぺた'];
+  const NAME_B = ['丸', 'ぽん', 'スケ', 'ちゃん', 'くん', 'ボウ', 'リン', 'ッコ', '太', 'みん', 'すけ', 'ピー', 'ル', '助', 'まる', 'ぞう'];
+  function pick(r, a) { return a[Math.floor(r() * a.length) % a.length]; }
+  function rr(r, a, b) { return a + (b - a) * r(); }
+  function eyes(r, x, y, gap, S, ink) {
+    const t = Math.floor(r() * 5);
+    if (t === 4) return;
+    const e = (ex) => {
+      if (t === 0) S.push({ k: [[ex, y], [ex + 2, y + 3]], n: 4, c: ink });
+      else if (t === 1) S.push({ k: loop(ex, y, 9, 9, r, 0.2), n: 10, c: ink });
+      else if (t === 2) { S.push({ k: [[ex - 7, y - 7], [ex + 7, y + 7]], n: 5, c: ink }, { k: [[ex + 7, y - 7], [ex - 7, y + 7]], n: 5, c: ink }); }
+      else S.push({ k: loop(ex, y, 13, 11, r, 0.2), n: 12, c: ink }, { k: [[ex + 1, y], [ex + 3, y + 2]], n: 3, c: ink });
+    };
+    e(x - gap); if (r() < 0.9) e(x + gap);
+  }
+  function legs(r, S, xs, y0, len, col, bend) { for (const x of xs) { if (r() < 0.06) continue; const l = len * rr(r, 0.8, 1.2), b = (r() - 0.5) * bend; S.push({ k: [[x, y0], [x + b, y0 + l * 0.5], [x + b * 1.6 + (r() - 0.5) * 8, y0 + l]], n: 12, c: col }); } }
+  const KINDS = {
+    dog(r, c, ink) { const L = rr(r, 100, 150), H = rr(r, 55, 85), S = [{ k: loop(280, 280, L, H, r, 0.2), n: 60, c }, { k: loop(280 + L + 25, 240, rr(r, 35, 55), rr(r, 30, 45), r, 0.2), n: 30, c }];
+      S.push({ k: [[280 - L, 250], [280 - L - rr(r, 20, 60), 200 + r() * 60]], n: 8, c }); eyes(r, 280 + L + 30, 232, 12, S, ink);
+      if (r() < 0.6) S.push({ k: [[280 + L + 10, 205], [280 + L + 5, 170], [280 + L + 28, 195]], n: 10, c });
+      const n = r() < 0.2 ? 2 : 4; legs(r, S, n === 2 ? [230, 330] : [190, 240, 320, 370], 280 + H * 0.85, rr(r, 70, 140), c, 14); return S; },
+    cat(r, c, ink) { const R = rr(r, 85, 125), S = [{ k: loop(300, 330, R, R * rr(r, 0.8, 1.05), r, 0.18), n: 60, c }];
+      S.push({ k: [[225, 262], [215, 205], [262, 245]], n: 10, c }, { k: [[338, 245], [382, 205], [376, 265]], n: 10, c });
+      eyes(r, 300, 310, rr(r, 28, 42), S, ink); S.push({ k: [[285, 345], [300, 355], [315, 345]], n: 8, c: ink });
+      for (let i = 0; i < 3; i++) S.push({ k: [[200, 335 + i * 10], [150, 330 + i * 18]], n: 6, c: ink }, { k: [[400, 335 + i * 10], [450, 330 + i * 18]], n: 6, c: ink });
+      legs(r, S, [255, 345], 330 + R * 0.9, rr(r, 20, 45), c, 8); if (r() < 0.8) S.push({ k: [[400, 400], [470, 380], [500, 320], [470, 270]], n: 16, c }); return S; },
+    fish(r, c, ink) { const L = rr(r, 120, 200), H = rr(r, 50, 90), S = [{ k: loop(280, 300, L, H, r, 0.15), n: 60, c }];
+      S.push({ k: [[280 - L + 5, 300], [280 - L - rr(r, 50, 90), 245], [280 - L - rr(r, 40, 70), 355], [280 - L + 5, 300]], n: 22, c });
+      S.push({ k: [[250, 300 - H], [270, 300 - H - rr(r, 30, 60)], [320, 300 - H + 3]], n: 12, c }); eyes(r, 280 + L * 0.6, 285, 1, S, ink);
+      if (r() < 0.6) for (let i = 0; i < 4; i++) S.push({ k: [[250 + i * 30, 285], [262 + i * 30, 300], [250 + i * 30, 315]], n: 6, c: ink });
+      if (r() < 0.5) legs(r, S, [260, 320], 300 + H * 0.9, 45, c, 10); return S; },
+    bug(r, c, ink) { const R = rr(r, 60, 105), S = [{ k: loop(300, 300, R * 1.3, R, r, 0.15), n: 50, c }, { k: loop(300 + R * 1.3 + 25, 295, 30, 28, r, 0.2), n: 20, c }];
+      S.push({ k: [[300, 300 - R], [300, 300 + R]], n: 10, c }); eyes(r, 300 + R * 1.3 + 28, 288, 9, S, ink);
+      S.push({ k: [[300 + R * 1.3 + 40, 270], [300 + R * 1.3 + 70, 220]], n: 6, c }, { k: [[300 + R * 1.3 + 25, 268], [300 + R * 1.3 + 30, 215]], n: 6, c });
+      const k = r() < 0.5 ? 3 : r() < 0.5 ? 2 : 4; const xs = []; for (let i = 0; i < k; i++) xs.push(300 - R + (i + 0.5) * (2 * R * 1.1 / k)); legs(r, S, xs, 300 + R * 0.9, rr(r, 40, 80), c, 40);
+      if (r() < 0.5) for (let i = 0; i < 3; i++) S.push({ k: loop(270 + i * 35, 285 + (i % 2) * 20, 9, 9, r, 0.2), n: 10, c: ink }); return S; },
+    snail(r, c, ink) { const R = rr(r, 70, 110), S = [{ k: loop(290, 270, R, R, r, 0.1), n: 50, c }];
+      const sp = []; for (let i = 0; i < 14; i++) { const a = i * 0.7, rad = R * 0.85 * (1 - i / 16); sp.push([290 + rad * Math.max(-1, Math.min(1, Math.sin(a))), 270 - rad * Math.max(-1, Math.min(1, Math.cos(a)))]); }
+      S.push({ k: sp, n: 40, c: ink }); const by = 270 + R; S.push({ k: [[130, by], [200, by + 22], [380, by + 22], [470, by - 20], [490, by - 80]], n: 40, c }, { k: [[130, by], [270, by - 6]], n: 14, c });
+      S.push({ k: [[470, by - 20], [455, by - 70], [450, by - 100]], n: 10, c }, { k: [[490, by - 80], [505, by - 120]], n: 8, c }); eyes(r, 490, by - 60, 1, S, ink); return S; },
+    dino(r, c, ink) { const L = rr(r, 100, 140), S = [{ k: loop(290, 300, L, rr(r, 60, 90), r, 0.2), n: 60, c }];
+      S.push({ k: [[290 - L, 300], [290 - L - 80, 340], [290 - L - 130, 380]], n: 14, c }, { k: [[290 + L * 0.7, 250], [290 + L * 0.9 + 20, 160], [290 + L * 0.9 + 55, 130]], n: 14, c });
+      S.push({ k: loop(290 + L * 0.9 + 85, 125, 45, 28, r, 0.2), n: 24, c }); eyes(r, 290 + L * 0.9 + 100, 118, 1, S, ink);
+      if (r() < 0.8) for (let i = 0; i < 5; i++) S.push({ k: [[200 + i * 35, 245 - (i % 2) * 10], [212 + i * 35, 205 - (i % 2) * 15], [225 + i * 35, 248]], n: 8, c });
+      legs(r, S, [r() < 0.5 ? 230 : 260, 350], 355, rr(r, 90, 140), c, 10); return S; },
+    bird(r, c, ink) { const R = rr(r, 55, 85), S = [{ k: loop(300, 310, R * 1.2, R, r, 0.18), n: 50, c }, { k: loop(300 + R * 1.1, 250, 32, 30, r, 0.2), n: 20, c }];
+      S.push({ k: [[300 + R * 1.1 + 28, 248], [300 + R * 1.1 + 60, 258], [300 + R * 1.1 + 28, 266]], n: 8, c: pick(r, CRAYON) }); eyes(r, 300 + R * 1.1 + 10, 240, 1, S, ink);
+      if (r() < 0.75) { const sp = rr(r, 90, 170); S.push({ k: [[270, 290], [250 - sp * 0.3, 240 - sp * 0.6], [230 - sp * 0.7, 230 - sp], [200 - sp, 270 - sp * 0.4], [240, 330]], n: 30, c }); }
+      S.push({ k: [[300 - R * 1.2, 310], [300 - R * 1.2 - 60, 330]], n: 8, c }); legs(r, S, [285, 325], 310 + R, rr(r, 35, 70), c, 6); return S; },
+    snake(r, c, ink) { const pts = []; const y0 = rr(r, 230, 330), amp = rr(r, 25, 70), cnt = 4 + Math.floor(r() * 3);
+      for (let i = 0; i <= cnt; i++) pts.push([70 + i * (430 / cnt), y0 + (i % 2 ? amp : -amp) + (r() - 0.5) * 30]);
+      const S = [{ k: pts, n: 50 + cnt * 8, c }, { k: pts.map(q => [q[0], q[1] + 28]), n: 50 + cnt * 8, c }, { k: loop(pts[cnt][0] + 20, pts[cnt][1] + 14, 32, 26, r, 0.2), n: 20, c }];
+      eyes(r, pts[cnt][0] + 25, pts[cnt][1] + 6, 1, S, ink); S.push({ k: [[pts[cnt][0] + 50, pts[cnt][1] + 14], [pts[cnt][0] + 85, pts[cnt][1] + 8]], n: 6, c: '#c0392b' }); return S; },
+    octo(r, c, ink) { const R = rr(r, 70, 100), S = [{ k: loop(300, 230, R, R * 1.1, r, 0.15), n: 50, c }]; eyes(r, 300, 240, R * 0.4, S, ink);
+      const k = 4 + Math.floor(r() * 5); for (let i = 0; i < k; i++) { const x = 300 - R + (i + 0.5) * (2 * R / k), d = (r() - 0.5) * 70; S.push({ k: [[x, 320], [x + d, 390], [x - d * 0.5, 450], [x + d * 0.8, 500 + r() * 30]], n: 18, c }); } return S; },
+    rabbit(r, c, ink) { const R = rr(r, 70, 105), S = [{ k: loop(300, 360, R, R * 0.95, r, 0.15), n: 50, c }, { k: loop(300, 230, R * 0.62, R * 0.55, r, 0.15), n: 36, c }];
+      const e = rr(r, 70, 130); S.push({ k: [[272, 190], [260, 190 - e], [290, 195]], n: 14, c }, { k: [[322, 188], [345, 190 - e], [330, 200]], n: 14, c }); eyes(r, 300, 225, 20, S, ink);
+      legs(r, S, [255, 345], 360 + R * 0.9, rr(r, 25, 60), c, 14); S.push({ k: loop(300 - R - 10, 380, 18, 18, r, 0.2), n: 12, c }); return S; },
+    turtle(r, c, ink) { const R = rr(r, 85, 130), S = [{ k: [[300 - R, 330], [300 - R * 0.8, 250], [300, 215], [300 + R * 0.8, 250], [300 + R, 330], [300 - R, 330]], n: 50, c }];
+      for (let i = 0; i < 3; i++) S.push({ k: [[300 - R * 0.5 + i * R * 0.5, 335], [300 - R * 0.4 + i * R * 0.4, 235]], n: 8, c: ink });
+      S.push({ k: loop(300 + R + 38, 290, 36, 28, r, 0.2), n: 20, c }); eyes(r, 300 + R + 45, 282, 1, S, ink); legs(r, S, [300 - R * 0.6, 300 - R * 0.15, 300 + R * 0.3, 300 + R * 0.7], 335, rr(r, 30, 55), c, 6); return S; },
+    giraffe(r, c, ink) { const S = [{ k: loop(270, 330, rr(r, 90, 120), rr(r, 50, 70), r, 0.18), n: 50, c }], nl = rr(r, 130, 210);
+      S.push({ k: [[340, 290], [360, 290 - nl * 0.5], [365, 290 - nl]], n: 14, c }, { k: [[385, 285], [385, 290 - nl], [365, 290 - nl]], n: 14, c });
+      S.push({ k: loop(385, 290 - nl - 14, 36, 22, r, 0.2), n: 20, c }); eyes(r, 392, 290 - nl - 18, 1, S, ink);
+      for (let i = 0; i < 4; i++) S.push({ k: loop(220 + i * 30, 320 + (i % 2) * 22, 9, 9, r, 0.3), n: 10, c: ink }); legs(r, S, [200, 235, 305, 340], 375, rr(r, 100, 160), c, 8); return S; },
+    ghost(r, c, ink) { const W = rr(r, 70, 110), H = rr(r, 100, 150), x = 300, y = 220, S = [];
+      S.push({ k: [[x - W, y + H], [x - W - 5, y + 20], [x - W * 0.5, y - H * 0.5], [x, y - H * 0.7], [x + W * 0.5, y - H * 0.5], [x + W + 5, y + 20], [x + W, y + H], [x + W * 0.5, y + H - 25], [x, y + H], [x - W * 0.5, y + H - 25], [x - W, y + H]], n: 70, c });
+      eyes(r, x, y, W * 0.35, S, ink); S.push({ k: loop(x, y + 55, 14, 18, r, 0.2), n: 12, c: ink });
+      if (r() < 0.6) S.push({ k: [[x - W, y + 20], [x - W - 50, y + 60]], n: 8, c }, { k: [[x + W, y + 20], [x + W + 50, y + 60]], n: 8, c }); return S; },
+    crab(r, c, ink) { const R = rr(r, 85, 120), S = [{ k: loop(300, 320, R * 1.2, R * 0.7, r, 0.18), n: 50, c }];
+      S.push({ k: [[285, 255], [280, 215]], n: 5, c }, { k: [[320, 255], [325, 215]], n: 5, c }); S.push({ k: loop(280, 205, 10, 10, r, 0.2), n: 8, c: ink }, { k: loop(325, 205, 10, 10, r, 0.2), n: 8, c: ink });
+      S.push({ k: [[300 - R * 1.2, 300], [300 - R * 1.2 - 40, 230], [300 - R * 1.2 - 20, 190], [300 - R * 1.2 - 55, 200], [300 - R * 1.2 - 60, 250]], n: 20, c }, { k: [[300 + R * 1.2, 300], [300 + R * 1.2 + 40, 230], [300 + R * 1.2 + 20, 190], [300 + R * 1.2 + 55, 200], [300 + R * 1.2 + 60, 250]], n: 20, c });
+      legs(r, S, [240, 270, 330, 360], 360, rr(r, 40, 80), c, 50); return S; },
+  };
+  const KIND_IDS = Object.keys(KINDS);
+  function randomDoodle(r, kind) {
+    const c = pick(r, CRAYON), ink = r() < 0.6 ? '#19263d' : pick(r, CRAYON), multi = r() < 0.25;
+    const S0 = KINDS[kind](r, c, ink);
+    const sc = rr(r, 0.55, 1.1), sx = sc * rr(r, 0.85, 1.2), sy = sc * rr(r, 0.85, 1.2), flip = r() < 0.5, dx = (r() - 0.5) * 60, dy = (r() - 0.5) * 60;
+    const w = Math.round(rr(r, 6, 15)), amp = rr(r, 1.5, 7), tilt = (r() - 0.5) * 0.25;
+    const f = (p) => { let x = (p[0] - 300) * sx, y = (p[1] - 300) * sy; y += x * tilt; if (flip) x = -x; return [Math.max(25, Math.min(575, 300 + x + dx)), Math.max(25, Math.min(575, 300 + y + dy))]; };
+    return S0.map((s, i) => ({ c: multi && i > 0 && r() < 0.35 ? pick(r, CRAYON) : (s.c || c), w: Math.max(5, w + (r() < 0.3 ? Math.round((r() - 0.5) * 4) : 0)), p: wobbly(s.k.map(f), r, s.n, amp) }));
+  }
+  function cpuName(r) { return pick(r, NAME_A) + pick(r, NAME_B); }
+  // seed ごとに別の顔ぶれ。候補を多めに作り、できばえ順に散らして選ぶ(強い子と弱い子がまざる)。avoid={kinds,names}=直前に出た物
+  function randomCpus(seed, n, avoid) {
+    const r = mulberry32((seed ^ 0x9e3779b9) >>> 0), av = avoid || {};
+    const cand = [];
+    for (let i = 0; i < n * 3; i++) {
+      let kind = pick(r, KIND_IDS), t = 0; while (av.kinds && av.kinds.indexOf('r_' + kind) >= 0 && t++ < 4) kind = pick(r, KIND_IDS);
+      const strokes = randomDoodle(r, kind); const info = analyze(strokes); if (!info) continue;
+      let name = cpuName(r); t = 0; while (av.names && av.names.indexOf(name) >= 0 && t++ < 4) name = cpuName(r);
+      cand.push({ v: 1, name, created: '2026-10-17', strokes, cpu: 'r_' + kind, _q: quality(info) });
+    }
+    cand.sort((a, b) => a._q - b._q);
+    const out = [], used = {}, m = cand.length;
+    for (let i = 0; i < n; i++) {
+      const lo = Math.floor(i * m / n), hi = Math.max(lo + 1, Math.floor((i + 1) * m / n)); let best = null;
+      for (let t = 0; t < 6; t++) { const c = cand[lo + Math.floor(r() * (hi - lo))]; if (!c || out.indexOf(c) >= 0) continue; if ((used[c.cpu] || 0) < 2) { best = c; break; } if (!best) best = c; }
+      if (!best) best = cand.find(c => out.indexOf(c) < 0);
+      used[best.cpu] = (used[best.cpu] || 0) + 1; out.push(best);
+    }
+    for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = out[i]; out[i] = out[j]; out[j] = t; }
+    out.forEach(c => { delete c._q; });
+    return out;
+  }
   function cpuCreature(def, seed) {
     const r = mulberry32(hashStr(def.id) ^ (seed || 0));
     const strokes = def.build(r).map(s => ({ c: def.color, w: 9, p: wobbly(s.k, r, s.n, 3.5) }));
     return { v: 1, name: def.name, created: '2026-10-14', strokes, cpu: def.id };
   }
 
-  const API = { mulberry32, hashStr, clamp, Creature, Challenge, COURSE_IDS, analyze, COURSES, FINISH, groundH, terrainAt, MODE, traitBonus, courseFit, simulate, STATE_NAME, CPU_DEFS, cpuCreature, TYPE_NAMES, BASE, rdp, abilities, quality, AB_KEYS, terrainMul, timeAttack };
+  const API = { mulberry32, hashStr, clamp, Creature, Challenge, COURSE_IDS, analyze, COURSES, FINISH, groundH, terrainAt, MODE, traitBonus, courseFit, simulate, STATE_NAME, CPU_DEFS, cpuCreature, randomCpus, TYPE_NAMES, BASE, rdp, abilities, quality, AB_KEYS, terrainMul, timeAttack };
   if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.RU = API;
 })(typeof window !== 'undefined' ? window : globalThis);

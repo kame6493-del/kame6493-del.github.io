@@ -694,18 +694,29 @@ $('prepGoBtn').onclick = () => {
   soloRace();
 };
 
-// ひとりで: CPU 5匹と
+// ひとりで: 毎回ちがう相手5匹(みんなのらくがきから取れていれば、そのうち最大3匹は本物の絵)
+G.cpuRecent = { kinds: [], names: [] };
+G.galPool = [];
+async function prefetchGalleryPool() {
+  try { const m = await Store.remote(); const r = await m.listCreatures(null); G.galPool = (r.items || []).map(it => it.creature).filter(c => c && c.strokes && c.strokes.length); } catch (e) { }
+}
+setTimeout(() => { prefetchGalleryPool(); }, 2500);
 function soloRace() {
   const seed = newSeed();
-  const cpus = CPU_DEFS.map(d => cpuCreature(d, 0));
+  const pool = G.galPool.filter(c => !(G.me && c.name === G.me.name && JSON.stringify(c.strokes).length === JSON.stringify(G.me.strokes).length));
+  const nGal = Math.min(pool.length, 1 + Math.floor(Math.random() * 3));
+  const gal = [];
+  while (gal.length < nGal) { const c = pool.splice(Math.floor(Math.random() * pool.length), 1)[0]; gal.push(Object.assign({}, c, { cpu: 'gal' })); }
+  const gen = RU.randomCpus(seed, 5 - gal.length, G.cpuRecent);
+  const cpus = gal.concat(gen).sort(() => Math.random() - 0.5);
+  G.cpuRecent = { kinds: gen.map(c => c.cpu), names: cpus.map(c => c.name) };
   const ents = cpus.slice(0, 3).concat([G.me], cpus.slice(3));
   startRace(ents.map((cr, i) => ({ cr, isMe: i === 3, cpu: !!cr.cpu })), G.course, seed, 'solo');
 }
-// 対戦(挑戦状・部屋・みんなのらくがき): 人が足りなければ CPU で 3体にする
+// 対戦(挑戦状・部屋・みんなのらくがき): 人が足りなければ CPU で 3体にする(種から決まるので、同じ挑戦状は同じ相手)
 function fillCpu(creatures, seed) {
   const out = creatures.slice();
-  let k = seed % CPU_DEFS.length;
-  while (out.length < CFG.VS_SIZE) { const d = CPU_DEFS[k % CPU_DEFS.length]; if (!out.some(c => c.cpu === d.id)) out.push(cpuCreature(d, 0)); k++; }
+  if (out.length < CFG.VS_SIZE) out.push(...RU.randomCpus(seed, CFG.VS_SIZE - out.length));
   return out;
 }
 function runVs(creatures, course, seed, meIndex, mode) {
