@@ -156,7 +156,7 @@ if (typeof EN_DICT !== 'undefined') for (const k in XF) { EN_DICT[XF_NAME[k]] = 
 if (typeof zkKind === 'function') { const _zkKind17 = zkKind; zkKind = k => (XF[k] && XF[k].strong ? ['つよい', '#ff8a4a'] : XF[k] && XF[k].rare ? ['めずらしい', '#ffe14d'] : _zkKind17(k)); }
 
 // 絵(ChatGPT: xf_<敵>_<0..2>.png・g7_*.png・ill_gameover.png)
-const XF_V = '20261017a';
+const XF_V = '20261017c';
 const XF_ART = ['ill_gameover', 'g7_bird_0', 'g7_bird_1', 'g7_gondola', 'g7_station', 'g7_pod_0', 'g7_pod_1', 'g7_bucket', 'g7_pulley', 'g7_lever_0', 'g7_lever_1', 'g7_bridge', 'g7_vent', 'g7_flame',
   'g7_wall', 'g7_roller', 'g7_web', 'g7_steam', 'g7_lid', 'g7_cog', 'g7_vhang_0', 'g7_vhang_1', 'g7_vhang_2', 'g7_vtile', 'g7_vtop', 'g7_balloon_0', 'g7_balloon_1', 'g7_1up_0', 'g7_1up_1', 'g7_1uppiece'];
 for (const k in XF) for (let f = 0; f < 3; f++) XF_ART.push('xf_' + k + '_' + f);
