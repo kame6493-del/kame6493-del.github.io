@@ -156,9 +156,11 @@ if (typeof EN_DICT !== 'undefined') for (const k in XF) { EN_DICT[XF_NAME[k]] = 
 if (typeof zkKind === 'function') { const _zkKind17 = zkKind; zkKind = k => (XF[k] && XF[k].strong ? ['つよい', '#ff8a4a'] : XF[k] && XF[k].rare ? ['めずらしい', '#ffe14d'] : _zkKind17(k)); }
 
 // 絵(ChatGPT: xf_<敵>_<0..2>.png・g7_*.png・ill_gameover.png)
-const XF_V = '20261017c';
+const XF_V = '20261017n';
 const XF_ART = ['ill_gameover', 'g7_bird_0', 'g7_bird_1', 'g7_gondola', 'g7_station', 'g7_pod_0', 'g7_pod_1', 'g7_bucket', 'g7_pulley', 'g7_lever_0', 'g7_lever_1', 'g7_bridge', 'g7_vent', 'g7_flame',
-  'g7_wall', 'g7_roller', 'g7_web', 'g7_steam', 'g7_lid', 'g7_cog', 'g7_vhang_0', 'g7_vhang_1', 'g7_vhang_2', 'g7_vtile', 'g7_vtop', 'g7_balloon_0', 'g7_balloon_1', 'g7_1up_0', 'g7_1up_1', 'g7_1uppiece'];
+  'g7_wall', 'g7_roller', 'g7_web', 'g7_steam', 'g7_lid', 'g7_cog', 'g7_vhang_0', 'g7_vhang_1', 'g7_vhang_2', 'g7_vtile', 'g7_vtop', 'g7_balloon_0', 'g7_balloon_1', 'g7_1up_0', 'g7_1up_1', 'g7_1uppiece',
+  // 2026-10-17 夜: おばあちゃんの 一枚絵と 顔・はこびどり/オウム/しのびガラスの はばたき 4こま
+  'ill_oba_open', 'face_oba', 'g7_bird_f0', 'g7_bird_f1', 'g7_bird_f2', 'g7_bird_f3', 'xe_oumu_f0', 'xe_oumu_f1', 'xe_oumu_f2', 'xe_oumu_f3', 'xf_shinobi_f0', 'xf_shinobi_f1', 'xf_shinobi_f2', 'xf_shinobi_f3'];
 for (const k in XF) for (let f = 0; f < 3; f++) XF_ART.push('xf_' + k + '_' + f);
 for (const n of XF_ART) {
   const im = new Image();
@@ -602,6 +604,8 @@ function updateThingF(o, dt) {
       o.dx = 0; o.dy = 0; return true;
     }
     case 'f7_gate': {
+      // 2026-10-17 夜: つよい 敵が 穴に おちる など、けん・ふみつけ 以外で いなくなっても おりを ひらく(キノコが 取れなく ならない ように)
+      if (!o.open && o.g && world.time > 1 && !world.ents.some(e => e.t === 'enemy' && e.gate === o.g && !e.gone && !e.dying && e.y < ROWS * TILE)) o.open = true;
       if (o.open) { o.y -= 160 * dt; o.solid = false; if (o.y < o.y0 - o.h - 20) o.gone = true; if (!o.told) { o.told = true; sfx('door'); toast = { text: 'おりが ひらいた!', sub: 'つよい 敵を たおした ごほうび', t: 2 }; } }
       return true;
     }
@@ -620,8 +624,11 @@ function drawThingF(o, t) {
       ctx.restore(); return true;
     }
     case 'f7_bird': {
+      // 2026-10-17 夜: 4こまの はばたき(とぶ ときは はやく・まつ ときは ゆっくり)
+      const f4 = Math.floor(t * (o.state === 'wait' ? 3 : 10)) % 4;
       const f = Math.floor(t * (o.state === 'wait' ? 4 : 9)) % 2;
-      if (!(ART.g7_bird_0 && drawFit(f ? 'g7_bird_1' : 'g7_bird_0', o.x + o.w / 2, o.y + 64, 110))) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y + 8, o.w / 2, 18, 0, 0, 7); ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 3; ctx.stroke(); }
+      if (ART.g7_bird_f0 && ART.g7_bird_f3) drawFit('g7_bird_f' + f4, o.x + o.w / 2, o.y + 64, 112);
+      else if (!(ART.g7_bird_0 && drawFit(f ? 'g7_bird_1' : 'g7_bird_0', o.x + o.w / 2, o.y + 64, 110))) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y + 8, o.w / 2, 18, 0, 0, 7); ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 3; ctx.stroke(); }
       return true;
     }
     case 'f7_gondola': {
@@ -732,7 +739,7 @@ function fSections(S, L, def) {
   // 乗り物: どれも 穴は 28マス 以上(つばさの 二段ジャンプでも とどかない)
   F.bird = (x, top, w, o) => { L.ground(x, x + 4, top); cp(x + 1, top); L.hazard(x + 3, 'f7_bird', { y: top - 1, dist: 31 }); if (o.mush) L.put(x + 19, H(top - 5), 'u'); else L.row(x + 15, H(top - 4), 'ooo'); if (w.f[0]) L.enemy(x + 24, w.f[0], { y: H(top - 5) }); L.ground(x + 36, x + 40, top); return x + 41; };
   F.gondola = (x, top, w, o) => { L.ground(x, x + 5, top); cp(x + 1, top); L.hazard(x + 4, 'f7_gondola', { y: top - 1, dist: 30, dy: 0 }); if (o.mush) L.put(x + 20, H(top - 4), 'u'); else L.row(x + 17, H(top - 4), 'ooo'); L.ground(x + 36, x + 41, top); return x + 42; };
-  F.pod = (x, top, w, o) => { L.ground(x, x + 4, top); cp(x + 1, top); L.hazard(x + 3, 'f7_pod', { y: top - 1, ang: -48, power: F_POD_POWER }); if (o.mush) L.put(x + 17, H(top - 7), 'u'); else L.row(x + 15, H(top - 7), 'ooo'); L.ground(x + 33, x + 39, top); return x + 40; };
+  F.pod = (x, top, w, o) => { L.ground(x, x + 4, top); cp(x + 1, top); L.hazard(x + 3, 'f7_pod', { y: top - 1, ang: -48, power: F_POD_POWER }); if (o.mush) L.put(x + 26, H(top - 7), 'u'); else L.row(x + 25, H(top - 7), 'ooo'); /* 2026-10-17 夜: x+17 だと とぶ 道より 2マス 下で、つばさが ないと 取れなかった → とぶ 道が 3行目まで おりてくる x+26 に */ L.ground(x + 33, x + 39, top); return x + 40; };
   F.steam = (x, top, w, o) => {
     const wh = Math.min(top - 2, 8);
     L.ground(x, x + 8, top); cp(x + 1, top); L.hazard(x + 3, 'f7_steam', { rise: wh });
@@ -758,7 +765,7 @@ function fSections(S, L, def) {
     L.enemy(x + 13, w.s, fl ? { y: H(top - 5), gate: g } : { gate: g });
     L.fill(x + 22, x + 28, top - 3, top - 3, 'S'); L.fill(x + 28, x + 28, top - 2, top - 1, 'S');
     L.hazard(x + 22, 'f7_gate', { y: top - 2, h: 2, g }); L.put(x + 25, top - 1, 'u'); L.put(x + 24, top - 2, 'o'); L.put(x + 26, top - 2, 'o');
-    L.fill(x + 20, x + 21, top - 1, top - 1, 'S');
+    // 2026-10-17 夜: おりの 前の だん(x+20〜21)を なくした。だんの 上からだと 頭が おりの やねに つかえて 入れず、キノコが 取れなかった
     L.row(x + 6, H(top - 5), 'oooooo');
     return x + 32;
   };
@@ -844,3 +851,23 @@ sections = function (L) {
   return S;
 };
 const H0 = y => Math.max(2, y);
+
+// ---------------- 2026-10-17 夜: とぶ 鳥の はばたき(4こま)----------------
+// 持ち主「とんでいる 鳥が 羽を うごかして いない」。オウム・しのびガラスは とんでいる 間 4こまで はばたく(きゅうこうかの ときは 前の 絵)。
+// はこびどりは drawThingF の f7_bird で 4こまを つかう。
+const FLAP_ART = {
+  oumu: { pre: 'xe_oumu_f', H: 493, body: 398, ref: 396 },
+  shinobi: { pre: 'xf_shinobi_f', H: 495, body: 443, ref: 441 },
+};
+{
+  const _deFlap = drawEnemyX;
+  drawEnemyX = function (o, t) {
+    const fa = FLAP_ART[o.type];
+    if (!fa || o.dying || o.fr === 2 || !ART[fa.pre + '0'] || !ART[fa.pre + '3']) return _deFlap(o, t);
+    const im = ART[fa.pre + '0'], s = o.d.dh / fa.ref, w = im.naturalWidth * s, h = fa.H * s;
+    const f = Math.floor((o.ph || t) * 11) % 4;
+    const bottom = o.y + o.h + 3 + (fa.H - fa.body) * s;
+    drawImg(fa.pre + f, o.x + o.w / 2 - w / 2, bottom - h, w, h, o.face > 0, o.alpha ?? 1);
+    return true;
+  };
+}

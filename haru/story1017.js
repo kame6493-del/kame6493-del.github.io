@@ -6,7 +6,7 @@
 
 // ---- 新しい 話し手(絵は もう ある 物を つかう)----
 const SPEAKERS1017 = {
-  oba: { name: 'おばあちゃん', face: null, alt: 'face_haru', col: '#d9a6c8', filter: 'grayscale(0.75) brightness(1.08)' },
+  oba: { name: 'おばあちゃん', face: 'face_oba', alt: 'face_haru', col: '#d9a6c8', filter: 'grayscale(0.75) brightness(1.08)' },
   poko: { name: 'ポコ', face: null, alt: 'xe_donguri_0', col: '#d9a066' },
   kero: { name: 'ケロスケ', face: null, alt: 'xe_pyoko_0', col: '#8fd96a' },
   yuki: { name: 'ユキ', face: null, alt: 'xe_yukipyon_0', col: '#bfe6ff' },
@@ -485,6 +485,8 @@ const STORY1017_ENDICT = Object.assign({}, SPEAKERS1017_EN);
   }
   for (const k in STORY1017_BEFORE) addEN(STORY1017_BEFORE[k]);
   addEN(STORY1017_ENDING);
+  // 2026-10-17 夜: さいしょの 場面は おばあちゃんと ハルの 村の 一枚絵(ChatGPT)
+  if (STORY1017.pre1) STORY1017.pre1.bg = 'ill_oba_open';
 
   if (typeof SPEAKERS !== 'undefined') Object.assign(SPEAKERS, SPEAKERS1017);
   if (typeof STORY !== 'undefined') {

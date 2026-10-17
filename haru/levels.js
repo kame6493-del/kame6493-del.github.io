@@ -127,7 +127,7 @@ function sections(L) {
     return x + 9 + gap; };
   S.water = (x, w, o = {}) => { L.ground(x, x + w - 1, 11); L.water(x, x + w - 1, 7); L.row(x + 2, 10, 'o'.repeat(Math.min(5, w - 4))); if (o.fish) o.fish.forEach((dx, i) => L.enemy(x + dx, 'fish', { jump: 680, phase: i * 0.7 })); if (o.pillars) o.pillars.forEach(dx => L.fill(x + dx, x + dx + 1, 4, 8, 'S')); if (o.star) L.put(x + o.star, 10, '*'); return x + w; };
   S.door = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 5, top); L.wall(x + 2, top - 8, top - 3); L.door(x + 2, top - 1); if (o.star) L.put(x + 4, top - 1, '*'); L.row(x + 3, top - 3, 'gg'); return x + 6; };
-  S.goal = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 13, top); L.stairs(x + 1, top, 5, +1, o.ch || '#'); L.put(x + 10, top - 1, 'G'); if (o.deco) L.deco(x + 12, o.deco, 1); return x + 14; };
+  S.goal = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 13, top); L.stairs(x + 1, top, 5, +1, o.ch || '#'); L.put(x + 10, top - 1, 'G'); if (o.deco) L.deco(x + 7, o.deco, 1); /* 2026-10-17 夜: x+12 だと ゴールの 柱に かさなっていた */ return x + 14; };
   S.boss = (x, hp, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 25, top); L.wall(x + 26, 2, top - 1); L.ground(x + 26, x + 26, top); L.put(x + 3, top - 1, 'h'); L.put(x + 22, top - 1, 'p'); L.row(x + 4, top - 4, 'BRB'); if (o.star) L.put(x + 12, top - 4, '*'); L.enemy(x + 15, 'boss', { arena: [x + 1, x + 25], hp }); L.deco(x + 1, 'torch', 1); L.deco(x + 24, 'torch', 1); return x + 27; };
   // ---------- ワールド4: 風・スイッチ・ワープ ----------
   // 横風の道: 扇風機から dir の向きに吹く。on/off を決めると 吹いたり止んだり
@@ -181,12 +181,13 @@ function sections(L) {
     const top = o.top ?? 10;
     L.ground(x, x + 2, top); L.put(x + 1, top - 4, '%');
     L.row(x + 3, top, '1111');
-    L.ground(x + 7, x + 7, top); L.put(x + 7, top - 4, '%');
+    // 2026-10-17 夜: まんなかの スイッチ(星の 足場)を 1マス さげた。前は 4マスの 高さで、かべジャンプを 同じ かべで くりかえさないと 上に のれなかった
+    L.ground(x + 7, x + 7, top); L.put(x + 7, top - 3, '%');
     L.row(x + 8, top, '2222');
     L.ground(x + 12, x + 14, top);
     if (o.lava) { L.lava(x + 3, x + 6, top + 1); L.lava(x + 8, x + 11, top + 1); }
     L.row(x + 3, top - 2, 'oooo'); L.row(x + 8, top - 2, 'oooo');
-    if (o.star) L.put(x + 7, top - 7, '*');
+    if (o.star) L.put(x + 7, top - 6, '*');
     en(x, o.en);
     return x + 15;
   };
@@ -411,8 +412,12 @@ function sections(L) {
     L.hazard(x + 2, 'cannon', { ang: o.ang ?? -55, power: o.power || 1100 });
     if (o.lava) L.lava(x + 4, x + 3 + gap, top + 1);
     L.ground(x + 4 + gap, x + 11 + gap, top);
-    if (o.star) L.put(x + 4 + Math.floor(gap * 0.55), hi(o.starY ?? top - 5), '*');
-    else L.row(x + 4 + Math.floor(gap * 0.4), top - 5, 'ooo');
+    // 2026-10-17 夜: 穴を 28マスに した ときに たいほうが 強く なり、とぶ 道が 画面の 上の 外を とおるように なった。
+    // 穴の まんなかの 星・コイン(上から 5行目)は つばさが ないと 取れなかった → 星と コインは うちだした すぐあとの とぶ 道の 上に ならべる
+    const tanA = Math.tan(Math.abs((o.ang ?? -55) * Math.PI / 180));
+    const onArc = dx => Math.max(2, Math.round(top - 0.7 - dx * tanA * 0.86));
+    if (o.star) L.put(x + 2 + 5, onArc(5), '*');
+    else for (const dx of [3, 4, 5]) L.put(x + 2 + dx, onArc(dx), 'o');
     en(x, o.en);
     return x + 12 + gap;
   };
@@ -507,10 +512,11 @@ function sections(L) {
     const top = o.top ?? 10, w = 14;
     L.ground(x, x + w - 1, top);
     if (o.hint) L.hint(x, 'くるくるブロック', 'したから たたくと まわって とおりぬけられる。スピンで ふむと こわれる');
-    L.row(x + 3, top - 4, 'jjjjjjjj');
-    L.row(x + 4, top - 5, 'oooooo');
-    L.row(x + 4, top - 8 < 2 ? 2 : top - 8, o.star ? '' : 'jjj');
-    if (o.star) L.put(x + 7, hi(top - 8), '*');
+    // 2026-10-17 夜: かべジャンプを 同じ かべで つづけて できなく したので、くるくるブロックの 列を 1マス さげた(上に のぼる 道が かべジャンプ だのみ だった)
+    L.row(x + 3, top - 3, 'jjjjjjjj');
+    L.row(x + 4, top - 4, 'oooooo');
+    L.row(x + 4, top - 7 < 2 ? 2 : top - 7, o.star ? '' : 'jjj');
+    if (o.star) L.put(x + 7, hi(top - 7), '*');
     en(x, o.en);
     return x + w;
   };
@@ -2758,7 +2764,8 @@ const LEVELS = [
       x = S.snowRun(x, 16, { pen: [5, 10] });
       x = S.icicles(x, 12, { en: [[8, 'suberin']] });
       // ひみつの かぎ: 高い たなの 上(つららの 先)
-      L.fill(x - 5, x - 2, 5, 5, 'S'); L.hazard(x - 4, 'skey', { y: 3 });
+      // 2026-10-17 夜: たなが つららの こおりの てんじょう(2〜3行)の すぐ下(5行)で、カギが こおりに めりこみ、たなにも 立てなかった → たなを 7行に さげ、カギは たなの 上
+      L.fill(x - 5, x - 2, 7, 7, 'S'); L.hazard(x - 4, 'skey', { y: 6 });
       x = S.snowWall(x, {});
       x = S.gap(x, 7, { star: true, starY: 4 });
       x = S.run(x, 8, { cp: 2, fill: 'I' });
@@ -2768,7 +2775,8 @@ const LEVELS = [
       x = S.spring(x, { star: true });
       x = S.snowRun(x, 14, { pen: [4] });
       x = S.run(x, 6, { coins: 4 });
-      // かぎあな(ゴールの 手前の たかい だい)
+      // かぎあな(ゴールの 手前の たかい だい)。2026-10-17 夜: コインの 上に だいを かさねて コインが めりこんでいた → だいは コインの 先に
+      x = S.run(x, 4);
       L.fill(x - 3, x - 1, 7, 9, 'S'); L.hazard(x - 2, 'keyhole', { y: 3 });
       x = S.goal(x, { deco: 'crystal' });
     },

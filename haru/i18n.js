@@ -42,6 +42,10 @@ applyLangDoc();
 
 // 英語の 辞書(キーは 日本語の 文そのまま)
 const EN_DICT = {
+  "あまぐもの そら": "Rain-Cloud Sky",
+  "いのちの かけら ": "Life piece ",
+  "ここでは つばさが つかえない。しかけを つかおう": "Wings don't work here. Use the gadget!",
+  "ここでは つばさ・かべジャンプが つかえない。しかけを つかおう": "Wings and wall jumps don't work here. Use the gadget!",
   // タッチの ボタンの みえかた(2026-10-13)
   "ボタン: ふつう": "Buttons: Normal",
   "ボタン: うすい": "Buttons: Light",
@@ -206,6 +210,7 @@ const EN_DICT = {
   "ちゅうかんゲート!": "Checkpoint Gate!",
   "ここから やりなおせる。たてを もらった!": "You'll restart here. Got a shield!",
   "ここからやりなおせます": "You'll restart here",
+  "ここから やりなおせる": "You'll restart here",
   "たからばこ! +500": "Treasure chest! +500",
   "とびらがひらいた!": "The door opened!",
   "カギがかかっている": "It's locked",

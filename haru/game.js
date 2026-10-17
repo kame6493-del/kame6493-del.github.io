@@ -570,12 +570,25 @@ function buildLevel(def) {
   };
   def.build(L);
   const W = maxX + 6;
+  liftEmbedded(ents, tiles);
   placeShards(def, ents, tiles, W);
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < W; x++) if (!tiles[y][x]) tiles[y][x] = ' ';
   // 天井の飾りを残すため、天井は面の幅に合わせて切る
   const hasBlink = tiles.some(r => r.includes('3') || r.includes('4'));
   const hasJsw = tiles.some(r => r.includes(':') || r.includes(';'));
   return { def, tiles, ents, decos, W, hasBlink, hasJsw };
+}
+
+// 2026-10-17 夜: 区間を かさねた ときに コイン・星・キノコ・ハートが かべや だいの 中に うまる ことが あった(2-5・2-6 など)。
+// うごかない かたい マスの 中に ある 物は、上の あいた マスまで もちあげる(8マスまで)。
+function liftEmbedded(ents, tiles) {
+  const HARD = new Set(['#', 'S', 'I', 'B', 'X', 'M', 'U', 'D', 'K', 'H', '?', 'Q', 'N', 'v']);
+  const hard = (x, y) => y >= 0 && y < ROWS && tiles[y] && HARD.has(tiles[y][x]);
+  for (const e of ents) {
+    if (!'o*@hu'.includes(e.kind) || e.kind.length !== 1 || !hard(e.x, e.y)) continue;
+    let y = e.y; while (y > 0 && hard(e.x, y) && e.y - y < 8) y--;
+    if (!hard(e.x, y)) e.y = y;
+  }
 }
 
 // 大きな ほしの かけら(1面に 5まい)。面の データに @ が なければ、面を 5つに わけて それぞれの いちばん 高い コインを かけらに かえる
@@ -592,7 +605,7 @@ function placeShards(def, ents, tiles, W) {
     const a = xStart + seg * r, b = a + seg;
     if (ents.some(e => e.kind === '@' && e.x >= a && e.x < b)) continue;
     const near = e => ents.some(s2 => (s2.kind === '*' || s2.kind === '@') && Math.abs(s2.x - e.x) < 3 && Math.abs(s2.y - e.y) < 3);
-    const coins = ents.filter(e => e.kind === 'o' && e.x >= a && e.x < b && e.y >= 2 && !near(e));
+    const coins = ents.filter(e => e.kind === 'o' && e.x >= a && e.x < b && e.y >= 2 && !near(e) && !isS(e.x, e.y - 1));
     if (coins.length) {
       let best = null, bs = 1e9;
       for (const c of coins) { const sc = c.y * 10 + R() * 6; if (sc < bs) { bs = sc; best = c; } }
@@ -685,6 +698,7 @@ function startLevel(idx, fromCheckpoint = false) {
     if (o) world.ents.push(o);
     if (e.kind === 'P') start = { x: e.x * TILE + 10, y: (e.y + 1) * TILE - 54 };
   }
+  try { computeNoWing(); } catch (e) { world.noWing = []; }
   if (keep) {
     Object.assign(world, { coins: keep.coins, score: keep.score, stars: [...keep.stars], shards: [...keep.shards], time: keep.time, deaths: keep.deaths, checkpoint: keep.cp, cpIdx: keep.cpIdx, cpCoins: keep.cpCoins, cpScore: keep.cpScore, cpStars: keep.cpStars, cpShards: keep.cpShards, cpMaxHearts: keep.maxHearts, cpPowers: keep.cpPowers, lifeGot: keep.lifeGot, cpLifeGot: keep.cpLifeGot });
     // 取った星・かけらは出さない。通った中間旗は立てたまま
@@ -801,7 +815,7 @@ function spawn(e) {
     case '*': return { id, t: 'star', x: X + 4, y: Y + 4, w: 40, h: 40, idx: e.idx, ph: 0 };
     case '@': return { id, t: 'shard', x: X + 2, y: Y - 6, w: 44, h: 54, idx: e.idx, ph: e.idx };
     case 't': return { id, t: 'tblock', x: X + 2, y: Y + 4, w: 44, h: 44, vx: 0, vy: 0, carry: true };
-    case '&': return { id, t: 'pswitch', x: X + 4, y: Y + 14, w: 40, h: 34, vx: 0, vy: 0, carry: true };
+    case '&': return { id, t: 'pswitch', x: X + 4, y: Y + 14, w: 40, h: 34, vx: 0, vy: 0, carry: true, x0: X + 4, y0: Y + 14 };
     case 'i': return { id, t: 'invstar', x: X + 4, y: Y + 4, w: 40, h: 40, vx: 150, vy: -200, ph: 0 };
     case 'y': return { id, t: 'mount', x: X + 2, y: Y + 4, w: 44, h: 44, vx: 0, vy: 0, face: 1, state: 'idle', timer: 0, fire: 0, flyT: 0 };
     case '!': return { id, t: 'palace', x: X - 24, y: Y + 6, w: 96, h: 42, color: e.color || (world && world.def.palace) || 'y', down: 0 };
@@ -812,7 +826,7 @@ function spawn(e) {
     case 'C': return { id, t: 'checkpoint', x: X + 4, y: Y - 40, w: 40, h: 88, on: false, idx: e.x };
     case 'G': return { id, t: 'goal', x: X, y: Y - 96, w: 48, h: 144, ph: 0 };
     case '$': return { id, t: 'goal', x: X, y: Y - 96, w: 48, h: 144, secret: true, ph: 0.8 };
-    case 'T': return { id, t: 'spring', x: X + 4, y: Y + 10, w: 40, h: 38, sq: 0, power: 1050, carry: true, vx: 0, vy: 0 };
+    case 'T': return { id, t: 'spring', x: X + 4, y: Y + 10, w: 40, h: 38, sq: 0, power: 1050, carry: true, vx: 0, vy: 0, x0: X + 4, y0: Y + 10 };
     case 'm': return { id, t: 'mushroom', x: X + 2, y: Y + 4, w: 44, h: 44, sq: 0, power: 940 };
     case 'w': return { id, t: 'wing', x: X + 4, y: Y + 8, w: 40, h: 34, ph: 0 };
     case 'b': return { id, t: 'boots', x: X + 6, y: Y + 8, w: 36, h: 34, ph: 0 };
@@ -937,6 +951,8 @@ function debris(x, y, img) {
 }
 
 // ---------- 主人公 ----------
+// つばさの 力(2026-10-17 夜に 弱めた): 二段ジャンプの 強さ・滑空の 時間と おちる 速さ
+let WING_DJ = 0.8, WING_GLIDE = 0.3, WING_GLIDE_FALL = 240, WJ_OLD = false, WJ_NONE = false; // WJ_OLD・WJ_NONE は 試験で くらべる ため(ゲームでは つかわない)
 const GRAV = 2300, MAXFALL = 860, ACC = 2800, AIRACC = 2200, MAXV = 300, JUMPV = 800, FRICT = 2600;
 // 主人公の重力: 上がる間ボタンを押している / 離した / ばねなどで飛ばされた / 落ちる
 const GRAV_UP = 1650, GRAV_CUT = 4200, GRAV_LAUNCH = 1900, GRAV_DOWN = 2500;
@@ -1396,7 +1412,7 @@ function updatePlayer(dt) {
     const still = isLadder(tileAt(cx, Math.floor((p.y + p.h / 2) / TILE))) || isLadder(tileAt(cx, Math.floor((p.y + p.h - 2) / TILE)));
     if (!still || (p.onGround && ud > 0)) { p.climb = false; if (!still && ud < 0) { p.vy = -300; } }
     consume('up'); consume('attack');
-    p.airJumps = maxAirJumps(); p.airDash = 1;
+    p.airJumps = maxAirJumps(); p.airDash = 1; p.lastWJ = 0;
     if (p.inv > 0) p.inv -= dt;
     return;
   }
@@ -1406,7 +1422,12 @@ function updatePlayer(dt) {
   const wj = (tx, ty) => isSolid(tx, ty) && tileAt(tx, ty) !== 'K';
   const wallL = wj(Math.floor((p.x - 3) / TILE), midY) || wj(Math.floor((p.x - 3) / TILE), lowY);
   const wallR = wj(Math.floor((p.x + p.w + 3) / TILE), midY) || wj(Math.floor((p.x + p.w + 3) / TILE), lowY);
-  p.wallSlide = !p.onGround && !p.swim && p.vy * gd > 0 && ((dir < 0 && wallL) || (dir > 0 && wallR)) ? dir : 0;
+  const wjSide = sd => sd * 1000 + Math.floor((sd < 0 ? p.x - 3 : p.x + p.w + 3) / TILE);
+  // 2026-10-17 夜: あまぐもの 空(しかけの 区間)では つばさ(穴と がけ)・かべジャンプ(がけ)が つかえない。がけつかまりは つかえる(ばねの 高さを 手で おぎなう 作りが ある)
+  const nw = inNoWing(p);
+  if (nw && !p.inNW && !world.seenNoWing && (window.__nwTold || 0) < 3) { world.seenNoWing = true; window.__nwTold = (window.__nwTold || 0) + 1; toast = { text: 'あまぐもの そら', sub: nw === 2 ? 'ここでは つばさ・かべジャンプが つかえない。しかけを つかおう' : 'ここでは つばさが つかえない。しかけを つかおう', t: 3 }; }
+  p.inNW = nw;
+  p.wallSlide = !p.onGround && !p.swim && p.vy * gd > 0 && ((dir < 0 && wallL) || (dir > 0 && wallR)) && p.inNW !== 2 && (WJ_OLD || wjSide(dir) !== p.lastWJ) ? dir : 0;
   if (p.wallSlide) { p.airJumps = Math.max(p.airJumps, 0); if (Math.random() < dt * 14) dust(p.wallSlide > 0 ? p.x + p.w : p.x, p.y + p.h - 10, 1); }
   // しゃがみ(↓)
   if (gd > 0 && p.onGround && held('down') && !p.swim && !p.mount && !p.carry && !p.fly) {
@@ -1442,7 +1463,7 @@ function updatePlayer(dt) {
   if (consume('jump')) { p.jumpBuf = 0.15; p.spinReq = false; }
   p.jumpBuf -= dt;
   p.coyote = p.onGround ? 0.12 : p.coyote - dt;
-  if (p.onGround) { p.airJumps = maxAirJumps(); p.airDash = 1; }
+  if (p.onGround) { p.airJumps = maxAirJumps(); p.airDash = 1; p.glideT = 0; p.lastWJ = 0; }
   p.swim = tileAt(cx, cy) === 'W';
   if (p.jumpBuf > 0) {
     if (p.coyote > 0 || p.swim) {
@@ -1457,15 +1478,17 @@ function updatePlayer(dt) {
         else sfx('jump', p.swim ? 0.8 : 1);
         if (!p.swim) { dust(p.x + p.w / 2, gd > 0 ? p.y + p.h : p.y, 4); p.squash = 0.8; onPlayerJump(); }
       }
-    } else if (!p.swim && (p.wallSlide || ((wallL || wallR) && p.vy > -200))) {
-      // 壁ジャンプ
+    } else if (!p.swim && !WJ_NONE && p.inNW !== 2 && (p.wallSlide || ((wallL || wallR) && p.vy > -200)) && (WJ_OLD || wjSide(p.wallSlide || (wallL ? -1 : 1)) !== p.lastWJ)) {
+      // 壁ジャンプ。2026-10-17 夜: 同じ がわの かべでは つづけて とべない(1まいの かべを どこまでも のぼれて しかけを とばせた)。
+      // 反対の かべ・地面・はしご・つる などに さわると また とべる。つばさの 二段ジャンプも もどさない
       const away = wallL ? 1 : -1;
+      p.lastWJ = wjSide(-away);
       p.vx = away * 340; p.vy = -JUMPV * 0.95 * gd; p.face = away; onPlayerJump(); p.lockT = 0.14; p.jumping = true; p.jumpBuf = 0;
-      p.airJumps = maxAirJumps(); p.airDash = 1;
+      p.airDash = 1; if (WJ_OLD) p.airJumps = maxAirJumps();
       sfx('jump', 1.15); dust(wallL ? p.x : p.x + p.w, p.y + p.h - 12, 5);
-    } else if (!p.swim && p.airJumps > 0) {
+    } else if (!p.swim && p.airJumps > 0 && !(p.inNW && !(p.jetT > 0))) {
       // 二段ジャンプ(つばさ)・三段ジャンプ(ジェットつばさ)
-      p.airJumps--; p.jumpBuf = 0; p.vy = -JUMPV * 0.9 * gd; p.jumping = true; onPlayerJump(); p.flapT = 0.35; p.fly = null; p.spin = !!p.spinReq;
+      p.airJumps--; p.jumpBuf = 0; p.vy = -JUMPV * (jet ? 0.9 : WING_DJ) * gd; p.jumping = true; onPlayerJump(); p.flapT = 0.35; p.fly = null; p.spin = !!p.spinReq;
       sfx('jump2', jet && p.airJumps === 0 ? 1.25 : 1);
       for (let i = 0; i < 8; i++) parts.push({ x: p.x + p.w / 2 + rnd(-14, 14), y: p.y + p.h - 10, vx: rnd(-90, 90), vy: rnd(20, 120), life: 0.5, max: 0.5, color: jet ? '#ffe066' : '#ffffff', size: rnd(3, 5), g: 200, puff: true });
     }
@@ -1531,7 +1554,8 @@ function updatePlayer(dt) {
     g = GRAV_DOWN;
     if (p.wallSlide) maxFall = 170;
     // つばさで滑空(落ちるときにジャンプを押し続ける)
-    if (hasPower('wing') && held('jump') && p.airJumps === 0 && !p.onGround) { maxFall = 120; p.gliding = true; if (Math.random() < dt * 10) parts.push({ x: p.x + p.w / 2 + rnd(-20, 20), y: p.y + 20, vx: rnd(-30, 30), vy: 40, life: 0.4, max: 0.4, color: '#ffffff', size: 3, g: 0, puff: true }); }
+    // 2026-10-17 夜: 滑空は 1回の とびで WING_GLIDE びょうまで・おちる 速さ WING_GLIDE_FALL(前は ずっと 120 で 64マスも とべ、しかけを ぜんぶ とびこせた)
+    if (hasPower('wing') && held('jump') && p.airJumps === 0 && !p.onGround && !p.inNW && (p.glideT || 0) < WING_GLIDE) { maxFall = WING_GLIDE_FALL; p.gliding = true; p.glideT = (p.glideT || 0) + dt; if (Math.random() < dt * 10) parts.push({ x: p.x + p.w / 2 + rnd(-20, 20), y: p.y + 20, vx: rnd(-30, 30), vy: 40, life: 0.4, max: 0.4, color: '#ffffff', size: 3, g: 0, puff: true }); }
     else p.gliding = false;
   }
   // ほしの マント: おちるとき ジャンプを おしていると ゆっくり(とんでいる 間は 下の capeFly で)
@@ -1835,7 +1859,8 @@ function updateLoose(o, dt) {
     if (o.onGround && o.t !== 'tblock') { o.vx *= 0.93; if (Math.abs(o.vx) < 20) { o.vx = 0; o.thrown = false; } }
     if (o.t === 'tblock') { o.life = (o.life || 4) - dt; if (o.life <= 0) { breakLoose(o); return; } }
   } else if (o.onGround) o.vx = 0;
-  if (o.y > ROWS * TILE + 60) o.gone = true;
+  // 2026-10-17 夜: もちはこべる ばね・ぎんの スイッチは 穴に おちても もとの 場所に もどる(なくすと 先へ 進めない ことが あった)
+  if (o.y > ROWS * TILE + 60) { if ((o.t === 'spring' || o.t === 'pswitch') && o.x0 !== undefined) { o.x = o.x0; o.y = o.y0; o.vx = 0; o.vy = 0; o.thrown = false; sparkle(o.x + 20, o.y + 10, 10); } else o.gone = true; }
 }
 function breakLoose(o) { o.gone = true; debris(o.x, o.y, 'crate'); sfx('break'); }
 
@@ -2045,7 +2070,7 @@ function updateEnemy(o, dt) {
       o.face = px < ex ? -1 : 1;
       if (o.invT > 0) o.invT -= dt;
       if (o.state === 'sleep') {
-        if (P.x > o.arena[0] * TILE + 2 * TILE) { o.state = 'walk'; o.timer = 1.6; world.bossBgm = 'boss'; bossIntro(o); toast = { text: bossName(o) + ' が あらわれた!', sub: 'ふむか けんで こうげき!', t: 2.4 }; cam.shake = 0.4; sfx('door', 0.6); }
+        if (P.x > o.arena[0] * TILE + 2 * TILE) { o.state = 'walk'; o.timer = 1.6; world.bossBgm = 'boss'; bossIntro(o); if (world.bossCard) world.bossCard.sub = 'ふむか けんで こうげき!'; cam.shake = 0.4; sfx('door', 0.6); }
         break;
       }
       if (o.state === 'fade') { o.alpha = Math.max(0, o.alpha - dt * 3); if (o.alpha <= 0) { const tx = Math.round(rnd(o.arena[0] + 2, o.arena[1] - 2)); o.x = tx * TILE; o.y = groundYBelow(tx, 2) * TILE - o.h; o.state = 'appear'; } break; }
@@ -2427,8 +2452,8 @@ function updateEnemy(o, dt) {
 function toastOnce(o, text, sub) { if (!o.toasted) { o.toasted = true; toast = { text, sub, t: 2.2 }; } }
 function bossWake(o, sub) {
   world.bossBgm = o.type === 'kage' ? 'finalboss' : 'boss'; cam.shake = 0.45; sfx('door', 0.6); sfx('boom', 0.6);
-  toast = { text: bossName(o) + ' が あらわれた!', sub, t: 3 };
-  bossIntro(o);
+  // 2026-10-17 夜: 「〜が あらわれた!」の 札は 名札と かさなるので やめ、戦い方の 1行は 名札の 中に
+  bossIntro(o); if (world.bossCard && sub) world.bossCard.sub = sub;
   // うしろの入り口を とじる
   const gy = groundYBelow(o.arena[0], 2);
   world.ents.push({ id: ++uid, t: 'gate', x: o.arena[0] * TILE, y: (gy - 3) * TILE, w: TILE, h: 3 * TILE, solid: true, drop: 1 });
@@ -2464,6 +2489,8 @@ function bossHit(o) {
     for (const e of world.ents) if (e.t === 'magic' || e.t === 'rock' || e.t === 'swave' || e.t === 'spit' || (e.t === 'enemy' && e !== o)) e.gone = true;
     for (const e of world.ents) if (e.t === 'gate') e.opening = true;
     const g = spawn({ kind: 'G', x: o.arena[1] - 2, y: 9 });
+    // 2026-10-17 夜: ボスを たおした とき ハルが ゴールの 場所に いると すぐ クリアに なり、部屋の 星を 取れなかった → ハルが いったん はなれるまで(3びょうまで)ゴールは まつ
+    if (g) g.armWait = true;
     world.ents.push(g);
     bossSay(o, 'defeat'); world.bossDark = false;
     toast = { text: bossName(o) + 'を たおした!', sub: 'ゴールの はたへ!', t: 3 };
@@ -2657,12 +2684,14 @@ function updateThing(o, dt) {
         const gift = !p.shield && !(p.powers && p.powers.length);
         if (gift) { p.shield = true; sfx('shield', 1.1); }
         o.tapeT = 0.6;
-        toast = { text: 'ちゅうかんゲート!', sub: gift ? 'ここから やりなおせる。たてを もらった!' : 'ここからやりなおせます', t: 1.8 };
+        toast = { text: 'ちゅうかんゲート!', sub: gift ? 'ここから やりなおせる。たてを もらった!' : 'ここから やりなおせる', t: 1.8 };
       }
       break;
     }
     case 'goal': {
-      if (!world.clear && !p.dead && p.x + p.w > o.x + 14 && p.x < o.x + 3 * TILE) levelClear(o);
+      const onGoal = p.x + p.w > o.x + 14 && p.x < o.x + 3 * TILE;
+      if (o.armWait) { o.armT = (o.armT || 0) + dt; if (!onGoal || o.armT > 3) o.armWait = false; break; }
+      if (!world.clear && !p.dead && onGoal) levelClear(o);
       if (o.tapeFall) { o.tapeFall.vy += 900 * dt; o.tapeFall.y += o.tapeFall.vy * dt; o.tapeFall.rot += dt * 3; }
       break;
     }
@@ -3222,7 +3251,7 @@ function spawn5(e, X, Y, o, id) {
     case 'keyhole': { const gy = groundYBelow(e.x, e.y ?? 0); return { id, t: 'keyhole', x: X, y: gy * TILE - 96, w: 48, h: 96 }; }
     case 'tstep': return { id, t: 'tstep', x: X, y: 0, w: (o.w || 10) * TILE, h: 1, n: o.n, cond: o.cond, text: o.text, sub: o.sub, subT: o.subT, arrow: o.arrow, arrowY: o.arrowY };
     case 'tgate': { const gy = groundYBelow(e.x); return { id, t: 'tgate', x: X + 8, y: (gy - 5) * TILE, w: 32, h: 5 * TILE, n: o.n, solid: true, open: 0 }; }
-    case 'snowb': { const gy = groundYBelow(e.x, e.y ?? 0), r = o.r || 22; return { id, t: 'snowb', x: X + 24 - r, y: gy * TILE - r * 2, w: r * 2, h: r * 2, r, rmax: o.rmax || 46, vx: 0, vy: 0, state: 'idle', rot: 0 }; }
+    case 'snowb': { const gy = groundYBelow(e.x, e.y ?? 0), r = o.r || 22; return { id, t: 'snowb', x: X + 24 - r, y: gy * TILE - r * 2, w: r * 2, h: r * 2, r, rmax: o.rmax || 46, vx: 0, vy: 0, state: 'idle', rot: 0, home: { x: X + 24 - r, y: gy * TILE - r * 2, r } }; }
   }
   return null;
 }
@@ -3357,7 +3386,7 @@ function updateTubeRide(p, dt) {
 const HONE_FILTER = { 58: 'sepia(0.9) saturate(1.6)', 21: 'sepia(0.6) brightness(0.75) saturate(1.2)', 62: 'sepia(0.5) hue-rotate(190deg) saturate(1.8)', 64: 'brightness(0.55) sepia(1) hue-rotate(220deg) saturate(2.2)' };
 function bossInfo() { return (typeof BOSS_INFO !== 'undefined' && world && BOSS_INFO[world.def.id]) || null; }
 function bossName(o) { const bi = bossInfo(); return bi ? bi.name : o.d.name; }
-function bossSay(o, key) { const bi = bossInfo(); const text = bi && bi[key]; if (!text) return; world.bossSay = { o, text, t: key === 'defeat' ? 3.4 : 2.8 }; }
+function bossSay(o, key) { const bi = bossInfo(); const text = bi && bi[key]; if (!text) return; world.bossSay = { o, text, t: key === 'defeat' ? 3.4 : key === 'intro' ? 5.2 : 2.8 }; } // intro は 名札(2.6びょう)の あとに 見せる
 function bossIntro(o) { const bi = bossInfo(); world.bossCard = { name: bossName(o), title: bi ? bi.title : '', t: 0 }; bossSay(o, 'intro'); hitStop(0.12); }
 function pushShand(x, gy, warn, bolt) { world.ents.push({ id: ++uid, t: 'shand', x: x - 22, y: gy * TILE - 2 * TILE, w: 44, h: 2 * TILE, gy, warn, tt: 0, bolt: !!bolt }); }
 function pushComet(row, x0, x1) { world.ents.push({ id: ++uid, t: 'comet', x: x0, y: row * TILE, w: x1 - x0, h: TILE, row, every: 99, timer: 1.0, warn: false, once: true }); }
@@ -3419,8 +3448,9 @@ function bossExtra(o, dt, px, py, ex, ey) {
 }
 function drawBossUI(t) {
   const bs = world.bossSay;
-  if (bs && bs.t > 0 && bs.o && !bs.o.gone) {
-    const o = bs.o, x = clamp(o.x + o.w / 2, cam.x + 170, cam.x + VW - 170), y = Math.max(cam.y + 120, o.y - 26);
+  const cardOn = world.bossCard && world.bossCard.t < 2.6;
+  if (bs && bs.t > 0 && bs.o && !bs.o.gone && !cardOn) {
+    const o = bs.o, x = clamp(o.x + o.w / 2, cam.x + 170, cam.x + VW - 170), y = Math.max(cam.y + 168, o.y - 26); // 2026-10-17 夜: 120 だと 2行の ふきだしが HUD に かかった
     ctx.save(); ctx.font = font(17, 800);
     if (isEN()) {
       // English: ことばの 切れ目で 2〜3行に
@@ -3449,10 +3479,64 @@ function drawBossCard(t) {
   const k = Math.min(1, c.t * 4), a = Math.min(1, (2.6 - c.t) * 3);
   ctx.save(); ctx.globalAlpha = a; ctx.translate(VW / 2, 186); ctx.scale(0.6 + k * 0.4 + (k >= 1 ? Math.sin(Math.min(1, c.t * 4 - 1) * Math.PI) * 0.06 : 0), 0.6 + k * 0.4);
   ctx.rotate(-0.03);
-  rr(-260, -56, 520, 104, 20); ctx.fillStyle = 'rgba(30,10,40,.88)'; ctx.fill(); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 5; ctx.stroke();
+  rr(-260, -56, 520, c.sub ? 132 : 104, 20); ctx.fillStyle = 'rgba(30,10,40,.88)'; ctx.fill(); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 5; ctx.stroke();
   outlined(c.title || 'ボス', 0, -22, '#ffd84a', '#2a1a3a', 5, font(18, 800));
   outlined(c.name, 0, 22, '#fff', '#2a1a3a', 9, fitFont(c.name, 490, 40, titleFont));
+  // 2026-10-17 夜: 前は「〜が あらわれた!」の 札が この 名札に かさなって 読めなかった → こうげきの しかたは 名札の 下に
+  if (c.sub) { ctx.fillStyle = '#ffe9a8'; let fz = 17; ctx.font = font(fz, 700); while (fz > 11 && ctx.measureText(T(c.sub)).width > 490) { fz--; ctx.font = font(fz, 700); } ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.sub, 0, 58); }
   ctx.restore();
+}
+
+// ---------- あまぐもの そら(2026-10-17 夜) ----------
+// 持ち主「つばさが 強すぎて とぶだけで クリアできる」「かべのぼりで しかけを とびこえる」→
+// 乗り物・とばす しかけが ある 穴と がけの 上を「あまぐもの そら」に して、そこでは 二段ジャンプ・滑空(と がけでは かべジャンプ)を 止める。
+// しかけ(ジップライン・たいほう・ばね など)は ふつうに つかえる。ジェットつばさ(店の 道具)は きく。
+const NW_GIM = new Set(['zip', 'balloon', 'bubble', 'swing', 'cannon', 'updraft', 'x_raft', 'x_rocket', 'x_pend', 'wheelhub', 'wheelplat', 'f7_bird', 'f7_gondola', 'f7_pod', 'f7_pulley', 'f7_bridge', 'f7_steam', 'f7_cog', 'log', 'cart', 'rail', 'x_elev', 'spring', 'trampoline', 'geyser', 'x_sidespring', 'x_bumper', 'x_ring', 'x_inflate', 'seesaw', 'tube', 'comet']);
+const NW_UP = new Set(['spring', 'trampoline', 'geyser', 'updraft', 'x_elev', 'x_rocket', 'f7_steam', 'x_sidespring', 'seesaw', 'tube', 'x_inflate', 'x_ring', 'cannon', 'f7_pod']);
+function computeNoWing() {
+  world.noWing = [];
+  const d = world.def;
+  if (!d || d.daily || d.tutorial || d.roam || d.kind === 'water' || (d.kind === 'boss' && false)) return;
+  const W = level.W;
+  const colHas = x => { for (let y = 0; y < ROWS; y++) { const c = tileAt(x, y); if (isSolid(x, y) || isOneWay(x, y) || c === 'L' || c === 'Z') return true; } return false; };
+  const stand = x => { for (let y = 1; y < ROWS; y++) if ((isSolid(x, y) || isOneWay(x, y)) && !isSolid(x, y - 1)) return y; return -1; };
+  const ext = o => { let a = o.x, b = o.x + (o.w || 48); for (const k of ['x0', 'x1', 'x2', 'ax', 'bx', 'tx', 'ex']) if (typeof o[k] === 'number' && o[k] > 100 && Math.abs(o[k] - o.x) < 60 * TILE) { a = Math.min(a, o[k]); b = Math.max(b, o[k]); } if (o.dist) b = Math.max(b, o.x + o.dist); return [Math.floor(a / TILE), Math.floor(b / TILE)]; };
+  const gs = world.ents.filter(o => NW_GIM.has(o.t)).map(o => ({ o, e: ext(o) }));
+  // [左px, 右px, かべも だめ(がけ)]。穴は つばさ だけ 止める(むこう岸の かべ・がけつかまりは つかえる)
+  const add = (a, b, wall) => { const last = world.noWing[world.noWing.length - 1]; if (last && !!last[2] === !!wall && a * TILE <= last[1] + 2 * TILE) last[1] = Math.max(last[1], (b + 1) * TILE); else if (last && a * TILE < last[1]) world.noWing.push([last[1], (b + 1) * TILE, wall]); else world.noWing.push([Math.max(0, a) * TILE, (b + 1) * TILE, wall]); };
+  const zs = [];
+  // 穴: 足場の ない 列が 3つ 以上。近くに 乗り物・とばす しかけが あれば 穴の 上を あまぐもに
+  let s0 = -1;
+  for (let x = 0; x <= W; x++) { const h = x < W && colHas(x); if (!h && s0 < 0) s0 = x; if (h && s0 >= 0) { if (x - s0 >= 3 && gs.some(g => g.e[1] >= s0 - 4 && g.e[0] <= x)) zs.push([s0 - 9, x - 1, false]); /* 穴の 9マス 手前から(手前で 二段ジャンプして とびこさない ように) */ s0 = -1; } }
+  // がけ: 4マス 以上 高く なる 所の 手前 8マスに 上へ とばす しかけ → がけの 14マス 手前から がけまでを あまぐもに
+  for (let x = 1; x < W - 1; x++) { const a = stand(x), b = stand(x + 1); if (a > 0 && b > 0 && a - b >= 4) { const g = gs.filter(g => NW_UP.has(g.o.t) && g.e[1] >= x - 8 && g.e[0] <= x + 1); if (g.length) { let e = x + 1; const top = stand(x + 1); while (e < x + 14 && stand(e + 1) === top) e++; e += 2; zs.push([Math.min(x - 14, ...g.map(q => q.e[0] - 1)), e, true]); } } } /* がけの 上の 足場の 下・右はしからも 二段ジャンプで のぼれるので 足場の はば+2マスまで あまぐもに */
+  zs.sort((p, q) => p[0] - q[0]).forEach(z => add(z[0], z[1], z[2]));
+}
+function inNoWing(p) { const z = world && world.noWing; if (!z || !z.length) return 0; const cx = p.x + p.w / 2; for (const r of z) if (cx > r[0] && cx < r[1]) return r[2] ? 2 : 1; return 0; }
+function drawNoWing(t) {
+  const z = world.noWing; if (!z || !z.length) return;
+  for (const r of z) {
+    if (r[1] < cam.x - 50 || r[0] > cam.x + VW + 50) continue;
+    const x0 = r[0], w = r[1] - r[0], top = Math.max(0, cam.y - 10), h = VH + 20;
+    ctx.save();
+    const g = ctx.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, 'rgba(70,60,120,.26)'); g.addColorStop(0.5, 'rgba(70,60,120,.08)'); g.addColorStop(1, 'rgba(70,60,120,0)');
+    ctx.fillStyle = g; ctx.fillRect(x0, top, w, h);
+    // ななめに ふる こまかい 雨(つばさが ぬれて とべない)
+    ctx.strokeStyle = 'rgba(200,210,255,.35)'; ctx.lineWidth = 2; ctx.beginPath();
+    for (let k = 0; k < w / 26; k++) { const xx = x0 + ((k * 53 + t * 40) % w), yy = top + ((k * 97 + t * 320) % (h * 0.7)); ctx.moveTo(xx, yy); ctx.lineTo(xx - 6, yy + 18); }
+    ctx.stroke();
+    // 上の ふちの 雲と「つばさ ×」の しるし
+    ctx.fillStyle = 'rgba(120,110,170,.55)';
+    for (let xx = x0; xx < x0 + w; xx += 36) { ctx.beginPath(); ctx.arc(xx + 18, top + 16 + Math.sin(xx * 0.05 + t) * 3, 24, 0, 7); ctx.fill(); }
+    for (let xx = x0 + 60; xx < x0 + w - 20; xx += 9 * TILE) {
+      const cy = cam.y + 128;
+      // 星・コイン・かけらに かさなる 所には 出さない
+      if (world.ents.some(o => !o.gone && (o.t === 'star' || o.t === 'coin' || o.t === 'shard' || o.t === 'oneup') && Math.abs(o.x + o.w / 2 - xx) < 50 && Math.abs(o.y + o.h / 2 - cy) < 50)) continue;
+      ctx.globalAlpha = 0.7; if (!drawFit('p_wing', xx, cy + 14, 26)) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(xx, cy, 10, 0, 7); ctx.fill(); }
+      ctx.strokeStyle = '#ff5a5a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(xx, cy, 17, 0, 7); ctx.moveTo(xx - 12, cy - 12); ctx.lineTo(xx + 12, cy + 12); ctx.stroke();
+    }
+    ctx.restore();
+  }
 }
 
 // ---------- しかけの うごき(updateThing から) ----------
@@ -3682,6 +3766,13 @@ function enterTube(o) {
 // ゆきだま: けると ころがって 大きく なる。てき・レンガ・木ばこ・(大きいと)こおりも こわす。ころりんの なげた 物は いたい
 function updateSnowball(o, dt) {
   const p = P;
+  if (o.hideT > 0) {
+    o.hideT -= dt;
+    if (o.hideT <= 0) { const h = o.home; if (overlap(p, { x: h.x - 6, y: h.y - 6, w: h.r * 2 + 12, h: h.r * 2 + 12 })) o.hideT = 0.3; else snowHome(o); }
+    return;
+  }
+  // とおくに ころがって とまった ゆきだまは、ハルが もとの 場所の 近くに もどったら そこに もどす(画面の 外の とき だけ)
+  if (o.home && o.state === 'idle' && Math.abs(o.x - o.home.x) > 3 * TILE && Math.abs(p.x - o.home.x) < 8 * TILE && Math.abs(p.x - o.x) > 11 * TILE) snowHome(o);
   o.vy = Math.min(o.vy + GRAV * dt, MAXFALL);
   if (o.state === 'roll' && o.onGround && o.r < o.rmax) {
     const nr = Math.min(o.rmax, o.r + 6 * dt), b = o.y + o.h, cx = o.x + o.w / 2;
@@ -3720,10 +3811,16 @@ function updateSnowball(o, dt) {
     }
     else if (!o.friendly && !(o.kickT > 0)) hurtPlayer(o.x + o.w / 2);
   }
-  if (o.y > ROWS * TILE + 60) o.gone = true;
+  if (o.y > ROWS * TILE + 60) { if (o.home) snowPoof(o); else o.gone = true; }
+}
+// 2026-10-17 夜: 面に おいてある ゆきだま(home あり)は きえても 1.2びょうで もとの 場所に もどる(レンガの かべを こわせず 進めなくなっていた)
+function snowHome(o) {
+  const h = o.home; o.r = h.r; o.w = o.h = h.r * 2; o.x = h.x; o.y = h.y; o.vx = 0; o.vy = 0; o.state = 'idle'; o.rot = 0; o.friendly = false; o.combo = 0; o.hideT = 0; o.kickT = 0;
+  sparkle(o.x + o.w / 2, o.y + o.h / 2, 10);
 }
 function snowPoof(o) {
-  o.gone = true; sfx('break', 1.5);
+  if (o.home) { o.hideT = 1.2; } else o.gone = true;
+  sfx('break', 1.5);
   for (let i = 0; i < 12; i++) parts.push({ x: o.x + o.w / 2 + rnd(-o.r, o.r), y: o.y + o.h / 2 + rnd(-o.r, o.r), vx: rnd(-180, 180), vy: rnd(-300, -60), life: 0.6, max: 0.6, color: i % 3 ? '#ffffff' : '#cfeaff', size: rnd(4, 8), g: 900 });
 }
 
@@ -3975,6 +4072,7 @@ function drawThing5(o, t) {
       break;
     }
     case 'snowb': {
+      if (o.hideT > 0) break;
       ctx.save(); ctx.translate(o.x + o.w / 2, o.y + o.h / 2); ctx.rotate(o.rot);
       if (ART.snowball) ctx.drawImage(ART.snowball, -o.r - 2, -o.r - 2, o.r * 2 + 4, o.r * 2 + 4);
       else { const g = ctx.createRadialGradient(-o.r * 0.3, -o.r * 0.35, 2, 0, 0, o.r); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#bcd8f0'); ctx.fillStyle = g; ctx.strokeStyle = '#5a7a9a'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, o.r, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(150,190,230,.6)'; ctx.beginPath(); ctx.arc(o.r * 0.3, o.r * 0.2, o.r * 0.18, 0, 7); ctx.arc(-o.r * 0.25, o.r * 0.4, o.r * 0.12, 0, 7); ctx.fill(); }
@@ -5588,8 +5686,12 @@ const THEMES = {
 function drawBackground(theme, cx, t) {
   const art = ART['bg_' + theme];
   if (art) {
-    const w = art.naturalWidth / art.naturalHeight * VH, off = -((cx * 0.3) % w);
-    for (let x = off; x < VW; x += w) ctx.drawImage(art, x, 0, w, VH);
+    // 2026-10-17 夜: 絵の 左右の はしが つながらず たての 切れ目に 見えた(3-3・6-4 など)→ 1まい おきに 左右を 反転して ならべる
+    const w = art.naturalWidth / art.naturalHeight * VH, off = -((cx * 0.3) % w), n0 = Math.floor(cx * 0.3 / w);
+    for (let x = off, i = 0; x < VW; x += w, i++) {
+      if ((n0 + i) % 2) { ctx.save(); ctx.translate(x + w, 0); ctx.scale(-1, 1); ctx.drawImage(art, 0, 0, w + 0.5, VH); ctx.restore(); }
+      else ctx.drawImage(art, x, 0, w + 0.5, VH);
+    }
   } else drawBackground0(theme, cx, t);
   const th = THEMES[theme];
   if (th.fog) {
@@ -5877,7 +5979,8 @@ function drawWater(t) {
   for (let ty = 0; ty < ROWS; ty++) for (let tx = x0; tx <= x1; tx++) {
     if (level.tiles[ty][tx] !== 'W') continue;
     if (tides.length && tides.some(o => tx >= o.x0 && tx <= o.x1)) continue;
-    const X = tx * TILE, Y = ty * TILE, top = tileAt(tx, ty - 1) !== 'W';
+    // 2026-10-17 夜: 上が かべ(水の 中の 柱)の ときは 水面に しない(柱の 下に 水面の 線と すきまが 出ていた)
+    const X = tx * TILE, Y = ty * TILE, top = tileAt(tx, ty - 1) !== 'W' && !isSolid(tx, ty - 1);
     ctx.fillStyle = top ? 'rgba(80,190,255,.42)' : 'rgba(40,140,230,.48)';
     ctx.fillRect(X, Y + (top ? 8 : 0), TILE, TILE - (top ? 8 : 0));
     if (top) {
@@ -6614,12 +6717,14 @@ function drawParts() {
   }
 }
 
+const HUD_SKIP = new Set(['checkpoint', 'goal', 'hint', 'wind', 'water', 'lowgrav', 'shadowzone', 'tide', 'rails', 'gust', 'zone', 'dark', 'x_qsand', 'well', 'wdoor', 'sign', 'deco', 'parts']);
 function drawHUD() {
   // HUD の 後ろに 主人公・星・敵が 入ったら うすくする(見切れ対策)
   // (左上の ハート・コイン、まんなかの 面の札、右上の 点数と 一時停止の 3か所)
   const under = (o) => { const x = o.x - cam.x, y = o.y - cam.y, r = x + (o.w || 0), b = y + (o.h || 0); if (b <= 0) return false;
     return (x < 400 && y < 140 && r > 0) || (x < VW / 2 + 225 && r > VW / 2 - 110 && y < 70) || (r > VW - 240 && x < VW && y < 115); };
-  const hudFade = under(P) || world.ents.some(o => (o.t === 'star' || o.t === 'enemy' || o.t === 'magic' || o.t === 'spit' || o.t === 'cometx') && under(o));
+  // 2026-10-17 夜: かけら・コイン・キノコ・ワープ・おちてくる いわ・ドッスン なども 見る(HUD の 後ろに かくれていた)
+  const hudFade = under(P) || world.ents.some(o => !o.gone && o.w && o.h && o.w < 260 && o.h < 260 && !HUD_SKIP.has(o.t) && under(o));
   world.hudA = lerp(world.hudA ?? 1, hudFade ? 0.4 : 1, 0.15);
   ctx.save(); ctx.globalAlpha = world.hudA;
   drawHUD0();
@@ -6780,18 +6885,24 @@ function drawToast() {
   const heroHigh = inPlay && P && P.y - cam.y < 240;
   let w = 440;
   // English は 文が ながいので 札を ひろげる(それでも はみ出すときは 文字を 小さく)
-  if (isEN()) { ctx.font = font(23); let mw = ctx.measureText(toast.text).width + 40; if (toast.sub) { ctx.font = font(16, 700); mw = Math.max(mw, ctx.measureText(toast.sub).width + 40); } w = clamp(Math.ceil(mw), 440, 700); }
-  const h = toast.sub ? 66 : 44, x = VW / 2 + 30 - w / 2;
-  let y = !inPlay ? 120 : heroHigh ? VH - h - 96 : (bossBar ? 136 : (world.gateT > 0 ? 110 : 74));
+  // 2026-10-17 夜: 日本語でも 下の 行が 札から はみ出していた(1-4 もちあげて なげる など)→ 日本語も 文の 長さで 札を ひろげる
+  { ctx.font = font(23); let mw = ctx.measureText(T(toast.text)).width + 40; if (toast.sub) { ctx.font = font(16, 700); mw = Math.max(mw, ctx.measureText(T(toast.sub)).width + 40); } w = clamp(Math.ceil(mw), 440, 760); }
+  const h = toast.sub ? 66 : 44, x = clamp(VW / 2 + 30 - w / 2, 10, VW - w - 10);
+  // 2026-10-17 夜: 上の 札は HUD の 2行目(ハル の のこり)に かからない 高さ(前は 74 で のこりの 数字が かくれた)
+  let y = !inPlay ? 120 : heroHigh ? VH - h - 96 : (bossBar ? 150 : (world.gateT > 0 ? 118 : 98));
+  // れんしゅうでは 上に れんしゅうの 札が あるので その 下に(前は 札の うしろに 文字が すけていた)
+  if (inPlay && world.def.tutorial && !heroHigh) y = 200;
   if (inPlay) {
     // 札の 下に 星・ワープ・道具が かくれるときは 反対がわ(上⇔下)に うつす
-    const hides = yy => world.ents.some(o => (o.t === 'star' || o.t === 'portal' || o.t === 'wing' || o.t === 'boots' || o.t === 'fire' || o.t === 'cometx' || o.t === 'chest') && o.x - cam.x + o.w > x && o.x - cam.x < x + w && o.y - cam.y + o.h > yy && o.y - cam.y < yy + h) || (P && P.x - cam.x + P.w > x && P.x - cam.x < x + w && P.y - cam.y + P.h > yy && P.y - cam.y < yy + h);
-    if (hides(y)) { const alt = [y < VH / 2 ? VH - h - 96 : 74, 180, 250].find(a => !hides(a)); if (alt !== undefined) y = alt; else ctx.globalAlpha *= 0.55; }
+    const hides = yy => world.ents.some(o => !o.gone && (o.t === 'star' || o.t === 'portal' || o.t === 'wing' || o.t === 'boots' || o.t === 'fire' || o.t === 'cometx' || o.t === 'chest' || o.t === 'shard' || o.t === 'oneup' || o.t === 'enemy' || o.t === 'f7_roller' || o.t === 'x_fall' || o.t === 'f7_rock') && o.x - cam.x + o.w > x && o.x - cam.x < x + w && o.y - cam.y + o.h > yy && o.y - cam.y < yy + h) || (P && P.x - cam.x + P.w > x && P.x - cam.x < x + w && P.y - cam.y + P.h > yy && P.y - cam.y < yy + h);
+    if (hides(y)) { const alt = [y < VH / 2 ? VH - h - 96 : 98, 180, 250].find(a => !hides(a)); if (alt !== undefined) y = alt; else ctx.globalAlpha *= 0.55; }
   }
+  // ボスの 名札が 出ている 間は 名札の 下(画面の 下の ほう)に
+  if (inPlay && world.bossCard && world.bossCard.t < 2.6) y = 288;
   rr(x, y, w, h, 14); ctx.fillStyle = 'rgba(30,20,60,.66)'; ctx.fill();
   ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.stroke();
   outlined(toast.text, x + w / 2, y + 22, '#fff', '#2a1a3a', 5, fitFont(toast.text, w - 24, 23));
-  if (toast.sub) { ctx.fillStyle = '#ffe9a8'; ctx.font = fitFont(toast.sub, w - 24, 16, p => font(p, 700)); ctx.textAlign = 'center'; ctx.fillText(toast.sub, x + w / 2, y + 50); }
+  if (toast.sub) { ctx.fillStyle = '#ffe9a8'; ctx.font = font(16, 700); { let pz = 16; while (pz > 11 && ctx.measureText(T(toast.sub)).width > w - 24) { pz--; ctx.font = font(pz, 700); } } ctx.textAlign = 'center'; ctx.fillText(toast.sub, x + w / 2, y + 50); }
   ctx.restore();
 }
 
@@ -6901,6 +7012,7 @@ function drawPlay(t) {
   ctx.save();
   ctx.translate(-Math.round(cam.x) + sx, -Math.round(cam.y) + sy);
   drawDecos(true);
+  drawNoWing(t);
   const backLayer = o => BACK_T.has(o.t) || (o.t === 'enemy' && o.type === 'fish');
   for (const o of world.ents) if (backLayer(o)) drawThing(o, t);
   drawTiles();
@@ -7601,6 +7713,7 @@ try {
 } catch (e) { /* 試験の 道具では ない */ }
 
 window.__game = {
+  tune(o) { if (o.WING_DJ !== undefined) WING_DJ = o.WING_DJ; if (o.WING_GLIDE !== undefined) WING_GLIDE = o.WING_GLIDE; if (o.WING_GLIDE_FALL !== undefined) WING_GLIDE_FALL = o.WING_GLIDE_FALL; if (o.WJ_OLD !== undefined) WJ_OLD = o.WJ_OLD; if (o.WJ_NONE !== undefined) WJ_NONE = o.WJ_NONE; return { WING_DJ, WING_GLIDE, WING_GLIDE_FALL, WJ_OLD, WJ_NONE }; },
   get scene() { return scene; }, get P() { return P; }, get world() { return world; }, get level() { return level; }, get save() { return save; }, get cam() { return cam; },
   startLevel, LEVELS, keys, pressed, touchKeys, WORLDS, BOSS_TYPES,
   TOUCH, touchButtonAt: (p, prev) => touchButtonAt(p, prev), upUseful: () => upUseful(), touchShown: k => touchShown(k),
