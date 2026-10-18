@@ -183,7 +183,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261018b';
+const SPRITE_V = '20261018c';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -222,11 +222,12 @@ const ART_NAMES = ['title_bg', 'title_logo', 'face_haru', 'face_pipi', 'face_mao
   'kame_walk_0', 'kame_walk_1', 'kame_shell', 'kame_spin_0', 'kame_spin_1', // 2026-10-18 カメ(こうら)の 描き直し: 前は 甲羅の 絵の 左を 切りとって 描いていて 欠けていた
  // 2026-10-18 はしご・つたを のぼる 後ろすがた 4こま(ChatGPT)
   'boss_maou', 'boss_maou2', 'boss_goronta', 'boss_karakara', 'boss_munyaru', 'boss_perari',
-  'face_moko', 'face_medama', 'face_karakara', 'face_goronta', 'face_munyaru', 'face_perari', 'face_oboshi'];
+  'face_moko', 'face_medama', 'face_karakara', 'face_goronta', 'face_munyaru', 'face_perari', 'face_oboshi',
+  'sw_red', 'sw_blue'];
 const ART = {};
 for (const n of ART_NAMES) {
   const im = new Image();
-  im.onload = () => { if (im.naturalWidth) ART[n] = im; if (TB.groundTop && ['seed_block', 'vine_tile', 'note_block', 'egg_block', 'cape_block', 'turn_block', 'silver_block', 'blk_y', 'blk_g', 'blk_b', 'blk_p', 'jump_block', 'bomb_block'].includes(n)) bakeTiles(); };
+  im.onload = () => { if (im.naturalWidth) ART[n] = im; if (TB.groundTop && ['seed_block', 'vine_tile', 'note_block', 'egg_block', 'cape_block', 'turn_block', 'silver_block', 'blk_y', 'blk_g', 'blk_b', 'blk_p', 'jump_block', 'bomb_block', 'sw_red', 'sw_blue'].includes(n)) bakeTiles(); };
   im.onerror = () => {};
   im.src = 'assets/chatgpt/' + n + '.png?v=' + SPRITE_V;
 }
@@ -294,8 +295,14 @@ function bakeTiles() {
   tint('redBlk', IMG.metal, 'rgba(255,40,70,.55)');
   tint('blueBlk', IMG.metal, 'rgba(40,110,255,.55)');
   const sw = IMG.switch;
-  bake('swRed', TILE, TILE, (g, w, h) => { g.drawImage(IMG.stoneblk, 0, 0, w, h); g.drawImage(sw, 0, 0, sw.width * 0.5, sw.height, 0, 0, w, h); });
-  bake('swBlue', TILE, TILE, (g, w, h) => { g.drawImage(IMG.stoneblk, 0, 0, w, h); g.drawImage(sw, sw.width * 0.5, 0, sw.width * 0.5, sw.height, 0, 0, w, h); });
+  // 2026-10-18 c: 前は 赤と 青が 1まいに つながった 絵を 半分に 切って 使っていて、石の 台が 切れて 欠けて 見えた → ChatGPT で 1こずつ 描いた 絵(sw_red/sw_blue)を ブロックに おさめる
+  const swArt = (g, w, h, name, half) => {
+    const im = ART[name];
+    if (im) { const k = Math.min(w / im.naturalWidth, h / im.naturalHeight), dw = im.naturalWidth * k, dh = im.naturalHeight * k; g.drawImage(im, (w - dw) / 2, h - dh, dw, dh); return; }
+    g.drawImage(IMG.stoneblk, 0, 0, w, h); g.drawImage(sw, half * sw.width * 0.5, 0, sw.width * 0.5, sw.height, 0, 0, w, h);
+  };
+  bake('swRed', TILE, TILE, (g, w, h) => swArt(g, w, h, 'sw_red', 0));
+  bake('swBlue', TILE, TILE, (g, w, h) => swArt(g, w, h, 'sw_blue', 1));
   bake('stormTop', TILE, TILE, (g, w, h) => { g.drawImage(TB.groundTop, 0, 0, w, h); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(30,40,80,.35)'; g.fillRect(0, 0, w, h); });
   bake('stormFill', TILE, TILE, (g, w, h) => { g.drawImage(TB.dirt, 0, 0, w, h); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(30,40,80,.4)'; g.fillRect(0, 0, w, h); });
   bake('mansionTop', TILE, TILE, (g, w, h) => { stoneBlock(g, w, h, '#8a5a34', '#b07a4a', '#5a3818'); g.fillStyle = '#c0304a'; g.fillRect(0, 0, w, 7); g.fillStyle = '#ffd36b'; g.fillRect(0, 7, w, 2); });
@@ -5071,7 +5078,7 @@ function updateOpening(dt) {
 }
 function drawOpening(t) {
   const sl = OPEN_SLIDES[op.i]; if (!sl) return;
-  const k = Math.min(1, op.t / 7.5), z = 1.04 + k * 0.1, panX = (op.i % 2 ? -1 : 1) * (k - 0.5) * 40;
+  const z = 1, panX = 0; // 2026-10-18 c: よせ(1.04〜1.14倍)と よこ ながしで はしの ハル・ピピが 切れていた → 絵は 画面 ぴったり(contain)
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VW, VH);
   ctx.save(); ctx.globalAlpha = Math.min(1, op.t * 2.5, Math.max(0, (8.2 - op.t) * 2));
   if (ART[sl.img]) { ctx.translate(VW / 2 + panX, VH / 2); ctx.scale(z, z); ctx.drawImage(ART[sl.img], -VW / 2, -VH / 2, VW, VH); }
@@ -5142,7 +5149,7 @@ function drawEnding(t) {
     drawFit('hero_idle', 90, VH - 30, 70); drawFit(ART.face_pipi ? 'face_pipi' : 'star', 140, VH - 90 + Math.sin(t * 3) * 6, 30);
   } else {
     const c = edCompletion(), img = c.perfect && ART.ed_perfect ? 'ed_perfect' : 'ed_final';
-    if (ART[img]) { ctx.save(); const z = 1.02 + Math.min(1, u / 12) * 0.06; ctx.translate(VW / 2, VH / 2); ctx.scale(z, z); ctx.drawImage(ART[img], -VW / 2, -VH / 2, VW, VH); ctx.restore(); }
+    if (ART[img]) { ctx.save(); const z = 1; /* 2026-10-18 c: よせで 左右の 仲間が 切れていた */ ctx.translate(VW / 2, VH / 2); ctx.scale(z, z); ctx.drawImage(ART[img], -VW / 2, -VH / 2, VW, VH); ctx.restore(); }
     else { drawBackground('night', u * 10, t); drawFit('hero_jump', VW / 2, 400 - Math.abs(Math.sin(t * 3)) * 30, 110); }
     for (let i = 0; i < 5; i++) drawFit('star', VW / 2 + Math.cos(t + i * 1.26) * 300, 120 + Math.sin(t + i * 1.26) * 40, 34);
     const lines = c.perfect ? (ED && ED.perfect) || ['すべての ほしと かけらを あつめた!', 'あなたは ほんとうの ほしの ゆうしゃ!'] : (ED && ED.last && (c.r > 0.75 ? ED.last.high : c.r > 0.4 ? ED.last.mid : ED.last.low)) || ['ほしの ランプが もとに もどった!', 'おしまい'];
@@ -5677,6 +5684,16 @@ function drawImg(name, x, y, w, h, flip = false, alpha = 1) {
   if (flip) { ctx.translate(x + w, y); ctx.scale(-1, 1); ctx.drawImage(im, 0, 0, w, h); }
   else ctx.drawImage(im, x, y, w, h);
   ctx.restore();
+}
+// 2026-10-18 c: 枠に おさめる(contain)。縦横比が ちがう 絵(よこに ながい ワニ・イタチ など)も maxW×maxH の 中に 縮めて 置く。
+// 左右は 画面の 内がわ(VW の はし から pad)に おさめる。描いた 矩形を かえす
+function drawContain(name, cx, bottom, maxW, maxH, flip = false, alpha = 1, pad = 8) {
+  const im = ART[name] || IMG[name];
+  if (!im || !im.naturalWidth) return null;
+  const k = Math.min(maxW / im.naturalWidth, maxH / im.naturalHeight), w = im.naturalWidth * k, h = im.naturalHeight * k;
+  const x = clamp(cx - w / 2, pad, Math.max(pad, VW - pad - w)), y = Math.max(pad, bottom - h);
+  drawImg(name, x, y, w, h, flip, alpha);
+  return { x, y, w, h };
 }
 // 高さを決めて、縦横比を保って足元に置く
 function drawFit(name, cx, bottom, h, flip = false, alpha = 1) {
@@ -7416,12 +7433,15 @@ function drawStory(t) {
   if (!art) {
     const who = [...new Set(st.lines.map(l => l[0]).filter(w => w !== 'narr'))];
     who.forEach((w, i) => {
-      const s2 = SPEAKERS[w], x = VW / 2 + (i - (who.length - 1) / 2) * Math.min(260, 800 / Math.max(1, who.length - 1)), talking = w === line[0];
+      const gap = Math.min(260, 800 / Math.max(1, who.length - 1));
+      const s2 = SPEAKERS[w], x = VW / 2 + (i - (who.length - 1) / 2) * gap, talking = w === line[0];
       const img = ART[s2.face] ? s2.face : s2.alt;
       ctx.save(); ctx.globalAlpha = talking ? 1 : 0.55;
       const bob = talking ? Math.sin(t * 6) * 4 : 0;
       if (s2.filter && !ART[s2.face]) ctx.filter = s2.filter;
-      drawFit(img, x, 330 + bob, w === 'kabuto' || w === 'queen' ? 120 : w === 'pipi' ? 90 : 170, w === 'kage' ? false : i > 0 && w !== 'pipi');
+      // 2026-10-18 c: 高さだけで 決めると よこに ながい 絵(イタチ 1.6・ワニ 4.4)が 画面から はみ出した → 1人ぶんの 枠に contain
+      const mh = w === 'kabuto' || w === 'queen' ? 120 : w === 'pipi' ? 90 : 170;
+      drawContain(img, x, 330 + bob, Math.min(280, (who.length > 1 ? gap : 300) - 16), mh, w === 'kage' ? false : i > 0 && w !== 'pipi');
       ctx.restore();
     });
   }
@@ -7432,7 +7452,7 @@ function drawStory(t) {
   if (sp.face || sp.alt) {
     const img = ART[sp.face] ? sp.face : sp.alt;
     rr(bx + 18, by + 18, 112, 112, 18); ctx.fillStyle = sp.col; ctx.fill(); ctx.lineWidth = 4; ctx.stroke();
-    ctx.save(); rr(bx + 18, by + 18, 112, 112, 18); ctx.clip(); if (sp.filter && !ART[sp.face]) ctx.filter = sp.filter; drawFit(img, bx + 74, by + 128 + (ART[sp.face] ? 0 : 8), ART[sp.face] ? 110 : 96); ctx.restore();
+    ctx.save(); rr(bx + 18, by + 18, 112, 112, 18); ctx.clip(); if (sp.filter && !ART[sp.face]) ctx.filter = sp.filter; drawContain(img, bx + 74, by + 124 + (ART[sp.face] ? 0 : 0), ART[sp.face] ? 104 : 100, ART[sp.face] ? 104 : 96); ctx.restore(); // 顔の 枠(112×112)の 中に contain
     tx = bx + 150;
   }
   if (sp.name) { rr(tx - 6, by - 20, 160, 38, 14); ctx.fillStyle = sp.col; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#2a1a3a'; ctx.stroke(); outlined(sp.name, tx + 74, by - 1, '#fff', '#2a1a3a', 5, fitFont(sp.name, 146, 20)); }

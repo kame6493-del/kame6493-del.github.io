@@ -304,7 +304,7 @@ for (const k in XE) for (let f = 0; f < 3; f++) XART.push('xe_' + k + '_' + f);
 const XG_ART = ['g_bumper_0', 'g_bumper_1', 'g_tree_0', 'g_tree_1', 'g_paint_0', 'g_paint_1', 'g_pend', 'g_raft', 'g_fall_0', 'g_fall_1', 'g_qsand', 'g_elev',
   'g_piston_head', 'g_piston_rod', 'g_mortar', 'g_mshell', 'g_sidespring', 'g_thunder', 'g_bolt', 'g_ring', 'g_bell_0', 'g_bell_1', 'g_flip_0', 'g_flip_1', 'g_rspike',
   'g_honey', 'g_inflate_0', 'g_inflate_1', 'g_rocket', 'g_phantom'];
-const XV = '20261018b';
+const XV = '20261018c';
 for (const n of [...XART, ...XG_ART]) {
   const im = new Image();
   im.onload = () => { if (im.naturalWidth) ART[n] = im; };
