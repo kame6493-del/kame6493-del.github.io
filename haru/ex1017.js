@@ -876,15 +876,16 @@ const FLAP_ART = {
 // 絵は ChatGPT(チャット /c/6ad408f5-…)で 描き直して 同じ ファイル名に 置きかえた(元は expansion_1018d/old/)。ここでは 名前・説明・うごきの 見せ方を 合わせる。
 //   つぶし石(crusher)→ ぶらさがり きりかぶ(つるで ぶらさがる。四角い 石の 顔と トゲの ふちを やめた)
 //   ぜんまいボム → かんしゃくだるま / がぶりそう → はさみハエトリ / のそガメ → まるまりダンゴ(ダンゴムシ)
+//   2026-10-19: はさみハエトリ(植木鉢の ハエトリソウ)も パックンフラワーに 近いので はさみジゴク(土の 山から 出る アリジゴク)に 描き直し
 //   ちらりん → ともしびん(ろうそくの おばけ。見られると 顔を かくして 止まる → ほのおが ちぢんで あとずさる)/ おおおばけ → おおともしび / ゆうれい王 は 絵だけ
 (function () {
   const J = {
     bomb: ['かんしゃくだるま', 'あかい はりこの だるまの ばくちく。おこると あたまの みちびが もえだす。', 'ふむと ひが ついて ばくはつ する。すぐ はなれて。けんで たたくと とんでいく。',
       ['あかい はりこの だるまの ばくちく。', 'ふむと みちびに ひが ついて ばくはつ。すぐ はなれよう。'],
       'すぐ かんしゃくを おこす だるま。ころんでも すぐ おきあがるのが じまん。おこると あたまの みちびが じりじり もえて、じぶんでも とめられない。'],
-    plant: ['はさみハエトリ', 'うえきばちから にょきっと でて、2まいの はっぱで はさむ ハエトリソウ。ひを はく なかまも。', 'ふめない。けんか、でてきた ときに スピンジャンプで。',
-      ['うえきばちから でてきて はっぱで はさむ ハエトリソウ。ひを はく なかまも いる。', 'ふめないので、けんか スピンジャンプで。'],
-      'うえきばちで くらす ハエトリソウ。2まいの はっぱで なんでも はさんで みる くせが ある。ひを はく なかまは からい ものが すき。'],
+    plant: ['はさみジゴク', 'つちの あなから にょきっと でて、2ほんの おおきな あごで はさむ アリジゴク。あつい すなだまを とばす なかまも。', 'ふめない。けんか、でてきた ときに スピンジャンプで。',
+      ['つちの あなから でて あごで はさむ アリジゴク。すなだまを とばす なかまも いる。', 'ふめないので、けんか スピンジャンプで。'],
+      'つちの あなの そこで くらす アリジゴク。おおきな あごで なんでも はさんで みる くせが ある。おとなに なったら そらを とぶのが ゆめ。すなだまを とばす なかまは あつい すなが すき。'],
     shell: ['まるまりダンゴ', 'のんびり あるく ダンゴムシ。がけの はしで くるっと もどる。', 'ふむと まるく なる。けって ころがすか、ダッシュで もって なげる。けんでも たおせる。',
       ['のんびり あるく ダンゴムシ。がけの はしで くるっと もどる。', 'ふむと まるく なり、けると ころがって ほかの てきを たおす。'],
       'のんびりやの ダンゴムシ。おどろくと すぐ まるく なる。まるまった まま ころがされるのは、じつは ちょっと たのしいらしい。'],
@@ -898,8 +899,8 @@ const FLAP_ART = {
   const E = {
     bomb: ['Tantrum Daruma', ['A red papier-mache daruma firecracker.', 'Stomp it and its fuse lights, then it explodes. Get away fast!'],
       'A daruma with a short temper. It is proud that it always gets back up after a fall. When it gets angry the fuse on its head starts to sizzle, and even it cannot stop it.'],
-    plant: ['Snapleaf', ['A flytrap that pops out of its pot and snaps its two leaves. Some breathe fire.', 'Cannot be stomped: use the sword or a spin jump.'],
-      'A flytrap that lives in a flowerpot. It has a habit of pinching anything with its two leaves. The fire-breathing ones like spicy food.'],
+    plant: ['Pitpincer', ['An antlion that pops out of a hole in the ground and pinches with its two big jaws. Some throw hot sand balls.', 'Cannot be stomped: use the sword or a spin jump.'],
+      'An antlion living at the bottom of a hole. It likes to pinch things with its big jaws and dreams of flying one day. The sand-throwers like their sand hot.'],
     shell: ['Rollbug', ['A slow pill bug. Turns around at ledges.', 'Stomp it into a ball, then kick it to knock out other enemies.'],
       'A laid-back pill bug that curls up the moment it is startled. Secretly, it kind of enjoys being rolled around.'],
     ghost: ['Wickwisp', ['A candle ghost. Face it and it backs away; turn around and it drifts closer.', 'Cannot be stomped. Use the sword.'],

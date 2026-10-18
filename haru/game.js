@@ -183,7 +183,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261018d';
+const SPRITE_V = '20261019a';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -2152,7 +2152,7 @@ function updateEnemy(o, dt) {
       break;
     }
     case 'plant': {
-      if (o.v === 'spit' && o.state === 'out' && !o.spat && o.timer < 0.9) { o.spat = true; const a = Math.atan2(py - o.y, px - ex); world.ents.push({ id: ++uid, t: 'spit', x: ex - 10, y: o.y + 6, w: 20, h: 20, vx: Math.cos(a) * 240, vy: -380, g: 900, life: 3, col: '#ff8a2a' }); sfx('fire'); }
+      if (o.v === 'spit' && o.state === 'out' && !o.spat && o.timer < 0.9) { o.spat = true; const a = Math.atan2(py - o.y, px - ex); world.ents.push({ id: ++uid, t: 'spit', x: ex - 10, y: o.y + 6, w: 20, h: 20, vx: Math.cos(a) * 240, vy: -380, g: 900, life: 3, col: '#d8963a' }); sfx('fire'); }
       if (o.state === 'hidden') o.spat = false;
       o.timer -= dt;
       const playerClose = Math.abs(px - ex) < 70;
@@ -6730,7 +6730,7 @@ function drawEnemy(o, t) {
       break;
     }
     case 'plant': {
-      // 土管の中から出てくる(地面より下は見せない)
+      // 土の あなから 出てくる(地面より下は見せない。2026-10-19 アリジゴクの 絵、下の 3分の1 が 土の 山)
       ctx.beginPath(); ctx.rect(o.x - 30, o.y0 - 60, o.w + 60, o.h + 60); ctx.clip();
       drawFit(name, cx, o.y + o.h + 6, h, false);
       ctx.restore();
@@ -6876,7 +6876,7 @@ function drawEnemy(o, t) {
 }
 function drawPipeLip(cx, y) {
   const im = IMG.plant;
-  // 植物の絵の下の土管の口を、地面の上にもう一度描いて手前に見せる
+  // 絵の 下の 土の 山を、地面の上にもう一度描いて手前に見せる
   const H = 80, W = im.naturalWidth / im.naturalHeight * H;
   ctx.drawImage(im, 0, im.naturalHeight * 0.66, im.naturalWidth, im.naturalHeight * 0.34, cx - W / 2, y - H * 0.34 + 6, W, H * 0.34);
 }
