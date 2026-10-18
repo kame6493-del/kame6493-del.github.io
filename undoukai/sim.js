@@ -22,6 +22,16 @@
   // 座標は描く板(600x600)の上。p は整数。保存・読み込み・URL への詰め込みはすべて Creature.* を通す。
   const PALETTE = ['#19263d', '#e2483d', '#2f6fe0', '#2fa35a', '#f08a24', '#8a4fd8'];
   const WIDTHS = [14, 7];
+  // 完全版のペンと太さ・キラキラ(見た目だけ。形の読み取り analyze とレースの計算は線の点しか見ない)
+  // 線の印のバイト: 下3ビット=色(PALETTE)・4ビット目=細い・5〜7ビット目=ペンの種類・8ビット目=太さの追加(極太/極細)
+  // 前の版の読み方(PALETTE[f & 7] / WIDTHS[(f >> 3) & 1])でも、近い色と太さで読める
+  const WIDTHS4 = [14, 7, 22, 4];
+  const PENS = ['', 'gold', 'silver', 'rainbow', 'glitter', 'pink', 'sky', 'lemon'];
+  const PEN_COLOR = { gold: '#e0a526', silver: '#9aa7b8', rainbow: '#e2483d', pink: '#ff6fa8', sky: '#4cc3f5', lemon: '#f2c81f' };
+  const PEN_BASE = { gold: 4, silver: 0, rainbow: 1, pink: 1, sky: 2, lemon: 4 }; // 前の版で読んだ時の色
+  const FX = ['', 'kira', 'aura', 'star', 'petal'];
+  const EXTRA = 0xf7; // 生き物のバイト列の後ろに付ける印(キラキラ)。前の版は読まずに捨てる
+  function widthIndex(w) { return w >= 18 ? 2 : w <= 5 ? 3 : w <= 9 ? 1 : 0; }
   const PAD = 600;
   const Q = 3; // URL に詰めるときの目の細かさ(3px)
 
@@ -44,10 +54,16 @@
   }
 
   const Creature = {
-    PALETTE, WIDTHS,
-    make(strokes, name) {
-      return { v: 1, name: String(name || '').slice(0, 12), created: new Date().toISOString().slice(0, 10), strokes: strokes.map(s => ({ c: s.c, w: s.w, p: s.p.map(q => [Math.round(q[0]), Math.round(q[1])]) })) };
+    PALETTE, WIDTHS, WIDTHS4, PENS, PEN_COLOR, FX,
+    make(strokes, name, fx) {
+      const cr = { v: 1, name: String(name || '').slice(0, 12), created: new Date().toISOString().slice(0, 10), strokes: strokes.map(s => Creature.copyStroke(s, s.p.map(q => [Math.round(q[0]), Math.round(q[1])]))) };
+      if (fx && FX.indexOf(fx) > 0) cr.fx = fx;
+      return cr;
     },
+    copyStroke(s, p) { const o = { c: s.c, w: s.w, p }; if (s.k && PENS.indexOf(s.k) > 0) o.k = s.k; return o; },
+    // キラキラの印(1体だけを文字にする時は後ろに付ける)
+    extraBytes(cr) { const i = cr && cr.fx ? FX.indexOf(cr.fx) : -1; return i > 0 ? [EXTRA, i] : []; },
+    readExtra(b, pos, cr) { if (b[pos] === EXTRA && pos + 1 < b.length) { const fx = FX[b[pos + 1]]; if (fx) cr.fx = fx; return pos + 2; } return pos; },
     // 線をバイト列に(URL 用)。eps: 間引きの強さ(px)
     toBytes(cr, eps) {
       const out = [];
@@ -58,8 +74,9 @@
       const strokes = cr.strokes.slice(0, 80);
       out.push(strokes.length);
       for (const s of strokes) {
-        let ci = PALETTE.indexOf(String(s.c).toLowerCase()); if (ci < 0) ci = 0;
-        const wi = s.w <= 9 ? 1 : 0;
+        const kd = s.k ? Math.max(0, PENS.indexOf(s.k)) : 0;
+        let ci = kd && s.k !== 'glitter' ? PEN_BASE[s.k] : PALETTE.indexOf(String(s.c).toLowerCase()); if (ci < 0) ci = 0;
+        const wi = widthIndex(s.w);
         let pts = rdp(s.p.map(q => [clamp(Math.round(q[0] / Q), 0, 200), clamp(Math.round(q[1] / Q), 0, 200)]), eps / Q);
         // 同じ点の連続を落とす
         pts = pts.filter((q, i) => i === 0 || q[0] !== pts[i - 1][0] || q[1] !== pts[i - 1][1]);
@@ -72,7 +89,7 @@
           for (let k = 1; k <= n; k++) full.push([Math.round(a[0] + (b[0] - a[0]) * k / n), Math.round(a[1] + (b[1] - a[1]) * k / n)]);
         }
         const P = full.slice(0, 255);
-        out.push(ci | (wi << 3)); out.push(P.length); out.push(P[0][0], P[0][1]);
+        out.push(ci | ((wi & 1) << 3) | (kd << 4) | ((wi >> 1) << 7)); out.push(P.length); out.push(P[0][0], P[0][1]);
         for (let i = 1; i < P.length; i++) { out.push((P[i][0] - P[i - 1][0]) & 255, (P[i][1] - P[i - 1][1]) & 255); }
       }
       return out;
@@ -88,7 +105,10 @@
         let x = b[pos++], y = b[pos++];
         const p = [[x * Q, y * Q]];
         for (let i = 1; i < n; i++) { x += sb(b[pos++]); y += sb(b[pos++]); p.push([x * Q, y * Q]); }
-        strokes.push({ c: PALETTE[f & 7] || PALETTE[0], w: WIDTHS[(f >> 3) & 1], p });
+        const kd = PENS[(f >> 4) & 7], base = PALETTE[f & 7] || PALETTE[0];
+        const st = { c: kd && PEN_COLOR[kd] && kd !== 'rainbow' ? PEN_COLOR[kd] : base, w: WIDTHS4[((f >> 3) & 1) | (((f >> 7) & 1) << 1)], p };
+        if (kd) st.k = kd;
+        strokes.push(st);
       }
       if (pos > b.length) throw new Error('short');
       return [{ v: 1, name, created: '', strokes }, pos];
@@ -100,7 +120,7 @@
       // まだ大きい(ぐちゃぐちゃに大量に描いた)時: 点を1つおきに減らし、短い線から落とす
       let c2 = cr;
       for (let k = 0; k < 12 && bytes.length > maxBytes; k++) {
-        const ss = c2.strokes.map(s => ({ c: s.c, w: s.w, p: s.p.filter((_, i) => i % 2 === 0 || i === s.p.length - 1) }));
+        const ss = c2.strokes.map(s => Creature.copyStroke(s, s.p.filter((_, i) => i % 2 === 0 || i === s.p.length - 1)));
         if (k >= 2) { ss.sort((a, b) => b.p.length - a.p.length); ss.length = Math.max(1, Math.floor(ss.length * 0.75)); }
         c2 = { name: cr.name, strokes: ss };
         bytes = Creature.toBytes(c2, eps);
@@ -108,7 +128,10 @@
       return bytes;
     },
     // 一度 URL の形にしてから戻す(どの端末でも同じ線でレースするため、自分の絵もこれを通す)
-    roundTrip(cr, maxBytes) { return Creature.fromBytes(Creature.fitBytes(cr, maxBytes || 420), 0)[0]; },
+    roundTrip(cr, maxBytes) { const o = Creature.fromBytes(Creature.fitBytes(cr, maxBytes || 420), 0)[0]; if (cr.fx && FX.indexOf(cr.fx) > 0) o.fx = cr.fx; return o; },
+    // 1体を文字にする(ランキング・みんなのらくがき・部屋)。キラキラは後ろに付ける
+    packBytes(cr, maxBytes) { return Creature.fitBytes(cr, maxBytes || 380).concat(Creature.extraBytes(cr)); },
+    unpackBytes(b) { const [cr, pos] = Creature.fromBytes(b, 0); Creature.readExtra(b, pos, cr); return cr; },
   };
 
   // 挑戦状(URL のハッシュに入れる)
@@ -126,6 +149,8 @@
     encode(ch) { // ch: {course, seed, size, creatures:[creature]}
       const out = [1, Math.max(0, COURSE_IDS.indexOf(ch.course)), (ch.seed >>> 24) & 255, (ch.seed >>> 16) & 255, (ch.seed >>> 8) & 255, ch.seed & 255, ch.size, ch.creatures.length];
       for (const cr of ch.creatures) for (const b of Creature.fitBytes(cr, ch.perBytes || 380)) out.push(b);
+      // キラキラは全員の後ろにまとめて付ける(前の版は n 体を読んだら残りを捨てるので、壊れない)
+      if (ch.creatures.some(cr => Creature.extraBytes(cr).length)) { out.push(EXTRA, ch.creatures.length); for (const cr of ch.creatures) out.push(Math.max(0, FX.indexOf(cr.fx || ''))); }
       return b64url(out);
     },
     decode(str) {
@@ -136,6 +161,7 @@
       const size = clamp(b[6], 2, 4), n = b[7];
       let pos = 8; const creatures = [];
       for (let i = 0; i < n; i++) { const [cr, p] = Creature.fromBytes(b, pos); creatures.push(cr); pos = p; }
+      if (b[pos] === EXTRA && b[pos + 1] === n) for (let i = 0; i < n; i++) { const fx = FX[b[pos + 2 + i]]; if (fx) creatures[i].fx = fx; }
       return { course, seed, size, creatures };
     },
   };

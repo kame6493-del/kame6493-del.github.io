@@ -94,6 +94,133 @@ const Store = {
   },
 };
 
+// ---------- 完全版(買い切り。Android・iOS のアプリ版だけ RevenueCat の Purchases プラグインで買える) ----------
+// できること: 縦動画の保存・ペンと色のパック・自分の図鑑(300匹)・キラキラ。どれも見た目だけで、走る速さ・強さは変わらない。
+// ブラウザ版は買えない(今のまま遊べて、完全版の所には「アプリ版で使えます」とストアの案内を出す)。
+const Full = {
+  PID: 'jp.rakugakiundoukai.app.full', ENT: 'full',
+  RC_KEYS: { android: 'goog_AkAbslCFlJUVfYzPYBVuZHIIJch', ios: 'appl_iugBYTchEgxZYmoYPaooSPtiOlZ' }, // RevenueCat の公開キー(秘密の鍵ではない)。scripts/rc_setup.py の結果
+  PLAY_URL: 'https://play.google.com/apps/testing/jp.rakugakiundoukai.app',
+  KEY: CFG.STORE_KEY + '_full', FX_KEY: CFG.STORE_KEY + '_fx',
+  owned: false, pkg: null, price: '', busy: false, ready: null, prev: null,
+  platform() { const C = window.Capacitor; try { if (C && C.isNativePlatform && C.isNativePlatform() && C.getPlatform) return C.getPlatform(); } catch (e) { } return 'web'; },
+  native() { const p = Full.platform(); return p === 'android' || p === 'ios'; },
+  has() { return (Full.native() && Full.owned) || (TEST && params.get('full') === '1'); },
+  plugin() { if (!Full.native()) return null; const C = window.Capacitor; return (C && C.Plugins && C.Plugins.Purchases) || null; },
+  isFull(info) { return !!(info && info.entitlements && info.entitlements.active && info.entitlements.active[Full.ENT]); },
+  cancelled(e) { return !!(e && (e.userCancelled || (e.data && e.data.userCancelled) || String(e.code) === '1')); },
+  pending(e) { return !!(e && (String(e.code) === '20' || /pending/i.test(String(e.message || '')))); },
+  offline() { return navigator.onLine === false; },
+  init() {
+    const Pur = Full.plugin(); if (!Pur) return Promise.resolve(null);
+    const key = Full.RC_KEYS[Full.platform()];
+    if (!key) return Promise.reject(new Error('no key'));
+    if (!Full.ready) Full.ready = Promise.resolve(Pur.configure({ apiKey: key })).then(() => Pur, e => { Full.ready = null; throw e; });
+    return Full.ready;
+  },
+  // 値段(ストアの表示のまま)と、もう買ってあるか。入れ直した時は Android は購入の記録を自動で読み直す(iOS は「購入を復元」)
+  async load() {
+    const Pur = await Full.init(); if (!Pur) return;
+    try {
+      const offers = await Pur.getOfferings();
+      const all = [];
+      if (offers && offers.current) all.push(...(offers.current.availablePackages || []));
+      if (offers && offers.all) for (const o of Object.values(offers.all)) all.push(...((o && o.availablePackages) || []));
+      const pkg = all.find(p => p && p.product && String(p.product.identifier || '').split(':')[0] === Full.PID) || null;
+      if (pkg) { Full.pkg = pkg; Full.price = pkg.product.priceString || ''; }
+    } catch (e) { /* 値段が読めない時は値段なしで出す */ }
+    try {
+      let r = await Pur.getCustomerInfo();
+      if (!Full.isFull(r && r.customerInfo) && Full.platform() === 'android' && !Full.owned && Pur.syncPurchases) { await Pur.syncPurchases(); r = await Pur.getCustomerInfo(); }
+      if (Full.isFull(r && r.customerInfo)) Full.own(true);
+    } catch (e) { /* つながらない時は前の記録のまま */ }
+    Full.render();
+  },
+  own(quiet) {
+    Full.owned = true; try { localStorage.setItem(Full.KEY, '1'); } catch (e) { }
+    Full.refreshUi();
+    if (!quiet) { se('fanfare', 0.45); toast('完全版になりました。ありがとうございます!', 3500); }
+  },
+  msg(t) { const el = $('fullStatus'); if (el) el.textContent = t || ''; },
+  async buy() {
+    const Pur = Full.plugin();
+    if (!Pur) { Full.msg(Full.native() ? 'ストアにつなげませんでした' : '完全版はアプリ版(Android)で使えます'); return; }
+    if (Full.busy) return;
+    if (Full.offline()) { Full.msg('ネットにつながっていません。つながる所でもう一度どうぞ'); return; }
+    Full.busy = true; Full.msg('ストアにつないでいます…'); Full.render();
+    try {
+      if (!Full.pkg) await Full.load();
+      if (Full.owned) { Full.msg('完全版です。ありがとうございます'); return; }
+      if (!Full.pkg) throw new Error('no package');
+      const r = await Pur.purchasePackage({ aPackage: Full.pkg });
+      if (Full.isFull(r && r.customerInfo)) { Full.own(); Full.msg('完全版になりました。ありがとうございます!'); }
+      else Full.msg('購入の手続きが終わると完全版になります');
+    } catch (e) {
+      Full.msg(Full.cancelled(e) ? '購入をやめました' : Full.pending(e) ? '支払いの手続き中です。終わると完全版になります(「購入を復元」で確かめられます)'
+        : Full.offline() ? 'ネットにつながっていません。つながる所でもう一度どうぞ' : '購入できませんでした。しばらくしてからもう一度ためしてください');
+    } finally { Full.busy = false; Full.render(); }
+  },
+  async restore() {
+    const Pur = Full.plugin();
+    if (!Pur) { Full.msg(Full.native() ? 'ストアにつなげませんでした' : '購入の復元はアプリ版でできます'); return; }
+    if (Full.busy) return;
+    if (Full.offline()) { Full.msg('ネットにつながっていません。つながる所でもう一度どうぞ'); return; }
+    Full.busy = true; Full.msg('購入のきろくをさがしています…'); Full.render();
+    try {
+      await Full.init();
+      const r = await Pur.restorePurchases();
+      if (Full.isFull(r && r.customerInfo)) { Full.own(true); Full.msg('完全版をもどしました'); toast('完全版をもどしました', 3000); }
+      else Full.msg('購入のきろくが見つかりませんでした(買った時と同じストアのアカウントか確かめてください)');
+    } catch (e) { Full.msg(Full.offline() ? 'ネットにつながっていません。つながる所でもう一度どうぞ' : 'ストアにつなげませんでした。しばらくしてからもう一度ためしてください'); }
+    finally { Full.busy = false; Full.render(); }
+  },
+  // 案内の画面
+  open(from) {
+    Full.prev = { screen: curScreen, from };
+    Full.msg(''); Full.render(); show('fullScreen');
+    if (Full.native() && !Full.pkg) Full.load().catch(() => { });
+  },
+  back() {
+    const p = Full.prev && Full.prev.screen; Full.prev = null;
+    if (p === 'prepScreen' && G.me) openPrep(); else if (p === 'albumScreen') openAlbum(); else if (p === 'petScreen') openPet(G.petId) || openAlbum();
+    else if (p === 'drawScreen' || p === 'resultScreen') show(p); else goTitle();
+  },
+  render() {
+    if (!$('fullScreen')) return;
+    const nat = Full.native();
+    $('fullWebBox').classList.toggle('hidden', nat);
+    $('fullBuyBox').classList.toggle('hidden', !nat);
+    $('fullOwned').classList.toggle('hidden', !Full.has());
+    $('fullBuyBtn').classList.toggle('hidden', Full.has());
+    $('fullBuyBtn').disabled = Full.busy; $('fullRestoreBtn').disabled = Full.busy;
+    $('fullBuyBtn').textContent = Full.price ? `完全版にする ${Full.price}` : '完全版にする';
+  },
+  refreshUi() {
+    Full.render();
+    const tb = $('fullBtn'); if (tb) tb.textContent = Full.has() ? '完全版(購入済み)' : Full.native() ? '完全版' : '完全版(アプリ版)';
+    document.documentElement.classList.toggle('full', Full.has());
+    if (typeof buildPenPanel === 'function') buildPenPanel();
+  },
+  fx() { try { const v = localStorage.getItem(Full.FX_KEY) || ''; return RU.Creature.FX.indexOf(v) > 0 ? v : ''; } catch (e) { return ''; } },
+  setFx(v) { try { localStorage.setItem(Full.FX_KEY, v || ''); } catch (e) { } },
+};
+try { Full.owned = Full.native() && localStorage.getItem(Full.KEY) === '1'; } catch (e) { }
+if (Full.native()) setTimeout(() => { Full.load().catch(e => { try { console.warn('[rakugaki] store', e && e.message); } catch (e2) { } }); }, 1200);
+function blobToB64(blob) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => { const s = String(r.result); res(s.slice(s.indexOf(',') + 1)); }; r.onerror = () => rej(r.error); r.readAsDataURL(blob); }); }
+// 動画を端末に保存(Android は Documents/RakugakiUndoukai へ。できない時・iOS は共有の画面から「保存」)
+async function saveToDevice(blob, name, type) {
+  const C = window.Capacitor, P = (C && C.Plugins) || {};
+  if (Full.platform() === 'android' && P.Filesystem) {
+    try {
+      try { const st = await P.Filesystem.checkPermissions(); if (st && st.publicStorage && st.publicStorage !== 'granted') await P.Filesystem.requestPermissions(); } catch (e) { }
+      await P.Filesystem.writeFile({ path: 'RakugakiUndoukai/' + name, data: await blobToB64(blob), directory: 'DOCUMENTS', recursive: true });
+      return 'saved';
+    } catch (e) { console.warn('[rakugaki] save', e && e.message); }
+  }
+  await shareOrSave(blob, name, type);
+  return 'shared';
+}
+
 // ---------- 描いた絵 → 走る生き物 ----------
 class Doodle {
   constructor(creature, info, size) {
@@ -114,7 +241,7 @@ class Doodle {
       let pivot = null;
       if (role === 'leg') { let top = s.p[0]; for (const q of s.p) if (q[1] < top[1]) top = q; pivot = T(top); legs.push(i); }
       if (role === 'wing' || role === 'tail') { let best = s.p[0], bd = 1e9; for (const q of s.p) { const d = (q[0] - bcx) ** 2 + (q[1] - bcy) ** 2; if (d < bd) { bd = d; best = q; } } pivot = T(best); }
-      return { c: s.c, w: clamp(s.w * k * 1.1, 2.6, 8) * (size > 200 ? size / 210 : 1), role, pivot, li: 0, side: pivot ? (pivot[0] < 0 ? -1 : 1) : 1, p: s.p.map(T) };
+      return { c: s.c, k: s.k || '', w: clamp(s.w * k * 1.1, 2.6, 8) * (size > 200 ? size / 210 : 1), role, pivot, li: 0, side: pivot ? (pivot[0] < 0 ? -1 : 1) : 1, p: s.p.map(T) };
     });
     // 足の番号は左から
     const lp = this.parts.filter(p => p.role === 'leg').sort((a, b) => a.pivot[0] - b.pivot[0]);
@@ -150,6 +277,8 @@ class Doodle {
     // 影
     ctx.fillStyle = 'rgba(25,38,61,0.22)';
     ctx.beginPath(); ctx.ellipse(x, ground, this.w * S * 0.42 / (1 + air * 0.01), 7 * S, 0, 0, TAU); ctx.fill();
+    const fxKind = this.cr.fx, fxY = ground - (this.h * 0.5 + air) * S, fxR = Math.max(this.w, this.h) * 0.62 * S;
+    if (fxKind) drawFx(ctx, fxKind, x, fxY, fxR, t, 'back');
     ctx.translate(x + dx, ground - air * S);
     ctx.scale(S * sx, S * sy);
     const cy = -this.h / 2;
@@ -190,14 +319,14 @@ class Doodle {
     for (let pass = 0; pass < 2; pass++) {
       for (let j = 0; j < this.parts.length; j++) {
         const part = this.parts[j], pts = paths[j];
-        ctx.strokeStyle = pass ? part.c : '#ffffff'; ctx.fillStyle = ctx.strokeStyle;
-        ctx.lineWidth = pass ? part.w : part.w + 7;
-        ctx.beginPath();
-        if (pts.length === 1) { ctx.arc(pts[0][0], pts[0][1], ctx.lineWidth / 2, 0, TAU); ctx.fill(); }
-        else { smoothPath(ctx, pts); ctx.stroke(); }
+        if (pass) { penPaint(ctx, part, pts, part.w, t); continue; }
+        ctx.strokeStyle = '#ffffff'; ctx.fillStyle = ctx.strokeStyle;
+        ctx.lineWidth = part.w + 7;
+        pathOrDot(ctx, pts, ctx.lineWidth);
       }
     }
     ctx.restore();
+    if (fxKind) drawFx(ctx, fxKind, x, fxY, fxR, t, 'front');
     // 転んだ時の星
     if (st === 'down' || st === 'bonk' || st === 'fall') {
       ctx.save(); ctx.translate(x, ground - this.h * S * 0.9 - air * S);
@@ -217,6 +346,75 @@ function drawStar(ctx, x, y, r, c) {
   for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
   ctx.closePath(); ctx.fillStyle = c; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#19263d'; ctx.stroke(); ctx.restore();
 }
+// ---------- 完全版のペンとキラキラ(見た目だけ。形の読み取りとレースの計算には入らない) ----------
+function pathOrDot(ctx, pts, lw) { ctx.beginPath(); if (pts.length === 1) { ctx.arc(pts[0][0], pts[0][1], lw / 2, 0, Math.PI * 2); ctx.fill(); } else { smoothPath(ctx, pts); ctx.stroke(); } }
+// s: {c, k(ペンの種類)}。pts は描く座標。白いふちは呼ぶ側
+function penPaint(ctx, s, pts, lw, t) {
+  const k = s.k || ''; t = t || 0;
+  ctx.lineWidth = lw;
+  if (k === 'rainbow' && pts.length > 1) {
+    const n = pts.length;
+    for (let i = 0; i < n - 1; i++) { ctx.strokeStyle = `hsl(${Math.round((i / Math.max(1, n - 1)) * 300 + t * 90) % 360},88%,55%)`; ctx.beginPath(); ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[i + 1][0], pts[i + 1][1]); ctx.stroke(); }
+    return;
+  }
+  ctx.strokeStyle = k === 'rainbow' ? '#e2483d' : s.c; ctx.fillStyle = ctx.strokeStyle;
+  pathOrDot(ctx, pts, lw);
+  if (k === 'gold' || k === 'silver') { // つやの線
+    ctx.save(); ctx.globalAlpha *= 0.85; ctx.strokeStyle = ctx.fillStyle = k === 'gold' ? '#fff3b0' : '#ffffff'; ctx.lineWidth = Math.max(1, lw * 0.3);
+    ctx.translate(-lw * 0.17, -lw * 0.17); pathOrDot(ctx, pts, lw * 0.3); ctx.restore();
+  }
+  if (k === 'glitter' || k === 'gold' || k === 'silver') { // きらめく粒
+    ctx.save();
+    const step = Math.max(1, Math.floor(pts.length / 14)), a0 = ctx.globalAlpha;
+    for (let i = 0; i < pts.length; i += step) {
+      const h = hash3(i, pts.length, 91); if (k !== 'glitter' && h > 0.4) continue;
+      const tw = 0.5 + 0.5 * Math.sin(t * 6 + h * 20);
+      ctx.fillStyle = h > 0.5 ? '#ffffff' : '#fff176'; ctx.globalAlpha = a0 * (0.45 + 0.55 * tw);
+      ctx.beginPath(); ctx.arc(pts[i][0] + (hash3(i, 3, 7) - 0.5) * lw * 0.6, pts[i][1] + (hash3(i, 5, 2) - 0.5) * lw * 0.6, Math.max(0.8, lw * (0.16 + 0.18 * tw)), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+function twinkle(ctx, x, y, r, c, a) {
+  ctx.save(); ctx.globalAlpha *= 0.35 + 0.65 * a; ctx.fillStyle = c; ctx.strokeStyle = 'rgba(25,38,61,0.55)'; ctx.lineWidth = Math.max(1, r * 0.16);
+  ctx.beginPath(); ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.quadraticCurveTo(x, y, x, y + r); ctx.quadraticCurveTo(x, y, x - r, y); ctx.quadraticCurveTo(x, y, x, y - r); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+}
+// キラキラ(完全版): kira=光の粒 / aura=オーラ / star=流れ星 / petal=花びら。layer back=体のうしろ・front=前
+function drawFx(ctx, kind, cx, cy, R, t, layer) {
+  if (!kind || !(R > 0)) return;
+  ctx.save();
+  if (kind === 'aura' && layer === 'back') {
+    const p = 1 + Math.sin(t * 3) * 0.06, rr = R * 1.25 * p;
+    const g = ctx.createRadialGradient(cx, cy, R * 0.15, cx, cy, rr);
+    g.addColorStop(0, 'rgba(255,240,140,0.8)'); g.addColorStop(0.55, 'rgba(255,213,79,0.42)'); g.addColorStop(1, 'rgba(255,213,79,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 6; i++) { const ph = (t * 0.7 + i / 6) % 1; ctx.globalAlpha = (1 - ph) * 0.95; ctx.fillStyle = '#fffbe0'; ctx.beginPath(); ctx.arc(cx + (hash3(i, 1, 4) - 0.5) * R * 1.5, cy + R * 0.7 - ph * R * 1.7, R * 0.055, 0, Math.PI * 2); ctx.fill(); }
+  }
+  if (kind === 'star' && layer === 'back') {
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 3; i++) {
+      const y = cy + (i - 1) * R * 0.38, x0 = cx - R * 0.35, len = R * (1.25 + 0.3 * Math.sin(t * 5 + i));
+      const g = ctx.createLinearGradient(x0, y, x0 - len, y); g.addColorStop(0, 'rgba(255,213,79,0.95)'); g.addColorStop(1, 'rgba(255,213,79,0)');
+      ctx.strokeStyle = g; ctx.lineWidth = R * 0.11; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 - len, y); ctx.stroke();
+    }
+    for (let i = 0; i < 4; i++) { const ph = (t * 1.4 + i / 4) % 1; ctx.globalAlpha = 1 - ph * 0.7; drawStar(ctx, cx - R * 0.55 - ph * R * 1.4, cy + (hash3(i, 2, 9) - 0.5) * R, R * 0.14 * (1 - ph * 0.5), '#ffd54f'); }
+  }
+  if (kind === 'kira' && layer === 'front') {
+    for (let i = 0; i < 9; i++) {
+      const a = hash3(i, 7, 1) * Math.PI * 2 + t * 0.6, rr = R * (0.75 + hash3(i, 3, 3) * 0.45), tw = 0.5 + 0.5 * Math.sin(t * 7 + i * 1.7);
+      twinkle(ctx, cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.85, R * 0.12 * (0.45 + tw), i % 3 ? '#fff176' : '#ffffff', tw);
+    }
+  }
+  if (kind === 'petal' && layer === 'front') {
+    for (let i = 0; i < 9; i++) {
+      const ph = (t * 0.35 + hash3(i, 4, 4)) % 1, x = cx + (hash3(i, 8, 2) - 0.5) * R * 2.2 + Math.sin(t * 2 + i) * R * 0.15, y = cy - R * 1.1 + ph * R * 2.2;
+      ctx.save(); ctx.globalAlpha *= Math.min(1, (1 - ph) * 2.5); ctx.translate(x, y); ctx.rotate(t * 2 + i);
+      ctx.fillStyle = i % 2 ? '#ffc2d8' : '#ff8fb8'; ctx.strokeStyle = 'rgba(25,38,61,0.5)'; ctx.lineWidth = Math.max(1, R * 0.015);
+      ctx.beginPath(); ctx.ellipse(0, 0, R * 0.1, R * 0.055, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+  }
+  ctx.restore();
+}
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 // 手描き風の線(少しゆれる)
 function wline(ctx, x0, y0, x1, y1, seed, amp) {
@@ -233,13 +431,13 @@ function drawThumb(cv, cr, opt) {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   for (const s of S) for (const [x, y] of s.p) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
   const pad = 0.12, k = Math.min(W * (1 - pad * 2) / Math.max(20, x1 - x0), H * (1 - pad * 2) / Math.max(20, y1 - y0));
+  const fxR = Math.max((x1 - x0) * k, (y1 - y0) * k) * 0.55, ft = opt && opt.t != null ? opt.t : 0.6;
+  if (cr.fx) drawFx(ctx, cr.fx, W / 2, H / 2, fxR, ft, 'back');
   ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(k, k); ctx.translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  for (const s of S) {
-    ctx.strokeStyle = s.c; ctx.fillStyle = s.c; ctx.lineWidth = Math.max(s.w, 2.2 / k);
-    ctx.beginPath(); if (s.p.length === 1) { ctx.arc(s.p[0][0], s.p[0][1], s.w / 2, 0, 7); ctx.fill(); } else { smoothPath(ctx, s.p); ctx.stroke(); }
-  }
+  for (const s of S) penPaint(ctx, s, s.p, Math.max(s.w, 2.2 / k), ft);
   ctx.restore();
+  if (cr.fx) drawFx(ctx, cr.fx, W / 2, H / 2, fxR, ft, 'front');
 }
 
 // ---------- 運動場 ----------
@@ -582,18 +780,21 @@ let strokes = [], cur = null;
 function renderPad() {
   pctx.clearRect(0, 0, 600, 600);
   pctx.lineCap = 'round'; pctx.lineJoin = 'round';
-  for (const s of strokes) {
-    pctx.strokeStyle = s.c; pctx.fillStyle = s.c; pctx.lineWidth = s.w;
-    pctx.beginPath();
-    if (s.p.length === 1) { pctx.arc(s.p[0][0], s.p[0][1], s.w / 2, 0, Math.PI * 2); pctx.fill(); } else { smoothPath(pctx, s.p); pctx.stroke(); }
-  }
+  for (const s of strokes) penPaint(pctx, s, s.p, s.w, 0.6);
   $('padHint').style.display = strokes.length ? 'none' : '';
   $('drawDoneBtn').disabled = !strokes.length;
 }
 // 描いている形の名前・特徴は見せない(どう描けば速いかは、走らせて考える)。ここでは描きかけを覚えるだけ
 function updateLiveType() { if (typeof Persist !== 'undefined') Persist.save(); }
 function padXY(e) { const r = pad.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 600, 0, 600), clamp((e.clientY - r.top) / r.height * 600, 0, 600)]; }
-pad.addEventListener('pointerdown', e => { e.preventDefault(); pad.setPointerCapture && pad.setPointerCapture(e.pointerId); cur = { c: penColor, w: penWidth, p: [padXY(e)] }; strokes.push(cur); renderPad(); });
+pad.addEventListener('pointerdown', e => {
+  e.preventDefault(); if (!$('penPanel').classList.contains('hidden')) { $('penPanel').classList.add('hidden'); return; }
+  pad.setPointerCapture && pad.setPointerCapture(e.pointerId);
+  const k = Full.has() ? penKind : '';
+  cur = { c: k && k !== 'glitter' ? Creature.PEN_COLOR[k] : penColor, w: Full.has() || penWidth === 14 || penWidth === 7 ? penWidth : 14, p: [padXY(e)] };
+  if (k) cur.k = k;
+  strokes.push(cur); renderPad();
+});
 pad.addEventListener('pointermove', e => {
   if (!cur) return;
   const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
@@ -606,11 +807,56 @@ function buildColorButtons() {
   const box = $('colors');
   COLORS.forEach((c, i) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'sw' + (i ? '' : ' on'); b.style.background = c; b.setAttribute('aria-label', '色 ' + (i + 1));
-    b.onclick = () => { penColor = c; box.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b)); };
+    b.onclick = () => { penColor = c; if (penKind && penKind !== 'glitter') penKind = ''; box.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b)); updatePenBtn(); };
     box.appendChild(b);
   });
 }
-$('widthBtn').onclick = () => { penWidth = penWidth === 14 ? 7 : 14; $('widthBtn').textContent = penWidth === 14 ? '太い線' : '細い線'; };
+// 完全版のペン(金・銀・虹・ラメ・ピンク・水色・レモン)と太さ(極細・極太)。見た目だけ
+let penKind = '';
+const PEN_LIST = [['gold', '金'], ['silver', '銀'], ['rainbow', '虹'], ['glitter', 'ラメ'], ['pink', 'ピンク'], ['sky', '水色'], ['lemon', 'レモン']];
+const WIDTH_NAMES = { 4: '極細', 7: '細い線', 14: '太い線', 22: '極太' };
+function updatePenBtn() {
+  const pb = $('penBtn'); if (!pb) return;
+  const k = Full.has() ? penKind : '';
+  pb.textContent = k ? (PEN_LIST.find(x => x[0] === k) || ['', 'ペン'])[1] + 'のペン' : 'とくべつなペン';
+  pb.classList.toggle('on', !!k);
+  $('widthBtn').textContent = WIDTH_NAMES[penWidth] || '太い線';
+  const panel = $('penPanel');
+  if (panel) panel.querySelectorAll('[data-pen]').forEach(b => b.classList.toggle('on', b.dataset.pen === k));
+  if (panel) panel.querySelectorAll('[data-w]').forEach(b => b.classList.toggle('on', +b.dataset.w === penWidth));
+}
+function buildPenPanel() {
+  const panel = $('penPanel'); if (!panel) return;
+  const full = Full.has();
+  panel.innerHTML = `<p class="pp">とくべつなペン${full ? '' : '<small>完全版</small>'}</p>`;
+  const grid = document.createElement('div'); grid.className = 'penGrid';
+  const item = (key, label, img, onPick) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'penIt' + (full || !key ? '' : ' lock');
+    if (img) { const im = document.createElement('img'); im.alt = ''; im.src = img; im.onerror = () => im.remove(); b.appendChild(im); }
+    else { const dot = document.createElement('i'); dot.className = 'penDot'; dot.style.background = key ? Creature.PEN_COLOR[key] : penColor; b.appendChild(dot); }
+    const s = document.createElement('span'); s.textContent = label; b.appendChild(s);
+    b.onclick = () => { if (!Full.has() && key) { $('penPanel').classList.add('hidden'); Full.open('pens'); return; } onPick(); updatePenBtn(); };
+    grid.appendChild(b); return b;
+  };
+  item('', 'ふつう', '', () => { penKind = ''; }).dataset.pen = '';
+  const ICON = { gold: 1, silver: 1, rainbow: 1, glitter: 1 };
+  for (const [k, label] of PEN_LIST) item(k, label, ICON[k] ? `assets/pen_${k}.png` : '', () => { penKind = k; }).dataset.pen = k;
+  panel.appendChild(grid);
+  const wl = document.createElement('p'); wl.className = 'pp'; wl.textContent = '線の太さ'; panel.appendChild(wl);
+  const wg = document.createElement('div'); wg.className = 'penGrid w';
+  for (const w of [4, 7, 14, 22]) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.w = w; b.className = 'penIt wd' + (full || w === 7 || w === 14 ? '' : ' lock');
+    b.innerHTML = (w === 4 || w === 22 ? `<img alt="" src="assets/pen_${w === 4 ? 'thin' : 'thick'}.png" onerror="this.remove()">` : '') + `<i style="height:${Math.max(3, w * 0.6)}px"></i><span>${WIDTH_NAMES[w]}</span>`;
+    b.onclick = () => { if (!Full.has() && (w === 4 || w === 22)) { $('penPanel').classList.add('hidden'); Full.open('pens'); return; } penWidth = w; updatePenBtn(); };
+    wg.appendChild(b);
+  }
+  panel.appendChild(wg);
+  const note = document.createElement('p'); note.className = 'pn'; note.textContent = full ? '見た目だけ変わります。走る速さは変わりません' : '完全版で使えます。見た目だけで、走る速さは変わりません'; panel.appendChild(note);
+  const close = document.createElement('button'); close.type = 'button'; close.className = 'sub'; close.textContent = 'とじる'; close.onclick = () => panel.classList.add('hidden'); panel.appendChild(close);
+  updatePenBtn();
+}
+$('penBtn').onclick = () => { buildPenPanel(); $('penPanel').classList.toggle('hidden'); };
+$('widthBtn').onclick = () => { penWidth = penWidth === 14 ? 7 : 14; updatePenBtn(); };
 $('undoBtn').onclick = () => { strokes.pop(); renderPad(); updateLiveType(); };
 $('clearBtn').onclick = () => { strokes = []; renderPad(); updateLiveType(); };
 
@@ -624,6 +870,7 @@ function startDraw(mode, opts) {
   G.mode = mode; opts = opts || {};
   playing = false; scene = null; if (!titleScene) titleScene = makeTitleScene();
   strokes = []; renderPad(); updateLiveType();
+  $('penPanel').classList.add('hidden'); updatePenBtn();
   $('nameInput').value = opts.keepName ? $('nameInput').value : '';
   $('drawTitle').textContent = opts.title || '生き物を1匹描いてね';
   const rs = $('rivalStrip'); rs.innerHTML = '';
@@ -638,7 +885,7 @@ function startDraw(mode, opts) {
 function myCreature() {
   const name = cleanName($('nameInput').value) || '名なしのらくがき';
   // URL に詰めた形に一度通す(対戦相手の端末と同じ線でレースするため)
-  const cr = Creature.roundTrip(Creature.make(strokes, name), CFG.PER_BYTES);
+  const cr = Creature.roundTrip(Creature.make(strokes, name, Full.has() ? Full.fx() : ''), CFG.PER_BYTES);
   cr.created = new Date().toISOString().slice(0, 10);
   return cr;
 }
@@ -659,6 +906,8 @@ $('drawBackBtn').onclick = () => { if (G.mode === 'room') Room.leave(); goTitle(
 let prepAnim = null;
 function openPrep() {
   const pet = Rec.pet(G.me);
+  if (!Full.has()) delete G.me.fx;
+  buildFxRow();
   $('prepName').textContent = G.me.name || '名なし';
   $('prepRec').innerHTML = pet && pet.n ? `これまで <b>${pet.n}</b> 戦 <b>${pet.wins}</b> 勝` : 'はじめてのレース';
   const box = $('courses'); box.innerHTML = '';
@@ -688,6 +937,31 @@ function openPrep() {
   };
   tick();
   se('prep', 0.4);
+}
+// キラキラ(完全版)をえらぶ。準備運動の絵ですぐ見られる。見た目だけ
+const FX_LIST = [['', 'なし'], ['kira', '光の粒'], ['aura', 'オーラ'], ['star', '流れ星'], ['petal', '花びら']];
+function buildFxRow() {
+  const box = $('fxRow'); if (!box) return;
+  const full = Full.has(), curFx = (G.me && G.me.fx) || '';
+  box.innerHTML = `<p class="fxT">キラキラ${full ? '' : '<small>完全版</small>'}</p>`;
+  const row = document.createElement('div'); row.className = 'fxBtns';
+  for (const [id, label] of FX_LIST) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.fx = id;
+    b.className = 'fxIt' + (id === curFx ? ' on' : '') + (!full && id ? ' lock' : '');
+    if (id) { const im = document.createElement('img'); im.alt = ''; im.src = `assets/fx_${id}.png`; im.onerror = () => im.remove(); b.appendChild(im); }
+    const s = document.createElement('span'); s.textContent = label; b.appendChild(s);
+    b.onclick = () => {
+      if (id && !Full.has()) { Full.open('kira'); return; }
+      if (!G.me) return;
+      if (id) G.me.fx = id; else delete G.me.fx;
+      Full.setFx(id);
+      row.querySelectorAll('.fxIt').forEach(x => x.classList.toggle('on', x === b));
+      if (id) se('select', 0.4);
+      Persist.save();
+    };
+    row.appendChild(b);
+  }
+  box.appendChild(row);
 }
 function drawCourseIcon(cv, id) {
   const im = IMG['course_' + id], ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
@@ -1028,6 +1302,9 @@ async function finishRace(opts) {
   $('videoNote').textContent = '';
   $('videoBtn').disabled = !canRecord();
   if (!canRecord()) $('videoNote').textContent = 'この端末のブラウザでは動画を作れません';
+  result.vvideo = null; $('vVideoBox').classList.add('hidden'); $('vVideoNote').textContent = ''; $('vVideoBtn').disabled = false;
+  $('vVideoBtn').textContent = Full.has() ? '縦動画をつくる' : '縦動画を保存';
+  $('vVideoBtn').classList.toggle('lock', !Full.has());
   const mine = sc.meIndex >= 0;
   $('retryBtn').classList.toggle('hidden', !mine || vs);
   $('retryBtn').textContent = sc.mode === 'ta' ? 'もう一回タイムアタック' : 'もう一回!';
@@ -1182,6 +1459,32 @@ $('videoBtn').onclick = async () => {
   } catch (e) { $('videoNote').textContent = '動画を作れませんでした'; console.error(e); }
   $('videoBtn').disabled = false;
 };
+// 完全版: 縦動画(作ったら「端末に保存」「X・TikTok などへ」)
+$('vVideoBtn').onclick = async () => {
+  if (!result) return;
+  if (!Full.has()) { Full.open('video'); return; }
+  if (!canRecord()) { $('vVideoNote').textContent = 'この端末では動画を作れません'; return; }
+  $('vVideoBtn').disabled = true;
+  try {
+    const v = await makeVideo(result.scene, result.canvas, s => { $('vVideoNote').textContent = `縦動画を作っています… あと ${s} 秒`; }, { vertical: true });
+    result.vvideo = v;
+    $('vVideoNote').textContent = v.type.includes('mp4') ? '縦動画ができました' : '縦動画ができました(webm。アプリによっては貼れないことがあります)';
+    $('vVideoBox').classList.remove('hidden');
+  } catch (e) { $('vVideoNote').textContent = '動画を作れませんでした'; console.error(e); }
+  $('vVideoBtn').disabled = false;
+};
+function vFile() { const v = result.vvideo; return [v.blob, fileBase() + '-tate' + (v.type.includes('mp4') ? '.mp4' : '.webm'), v.type.split(';')[0]]; }
+$('vSaveBtn').onclick = async () => {
+  if (!result || !result.vvideo) return;
+  const r = await saveToDevice(...vFile()).catch(() => 'err');
+  if (r === 'saved') $('vVideoNote').textContent = '端末の「Documents/RakugakiUndoukai」に保存しました';
+};
+$('vShareBtn').onclick = async () => {
+  if (!result || !result.vvideo) return;
+  const [blob, name, type] = vFile();
+  try { const file = new File([blob], name, { type }); if (navigator.canShare && navigator.canShare({ files: [file] })) { const p = shareParts(result); await navigator.share({ files: [file], text: p.text, url: p.url }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  downloadBlob(blob, name);
+};
 $('againBtn').onclick = () => { if (!G.me) return; if (G.mode === 'ta') { openTA(G.me); return; } G.mode = G.mode === 'gallery' && G.opponent ? 'gallery' : 'solo'; openPrep(); };
 $('newBtn').onclick = () => startDraw('solo');
 $('homeBtn').onclick = () => goTitle();
@@ -1211,9 +1514,11 @@ function videoTimeline(sc) {
   segs.push([3.4, midB, 1]);                // ゴール前
   return { segs, cardSec: 2.4 };
 }
-function makeVideo(sc, card, onProg) {
+// opt.vertical: 完全版の縦動画(720x1280、TikTok・リール・ショート向け)。自分の子に寄って走る所 → 結果の1枚
+function makeVideo(sc, card, onProg, opt) {
+  opt = opt || {};
   return new Promise((resolve, reject) => {
-    const W = 720, H = 900;
+    const W = 720, H = opt.vertical ? 1280 : 900;
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const ctx = cv.getContext('2d');
     const mime = recMime();
     const stream = cv.captureStream(30);
@@ -1238,8 +1543,9 @@ function makeVideo(sc, card, onProg) {
           // 実況の帯
           while (ei < evs.length && evs[ei].t <= t) { const e = evs[ei++]; if (sp === 1) { if (e.type === 'finish' && e.who === sc.meIndex) se('fanfare', 0.5); if (e.type === 'trip' || e.type === 'bonk' || e.type === 'fall') se('trip', 0.4); } if (e.who === sc.meIndex && LINES[e.type]) said.text = pickLine(e.type, sc.ents[e.who].name, 0), said.t = t; }
           if (t >= 0 && !said.go) { said.go = 1; se('pistol', 0.6); bgm('bgm_race', true); }
-          if (sp > 1) { tag(ctx, W, '早送り ▶▶', 24, 24, '#ffffff'); }
-          if (said.text && t - said.t < 1.6) banner(ctx, W, H, said.text);
+          if (opt.vertical) vHead(ctx, W, sc);
+          if (sp > 1) { tag(ctx, W, '早送り ▶▶', 24, opt.vertical ? 132 : 24, '#ffffff'); }
+          if (said.text && t - said.t < 1.6) banner(ctx, W, H - (opt.vertical ? 60 : 0), said.text);
           tag(ctx, W, CFG.TAG, W - 24, H - 24, '#ffd54f', 'right');
           return;
         }
@@ -1248,7 +1554,9 @@ function makeVideo(sc, card, onProg) {
       // 結果の1枚
       if (!said.card) { said.card = 1; bgm(''); se('clap', 0.5); }
       ctx.fillStyle = '#b9e9ff'; ctx.fillRect(0, 0, W, H);
+      if (opt.vertical) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#7fd3fb'); g.addColorStop(1, '#d8f4ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
       const k = Math.min(W / card.width, H / card.height); ctx.drawImage(card, (W - card.width * k) / 2, (H - card.height * k) / 2, card.width * k, card.height * k);
+      if (opt.vertical) { vHead(ctx, W, sc); tag(ctx, W, CFG.TAG, W / 2, H - 60, '#ffd54f', 'center'); }
     };
     const frame = (now) => {
       if (start == null) start = now;
@@ -1263,6 +1571,14 @@ function makeVideo(sc, card, onProg) {
     requestAnimationFrame(frame);
     setTimeout(() => { if (!ended) { ended = true; try { rec.stop(); } catch (e) { reject(e); } } }, (total + 4) * 1000);
   });
+}
+// 縦動画の上の帯: 自分の子の名前とコース
+function vHead(ctx, W, sc) {
+  const i = sc.meIndex >= 0 ? sc.meIndex : sc.race.order[0], e = sc.ents[i];
+  ctx.save(); ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.strokeStyle = '#19263d'; ctx.lineWidth = 4;
+  roundRect(ctx, 20, 20, W - 40, 96, 22); ctx.fill(); ctx.stroke();
+  ctx.font = `900 40px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#19263d';
+  ctx.fillText(`「${e.name}」の${COURSES[sc.course].name}`, W / 2, 68, W - 80); ctx.restore();
 }
 function tag(ctx, W, text, x, y, color, align) {
   ctx.save(); ctx.font = `900 28px ${FONT}`; ctx.textAlign = align || 'left'; ctx.textBaseline = align ? 'bottom' : 'top';
@@ -1498,6 +1814,11 @@ $('vsBtn').onclick = () => { $('mainMenu').classList.add('hidden'); $('vsMenu').
 $('vsBackBtn').onclick = () => { $('mainMenu').classList.remove('hidden'); $('vsMenu').classList.add('hidden'); };
 $('soundBtn').onclick = () => setSound(!SND.on);
 $('creditBtn').onclick = () => $('creditBox').classList.toggle('hidden');
+$('fullBtn').onclick = () => Full.open('title');
+$('fullBuyBtn').onclick = () => Full.buy();
+$('fullRestoreBtn').onclick = () => Full.restore();
+$('fullBackBtn').onclick = () => Full.back();
+$('fullPlayLink').href = Full.PLAY_URL;
 
 // ---------- ループ ----------
 function frame(dt) {
@@ -1535,7 +1856,7 @@ window.__RU = {
   analyze(s) { return analyze(s || strokes); },
   events() { return scene && scene.race.events; },
   G, Room, makeVideo: () => makeVideo(result.scene, result.canvas, () => { }),
-  canRecord, recMime,
+  canRecord, recMime, makeVVideo: () => makeVideo(result.scene, result.canvas, () => { }, { vertical: true }), Full, buildFxRow,
   // 仮のアイコン(ChatGPT の絵が届くまで): いま描いてある絵を空とトラックの上に大きく
   icon(W, H) {
     const c = document.createElement('canvas'); c.width = W; c.height = H || W; const ctx = c.getContext('2d'); H = c.height;
@@ -1641,15 +1962,32 @@ const Rec = {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(Rec.KEY) || 'null'); } catch (e) { d = null; }
     if (!d || typeof d !== 'object' || !d.pets || typeof d.pets !== 'object') d = { v: 1, pets: {}, streak: 0, bestStreak: 0, races: 0, wins: 0 };
+    // 図鑑の番号(前の版で保存した子には描いた順に付ける)
+    if (!d.nextNo) { let n = 0; Object.values(d.pets).filter(p => p && !p.no).sort((a, b) => String(a.born).localeCompare(String(b.born)) || (a.last || 0) - (b.last || 0)).forEach(p => { p.no = ++n; }); d.nextNo = Math.max(n, ...Object.values(d.pets).map(p => (p && p.no) || 0), 0); }
     Rec.data = d; return d;
   },
-  save() { try { localStorage.setItem(Rec.KEY, JSON.stringify(Rec.data)); } catch (e) { } },
-  idOf(cr) { return (hashStr(JSON.stringify(cr.strokes.map(s => [s.c, s.w, s.p]))) >>> 0).toString(36); },
+  // 何匹まで残すか: ふつう 60匹 / 完全版の「自分の図鑑」300匹(お気に入りは消さない)
+  cap() { return Full.has() ? 300 : 60; },
+  trim(cap) {
+    const d = Rec.load(), ids = Object.keys(d.pets);
+    if (ids.length <= cap) return;
+    ids.filter(k => !d.pets[k].fav).sort((a, b2) => d.pets[a].last - d.pets[b2].last).slice(0, ids.length - cap).forEach(k => delete d.pets[k]);
+  },
+  save() {
+    for (let k = 0; k < 4; k++) {
+      try { localStorage.setItem(Rec.KEY, JSON.stringify(Rec.data)); return true; }
+      catch (e) { const n = Object.keys(Rec.data.pets).length; if (n <= 20) return false; Rec.trim(Math.floor(n * 0.9)); } // 端末の入れ物がいっぱい: 古い子から少し減らす
+    }
+    return false;
+  },
+  idOf(cr) { return (hashStr(JSON.stringify(cr.strokes.map(s => s.k ? [s.c, s.w, s.p, s.k] : [s.c, s.w, s.p]))) >>> 0).toString(36); },
   pet(cr) { if (!cr) return null; const d = Rec.load(); return d.pets[Rec.idOf(cr)] || null; },
   ensure(cr) {
     const d = Rec.load(), id = Rec.idOf(cr);
-    if (!d.pets[id]) d.pets[id] = { id, cr: { name: cr.name, strokes: cr.strokes }, born: new Date().toISOString().slice(0, 10), n: 0, wins: 0, pod: 0, sumRank: 0, best: {}, ta: {}, races: [], last: Date.now() };
-    const p = d.pets[id]; p.cr.name = cr.name || p.cr.name; return p;
+    if (!d.pets[id]) d.pets[id] = { id, no: (d.nextNo = (d.nextNo || 0) + 1), cr: { name: cr.name, strokes: cr.strokes }, born: new Date().toISOString().slice(0, 10), n: 0, wins: 0, pod: 0, sumRank: 0, best: {}, ta: {}, races: [], last: Date.now() };
+    const p = d.pets[id]; p.cr.name = cr.name || p.cr.name;
+    if (cr.fx) p.cr.fx = cr.fx; else delete p.cr.fx;
+    return p;
   },
   // レースが終わったら1行足す。返り値は結果に出す札(連勝・自己ベストなど)
   addRace(sc, info) {
@@ -1676,9 +2014,8 @@ const Rec = {
         }
         badges.push({ t: `この子 通算 ${p.wins}勝 / ${p.n}戦`, c: 'blue' });
       }
-      // 多すぎたら古い子から消す(60匹まで)
-      const ids = Object.keys(d.pets);
-      if (ids.length > 60) ids.sort((a, b2) => d.pets[a].last - d.pets[b2].last).slice(0, ids.length - 60).forEach(k => delete d.pets[k]);
+      // 多すぎたら古い子から消す(60匹まで。完全版の図鑑は300匹まで・お気に入りは消さない)
+      Rec.trim(Rec.cap());
       Rec.save();
     } catch (err) { console.error(err); }
     return badges;
@@ -1762,14 +2099,31 @@ setInterval(() => { if (curScreen === 'drawScreen') Persist.save(); }, 3000);
 // ---------- アルバム・1匹のきろく ----------
 function fmtCourse(id) { return COURSES[id] ? COURSES[id].name : id; }
 function openAlbum() {
-  const d = Rec.load(), pets = Rec.list();
+  const d = Rec.load(), full = Full.has();
+  let pets = Rec.list();
+  const sort = G.albumSort || 'new';
+  if (full && sort === 'no') pets = pets.slice().sort((a, b) => (a.no || 0) - (b.no || 0));
+  if (full && sort === 'win') pets = pets.slice().sort((a, b) => b.wins - a.wins || b.n - a.n);
+  if (full && sort === 'fav') pets = pets.filter(p => p.fav);
+  $('albumTitle').textContent = full ? '自分の図鑑・きろく' : 'きろく・アルバム';
+  const zb = $('zukanBar'); zb.innerHTML = '';
+  const all = Object.keys(d.pets).length;
+  if (full) {
+    zb.innerHTML = `<p class="note strong">自分の図鑑 <b>${all}</b> / ${Rec.cap()} 匹(お気に入りの子は消えません)</p>`;
+    const tabs = document.createElement('div'); tabs.className = 'tabs small';
+    for (const [id, label] of [['new', '新しい順'], ['no', '番号順'], ['win', '勝った数'], ['fav', 'お気に入り']]) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tab' + (sort === id ? ' on' : ''); b.textContent = label; b.onclick = () => { G.albumSort = id; openAlbum(); }; tabs.appendChild(b); }
+    zb.appendChild(tabs);
+  } else {
+    zb.innerHTML = `<p class="note">${all} / ${Rec.cap()} 匹。いっぱいになると古い子から消えます</p>`;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sub lock'; b.textContent = '自分の図鑑(300匹まで・お気に入り)'; b.onclick = () => Full.open('zukan'); zb.appendChild(b);
+  }
   $('albumTotals').innerHTML = `<span><b>${pets.length}</b>匹</span><span><b>${d.races || 0}</b>戦</span><span><b>${d.wins || 0}</b>勝</span><span>いまの連勝 <b>${d.streak || 0}</b></span><span>最高 <b>${d.bestStreak || 0}</b>連勝</span>`;
   const g = $('albumGrid'); g.innerHTML = '';
-  if (!pets.length) g.innerHTML = '<p class="note">まだだれも走っていません。タイトルの「ひとりで走る」から描いてみよう</p>';
+  if (!pets.length) g.innerHTML = full && sort === 'fav' ? '<p class="note">お気に入りはまだいません。1匹のきろくの「お気に入り」から入れられます</p>' : '<p class="note">まだだれも走っていません。タイトルの「ひとりで走る」から描いてみよう</p>';
   for (const p of pets) {
     const it = document.createElement('button'); it.type = 'button'; it.className = 'gi pet';
     const c = document.createElement('canvas'); c.width = 240; c.height = 200; drawThumb(c, p.cr); it.appendChild(c);
-    const n = document.createElement('div'); n.textContent = p.cr.name || '名なし'; it.appendChild(n);
+    const n = document.createElement('div'); n.textContent = (full && p.no ? `No.${p.no} ` : '') + (p.cr.name || '名なし') + (full && p.fav ? ' ★' : ''); it.appendChild(n);
     const tt = document.createElement('div'); tt.className = 'gt'; tt.textContent = `${p.wins}勝 / ${p.n}戦` + (p.n ? `・平均${(p.sumRank / p.n).toFixed(1)}位` : ''); it.appendChild(tt);
     it.onclick = () => openPet(p.id);
     g.appendChild(it);
@@ -1781,7 +2135,9 @@ function openPet(id) {
   G.petId = id;
   drawThumb($('petCanvas'), p.cr, { bg: '#ffffff' });
   $('petName').textContent = p.cr.name || '名なし';
-  $('petBorn').textContent = `${p.born} に描いた子`;
+  $('petBorn').textContent = (Full.has() && p.no ? `図鑑 No.${p.no}・` : '') + `${p.born} に描いた子`;
+  $('petFavBtn').textContent = !Full.has() ? 'お気に入り' : p.fav ? '★ お気に入り' : '☆ お気に入りにする';
+  $('petFavBtn').classList.toggle('lock', !Full.has());
   $('petTotals').innerHTML = `<span><b>${p.n}</b>戦</span><span><b>${p.wins}</b>勝</span><span>表彰台 <b>${p.pod}</b></span><span>平均 <b>${p.n ? (p.sumRank / p.n).toFixed(1) : '-'}</b>位</span>`;
   const b = $('petBests'); b.innerHTML = '';
   for (const c of RU.COURSE_IDS) {
@@ -1801,7 +2157,12 @@ function openPet(id) {
   show('petScreen');
   return true;
 }
-function petCreature(id) { const p = Rec.load().pets[id]; return p ? { v: 1, name: p.cr.name, created: p.born, strokes: p.cr.strokes } : null; }
+function petCreature(id) { const p = Rec.load().pets[id]; if (!p) return null; const cr = { v: 1, name: p.cr.name, created: p.born, strokes: p.cr.strokes }; if (p.cr.fx && Full.has()) cr.fx = p.cr.fx; return cr; }
+$('petFavBtn').onclick = () => {
+  if (!Full.has()) { Full.open('zukan'); return; }
+  const p = Rec.load().pets[G.petId]; if (!p) return;
+  p.fav = !p.fav; Rec.save(); openPet(G.petId);
+};
 $('albumBtn').onclick = () => openAlbum();
 $('albumBtn2').onclick = () => openAlbum();
 $('albumBackBtn').onclick = () => goTitle();
@@ -1812,7 +2173,7 @@ $('petTaBtn').onclick = () => { const cr = petCreature(G.petId); if (cr) openTA(
 // ---------- タイムアタック ----------
 function taCreature(cr) {
   // ランキングに送る形(文字にした線)に一度通してから走らせる。表示する人の端末と同じ線になる
-  try { const packed = b64urlBytes(Creature.fitBytes(cr, CFG.PER_BYTES)); const back = Creature.fromBytes(unb64urlBytes(packed), 0)[0]; back.name = cr.name; back.packed = packed; return back; } catch (e) { return cr; }
+  try { const packed = b64urlBytes(Creature.fitBytes(cr, CFG.PER_BYTES)); const back = Creature.fromBytes(unb64urlBytes(packed), 0)[0]; back.name = cr.name; back.packed = packed; if (cr.fx) back.fx = cr.fx; return back; } catch (e) { return cr; }
 }
 function b64urlBytes(bytes) { let s = ''; for (const x of bytes) s += String.fromCharCode(x); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
 function unb64urlBytes(str) { const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((str.length + 3) % 4)); const a = []; for (let i = 0; i < s.length; i++) a.push(s.charCodeAt(i)); return a; }
@@ -1923,6 +2284,7 @@ $('retryBtn').onclick = () => {
 loadAssets().then(() => {
   resize();
   buildColorButtons();
+  Full.refreshUi();
   renderPad();
   setSound(SND.on);
   if (IMG.logo) { $('logoImg').src = 'assets/logo.png'; $('logoImg').classList.remove('hidden'); $('logoText').classList.add('hidden'); }

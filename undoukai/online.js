@@ -67,8 +67,9 @@ async function guard(fn, ms, retry) {
 
 function b64(bytes) { let s = ''; for (const x of bytes) s += String.fromCharCode(x); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
 function unb64(str) { const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((str.length + 3) % 4)); const a = []; for (let i = 0; i < s.length; i++) a.push(s.charCodeAt(i)); return a; }
-export function packCreature(cr) { return b64(RU.Creature.fitBytes(cr, PER_BYTES)); }
-export function unpackCreature(str) { return RU.Creature.fromBytes(unb64(str), 0)[0]; }
+// キラキラ(完全版の見た目)は線の後ろに2バイト。前の版は線だけ読んで残りを捨てる
+export function packCreature(cr) { return b64(RU.Creature.packBytes(cr, PER_BYTES)); }
+export function unpackCreature(str) { return RU.Creature.unpackBytes(unb64(str)); }
 
 export async function init() {
   if (db) return;

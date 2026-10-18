@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#35b8e8">
 <link rel="icon" href="assets/icon.png">
-<link rel="stylesheet" href="style.css?v=1016e">
+<link rel="stylesheet" href="style.css?v=1018f">
 </head>
 <body>
 <canvas id="stage"></canvas>
@@ -33,6 +33,7 @@
       <button id="vsBtn" class="go blue" type="button">3人で対戦する</button>
       <button id="galleryBtn" class="sub" type="button">みんなのらくがき</button>
       <div class="menuRow"><button id="albumBtn" class="sub mini" type="button">きろく・アルバム</button><button id="rankBtn" class="sub mini" type="button">ランキング</button></div>
+      <button id="fullBtn" class="sub fullBtn" type="button">完全版</button>
     </div>
     <div class="menu hidden" id="vsMenu">
       <p class="note strong">友だちと3人で1つのレース</p>
@@ -60,10 +61,11 @@
       <p id="drawHint" class="hint">どんな形でも走ります。どう描けば速いかは、走らせて確かめよう</p>
       <div id="rivalStrip" class="rivals hidden"></div>
     </header>
-    <div class="padBox"><canvas id="pad" width="600" height="600"></canvas><p id="padHint">ここに描く</p><div id="drawTimer" class="timer hidden"></div></div>
+    <div class="padBox"><canvas id="pad" width="600" height="600"></canvas><p id="padHint">ここに描く</p><div id="drawTimer" class="timer hidden"></div><div id="penPanel" class="penPanel hidden"></div></div>
     <div class="side">
       <div class="tools">
         <div class="colors" id="colors"></div>
+        <button id="penBtn" class="tool penBtn" type="button">とくべつなペン</button>
         <button id="widthBtn" class="tool" type="button">太い線</button>
         <button id="undoBtn" class="tool" type="button">もどす</button>
         <button id="clearBtn" class="tool" type="button">ぜんぶ消す</button>
@@ -86,6 +88,8 @@
           <p id="prepName" class="prepName"></p>
           <p id="prepRec" class="prepRec"></p>
         </div>
+      </div>
+      <div id="fxRow" class="fxRow">
       </div>
     </div>
     <div id="courseBox">
@@ -163,8 +167,10 @@
       <button id="saveBtn" class="go" type="button">画像を保存</button>
       <button id="videoBtn" class="go blue" type="button">動画を保存</button>
       <p id="videoNote" class="note"></p>
+      <button id="vVideoBtn" class="go green" type="button">縦動画を保存</button>
+      <div id="vVideoBox" class="row2 hidden"><button id="vSaveBtn" class="sub" type="button">端末に保存</button><button id="vShareBtn" class="sub" type="button">X・TikTok などへ</button></div>
+      <p id="vVideoNote" class="note"></p>
       <a class="followbtn" href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener">作った人を X でフォロー</a>
-      <a class="followbtn" href="https://play.google.com/apps/testing/jp.rakugakiundoukai.app" target="_blank" rel="noopener">Android のテスターになる(グループ参加: https://groups.google.com/g/nigatecho-testers)</a>
       <div id="vsResultBox" class="hidden">
         <button id="resLinkBtn" class="sub" type="button">この結果のリンクを送る</button>
         <button id="nextChallengeBtn" class="sub" type="button">この子で次の人に挑戦状</button>
@@ -180,7 +186,8 @@
 <!-- きろく・アルバム -->
 <section id="albumScreen" class="screen hidden">
   <div class="galWrap">
-    <p class="h2 pill">きろく・アルバム</p>
+    <p class="h2 pill" id="albumTitle">きろく・アルバム</p>
+    <div id="zukanBar" class="zukanBar"></div>
     <div id="albumTotals" class="totals"></div>
     <div id="albumGrid" class="galGrid"></div>
     <div class="galBtns"><button id="albumBackBtn" class="sub ghost" type="button">もどる</button></div>
@@ -198,6 +205,7 @@
     <div class="galBtns">
       <button id="petRunBtn" class="go" type="button">この子で走る</button>
       <button id="petTaBtn" class="go blue" type="button">この子でタイムアタック</button>
+      <button id="petFavBtn" class="sub" type="button">☆ お気に入りにする</button>
       <button id="petBackBtn" class="sub ghost" type="button">アルバムへ</button>
     </div>
   </div>
@@ -231,8 +239,36 @@
   </div>
 </section>
 
+<!-- 完全版の案内(買えるのはアプリ版だけ。値段はストアから読んだ物だけをボタンに出す) -->
+<section id="fullScreen" class="screen hidden">
+  <div class="col">
+    <p class="h2 pill">完全版</p>
+    <img id="fullHero" class="fullHero" src="assets/full_hero.jpg" alt="" onerror="this.remove()">
+    <ul class="feats">
+      <li><img src="assets/feat_video.png" alt="" onerror="this.style.visibility='hidden'"><div><b>縦動画を保存</b><span>描いた子が走る数秒の縦動画。端末に保存したり、X・TikTok・Instagram に送れます</span></div></li>
+      <li><img src="assets/feat_pens.png" alt="" onerror="this.style.visibility='hidden'"><div><b>ペンと色のパック</b><span>金・銀・虹・ラメ・ピンク・水色・レモンのペンと、極細・極太の線</span></div></li>
+      <li><img src="assets/feat_zukan.png" alt="" onerror="this.style.visibility='hidden'"><div><b>自分の図鑑</b><span>描いた子を300匹までのこせて、番号つきで並びます。お気に入りの子は消えません</span></div></li>
+      <li><img src="assets/feat_kira.png" alt="" onerror="this.style.visibility='hidden'"><div><b>キラキラ</b><span>光の粒・オーラ・流れ星・花びらを自分の子にまとわせられます。レース・結果の画像・動画・ランキングでみんなに見えます</span></div></li>
+    </ul>
+    <p class="note strong">変わるのは見た目だけ。走る速さ・強さは変わりません</p>
+    <div id="fullOwned" class="card ownedCard hidden"><p class="note strong">完全版です。ありがとうございます!</p></div>
+    <div id="fullBuyBox">
+      <p class="note">買い切りです。一度買えば、入れ直しても「購入を復元」でもどせます</p>
+      <button id="fullBuyBtn" class="go" type="button">完全版にする</button>
+      <button id="fullRestoreBtn" class="sub" type="button">購入を復元</button>
+    </div>
+    <div id="fullWebBox" class="hidden">
+      <p class="note strong">完全版はアプリ版で使えます</p>
+      <a id="fullPlayLink" class="go blue linkBtn" href="#" target="_blank" rel="noopener">Android 版(テスト中)をひらく</a>
+      <p class="note">iPhone 版は準備中です。ブラウザ版はこのまま遊べます</p>
+    </div>
+    <p id="fullStatus" class="note strong" aria-live="polite"></p>
+    <button id="fullBackBtn" class="sub ghost" type="button">もどる</button>
+  </div>
+</section>
+
 <div id="toast" class="toast hidden"></div>
-<script src="sim.js?v=1018"></script>
-<script src="main.js?v=1018d"></script>
+<script src="sim.js?v=1018f"></script>
+<script src="main.js?v=1018f"></script>
 </body>
 </html>

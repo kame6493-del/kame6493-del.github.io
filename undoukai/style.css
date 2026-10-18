@@ -256,3 +256,42 @@ button.gi{font:inherit;color:var(--ink);cursor:pointer}
 @keyframes swapIn{0%{opacity:.35}100%{opacity:1}}
 .titleFoot{gap:8px}
 .credits{background:rgba(255,255,255,.92);border:2px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:12px;line-height:1.6;text-align:left}
+
+/* ---------- 完全版(10/18) ---------- */
+.lock::after{content:"完全版";display:inline-block;margin-left:6px;font-size:10px;font-weight:900;color:#fff;background:var(--red);border-radius:999px;padding:1px 6px;vertical-align:middle;text-shadow:none}
+#titleScreen .menu .fullBtn{background:linear-gradient(90deg,#fff6c4,#ffe27a 50%,#fff6c4);border:3px solid var(--ink);font-size:16px;font-weight:900;color:var(--ink);text-shadow:none}
+html.full #titleScreen .menu .fullBtn{background:#fff}
+.penBtn.on{background:linear-gradient(90deg,#ffe27a,#ffd54f);}
+.padBox .penPanel{position:absolute;left:6px;right:6px;top:6px;max-height:calc(100% - 12px);overflow-y:auto;background:#fff;border:3px solid var(--ink);border-radius:16px;padding:8px 10px;box-shadow:0 4px 0 rgba(25,38,61,.8);z-index:3;display:flex;flex-direction:column;gap:6px}
+.penPanel .pp{font-size:14px;font-weight:900;text-align:left}
+.penPanel .pp small{margin-left:6px;font-size:10px;color:#fff;background:var(--red);border-radius:999px;padding:1px 6px}
+.penPanel .pn{font-size:11px;line-height:1.4;text-align:center}
+.penGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.penIt{font:inherit;font-size:12px;font-weight:bold;color:var(--ink);background:#f3fbff;border:2px solid var(--ink);border-radius:12px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-height:54px;justify-content:center;position:relative}
+.penIt img{width:34px;height:34px;object-fit:contain}
+.penIt.on{background:var(--yellow);box-shadow:0 0 0 2px var(--ink)}
+.penIt.lock{opacity:.85}
+.penIt.lock::after,.fxIt.lock::after{content:none}
+.penIt.lock img,.fxIt.lock img{filter:saturate(.75)}
+.penIt.wd i{display:block;width:70%;background:var(--ink);border-radius:999px}
+.fxRow{margin-top:8px}
+.fxT{font-size:14px;font-weight:900;margin-bottom:4px}
+.fxT small{margin-left:6px;font-size:10px;color:#fff;background:var(--red);border-radius:999px;padding:1px 6px}
+.fxBtns{display:flex;gap:6px;overflow-x:auto;padding:6px 2px 4px}
+.fxIt{font:inherit;font-size:12px;font-weight:bold;color:var(--ink);background:#f3fbff;border:2px solid var(--ink);border-radius:12px;padding:3px 6px;min-width:58px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;position:relative;flex:0 0 auto}
+.fxIt img{width:40px;height:40px;object-fit:cover;border-radius:8px}
+.fxIt.on{background:var(--yellow);box-shadow:0 0 0 2px var(--ink)}
+.zukanBar{display:flex;flex-direction:column;gap:6px;align-items:center;margin-bottom:6px}
+#fullScreen{background:rgba(185,233,255,.95)}
+.fullHero{width:100%;border-radius:18px;border:3px solid var(--ink);display:block;box-shadow:0 4px 0 rgba(25,38,61,.85)}
+.feats{list-style:none;display:flex;flex-direction:column;gap:8px}
+.feats li{display:flex;gap:10px;align-items:center;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:8px 10px}
+.feats img{width:52px;height:52px;object-fit:contain;flex:0 0 auto}
+.feats b{display:block;font-size:16px}
+.feats span{display:block;font-size:12.5px;line-height:1.45}
+#fullBuyBox,#fullWebBox{display:flex;flex-direction:column;gap:8px}
+#fullBuyBox.hidden,#fullWebBox.hidden{display:none}
+.linkBtn{display:block;text-align:center;text-decoration:none}
+.ownedCard{text-align:center}
+.penDot{display:block;width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);margin:4px}
+.penIt.wd img{width:30px;height:30px}
