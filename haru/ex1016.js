@@ -304,7 +304,7 @@ for (const k in XE) for (let f = 0; f < 3; f++) XART.push('xe_' + k + '_' + f);
 const XG_ART = ['g_bumper_0', 'g_bumper_1', 'g_tree_0', 'g_tree_1', 'g_paint_0', 'g_paint_1', 'g_pend', 'g_raft', 'g_fall_0', 'g_fall_1', 'g_qsand', 'g_elev',
   'g_piston_head', 'g_piston_rod', 'g_mortar', 'g_mshell', 'g_sidespring', 'g_thunder', 'g_bolt', 'g_ring', 'g_bell_0', 'g_bell_1', 'g_flip_0', 'g_flip_1', 'g_rspike',
   'g_honey', 'g_inflate_0', 'g_inflate_1', 'g_rocket', 'g_phantom'];
-const XV = '20261016y';
+const XV = '20261018b';
 for (const n of [...XART, ...XG_ART]) {
   const im = new Image();
   im.onload = () => { if (im.naturalWidth) ART[n] = im; };
@@ -679,7 +679,7 @@ function pveX(o, falling) {
 }
 function xChestCoins(o) { for (let i = 0; i < 3; i++) world.ents.push({ id: ++uid, t: 'coin', x: o.x + o.w / 2 - 14, y: o.y - 10, w: 28, h: 32, ph: 0, vx: (i - 1) * 110, vy: -420 }); }
 function xMidHit(o) {
-  o.hp--; o.invT = 1.0; sfx('hit'); hitStop(0.06); cam.shake = Math.max(cam.shake, 0.15);
+  o.hp -= P && P.hipHitT > 0 && o.hp > 1 ? 2 : 1; o.invT = 1.0; sfx('hit'); hitStop(0.06); cam.shake = Math.max(cam.shake, 0.15);
   if (o.hp <= 0) {
     defeat(o, true); sfx('boom', 0.8); world.ents.push({ id: ++uid, t: 'heart', x: o.x + o.w / 2 - 16, y: o.y, w: 32, h: 30, ph: 0, vy: -500, vx: 0 });
     return;

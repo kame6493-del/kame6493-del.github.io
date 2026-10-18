@@ -62,9 +62,18 @@ const isCleared = id => !!save.cleared[id];
 // 製作者が手元(127.0.0.1 / localhost)で遊ぶときは完全版。ネット版(github.io)は体験版のまま。
 // アプリ(Capacitor)の中も hostname が localhost になるので、アプリでは手元あつかいにしない
 const CREATOR_FULL = /^(127.0.0.1|localhost)$/.test(location.hostname) && !window.Capacitor;
-// テスト版(2026-10-13 持ち主と決定): Android のテスト版(アプリの中)だけ ぜんぶの面を無料で遊べる。ブラウザ版はワールド1だけの体験版のまま。本番で課金を戻すときは false にする
-const TESTER_FREE = !!window.Capacitor;
-const needsFull = i => LEVELS[i].world > 1 && !save.full && !CREATOR_FULL && !TESTER_FREE;
+// テスト版(2026-10-13 持ち主と決定): Android のテスト版(アプリの中)だけ ぜんぶの面を無料で遊べる。ブラウザ版はワールド1だけの体験版のまま。
+// iOS(App Store 版、2026-10-18 持ち主の決定): ワールド1は そのまま あそべて、ワールド2から先は 完全版(買い切り)。RevenueCat の Purchases プラグインで 本当に かう。
+// Android と ブラウザ版の うごきは 前のまま(IS_IOS の ときだけ 課金が うごく)
+const IS_IOS = !!(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' && window.Capacitor.getPlatform() === 'ios');
+const TESTER_FREE = !!window.Capacitor && !IS_IOS;
+const RC_IOS_KEY = 'appl_XXvPspbrEDQvUQQOjZvUoElOrKb'; // RevenueCat の 公開キー(秘密の 鍵では ない)
+const FULL_PRODUCT_ID = 'jp.harunobouken.app.full';
+const IOS_OWNED_KEY = 'haru_full_ios'; // iOS で かった 記録(セーブの ファイル 3つ ぜんぶに きく)
+let iosOwned = false;
+if (IS_IOS) { try { iosOwned = localStorage.getItem(IOS_OWNED_KEY) === '1'; } catch (e) { /* 無視 */ } }
+const hasFull = () => !!save.full || iosOwned;
+const needsFull = i => LEVELS[i].world > 1 && !hasFull() && !CREATOR_FULL && !TESTER_FREE;
 const canPlay = i => isOpenId(LEVELS[i].id) && !needsFull(i);
 const SHOP_ITEMS = [
   { key: 'heart', name: 'ハート +1', desc: 'つぎのステージで ハートが1つふえる', price: 150, img: 'ui_heart' },
@@ -74,31 +83,70 @@ const SHOP_ITEMS = [
 ];
 let shopMsg = null;
 const Store = {
-  plugin() { const C = window.Capacitor; return C && C.Plugins && C.Plugins.Purchases; },
+  ready: null, pkg: null, price: '', busy: false,
+  // iOS だけ プラグインを つかう(Android の テスト版・ブラウザ版では いつも null)
+  plugin() { if (!IS_IOS) return null; const C = window.Capacitor; return (C && C.Plugins && C.Plugins.Purchases) || null; },
+  isFull(info) { return !!(info && info.entitlements && info.entitlements.active && info.entitlements.active.full); },
+  cancelled(e) { return !!(e && (e.userCancelled || (e.data && e.data.userCancelled) || String(e.code) === '1')); },
+  init() {
+    const Pur = this.plugin();
+    if (!Pur) return Promise.resolve(null);
+    if (!this.ready) this.ready = Promise.resolve(Pur.configure({ apiKey: RC_IOS_KEY })).then(() => Pur, e => { this.ready = null; throw e; });
+    return this.ready;
+  },
+  // 売り場の 商品と 値段(ストアの 表示の まま)・もう かってあるか
+  async load() {
+    const Pur = await this.init();
+    if (!Pur) return;
+    const offers = await Pur.getOfferings();
+    const list = (offers && offers.current && offers.current.availablePackages) || [];
+    const pkg = list.find(p => p && p.product && p.product.identifier === FULL_PRODUCT_ID) || null;
+    if (pkg) { this.pkg = pkg; this.price = pkg.product.priceString || ''; }
+    try { const r = await Pur.getCustomerInfo(); if (this.isFull(r && r.customerInfo)) this.own(); } catch (e) { /* つながらない ときは 前の 記録の まま */ }
+  },
+  own() {
+    iosOwned = true; save.full = true; writeSave();
+    try { localStorage.setItem(IOS_OWNED_KEY, '1'); } catch (e) { /* 無視 */ }
+  },
   async buyFull() {
     const Pur = this.plugin();
     if (Pur) {
+      if (this.busy) return;
+      this.busy = true; shopMsg = { text: 'ストアに つないでいます…', t: 60 };
       try {
-        const offers = await Pur.getOfferings();
-        const pkg = offers && offers.current && offers.current.availablePackages && offers.current.availablePackages[0];
-        if (!pkg) throw new Error('no package');
-        const r = await Pur.purchasePackage({ aPackage: pkg });
-        if (r && r.customerInfo && r.customerInfo.entitlements.active.full) this.unlock();
-      } catch (e) { if (!(e && e.userCancelled)) shopMsg = { text: 'こうにゅうできませんでした', t: 3 }; }
+        if (!this.pkg) await this.load();
+        if (hasFull()) { this.unlock(); return; }
+        if (!this.pkg) throw new Error('no package');
+        const r = await Pur.purchasePackage({ aPackage: this.pkg });
+        if (this.isFull(r && r.customerInfo)) this.unlock(); else shopMsg = null;
+      } catch (e) {
+        shopMsg = this.cancelled(e) ? null : { text: 'こうにゅうできませんでした', sub: 'しばらくしてから もういちど ためしてください', t: 3.5 };
+      } finally { this.busy = false; }
       return;
     }
-    shopMsg = window.Capacitor ? { text: 'テスト版では まだ かえません', sub: 'こうかいの ときに かえるように なります', t: 3.5 } : { text: 'この版では かえません', sub: 'アプリ版(App Store / Google Play)で かえます', t: 3.5 };
+    shopMsg = IS_IOS ? { text: 'ストアに つなげませんでした', t: 3 } : window.Capacitor ? { text: 'テスト版では まだ かえません', sub: 'こうかいの ときに かえるように なります', t: 3.5 } : { text: 'この版では かえません', sub: 'アプリ版(App Store / Google Play)で かえます', t: 3.5 };
   },
   async restore() {
     const Pur = this.plugin();
     if (Pur) {
-      try { const r = await Pur.restorePurchases(); if (r && r.customerInfo && r.customerInfo.entitlements.active.full) { this.unlock(); return; } } catch (e) { /* 下で知らせる */ }
-      shopMsg = { text: 'かったきろくが みつかりません', t: 3 }; return;
+      if (this.busy) return;
+      this.busy = true; shopMsg = { text: 'かった きろくを さがしています…', t: 60 };
+      try {
+        await this.init();
+        const r = await Pur.restorePurchases();
+        if (this.isFull(r && r.customerInfo)) { this.unlock(); return; }
+        shopMsg = { text: 'かったきろくが みつかりません', t: 3 };
+      } catch (e) {
+        shopMsg = { text: 'ストアに つなげませんでした', sub: 'しばらくしてから もういちど ためしてください', t: 3.5 };
+      } finally { this.busy = false; }
+      return;
     }
-    shopMsg = window.Capacitor ? { text: 'テスト版では まだ ふくげんできません', t: 3 } : { text: 'この版では ふくげんできません', sub: 'アプリ版で ためしてください', t: 3 };
+    shopMsg = IS_IOS ? { text: 'ストアに つなげませんでした', t: 3 } : window.Capacitor ? { text: 'テスト版では まだ ふくげんできません', t: 3 } : { text: 'この版では ふくげんできません', sub: 'アプリ版で ためしてください', t: 3 };
   },
-  unlock() { save.full = true; writeSave(); sfx('clear'); shopMsg = { text: '完全版に なりました!', sub: 'ワールド2から さきが あそべます', t: 3.5 }; },
+  unlock() { if (IS_IOS) this.own(); save.full = true; writeSave(); sfx('clear'); shopMsg = { text: '完全版に なりました!', sub: 'ワールド2から さきが あそべます', t: 3.5 }; },
 };
+// iOS: 起動の すこし あとで 値段と かった 記録を 読む(つながらなくても あそべる)
+if (IS_IOS) setTimeout(() => { Store.load().catch(e => { try { console.warn('[haru] store', e && e.message); } catch (e2) { /* 無視 */ } }); }, 1200);
 function writeSave() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* 無視 */ } }
 function shardCount(id) { return ((save.shards || {})[id] || []).filter(Boolean).length; }
 // セーブの ファイルを えらぶ(1〜3)
@@ -135,7 +183,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261016y';
+const SPRITE_V = '20261018b';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -169,6 +217,10 @@ const ART_NAMES = ['title_bg', 'title_logo', 'face_haru', 'face_pipi', 'face_mao
   // 第6〜8段階(オープニング・エンディング・ハルの 動き・ボスの 描き直し・顔)
   'op_1', 'op_2', 'op_3', 'op_4', 'ed_final', 'ed_perfect', 'title_bg_with_haru',
   'hero_crouch', 'hero_slide', 'hero_hipdrop', 'hero_hang', 'hero_swim', 'hero_lookup', 'hero_sit', 'hero_yawn', 'hero_win', 'hero_hurt',
+  'hero_climb_0', 'hero_climb_1', 'hero_climb_2', 'hero_climb_3',
+  'bridge_plank_0', 'bridge_plank_1', 'bridge_plank_2',
+  'kame_walk_0', 'kame_walk_1', 'kame_shell', 'kame_spin_0', 'kame_spin_1', // 2026-10-18 カメ(こうら)の 描き直し: 前は 甲羅の 絵の 左を 切りとって 描いていて 欠けていた
+ // 2026-10-18 はしご・つたを のぼる 後ろすがた 4こま(ChatGPT)
   'boss_maou', 'boss_maou2', 'boss_goronta', 'boss_karakara', 'boss_munyaru', 'boss_perari',
   'face_moko', 'face_medama', 'face_karakara', 'face_goronta', 'face_munyaru', 'face_perari', 'face_oboshi'];
 const ART = {};
@@ -501,7 +553,14 @@ cv.addEventListener('pointerdown', e => {
     cv.setPointerCapture(e.pointerId);
   }
 });
+// 2026-10-18 ヒップドロップ: 指を 下へ すばやく ずらすと ▼を 1回 おした ことに(しゃがみには ならない)
+const swipeAt = new Map();
+cv.addEventListener('pointerdown', e => { if (scene === 'play' && e.pointerType !== 'mouse') swipeAt.set(e.pointerId, { y: canvasPos(e).y, t: performance.now(), done: false }); });
+cv.addEventListener('pointerup', e => swipeAt.delete(e.pointerId));
+cv.addEventListener('pointercancel', e => swipeAt.delete(e.pointerId));
 cv.addEventListener('pointermove', e => {
+  const sw = swipeAt.get(e.pointerId);
+  if (sw && !sw.done && scene === 'play') { const y = canvasPos(e).y; if (y - sw.y > 46 && performance.now() - sw.t < 350) { sw.done = true; if (P && !P.onGround) pressed.down = true; } else if (performance.now() - sw.t >= 350) { sw.y = y; sw.t = performance.now(); } }
   if (!pointers.has(e.pointerId)) return;
   pointers.set(e.pointerId, touchButtonAt(canvasPos(e), pointers.get(e.pointerId)));
   refreshTouchKeys();
@@ -547,14 +606,14 @@ function buildLevel(def) {
     mover(x, y, type, opt = {}) { ents.push({ kind: 'mover', type, x, y, opt }); },
     hazard(x, type, opt = {}) { ents.push({ kind: 'hazard', type, x, y: opt.y, opt }); },
     door(x, y) { ents.push({ kind: 'door', x, y }); },
-    hint(x, text, sub = '') { ents.push({ kind: 'hint', x, y: 0, text, sub }); },
+    hint(x, text, sub = '', subT) { ents.push({ kind: 'hint', x, y: 0, text, sub, subT }); },
     // いど(↓で 入る): (x,gy) の 地面の 上 → (tx,ty) の 地面の 上。back=true なら かえりの いども 置く
     well(x, gy, tx, ty, back = true) { ents.push({ kind: 'well', x, y: gy, to: [tx, ty] }); if (back) ents.push({ kind: 'well', x: tx, y: ty, to: [x, gy], back: true }); maxX = Math.max(maxX, x, tx); },
     // おばけやしきの とびら(↑で 入る): 2つで 1組
     wdoor(x, y, tx, ty) { ents.push({ kind: 'wdoor', x, y, to: [tx, ty] }); ents.push({ kind: 'wdoor', x: tx, y: ty, to: [x, y] }); maxX = Math.max(maxX, x, tx); },
     // ワープ: (x,y) のマスにさわると (tx,ty) へ。one=true なら行きだけ(出口はとびこめない)。y は足元の1つ上の行
     portal(x, y, tx, ty, opt = {}) {
-      ents.push({ kind: 'portal', x, y, to: [tx, ty], hue: opt.hue || 0, exit: false });
+      ents.push({ kind: 'portal', x, y, to: [tx, ty], hue: opt.hue || 0, exit: false, hidden: !!opt.hidden });
       ents.push({ kind: 'portal', x: tx, y: ty, to: [x, y], hue: opt.hue || 0, exit: !!opt.one });
       maxX = Math.max(maxX, x, tx);
     },
@@ -698,7 +757,6 @@ function startLevel(idx, fromCheckpoint = false) {
     if (o) world.ents.push(o);
     if (e.kind === 'P') start = { x: e.x * TILE + 10, y: (e.y + 1) * TILE - 54 };
   }
-  try { computeNoWing(); } catch (e) { world.noWing = []; }
   if (keep) {
     Object.assign(world, { coins: keep.coins, score: keep.score, stars: [...keep.stars], shards: [...keep.shards], time: keep.time, deaths: keep.deaths, checkpoint: keep.cp, cpIdx: keep.cpIdx, cpCoins: keep.cpCoins, cpScore: keep.cpScore, cpStars: keep.cpStars, cpShards: keep.cpShards, cpMaxHearts: keep.maxHearts, cpPowers: keep.cpPowers, lifeGot: keep.lifeGot, cpLifeGot: keep.cpLifeGot });
     // 取った星・かけらは出さない。通った中間旗は立てたまま
@@ -839,11 +897,11 @@ function spawn(e) {
     case '>': return { id, t: 'booster', x: X, y: Y + 30, w: 48, h: 18, dir: 1 };
     case '<': return { id, t: 'booster', x: X, y: Y + 30, w: 48, h: 18, dir: -1 };
     case 'F': return { id, t: 'fallplat', x: X, y: Y, w: 96, h: 18, x0: X, y0: Y, state: 'idle', timer: 0, plat: true };
-    case 'hint': return { id, t: 'hint', x: X, y: 0, w: 1, h: 1, text: e.text, sub: e.sub, shown: false };
+    case 'hint': return { id, t: 'hint', x: X, y: 0, w: 1, h: 1, text: e.text, sub: e.sub, subT: e.subT, shown: false };
     case 'well': return { id, t: 'well', x: X, y: e.y * TILE - 16, w: 48, h: 16, to: e.to, back: !!e.back };
     case 'wdoor': return { id, t: 'wdoor', x: X, y: (e.y - 1) * TILE, w: 48, h: 96, to: e.to };
     case 'door': return { id, t: 'door', x: X, y: (e.y - 1) * TILE, w: 48, h: 96, solid: true, open: 0 };
-    case 'portal': return { id, t: 'portal', x: X + 6, y: (e.y - 1) * TILE + 8, w: 36, h: 88, to: e.to, hue: e.hue, exitOnly: e.exit, ph: Math.random() * 6 };
+    case 'portal': return { id, t: 'portal', x: X + 6, y: (e.y - 1) * TILE + 8, w: 36, h: 88, to: e.to, hue: e.hue, exitOnly: e.exit, hidden: !!e.hidden, ph: Math.random() * 6 };
     case 'mover': {
       const r = (e.opt.range || 3) * TILE;
       if (e.type === 'balloon') return { id, t: 'balloon', x: X, y: Y, w: 80, h: 16, x0: X, y0: Y, r, drift: (e.opt.drift || 0) * TILE, state: 'idle', timer: 0, plat: true, dx: 0, dy: 0 };
@@ -1423,11 +1481,7 @@ function updatePlayer(dt) {
   const wallL = wj(Math.floor((p.x - 3) / TILE), midY) || wj(Math.floor((p.x - 3) / TILE), lowY);
   const wallR = wj(Math.floor((p.x + p.w + 3) / TILE), midY) || wj(Math.floor((p.x + p.w + 3) / TILE), lowY);
   const wjSide = sd => sd * 1000 + Math.floor((sd < 0 ? p.x - 3 : p.x + p.w + 3) / TILE);
-  // 2026-10-17 夜: あまぐもの 空(しかけの 区間)では つばさ(穴と がけ)・かべジャンプ(がけ)が つかえない。がけつかまりは つかえる(ばねの 高さを 手で おぎなう 作りが ある)
-  const nw = inNoWing(p);
-  if (nw && !p.inNW && !world.seenNoWing && (window.__nwTold || 0) < 3) { world.seenNoWing = true; window.__nwTold = (window.__nwTold || 0) + 1; toast = { text: 'あまぐもの そら', sub: nw === 2 ? 'ここでは つばさ・かべジャンプが つかえない。しかけを つかおう' : 'ここでは つばさが つかえない。しかけを つかおう', t: 3 }; }
-  p.inNW = nw;
-  p.wallSlide = !p.onGround && !p.swim && p.vy * gd > 0 && ((dir < 0 && wallL) || (dir > 0 && wallR)) && p.inNW !== 2 && (WJ_OLD || wjSide(dir) !== p.lastWJ) ? dir : 0;
+  p.wallSlide = !p.onGround && !p.swim && !p.hipFall && !(p.hipT > 0) && p.vy * gd > 0 && ((dir < 0 && wallL) || (dir > 0 && wallR)) && (WJ_OLD || wjSide(dir) !== p.lastWJ) ? dir : 0;
   if (p.wallSlide) { p.airJumps = Math.max(p.airJumps, 0); if (Math.random() < dt * 14) dust(p.wallSlide > 0 ? p.x + p.w : p.x, p.y + p.h - 10, 1); }
   // しゃがみ(↓)
   if (gd > 0 && p.onGround && held('down') && !p.swim && !p.mount && !p.carry && !p.fly) {
@@ -1444,6 +1498,12 @@ function updatePlayer(dt) {
   // まちの 動き(なにも しないで いると すわる・あくび)
   const anyKey = held('left') || held('right') || held('jump') || held('down') || held('up') || held('attack') || held('dash') || held('spin');
   p.idleT = p.onGround && !anyKey && Math.abs(p.vx) < 5 && !p.crouch && !p.swim && !p.mount ? (p.idleT || 0) + dt : 0;
+  // 2026-10-18 ヒップドロップ(持ち主「やっぱ 欲しい」): 空中で ↓(スマホは ▼ か 下へ スワイプ)。いっしゅん 止まって まっすぐ おちる。
+  // よこには すすまない(しかけを とばす 力は ない)。レンガを 上から わる・てきに ふむより 強い 一撃・ボスには ふむのと 同じ 1。
+  if (gd > 0 && !p.onGround && !p.swim && !p.climb && !p.mount && !p.fly && !p.carry && !p.hang && !p.zip && !p.swing && !p.inCannon && !(p.hipT > 0) && !p.hipFall && !(p.climbUpT > 0) && pressed.down) {
+    pressed.down = false; p.hipT = 0.16; p.spin = false; p.gliding = false; p.dashT = 0; p.airJumps = 0; p.airDash = 0; p.wallSlide = 0; sfx('swing', 0.6);
+    if (!world.seenHip && !world.def.tutorial) { world.seenHip = true; if (!save.seen || !save.seen.hip) { if (save.seen) { save.seen.hip = true; writeSave(); } toast = { text: 'ヒップドロップ!', sub: usingTouch ? 'くうちゅうで ▼(下へ スワイプ)。レンガを わる・てきに つよい いちげき' : 'くうちゅうで ↓。レンガを わる・てきに つよい いちげき', t: 2.4 }; } }
+  }
   // がけの ふちに つかまる(おちている ときに かべの ほうを おしていて、手が ふちに とどいたら)
   if (gd > 0 && dir && !p.onGround && p.vy > 0 && !p.swim && !p.climb && !p.mount && !p.carry && !p.fly && !(p.hangCD > 0) && !(p.hipT > 0) && !p.hipFall) {
     const tx = Math.floor((dir > 0 ? p.x + p.w + 5 : p.x - 5) / TILE), hy = p.y + 4, ty = Math.floor(hy / TILE);
@@ -1478,7 +1538,7 @@ function updatePlayer(dt) {
         else sfx('jump', p.swim ? 0.8 : 1);
         if (!p.swim) { dust(p.x + p.w / 2, gd > 0 ? p.y + p.h : p.y, 4); p.squash = 0.8; onPlayerJump(); }
       }
-    } else if (!p.swim && !WJ_NONE && p.inNW !== 2 && (p.wallSlide || ((wallL || wallR) && p.vy > -200)) && (WJ_OLD || wjSide(p.wallSlide || (wallL ? -1 : 1)) !== p.lastWJ)) {
+    } else if (!p.swim && !WJ_NONE && (p.wallSlide || ((wallL || wallR) && p.vy > -200)) && (WJ_OLD || wjSide(p.wallSlide || (wallL ? -1 : 1)) !== p.lastWJ)) {
       // 壁ジャンプ。2026-10-17 夜: 同じ がわの かべでは つづけて とべない(1まいの かべを どこまでも のぼれて しかけを とばせた)。
       // 反対の かべ・地面・はしご・つる などに さわると また とべる。つばさの 二段ジャンプも もどさない
       const away = wallL ? 1 : -1;
@@ -1486,7 +1546,7 @@ function updatePlayer(dt) {
       p.vx = away * 340; p.vy = -JUMPV * 0.95 * gd; p.face = away; onPlayerJump(); p.lockT = 0.14; p.jumping = true; p.jumpBuf = 0;
       p.airDash = 1; if (WJ_OLD) p.airJumps = maxAirJumps();
       sfx('jump', 1.15); dust(wallL ? p.x : p.x + p.w, p.y + p.h - 12, 5);
-    } else if (!p.swim && p.airJumps > 0 && !(p.inNW && !(p.jetT > 0))) {
+    } else if (!p.swim && p.airJumps > 0) {
       // 二段ジャンプ(つばさ)・三段ジャンプ(ジェットつばさ)
       p.airJumps--; p.jumpBuf = 0; p.vy = -JUMPV * (jet ? 0.9 : WING_DJ) * gd; p.jumping = true; onPlayerJump(); p.flapT = 0.35; p.fly = null; p.spin = !!p.spinReq;
       sfx('jump2', jet && p.airJumps === 0 ? 1.25 : 1);
@@ -1555,7 +1615,7 @@ function updatePlayer(dt) {
     if (p.wallSlide) maxFall = 170;
     // つばさで滑空(落ちるときにジャンプを押し続ける)
     // 2026-10-17 夜: 滑空は 1回の とびで WING_GLIDE びょうまで・おちる 速さ WING_GLIDE_FALL(前は ずっと 120 で 64マスも とべ、しかけを ぜんぶ とびこせた)
-    if (hasPower('wing') && held('jump') && p.airJumps === 0 && !p.onGround && !p.inNW && (p.glideT || 0) < WING_GLIDE) { maxFall = WING_GLIDE_FALL; p.gliding = true; p.glideT = (p.glideT || 0) + dt; if (Math.random() < dt * 10) parts.push({ x: p.x + p.w / 2 + rnd(-20, 20), y: p.y + 20, vx: rnd(-30, 30), vy: 40, life: 0.4, max: 0.4, color: '#ffffff', size: 3, g: 0, puff: true }); }
+    if (hasPower('wing') && held('jump') && p.airJumps === 0 && !p.onGround && (p.glideT || 0) < WING_GLIDE) { maxFall = WING_GLIDE_FALL; p.gliding = true; p.glideT = (p.glideT || 0) + dt; if (Math.random() < dt * 10) parts.push({ x: p.x + p.w / 2 + rnd(-20, 20), y: p.y + 20, vx: rnd(-30, 30), vy: 40, life: 0.4, max: 0.4, color: '#ffffff', size: 3, g: 0, puff: true }); }
     else p.gliding = false;
   }
   // ほしの マント: おちるとき ジャンプを おしていると ゆっくり(とんでいる 間は 下の capeFly で)
@@ -1571,10 +1631,16 @@ function updatePlayer(dt) {
   p.standOn = null;
   p.dropT = (p.dropT || 0) - dt;
   const wasGround = p.onGround;
+  if (p.hipHitT > 0) p.hipHitT -= dt;
+  if (p.hipT > 0) { p.hipT -= dt; p.vx = 0; p.vy = 0; if (p.hipT <= 0) p.hipFall = true; }
+  // バネ・トランポリンで 上へ はじかれたら おわり(10/14 の ふるえの 直し)
+  if (p.hipFall && p.vy < 0) p.hipFall = false;
+  if (p.hipFall) { if (p.swim || p.climb || p.hang || p.fly || p.mount || p.zip || p.swing || p.inCannon || (p.gdir || 1) < 0) p.hipFall = false; else { p.vx = 0; p.vy = 1100; } }
   const vyBefore = p.vy;
   // ベルトコンベアも 外から押す速さとして足す(壁に めりこまないように)
   const belt = wasGround && (p.groundTile === '}' || p.groundTile === '{') ? (p.groundTile === '}' ? 130 : -130) : 0;
   moveBody(p, dt, { ents: true, drop: p.dropT > 0, ext: wind + belt, corner: gd > 0, flip: gd < 0 });
+  if (p.hipFall && p.onGround) hipLand(p);
   if (p.onGround) p.launchT = 0;
   // スピンジャンプで 落ちてきたら、下の レンガ・くるくるブロックを こわして そのまま おちる / トゲの ブロックの 上では はねる
   if (gd > 0 && p.spin && p.onGround && vyBefore > 150) {
@@ -2548,6 +2614,11 @@ function playerVsEnemy(o) {
     return;
   }
   const falling = p.vy > 60 && p.y + p.h - p.vy * (1 / 60) <= o.y + 14;
+  // ヒップドロップで あたった: ふむのと 同じ 道で、体力の ある 敵には 2(xMidHit・fStrongHit が hipHitT を 見る)。こうらは いっぱつで たおす。トゲは いたい(スピンの 出番)
+  if (falling && p.hipFall) {
+    p.hipFall = false; p.hipHitT = 0.12; cam.shake = Math.max(cam.shake, 0.12); sfx('boom', 1.5);
+    if (o.type === 'shell' && !o.d.boss) { p.vy = -480; p.combo = (p.combo || 0) + 1; sfx('stomp'); hitStop(0.04); defeat(o, true, p.combo); return; }
+  }
   if (typeof pveX === 'function' && pveX(o, falling)) return;
   // スピンジャンプ・もこりゅうなら トゲの 敵も ふめる
   if (falling && (p.spin || p.mount) && SPIKY_T.has(o.type) && !o.d.boss && !(o.type === 'plant' && o.rise < 0.5)) {
@@ -2673,7 +2744,7 @@ function updateThing(o, dt) {
       if (!p.dead && overlap(p, o)) collect(o);
       break;
     }
-    case 'hint': { if (!o.shown && p.x > o.x) { o.shown = true; toast = { text: o.text, sub: o.sub, t: 3.2 }; sfx('select'); } break; }
+    case 'hint': { if (!o.shown && p.x > o.x) { o.shown = true; toast = { text: o.text, sub: usingTouch && o.subT ? o.subT : o.sub, t: 3.2 }; sfx('select'); } break; }
     case 'checkpoint': {
       if (!o.on && !p.dead && overlap(p, o)) {
         o.on = true; world.checkpoint = { x: o.x + 6, y: o.y + o.h - 54 }; world.cpIdx = o.idx;
@@ -3144,7 +3215,7 @@ function firework(x, y) {
     parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rnd(0.9, 1.3), max: 1.3, color: i % 3 ? col : col2, size: rnd(3, 5), g: 220, drag: true, star: i % 4 === 0 });
   }
   for (let i = 0; i < 10; i++) parts.push({ x, y, vx: rnd(-60, 60), vy: rnd(-60, 60), life: 0.5, max: 0.5, color: '#ffffff', size: 6, g: 0 });
-  sfx('firework', rnd(0.9, 1.15));
+  // 2026-10-18 持ち主「ゴールした後 花火の音 うるさい」→ 花火は 見た目だけ(音なし)
 }
 function confetti(n = 60) {
   for (let i = 0; i < n; i++) parts.push({ x: cam.x + rnd(0, VW), y: cam.y - rnd(10, 160), vx: rnd(-60, 60), vy: rnd(60, 160), life: rnd(2.2, 3.4), max: 3.4, color: FW_COLORS[i % FW_COLORS.length], size: rnd(4, 7), g: 60, confetti: true, rot: rnd(0, 6), vr: rnd(-8, 8) });
@@ -3487,56 +3558,24 @@ function drawBossCard(t) {
   ctx.restore();
 }
 
-// ---------- あまぐもの そら(2026-10-17 夜) ----------
-// 持ち主「つばさが 強すぎて とぶだけで クリアできる」「かべのぼりで しかけを とびこえる」→
-// 乗り物・とばす しかけが ある 穴と がけの 上を「あまぐもの そら」に して、そこでは 二段ジャンプ・滑空(と がけでは かべジャンプ)を 止める。
-// しかけ(ジップライン・たいほう・ばね など)は ふつうに つかえる。ジェットつばさ(店の 道具)は きく。
-const NW_GIM = new Set(['zip', 'balloon', 'bubble', 'swing', 'cannon', 'updraft', 'x_raft', 'x_rocket', 'x_pend', 'wheelhub', 'wheelplat', 'f7_bird', 'f7_gondola', 'f7_pod', 'f7_pulley', 'f7_bridge', 'f7_steam', 'f7_cog', 'log', 'cart', 'rail', 'x_elev', 'spring', 'trampoline', 'geyser', 'x_sidespring', 'x_bumper', 'x_ring', 'x_inflate', 'seesaw', 'tube', 'comet']);
-const NW_UP = new Set(['spring', 'trampoline', 'geyser', 'updraft', 'x_elev', 'x_rocket', 'f7_steam', 'x_sidespring', 'seesaw', 'tube', 'x_inflate', 'x_ring', 'cannon', 'f7_pod']);
-function computeNoWing() {
-  world.noWing = [];
-  const d = world.def;
-  if (!d || d.daily || d.tutorial || d.roam || d.kind === 'water' || (d.kind === 'boss' && false)) return;
-  const W = level.W;
-  const colHas = x => { for (let y = 0; y < ROWS; y++) { const c = tileAt(x, y); if (isSolid(x, y) || isOneWay(x, y) || c === 'L' || c === 'Z') return true; } return false; };
-  const stand = x => { for (let y = 1; y < ROWS; y++) if ((isSolid(x, y) || isOneWay(x, y)) && !isSolid(x, y - 1)) return y; return -1; };
-  const ext = o => { let a = o.x, b = o.x + (o.w || 48); for (const k of ['x0', 'x1', 'x2', 'ax', 'bx', 'tx', 'ex']) if (typeof o[k] === 'number' && o[k] > 100 && Math.abs(o[k] - o.x) < 60 * TILE) { a = Math.min(a, o[k]); b = Math.max(b, o[k]); } if (o.dist) b = Math.max(b, o.x + o.dist); return [Math.floor(a / TILE), Math.floor(b / TILE)]; };
-  const gs = world.ents.filter(o => NW_GIM.has(o.t)).map(o => ({ o, e: ext(o) }));
-  // [左px, 右px, かべも だめ(がけ)]。穴は つばさ だけ 止める(むこう岸の かべ・がけつかまりは つかえる)
-  const add = (a, b, wall) => { const last = world.noWing[world.noWing.length - 1]; if (last && !!last[2] === !!wall && a * TILE <= last[1] + 2 * TILE) last[1] = Math.max(last[1], (b + 1) * TILE); else if (last && a * TILE < last[1]) world.noWing.push([last[1], (b + 1) * TILE, wall]); else world.noWing.push([Math.max(0, a) * TILE, (b + 1) * TILE, wall]); };
-  const zs = [];
-  // 穴: 足場の ない 列が 3つ 以上。近くに 乗り物・とばす しかけが あれば 穴の 上を あまぐもに
-  let s0 = -1;
-  for (let x = 0; x <= W; x++) { const h = x < W && colHas(x); if (!h && s0 < 0) s0 = x; if (h && s0 >= 0) { if (x - s0 >= 3 && gs.some(g => g.e[1] >= s0 - 4 && g.e[0] <= x)) zs.push([s0 - 9, x - 1, false]); /* 穴の 9マス 手前から(手前で 二段ジャンプして とびこさない ように) */ s0 = -1; } }
-  // がけ: 4マス 以上 高く なる 所の 手前 8マスに 上へ とばす しかけ → がけの 14マス 手前から がけまでを あまぐもに
-  for (let x = 1; x < W - 1; x++) { const a = stand(x), b = stand(x + 1); if (a > 0 && b > 0 && a - b >= 4) { const g = gs.filter(g => NW_UP.has(g.o.t) && g.e[1] >= x - 8 && g.e[0] <= x + 1); if (g.length) { let e = x + 1; const top = stand(x + 1); while (e < x + 14 && stand(e + 1) === top) e++; e += 2; zs.push([Math.min(x - 14, ...g.map(q => q.e[0] - 1)), e, true]); } } } /* がけの 上の 足場の 下・右はしからも 二段ジャンプで のぼれるので 足場の はば+2マスまで あまぐもに */
-  zs.sort((p, q) => p[0] - q[0]).forEach(z => add(z[0], z[1], z[2]));
-}
-function inNoWing(p) { const z = world && world.noWing; if (!z || !z.length) return 0; const cx = p.x + p.w / 2; for (const r of z) if (cx > r[0] && cx < r[1]) return r[2] ? 2 : 1; return 0; }
-function drawNoWing(t) {
-  const z = world.noWing; if (!z || !z.length) return;
-  for (const r of z) {
-    if (r[1] < cam.x - 50 || r[0] > cam.x + VW + 50) continue;
-    const x0 = r[0], w = r[1] - r[0], top = Math.max(0, cam.y - 10), h = VH + 20;
-    ctx.save();
-    const g = ctx.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, 'rgba(70,60,120,.26)'); g.addColorStop(0.5, 'rgba(70,60,120,.08)'); g.addColorStop(1, 'rgba(70,60,120,0)');
-    ctx.fillStyle = g; ctx.fillRect(x0, top, w, h);
-    // ななめに ふる こまかい 雨(つばさが ぬれて とべない)
-    ctx.strokeStyle = 'rgba(200,210,255,.35)'; ctx.lineWidth = 2; ctx.beginPath();
-    for (let k = 0; k < w / 26; k++) { const xx = x0 + ((k * 53 + t * 40) % w), yy = top + ((k * 97 + t * 320) % (h * 0.7)); ctx.moveTo(xx, yy); ctx.lineTo(xx - 6, yy + 18); }
-    ctx.stroke();
-    // 上の ふちの 雲と「つばさ ×」の しるし
-    ctx.fillStyle = 'rgba(120,110,170,.55)';
-    for (let xx = x0; xx < x0 + w; xx += 36) { ctx.beginPath(); ctx.arc(xx + 18, top + 16 + Math.sin(xx * 0.05 + t) * 3, 24, 0, 7); ctx.fill(); }
-    for (let xx = x0 + 60; xx < x0 + w - 20; xx += 9 * TILE) {
-      const cy = cam.y + 128;
-      // 星・コイン・かけらに かさなる 所には 出さない
-      if (world.ents.some(o => !o.gone && (o.t === 'star' || o.t === 'coin' || o.t === 'shard' || o.t === 'oneup') && Math.abs(o.x + o.w / 2 - xx) < 50 && Math.abs(o.y + o.h / 2 - cy) < 50)) continue;
-      ctx.globalAlpha = 0.7; if (!drawFit('p_wing', xx, cy + 14, 26)) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(xx, cy, 10, 0, 7); ctx.fill(); }
-      ctx.strokeStyle = '#ff5a5a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(xx, cy, 17, 0, 7); ctx.moveTo(xx - 12, cy - 12); ctx.lineTo(xx + 12, cy + 12); ctx.stroke();
-    }
-    ctx.restore();
+// ヒップドロップの 着地: 足の 下の レンガ・くるくる ブロックを わり(スピンの 着地と 同じ ブロック)、すぐ そばの ふつうの 敵を たおす
+function hipLand(p) {
+  tutFlag('hip');
+  const fy = Math.floor((p.y + p.h + 2) / TILE), xa = Math.floor((p.x + 4) / TILE), xb = Math.floor((p.x + p.w - 4) / TILE);
+  let broke = false;
+  for (let tx = xa; tx <= xb; tx++) {
+    const c = tileAt(tx, fy);
+    if (c === 'B' || c === 'j') { level.tiles[fy][tx] = ' '; debris(tx * TILE, fy * TILE, c === 'B' ? 'brick' : 'metal'); broke = true; }
+    else if (c === '+') lightFuse(tx, fy, 0.5);
+    else if ('?HQAERONeqv'.includes(c)) bumpTile(tx, fy);
   }
+  sfx('boom', 1.3); sfx('stomp', 0.7); cam.shake = Math.max(cam.shake, 0.16); hitStop(0.04);
+  dust(p.x + p.w / 2 - 18, p.y + p.h, 5); dust(p.x + p.w / 2 + 18, p.y + p.h, 5);
+  // レンガを わったら そのまま おちつづける(つみかさなった レンガも わる)
+  if (broke) { tutFlag('spinbrk'); sfx('break'); world.score += 50; p.onGround = false; p.vy = 300; } // れんしゅうの「レンガを わろう」は どちらで わっても できた に(わった あとで つまらない ように)
+  else { p.hipFall = false; p.vy = -260; p.onGround = false; p.jumping = false; }
+  let n = 0;
+  for (const o of world.ents) if (o.t === 'enemy' && !o.dying && !o.held && !o.d.boss && !o.d.fly && !o.d.mid && !o.d.ex && o.d.stomp && !(o.hp > 1) && Math.abs(o.x + o.w / 2 - (p.x + p.w / 2)) < 1.6 * TILE && Math.abs(o.y + o.h - (p.y + p.h)) < TILE * 0.6) defeat(o, true, ++n);
 }
 
 // ---------- しかけの うごき(updateThing から) ----------
@@ -4616,14 +4655,14 @@ function drawHelp(t) {
   const p = help.page, y0 = 116;
   if (p === 0) {
     const rows = [[['←', '→'], 'あるく(はしる)', 'hero_run'], [['スペース', 'Z'], 'ジャンプ(ながおしで たかく)', 'hero_jump'], [['V'], 'スピンジャンプ(トゲの てきも ふめる)', 'spiky'], [['X'], 'けん', 'hero_attack'],
-      [['C', 'Shift'], 'ダッシュ(ブーツ)・おしたまま さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる', null], [['↑'], 'とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
+      [['C', 'Shift'], 'ダッシュ(ブーツ)・おしたまま さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる・くうちゅうで ヒップドロップ', 'hero_hipdrop'], [['↑'], 'とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
     rows.forEach((r, i) => helpRow(y0 - 4 + i * 40, r[0], r[1], r[2]));
   } else if (p === 1) {
     // スマホの 画面の ボタンの ならび(小さな 画面の 絵)
     const sx = 140, sy = 120, sw = 680, sh = 382, k = sw / VW;
     rr(sx - 10, sy - 10, sw + 20, sh + 20, 26); ctx.fillStyle = '#20202a'; ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip(); drawBackground('grass', 0, t); ctx.restore();
-    const lab = { left: '◀ いどう', right: 'いどう ▶', up: '▲ のぼる', down: '▼ しゃがむ', attack: 'けん', jump: 'ジャンプ', dash: 'ダッシュ・もつ', spin: 'スピン' };
+    const lab = { left: '◀ いどう', right: 'いどう ▶', up: '▲ のぼる', down: '▼ しゃがむ・ヒップ', attack: 'けん', jump: 'ジャンプ', dash: 'ダッシュ・もつ', spin: 'スピン' };
     for (const [nm, b] of Object.entries(TOUCH)) {
       const x = sx + b.x * k, y = sy + b.y * k * (sh / (VH * k));
       ctx.beginPath(); ctx.arc(x, y, b.r * k, 0, 7); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fill(); ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 2; ctx.stroke();
@@ -4649,7 +4688,7 @@ function drawHelp(t) {
     rows.forEach((r, i) => helpRow(y0 + i * 48, r[0], r[1], ART[r[2]] || IMG[r[2]] ? r[2] : null, r[3]));
     if (P0) { ctx.fillStyle = '#ffd84a'; ctx.font = font(14, 800); ctx.textAlign = 'center'; ctx.fillText('きいろの わくが いまの ばめんで つかえる そうさ', VW / 2, 512); }
   } else if (p === 3) {
-    const rows = [[['↓'], 'しゃがむ', 'hero_crouch'], [['V', 'おりる'], 'スピンジャンプで おりると レンガを わる', 'hero_spin'],
+    const rows = [[['くうちゅうで', '↓'], 'ヒップドロップ: レンガを こわす・てきを たおす', 'hero_hipdrop'], [['V', 'おりる'], 'スピンジャンプで おりると レンガを わる', 'hero_spin'],
       [['かべへ', '→'], 'がけに つかまる → ↑・ジャンプで のぼる', 'hero_hang'], [['かべへ', 'ジャンプ'], 'かべジャンプ(かべを すべりおりる)', null], [['↑', 'ながく'], 'うえを みる', 'hero_lookup'], [['↓', 'ながく'], 'したを みる', null], [['…'], 'なにも しないと すわって ひとやすみ', 'hero_sit']];
     rows.forEach((r, i) => helpRow(y0 + i * 48, r[0], r[1], ART[r[2]] ? r[2] : null));
   } else {
@@ -6058,6 +6097,7 @@ function drawPlayer0() {
   if (p.dead || p.hurtT > 0) alt = 'hero_hurt';
   else if (p.hang) alt = 'hero_hang';
   else if (p.crouch) alt = 'hero_crouch';
+  else if (p.hipT > 0 || p.hipFall) alt = 'hero_hipdrop';
   else if (p.swim && !p.onGround) alt = 'hero_swim';
   else if (world.clear && p.onGround) alt = 'hero_win';
   else if (p.onGround && p.idleT > 6) alt = p.idleT % 7 > 5.2 ? 'hero_yawn' : 'hero_sit';
@@ -6078,14 +6118,16 @@ function drawPlayer0() {
     else if (alt === 'hero_lookup') ctx.rotate(-0.08 * p.face);
   }
   if (p.dead) ctx.rotate(Math.min(p.deadT * 6, Math.PI));
-  if (p.climb) ctx.scale(Math.floor(p.anim * 2) % 2 ? -1 : 1, 1);
+  if (p.climb && !ART.hero_climb_0) ctx.scale(Math.floor(p.anim * 2) % 2 ? -1 : 1, 1);
+  // はしご・つた(と がけを のぼりきる 一瞬)は 後ろすがたの 4こま。止まっている 間は その こまの まま
+  const climbArt = (p.climb || p.climbUpT > 0) && !p.dead && ART.hero_climb_0 ? ART['hero_climb_' + (p.climb ? Math.floor(p.anim * 2.6) % 4 : 0)] : null;
   // スピンジャンプ: くるくる まわる / マントで とぶ: まえに かたむく
   if (p.spin && !p.dead) { ctx.translate(0, -H / 2); ctx.scale(Math.cos(performance.now() / 32), 1); ctx.translate(0, H / 2); }
   if (p.fly && !p.dead) { ctx.translate(0, -H / 2); ctx.rotate(p.face * clamp(0.35 + p.vy / 900, -0.2, 1.1)); ctx.translate(0, H / 2); }
   if (p.mount) ctx.scale(0.92, 0.92);
   ctx.scale(p.face * sx, sy);
-  const spinArt = alt && ART[alt] ? ART[alt] : p.spin && ART.hero_spin ? ART.hero_spin : p.fly && ART.hero_fly ? ART.hero_fly : null;
-  if (spinArt) { const HH = alt === 'hero_crouch' || alt === 'hero_slide' ? 54 : alt === 'hero_sit' || alt === 'hero_yawn' ? 60 : alt === 'hero_hang' ? 86 : 74, W2 = spinArt.naturalWidth / spinArt.naturalHeight * HH; ctx.drawImage(spinArt, -W2 / 2, -HH + (alt === 'hero_hang' ? 24 : 0), W2, HH); }
+  const spinArt = climbArt ? climbArt : alt && ART[alt] ? ART[alt] : p.spin && ART.hero_spin ? ART.hero_spin : p.fly && ART.hero_fly ? ART.hero_fly : null;
+  if (spinArt) { const HH = climbArt ? 88 : alt === 'hero_crouch' || alt === 'hero_slide' ? 54 : alt === 'hero_sit' || alt === 'hero_yawn' ? 60 : alt === 'hero_hang' ? 86 : 74, W2 = spinArt.naturalWidth / spinArt.naturalHeight * HH; ctx.drawImage(spinArt, -W2 / 2, -HH + (alt === 'hero_hang' ? 24 : 0), W2, HH); }
   else ctx.drawImage(im, -W * bodyX, -H, W, H);
   ctx.restore();
   if (p.idleT > 6 && !p.dead) { ctx.save(); ctx.globalAlpha = 0.8; const k = (p.idleT * 0.7) % 1; outlined('z', cx + 18 + k * 14, p.y - 6 - k * 26, '#fff', '#2a1a3a', 3, font(14 + k * 8)); ctx.restore(); }
@@ -6260,7 +6302,7 @@ function drawThing0(o, t) {
       // ゴールゲート: 2本の 柱と 上下に うごく テープ。旗は 右の 柱の よこ
       const g = goalTape(o), lx = o.x - 14, rx = o.x + 62;
       if (o.secret) { ctx.save(); ctx.filter = 'hue-rotate(200deg) saturate(1.4)'; ctx.shadowColor = '#e6b8ff'; ctx.shadowBlur = 24; drawFit('goal', rx + 44, o.y + o.h + 4, 130); ctx.restore(); if (Math.random() < 0.15) sparkle(cx + rnd(-20, 30), o.y + rnd(0, 80), 1); }
-      else drawFit('goal', rx + 44, o.y + o.h + 4, 130);
+      // 2026-10-18 持ち主「ゴールの 青い 旗 いらない」→ ふつうの ゴールは 柱と テープだけ(ひみつの ゴールの 紫の 旗は 目じるしなので のこす)
       for (const px of [lx, rx]) {
         if (ART.goal_post) {
           // てっぺんの 星は 形を たもち、柱の 部分だけ のばす
@@ -6353,11 +6395,15 @@ function drawThing0(o, t) {
     case 'portal': {
       ctx.save(); ctx.translate(cx, o.y + o.h / 2);
       if (o.hue) ctx.filter = `hue-rotate(${o.hue}deg)`;
-      ctx.globalAlpha = o.exitOnly ? 0.45 : 1;
+      // 2026-10-18 持ち主「ひみつの へやへの 緑の ワープが 丸見え」→ ひみつの 入口は 近づくまで ほぼ 見えない(2.5マスで 出はじめ 1マスで はっきり)。
+      // たまに 小さな きらめきが 1つ 出るだけ(さがした 人への さりげない ヒント)
+      let al = o.exitOnly ? 0.45 : 1;
+      if (o.hidden) { const dd = Math.hypot(P.x + P.w / 2 - cx, P.y + P.h / 2 - (o.y + o.h / 2)) / TILE; al = clamp((3.2 - dd) / 2, 0, 1) * 0.95 + 0.05; o.vis = al; }
+      ctx.globalAlpha = al;
       ctx.rotate(Math.sin(t * 2 + o.ph) * 0.05); ctx.scale(1 + Math.sin(t * 4 + o.ph) * 0.04, 1);
       drawImg('portal', -34, -50, 68, 100);
       ctx.restore();
-      if (!o.exitOnly && Math.random() < 0.08) sparkle(cx + rnd(-20, 20), o.y + rnd(0, o.h), 1);
+      if (o.hidden ? (al > 0.5 && Math.random() < 0.08) || Math.random() < 0.004 : !o.exitOnly && Math.random() < 0.08) sparkle(cx + rnd(-20, 20), o.y + rnd(0, o.h), 1);
       break;
     }
     case 'rock': {
@@ -6383,7 +6429,7 @@ function drawThing0(o, t) {
       // はしらの 木
       for (const [x, y] of [[o.ax, o.ay], [o.bx, o.by]]) { const gy = groundYBelow(Math.floor(x / TILE), Math.max(0, Math.floor(y / TILE))) * TILE; ctx.fillStyle = '#7a4a1e'; ctx.fillRect(x - 5, y - 6, 10, gy - y + 6); ctx.strokeStyle = '#3a2008'; ctx.lineWidth = 2; ctx.strokeRect(x - 5, y - 6, 10, gy - y + 6); }
       ctx.restore();
-      if (ART.zipline) drawImg('zipline', hx - 28, hy - 14, 56, 64);
+      if (ART.zipline) drawFit('zipline', hx, hy + 50, 64); // 2026-10-18 ChatGPT の 取っ手(縦長なので 縦横比を たもつ)
       else { const im = IMG.rope; if (im.naturalWidth) ctx.drawImage(im, im.naturalWidth * 0.36, 0, im.naturalWidth * 0.28, im.naturalHeight, hx - 18, hy - 12, 36, 62); }
       if (o.state === 'idle' && Math.random() < 0.05) sparkle(hx, hy + 40, 1);
       break;
@@ -6428,7 +6474,8 @@ function drawThing0(o, t) {
     case 'crumb': {
       if (o.state === 'gone') break;
       const X = o.x + (o.shake || 0);
-      if (ART.bridge_plank) drawImg('bridge_plank', X, o.y - 6, TILE, 30);
+      if (ART.bridge_plank_0) drawImg('bridge_plank_' + (o.i % 3), X - 1, o.y - 7, TILE + 2, 32); // 2026-10-18 ChatGPT の 板 3しゅ(前は 小さな 素材の 切りぬきで ぼやけていた)
+      else if (ART.bridge_plank) drawImg('bridge_plank', X, o.y - 6, TILE, 30);
       else { const im = IMG.bridge; if (im.naturalWidth) ctx.drawImage(im, im.naturalWidth * (0.22 + (o.i % 3) * 0.16), im.naturalHeight * 0.1, im.naturalWidth * 0.16, im.naturalHeight * 0.45, X - 2, o.y - 8, TILE + 4, 34); }
       if (o.i === 0 || o.i === o.n - 1) { ctx.strokeStyle = '#6b3e16'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(o.x0 + (o.i === 0 ? 2 : TILE - 2), o.y0 - 30); ctx.lineTo(o.x0 + (o.i === 0 ? 2 : TILE - 2), o.y0 + 4); ctx.stroke(); }
       break;
@@ -6663,6 +6710,11 @@ function drawEnemy(o, t) {
     case 'eye': drawFit(name, cx, bottom, h, flip); break;
     case 'ghost': ctx.globalAlpha = o.shy ? 0.55 : 0.9; drawFit(name, cx, bottom + Math.sin(t * 3) * 4, h, flip); break;
     case 'shell': {
+      if (ART.kame_shell) {
+        const inShell = o.state === 'shell' || o.state === 'slide' || o.held;
+        const nm = !inShell ? (Math.floor(o.ph * 6) % 2 ? 'kame_walk_1' : 'kame_walk_0') : o.state === 'slide' ? ['kame_shell', 'kame_spin_0', 'kame_spin_1'][Math.floor(t * 18) % 3] : 'kame_shell';
+        drawFit(nm, cx, bottom, inShell ? 40 : h, inShell ? false : flip); break;
+      }
       if (o.state === 'shell' || o.state === 'slide') {
         const im = IMG.shell;
         // 甲羅だけ(頭の部分を見せない)
@@ -7012,13 +7064,16 @@ function drawPlay(t) {
   ctx.save();
   ctx.translate(-Math.round(cam.x) + sx, -Math.round(cam.y) + sy);
   drawDecos(true);
-  drawNoWing(t);
   const backLayer = o => BACK_T.has(o.t) || (o.t === 'enemy' && o.type === 'fish');
   for (const o of world.ents) if (backLayer(o)) drawThing(o, t);
   drawTiles();
   for (const o of world.ents) {
     if (backLayer(o)) continue;
-    if (o.x + (o.w || 0) < cam.x - 100 || o.x > cam.x + VW + 100) continue;
+    // 2026-10-18 持ち主「ゴンドラが 迎えに 来る とき しかけが 消えてる」→ ゴンドラ本体が 画面の 外に いると 線と 駅まで 描かれなかった。
+    // 2点の あいだを 動く しかけ(ax/bx・x0/x1)は 動く はんい 全体で 見る
+    let l = o.x, r = o.x + (o.w || 0);
+    if (typeof o.ax === 'number' && typeof o.bx === 'number') { l = Math.min(l, o.ax, o.bx); r = Math.max(r, o.ax + (o.w || 0), o.bx + (o.w || 0)); }
+    if (r < cam.x - 100 || l > cam.x + VW + 100) continue;
     drawThing(o, t);
   }
   drawPlayer();
@@ -7423,12 +7478,12 @@ function drawShop(t) {
   outlined('ハルの冒険 完全版', 240, 118, '#fff36b', '#3a1a08', 7, fitFont('ハルの冒険 完全版', 370, 26, titleFont));
   ctx.fillStyle = '#fff'; ctx.font = font(18, 800); ctx.textAlign = 'center';
   const lines = ['ワールド2〜8・ほしの みちの ' + LEVELS.filter(d => d.world > 1).length + 'ステージが あそべる', 'まおうの城・あらしの城 ほか', 'かいきり(1かいだけ)'];
-  lines.forEach((l, i) => { if (isEN()) ctx.font = fitFont(l, 372, 18); ctx.fillText(l, 240, 170 + i * 32); });
+  lines.forEach((l, i) => { if (isEN()) ctx.font = fitFont(l, 372, 18); else { let px = 18; ctx.font = font(px, 800); while (px > 12 && ctx.measureText(l).width > 372) ctx.font = font(--px, 800); } ctx.fillText(l, 240, 170 + i * 32); });
   drawFit('wizard', 165, 340, 64); drawFit('goal', 315, 340, 78);
   if (TESTER_FREE) { outlined('テスト版は ぜんぶ むりょう', 240, 382, '#7dff8a', '#3a1a08', 6, font(22)); }
   else {
-  if (save.full) outlined('こうにゅうずみ', 240, 382, '#7dff8a', '#3a1a08', 6, font(26));
-  else button(110, 352, 260, 56, '完全版を かう ' + FULL_PRICE, () => Store.buyFull(), { sel: true, size: 22 });
+  if (hasFull()) outlined('こうにゅうずみ', 240, 382, '#7dff8a', '#3a1a08', 6, font(26));
+  else button(110, 352, 260, 56, IS_IOS ? (Store.price ? '完全版を かう ' + Store.price : '完全版を かう') : '完全版を かう ' + FULL_PRICE, () => Store.buyFull(), { sel: true, size: 22 });
   button(150, 414, 180, 38, 'こうにゅうを ふくげん', () => Store.restore(), { size: 15 });
   }
   if (DEV && !save.full) button(40, 470, 180, 40, '(テスト)完全版にする', () => Store.unlock(), { size: 14 });
@@ -7715,7 +7770,7 @@ try {
 window.__game = {
   tune(o) { if (o.WING_DJ !== undefined) WING_DJ = o.WING_DJ; if (o.WING_GLIDE !== undefined) WING_GLIDE = o.WING_GLIDE; if (o.WING_GLIDE_FALL !== undefined) WING_GLIDE_FALL = o.WING_GLIDE_FALL; if (o.WJ_OLD !== undefined) WJ_OLD = o.WJ_OLD; if (o.WJ_NONE !== undefined) WJ_NONE = o.WJ_NONE; return { WING_DJ, WING_GLIDE, WING_GLIDE_FALL, WJ_OLD, WJ_NONE }; },
   get scene() { return scene; }, get P() { return P; }, get world() { return world; }, get level() { return level; }, get save() { return save; }, get cam() { return cam; },
-  startLevel, LEVELS, keys, pressed, touchKeys, WORLDS, BOSS_TYPES,
+  startLevel, LEVELS, keys, pressed, touchKeys, WORLDS, BOSS_TYPES, ENEMY,
   TOUCH, touchButtonAt: (p, prev) => touchButtonAt(p, prev), upUseful: () => upUseful(), touchShown: k => touchShown(k),
   zk: { no: k => zkNo(k), kind: k => zkKind(k), DESC: ZK_DESC, DESC_EN: ZK_DESC_EN, ENEMIES: ZK_ENEMIES, BOSSES: ZK_BOSSES, beat: k => zukanBeat(k), get parts() { return parts; }, stages: () => (zkComputeWorlds(), zkStages) },
   goMap, playStory, get map() { return map; },

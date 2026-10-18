@@ -265,11 +265,20 @@ function sections(L) {
     return x + 12;
   };
   // ひみつの へや(ゴールの うしろの かべの むこう)。ワープで 入る。中に ひみつのゴール
+// ごほうびの 表(面の id → みどりキノコの 数 u・コインの 列 coins(1列 8まい)・たからこぞう takara)
+const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1, takara: 1, coins: 2 }, 15: { u: 1, coins: 3 }, 20: { u: 2, takara: 1 }, 27: { u: 2, coins: 3 }, 33: { u: 1, takara: 1, coins: 3 }, 42: { u: 3, coins: 3 } };
   S.secretRoom = (x, o = {}) => {
     const top = o.top ?? 10;
     L.fill(x, x, 0, top - 1, 'S'); L.ground(x, x + 12, top);
     L.row(x + 2, top - 3, 'gggg');
     L.put(x + 9, top - 1, '$');
+    // 2026-10-18 持ち主「裏道に 進む メリットが ない」→ 面ごとに ちがう 大きな ごほうび(みどりキノコ=1UP・コインの 山・たからこぞう)。
+    // 入口の 緑の ワープは 近づくまで ほぼ 見えない(hidden)。へやの ワープで もとの 場所に もどれる
+    const R = SECRET_REWARD[L._def && L._def.id] || { u: 1, coins: 2 };
+    const ys = [top - 2, top - 4, top - 5]; // ジャンプで とどく 高さ(5マス 上は とどかない)
+    for (let i = 0; i < (R.coins || 0); i++) L.row(x + 4, ys[i], 'oooo'); // ワープ(x+3)の 右から ひみつの ゴール(x+9)の 手前まで
+    for (let i = 0; i < (R.u || 0); i++) L.put(x + 6 + i, top - 1, 'u');
+    if (R.takara) L.enemy(x + 7, 'takara', { life: 25 });
     return x + 13;
   };
 
@@ -948,6 +957,7 @@ const LEVELS = [
       x = S.run(x, 8, { coins: 4 });
       x = S.run(x, 10, { cp: 3, en: [[6, 'goomy'], [8, 'goomy']] });
       x = S.movers(x, 2);
+      L.hint(x, 'ヒップドロップ', 'くうちゅうで ↓。レンガを 上から わる・てきに つよい いちげき', 'くうちゅうで ▼(下へ スワイプ)。レンガを 上から わる');
       x = S.blocks(x, 'B?B?B?B', { en: [[5, 'shell'], [9, 'goomy', { v: 'para' }]], coins: 5 });
       x = S.gap(x, 4, { plank: 2 });
       x = S.tramp(x);
@@ -1028,7 +1038,7 @@ const LEVELS = [
       x = S.goal(x, { ch: 'S' });
       const room = x + 2;
       x = S.secretRoom(room);
-      L.portal(sec.at[0], sec.at[1], room + 3, 9, { one: true, hue: 270 });
+      L.portal(sec.at[0], sec.at[1], room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -1130,7 +1140,7 @@ const LEVELS = [
       // ひみつ: 池の 底(いちばん右の 下)の 紫の ワープ
       const room = x + 2;
       x = S.secretRoom(room, { top: 6 });
-      L.portal(wx + 13, 10, room + 3, 5, { one: true, hue: 270 });
+      L.portal(wx + 13, 10, room + 3, 5, { hue: 270, hidden: true });
     },
   },
   {
@@ -1256,7 +1266,7 @@ const LEVELS = [
       x = S.goal(x, { ch: 'M' });
       const room = x + 2;
       x = S.secretRoom(room);
-      L.portal(sec.at[0], sec.at[1], room + 3, 9, { one: true, hue: 270 });
+      L.portal(sec.at[0], sec.at[1], room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -1412,7 +1422,7 @@ const LEVELS = [
       x = S.goal(x, { ch: 'S', deco: 'crystal' });
       const room = x + 2;
       x = S.secretRoom(room);
-      L.portal(sx + 4, 3, room + 3, 9, { one: true, hue: 270 });
+      L.portal(sx + 4, 3, room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -1552,7 +1562,7 @@ const LEVELS = [
       x = S.goal(x, { deco: 'tree' });
       const room = x + 2;
       x = S.secretRoom(room);
-      L.portal(sx + 10, 3, room + 3, 9, { one: true, hue: 270 });
+      L.portal(sx + 10, 3, room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -1742,7 +1752,7 @@ const LEVELS = [
       x = S.goal(x, { deco: 'tree' });
       const room = x + 2;
       x = S.secretRoom(room);
-      L.portal(sx + 6, 3, room + 3, 9, { one: true, hue: 270 });
+      L.portal(sx + 6, 3, room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -1890,7 +1900,7 @@ const LEVELS = [
       x = S.goal(x, { ch: 'S' });
       const room = x + 2;
       x = S.secretRoom(room);
-      L.portal(sx + 6, 4, room + 3, 9, { one: true, hue: 270 });
+      L.portal(sx + 6, 4, room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -2110,7 +2120,7 @@ const LEVELS = [
       x = S.goal(x, { ch: 'S', deco: 'torch' });
       const room = x + 2;
       x = S.secretRoom(room);
-      L.portal(sx + 9, 3, room + 3, 9, { one: true, hue: 270 });
+      L.portal(sx + 9, 3, room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -3099,8 +3109,11 @@ const LEVELS = [
       x = S.run(x, 14, { en: [[8, 'spiky']] }); gate(x - 1, 6);
       step(x, 14, 7, 'spinbrk', 'レンガを わろう', 'V の スピンジャンプで レンガの 上に おりると われる', '「スピン」で とんで レンガの 上に おりる', x + 7, 8);
       x = S.run(x, 14, {}); L.row(x - 8, 10, 'BBB'); L.row(x - 8, 11, '###'); L.row(x - 8, 9, 'ooo'); gate(x - 1, 7);
-      step(x, 14, 8, 'shard', 'ほしの かけら', '1つの ステージに 5まい。たかい ところを さがそう', '1つの ステージに 5まい', x + 8, 4);
-      x = S.run(x, 14, {}); L.fill(x - 9, x - 4, 7, 7, 'S'); L.put(x - 6, 5, '@'); L.row(x - 12, 9, 'S'); gate(x - 1, 8);
+      // 2026-10-18 ヒップドロップを もどした(持ち主「やっぱ 欲しい」)
+      step(x, 14, 8, 'hip', 'ヒップドロップ', 'くうちゅうで ↓。ずしんと おちて レンガを わる・てきに つよい いちげき', 'ジャンプして ▼(下へ スワイプでも)。ずしんと おちる', x + 7, 7);
+      x = S.run(x, 14, { en: [[10, 'goomy']] }); L.row(x - 8, 10, 'BB'); L.row(x - 8, 11, '##'); L.row(x - 8, 9, 'oo'); gate(x - 1, 8);
+      step(x, 14, 9, 'shard', 'ほしの かけら', '1つの ステージに 5まい。たかい ところを さがそう', '1つの ステージに 5まい', x + 8, 4);
+      x = S.run(x, 14, {}); L.fill(x - 9, x - 4, 7, 7, 'S'); L.put(x - 6, 5, '@'); L.row(x - 12, 9, 'S'); gate(x - 1, 9);
       L.hint(x, 'これで れんしゅうは おしまい!', 'ゴールの はたへ。あとは ぼうけんで おぼえよう');
       x = S.run(x, 6, { coins: 3 });
       x = S.goal(x, { deco: 'tree' });

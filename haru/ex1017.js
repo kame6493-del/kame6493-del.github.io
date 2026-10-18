@@ -210,7 +210,7 @@ function initEnemyF(o, e) {
   }
 }
 function fStrongHit(o) {
-  o.hp--; o.invT = 0.9; sfx('hit'); hitStop(0.06); cam.shake = Math.max(cam.shake, 0.15);
+  o.hp -= P && P.hipHitT > 0 && o.hp > 1 ? 2 : 1; o.invT = 0.9; sfx('hit'); hitStop(0.06); cam.shake = Math.max(cam.shake, 0.15);
   if (o.hp <= 0) {
     defeat(o, true); sfx('boom', 0.8);
     dropCoins(o, 10); dropBit(o);
@@ -347,7 +347,7 @@ function updateEnemyF(o, dt, px, py, ex, ey) {
     }
     case 'takara': {
       fGrav(o, dt);
-      o.life -= dt;
+      if (Math.abs(px - ex) < 700) o.life -= dt; // 2026-10-18 ひみつの へやで まつ 物は ハルが 来てから へる
       if (o.life <= 0) { o.gone = true; for (let i = 0; i < 9; i++) parts.push({ x: ex + rnd(-16, 16), y: ey + rnd(-12, 12), vx: rnd(-80, 80), vy: rnd(-90, -10), life: 0.5, max: 0.5, color: 'rgba(255,240,160,.9)', size: rnd(6, 10), g: 0, puff: true }); if (Math.abs(px - ex) < 700) popText(ex, ey - 20, 'にげられた…', '#fff'); return true; }
       const close = Math.abs(px - ex) < 300 && Math.abs(py - ey) < 200;
       if (close) { o.state = 'run'; o.face = px < ex ? 1 : -1; }
