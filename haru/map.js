@@ -10,11 +10,12 @@
 const WORLDS = [
   { n: 1, name: 'みどりの くに', theme: 'grass', deco: ['tree', 'fence', 'sign'], line: 'はじまりの くさはら。もこりゅうの たまごが どこかに…',
     nodes: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 70 }, { id: 46 }],
-    extra: [{ id: 47, from: 3, cond: 'secret', dir: 'up', kind: 'secret' }, { id: 52, from: 2, cond: 'clear', dir: 'down', kind: 'switch', color: 'y' }, { warp: 1, from: 47, cond: 'clear', dir: 'right', kind: 'warp' }],
+    // 2026-10-18 夜 持ち主「1面の ほしのあなは いらない」「行く メリットの ない 別ルートは 消す」→ 1-3 の ひみつの へや・1-✦・ほしの あな・きいろの しんでんを なくした
+    extra: [],
     roam: [{ a: 2, b: 3, type: 'goomy' }] },
   { n: 2, name: 'こおりと みずの くに', theme: 'ice', deco: ['crystal', 'tree', 'pillar'], line: 'つるつるの こおりと、ゆきの おばけやしき。',
     nodes: [{ id: 5 }, { id: 6 }, { id: 7 }, { id: 56 }, { id: 48 }, { id: 71 }, { id: 72 }, { id: 8 }],
-    extra: [{ id: 49, from: 6, cond: 'secret', dir: 'up', kind: 'secret' }, { id: 53, from: 5, cond: 'clear', dir: 'down', kind: 'switch', color: 'g' }, { warp: 2, from: 49, cond: 'clear', dir: 'right', kind: 'warp' }, { shortcut: 3, from: 72, cond: 'secret', dir: 'up', kind: 'pipe' }],
+    extra: [{ id: 49, from: 6, cond: 'secret', dir: 'up', kind: 'secret' }, { warp: 2, from: 49, cond: 'clear', dir: 'right', kind: 'warp' }], // しんでん・近道の つつは なくした(2026-10-18 夜)
     roam: [{ a: 1, b: 2, type: 'suberin' }] },
   { n: 3, name: 'さばくと そらの くに', theme: 'sand', deco: ['pillar', 'rocks', 'torch'], line: 'あつい すなの みち。オアシスの そこにも かけらが ひかる。',
     nodes: [{ id: 9 }, { id: 10 }, { id: 57 }, { id: 11 }, { id: 50 }, { id: 73 }, { id: 58 }, { id: 12 }],
@@ -22,7 +23,7 @@ const WORLDS = [
     roam: [{ a: 1, b: 2, type: 'beetle' }] },
   { n: 4, name: 'あらしの こうげん', theme: 'storm', deco: ['tree', 'lamp', 'crystal'], line: 'かぜが ふきあれる こうげん。そらの みちは とまらない!',
     nodes: [{ id: 13 }, { id: 14 }, { id: 59 }, { id: 15 }, { id: 16 }, { id: 74 }, { id: 17 }],
-    extra: [{ id: 18, from: 15, cond: 'secret', dir: 'up', kind: 'secret' }, { id: 54, from: 14, cond: 'clear', dir: 'down', kind: 'switch', color: 'b' }, { warp: 4, from: 18, cond: 'clear', dir: 'right', kind: 'warp' }],
+    extra: [{ id: 18, from: 15, cond: 'secret', dir: 'up', kind: 'secret' }, { warp: 4, from: 18, cond: 'clear', dir: 'right', kind: 'warp' }], // みずいろの しんでんは なくした
     roam: [{ a: 3, b: 4, type: 'bat' }] },
   { n: 5, name: 'ゆうやけと おばけの くに', theme: 'dusk', deco: ['rocks', 'pillar', 'lamp'], line: 'ゆうやけの たに。とりでと おばけやしきが まっている。',
     nodes: [{ id: 19 }, { id: 20 }, { id: 21, kind: 'fort' }, { id: 22, kind: 'ghost' }, { id: 75 }, { id: 76 }, { id: 23 }],
@@ -30,7 +31,7 @@ const WORLDS = [
     roam: [{ a: 0, b: 1, type: 'ghost' }] },
   { n: 6, name: 'ジャングルと たきの くに', theme: 'jungle', deco: ['tree', 'tree', 'crystal'], line: 'たきの おとが ひびく ジャングル。たきつぼの なかへも。',
     nodes: [{ id: 25 }, { id: 26 }, { id: 27 }, { id: 60 }, { id: 28 }, { id: 29 }, { id: 77 }, { id: 78 }, { id: 30 }],
-    extra: [{ id: 31, from: 27, cond: 'secret', dir: 'up', kind: 'secret' }, { id: 55, from: 26, cond: 'clear', dir: 'down', kind: 'switch', color: 'p' }, { warp: 6, from: 31, cond: 'clear', dir: 'right', kind: 'warp' }, { shortcut: 7, from: 77, cond: 'secret', dir: 'up', kind: 'pipe' }],
+    extra: [{ id: 31, from: 27, cond: 'secret', dir: 'up', kind: 'secret' }, { warp: 6, from: 31, cond: 'clear', dir: 'right', kind: 'warp' }], // しんでん・近道の つつは なくした
     roam: [{ a: 0, b: 1, type: 'bee' }, { a: 3, b: 4, type: 'bukugani' }] },
   { n: 7, name: 'つきと ほしぞらの くに', theme: 'moon', deco: ['crystal', 'rocks', 'pillar'], line: 'からだが かるい つきの くに。ほうき星の ながれに のって。',
     nodes: [{ id: 32 }, { id: 33 }, { id: 61 }, { id: 34 }, { id: 35 }, { id: 36 }, { id: 79 }, { id: 62 }, { id: 37 }],

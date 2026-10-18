@@ -52,7 +52,9 @@ function sections(L) {
     return x + 12;
   };
   // 動く床で穴を渡る
+  // 2026-10-18 夜 持ち主「勢いを つけた ジャンプで 越えられる 所が 多い」: 助走ジャンプは 約13マス とぶ → しかけで わたる 穴は 16マス 以上に(MINGAP)
   S.movers = (x, n, o = {}) => {
+    n = Math.max(n, 4);
     const top = o.top ?? 10, w = 3 + n * 4;
     if (o.lava) L.lava(x, x + w - 1, top);
     for (let i = 0; i < n; i++) L.mover(x + 1 + i * 4, top - 2 - (o.step ? i % 2 : 0), o.kind || 'move', { range: 2 });
@@ -63,6 +65,7 @@ function sections(L) {
   };
   // 落ちる床をつたう
   S.fallers = (x, n, o = {}) => {
+    n = Math.max(n, 6);
     const top = o.top ?? 10, w = n * 3 + 1;
     if (o.lava) L.lava(x, x + w - 1, top);
     for (let i = 0; i < n; i++) { const y = top - 2 - (i % 2); L.row(x + 1 + i * 3, y, 'F'); L.row(x + 1 + i * 3, y - 2, 'o'); }
@@ -474,6 +477,7 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1
   // くずれる つりばし: のると じゅんに おちる。とまらずに わたる
   let bridgeId = 0;
   S.bridge = (x, n, o = {}) => {
+    n = Math.max(n, 16);
     const top = o.top ?? 10, g = ++bridgeId;
     L.ground(x, x + 2, top);
     if (o.lava) L.lava(x + 3, x + 2 + n, top + 1);
@@ -533,7 +537,7 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1
   S.throwRun = (x, o = {}) => {
     const top = o.top ?? 10, w = 16;
     L.ground(x, x + w - 1, top);
-    if (o.hint) L.hint(x, 'もちあげて なげる', 'C(ダッシュ)を おしたまま ふれると もてる。はなすと なげる');
+    if (o.hint) L.hint(x, 'もちあげて なげる', 'C(ダッシュ)を おして ふれると もてる。もう いちど おすと なげる');
     L.put(x + 2, top - 1, 't'); L.put(x + 4, top - 1, 't');
     en(x, o.en || [[9, 'goomy'], [11, 'goomy'], [13, 'goomy']]);
     return x + w;
@@ -565,6 +569,7 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1
   };
   // せんろの 上を うごく 足場で 大きな 穴を わたる
   S.rail = (x, w, o = {}) => {
+    w = Math.max(w, 22);
     const top = o.top ?? 10;
     L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
     if (o.lava) L.lava(x + 3, x + w - 4, top + 1);
@@ -677,6 +682,7 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1
   // ---------- 第5段階(2026-10-13): 新しい しかけの 区画 ----------
   // シーソー: 穴の 上に シーソーを ならべる(のった ほうが さがる)
   S.seesaws = (x, n, o = {}) => {
+    if (!o.safe) n = Math.max(n, 3);
     const top = o.top ?? 10, w = 3 + n * 6 + 3;
     if (o.hint) L.hint(x, 'シーソー', 'のった ほうが さがる。高い ほうへ あるいて つぎへ');
     L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
@@ -749,7 +755,8 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1
     const top = o.top ?? 10, w = 3 + n * 4 + 3;
     if (o.hint) L.hint(x, 'しずむ うきぎ', 'のると しずんで いく。とまらずに わたろう');
     L.ground(x, x + 2, top); L.ground(x + w - 3, x + w - 1, top);
-    if (o.water) { L.ground(x + 3, x + w - 4, 11); L.water(x + 3, x + w - 4, top, 10); } else L.lava(x + 3, x + w - 4, top + 1);
+    if (o.water) { L.ground(x + 3, x + w - 4, 11); L.water(x + 3, x + w - 4, top, 10); L.hazard(x + 3, 'wind', { y: top, h: 11 - top, w: w - 6, dir: -1, v: 420, fx: x + w - 4, water: true }); } else L.lava(x + 3, x + w - 4, top + 1);
+    // ↑ 2026-10-18 夜: 水の 下を およいで わたれた → いかだの 川と 同じ 左への ながれ
     for (let i = 0; i < n; i++) L.hazard(x + 4 + i * 4, 'log', { y: top, sink: o.water ? 60 : 40, sp: o.water ? 40 : 28 });
     L.row(x + 4, top - 3, 'o'.repeat(w - 8));
     if (o.star) L.put(x + Math.floor(w / 2), hi(top - 5), '*');
@@ -1002,7 +1009,7 @@ const LEVELS = [
     },
   },
   {
-    id: 3, name: 'ほらあなのお城', theme: 'cave', bgm: 'bgm_3', time: 450, secretGoal: true,
+    id: 3, name: 'ほらあなのお城', theme: 'cave', bgm: 'bgm_3', time: 450,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -1033,12 +1040,9 @@ const LEVELS = [
       x = S.firebars(x, 12, 2, { speed: 2.1 });
       x = S.gap(x, 4, { lava: true, plank: 2, fish: true });
       x = S.tower(x, { ch: 'S', en: [[7, 'bomb']] });
-      const sec = {};
-      x = S.springLedge(x, { ch: 'S', sec });
+      // 2026-10-18 夜 持ち主「1面の ほしのあなは いらない」→ ひみつの へや(緑の ワープ)と ひみつの ゴールを なくした
+      x = S.springLedge(x, { ch: 'S' });
       x = S.goal(x, { ch: 'S' });
-      const room = x + 2;
-      x = S.secretRoom(room);
-      L.portal(sec.at[0], sec.at[1], room + 3, 9, { hue: 270, hidden: true });
     },
   },
   {
@@ -1444,6 +1448,7 @@ const LEVELS = [
       x = S.windRun(x, 12, 1, { top: 9, on: 2.4, off: 2, en: [[7, 'goomy', { v: 'para' }]] });
       x = S.run(x, 10, { top: 9, cp: 3, en: [[6, 'slime', { v: 'big' }]] });
       x = S.swGate(x, { top: 9 });
+      x = S.run(x, 5, { top: 9 }); // 2026-10-18 夜: 関所の 高い かべで かべジャンプして 落ちる床の 穴を とびこえられた → 間を あける
       x = S.fallers(x, 4, { top: 9 });
       x = S.run(x, 4, { top: 9 });
       x = S.windGap(x, 7, { top: 9, star: true, starY: 2 });
@@ -2206,7 +2211,7 @@ const LEVELS = [
     },
   },
   {
-    id: 47, world: 1, num: '✦', name: 'はらっぱの ひみつ', theme: 'grass', bgm: 'bgm_1', time: 400, secret: true,
+    id: 47, removed: true, noStars: true, noShards: true, world: 1, num: '✦', name: 'はらっぱの ひみつ', theme: 'grass', bgm: 'bgm_1', time: 400, secret: true,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2312,7 +2317,7 @@ const LEVELS = [
   // ===================== 第4段階(スーパーマリオワールド風): しんでん・おばけやしき・みず・とりで・そら・ほしの みち =====================
   // ---- しんでん(4色)。さいごの 大きな スイッチを ふむと その色の 点線ブロックが どの 面でも 本物に なる ----
   {
-    id: 52, world: 1, kind: 'switch', palace: 'y', noExtend: true, name: 'きいろの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 400,
+    id: 52, removed: true, noStars: true, noShards: true, world: 1, kind: 'switch', palace: 'y', noExtend: true, name: 'きいろの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 400,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2333,7 +2338,7 @@ const LEVELS = [
     },
   },
   {
-    id: 53, world: 2, kind: 'switch', palace: 'g', noExtend: true, name: 'みどりの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 420,
+    id: 53, removed: true, noStars: true, noShards: true, world: 2, kind: 'switch', palace: 'g', noExtend: true, name: 'みどりの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 420,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2354,7 +2359,7 @@ const LEVELS = [
     },
   },
   {
-    id: 54, world: 4, kind: 'switch', palace: 'b', noExtend: true, name: 'みずいろの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 450,
+    id: 54, removed: true, noStars: true, noShards: true, world: 4, kind: 'switch', palace: 'b', noExtend: true, name: 'みずいろの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 450,
     build(L) {
       const S = sections(L);
       let x = 0;
@@ -2374,7 +2379,7 @@ const LEVELS = [
     },
   },
   {
-    id: 55, world: 6, kind: 'switch', palace: 'p', noExtend: true, name: 'むらさきの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 480,
+    id: 55, removed: true, noStars: true, noShards: true, world: 6, kind: 'switch', palace: 'p', noExtend: true, name: 'むらさきの しんでん', theme: 'crystal', bgm: 'bgm_3', time: 480,
     build(L) {
       const S = sections(L);
       let x = 0;

@@ -871,3 +871,51 @@ const FLAP_ART = {
     return true;
   };
 }
+
+// ---------------- 2026-10-18 夜: 有名ゲームの キャラに 似すぎた 物の 作り直し(テスター「ドッスンに 酷似」)----------------
+// 絵は ChatGPT(チャット /c/6ad408f5-…)で 描き直して 同じ ファイル名に 置きかえた(元は expansion_1018d/old/)。ここでは 名前・説明・うごきの 見せ方を 合わせる。
+//   つぶし石(crusher)→ ぶらさがり きりかぶ(つるで ぶらさがる。四角い 石の 顔と トゲの ふちを やめた)
+//   ぜんまいボム → かんしゃくだるま / がぶりそう → はさみハエトリ / のそガメ → まるまりダンゴ(ダンゴムシ)
+//   ちらりん → ともしびん(ろうそくの おばけ。見られると 顔を かくして 止まる → ほのおが ちぢんで あとずさる)/ おおおばけ → おおともしび / ゆうれい王 は 絵だけ
+(function () {
+  const J = {
+    bomb: ['かんしゃくだるま', 'あかい はりこの だるまの ばくちく。おこると あたまの みちびが もえだす。', 'ふむと ひが ついて ばくはつ する。すぐ はなれて。けんで たたくと とんでいく。',
+      ['あかい はりこの だるまの ばくちく。', 'ふむと みちびに ひが ついて ばくはつ。すぐ はなれよう。'],
+      'すぐ かんしゃくを おこす だるま。ころんでも すぐ おきあがるのが じまん。おこると あたまの みちびが じりじり もえて、じぶんでも とめられない。'],
+    plant: ['はさみハエトリ', 'うえきばちから にょきっと でて、2まいの はっぱで はさむ ハエトリソウ。ひを はく なかまも。', 'ふめない。けんか、でてきた ときに スピンジャンプで。',
+      ['うえきばちから でてきて はっぱで はさむ ハエトリソウ。ひを はく なかまも いる。', 'ふめないので、けんか スピンジャンプで。'],
+      'うえきばちで くらす ハエトリソウ。2まいの はっぱで なんでも はさんで みる くせが ある。ひを はく なかまは からい ものが すき。'],
+    shell: ['まるまりダンゴ', 'のんびり あるく ダンゴムシ。がけの はしで くるっと もどる。', 'ふむと まるく なる。けって ころがすか、ダッシュで もって なげる。けんでも たおせる。',
+      ['のんびり あるく ダンゴムシ。がけの はしで くるっと もどる。', 'ふむと まるく なり、けると ころがって ほかの てきを たおす。'],
+      'のんびりやの ダンゴムシ。おどろくと すぐ まるく なる。まるまった まま ころがされるのは、じつは ちょっと たのしいらしい。'],
+    ghost: ['ともしびん', 'ろうそくの おばけ。みつめると ほのおが ちぢんで あとずさり、せなかを むけると ちかづく。', 'ふめない。けんで たおせる。',
+      ['ろうそくの おばけ。みつめると あとずさり、せなかを むけると ちかづく。', 'ふめない。けんで たおせる。'],
+      'ろうそくの ほのおが かおに なった おばけ。みつめられると てれて ほのおが ちいさく なる。くらい ところで ひとりで いるのが ちょっと さみしい。'],
+    oobake: ['おおともしび', 'おばけやしきの おおきな ろうそくの おばけ。かべも すりぬける。みつめると あとずさる。', 'たおせない。みつめて おしかえしながら にげよう。にげきって 面を クリアすると ずかんに のる。',
+      ['おばけやしきの おおきな ろうそくの おばけ。かべも すりぬける。', 'みつめると あとずさる。たおせないので にげきろう。'],
+      'おばけやしきで いちばん 大きな ろうそくの おばけ。かべを すりぬけて やしきを さんぽ するのが にっか。ともしびんたちの おやぶんで、やっぱり みつめられると てれて さがる。'],
+  };
+  const E = {
+    bomb: ['Tantrum Daruma', ['A red papier-mache daruma firecracker.', 'Stomp it and its fuse lights, then it explodes. Get away fast!'],
+      'A daruma with a short temper. It is proud that it always gets back up after a fall. When it gets angry the fuse on its head starts to sizzle, and even it cannot stop it.'],
+    plant: ['Snapleaf', ['A flytrap that pops out of its pot and snaps its two leaves. Some breathe fire.', 'Cannot be stomped: use the sword or a spin jump.'],
+      'A flytrap that lives in a flowerpot. It has a habit of pinching anything with its two leaves. The fire-breathing ones like spicy food.'],
+    shell: ['Rollbug', ['A slow pill bug. Turns around at ledges.', 'Stomp it into a ball, then kick it to knock out other enemies.'],
+      'A laid-back pill bug that curls up the moment it is startled. Secretly, it kind of enjoys being rolled around.'],
+    ghost: ['Wickwisp', ['A candle ghost. Face it and it backs away; turn around and it drifts closer.', 'Cannot be stomped. Use the sword.'],
+      'A ghost whose face is a candle flame. When someone looks at it, it gets shy and its flame shrinks. It feels a little lonely alone in the dark.'],
+    oobake: ['Giant Wickwisp', ['A huge candle ghost in the haunted house. Passes through walls.', 'It backs away when you face it. It cannot be defeated, so escape!'],
+      'The biggest candle ghost in the haunted house. It takes a daily stroll straight through the walls. Boss of the Wickwisps, it too gets shy and backs off when watched.'],
+  };
+  const OLD = { bomb: 'ぜんまいボム', plant: 'がぶりそう', shell: 'のそガメ', ghost: 'ちらりん', oobake: 'おおおばけ' };
+  for (const k in J) {
+    const [nm, intro, how, desc, lore] = J[k];
+    if (typeof EINFO !== 'undefined' && EINFO[k]) Object.assign(EINFO[k], { name: nm, intro, how });
+    if (typeof ZK_NAME !== 'undefined') ZK_NAME[k] = nm;
+    if (typeof ZK_DESC !== 'undefined') ZK_DESC[k] = desc;
+    if (typeof ZK_LORE !== 'undefined') ZK_LORE[k] = lore;
+    if (typeof ZK_DESC_EN !== 'undefined') ZK_DESC_EN[k] = E[k][1];
+    if (typeof ZK_LORE_EN !== 'undefined') ZK_LORE_EN[k] = E[k][2];
+    if (typeof EN_DICT !== 'undefined') { EN_DICT[nm] = E[k][0]; desc.forEach((t, i) => { EN_DICT[t] = E[k][1][i]; }); EN_DICT[lore] = E[k][2]; EN_DICT[intro] = E[k][1][0]; EN_DICT[how] = E[k][1][1]; }
+  }
+})();

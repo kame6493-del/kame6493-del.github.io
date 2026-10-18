@@ -183,7 +183,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261018c';
+const SPRITE_V = '20261018d';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -636,6 +636,10 @@ function buildLevel(def) {
   };
   def.build(L);
   const W = maxX + 6;
+  thinCheckpoints(def, ents, W);
+  addStrongGates(def, ents);
+  // 2026-10-18 夜: しんでん(スイッチの 面)を 地図から なくした → 面の 中の 点線ブロック(1-1・5-1・6-3・今日の1面)は はじめから ある 石に
+  if (def.kind !== 'switch') for (let y = 0; y < ROWS; y++) for (let x = 0; x < tiles[y].length; x++) if (PALACE_TILE[tiles[y][x]]) tiles[y][x] = 'S';
   liftEmbedded(ents, tiles);
   placeShards(def, ents, tiles, W);
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < W; x++) if (!tiles[y][x]) tiles[y][x] = ' ';
@@ -643,6 +647,47 @@ function buildLevel(def) {
   const hasBlink = tiles.some(r => r.includes('3') || r.includes('4'));
   const hasJsw = tiles.some(r => r.includes(':') || r.includes(';'));
   return { def, tiles, ents, decos, W, hasBlink, hasJsw };
+}
+
+// 2026-10-18 夜 持ち主「マップ中の 強敵は 倒さないと 先に 進めない 仕様に」
+// つよい敵(ex1017 の strong)と 中ボス級(ex1016 の mid)の 区画の 出口に まほうの かべ(kgate)を 置く。ボスの 面の ボス・ばったり・今日の1面・れんしゅうは のぞく
+// 置き場所: つよい敵の ひろば(おりの とびら f7_gate)は とびらの 8マス 右(おりの 先・区画の 出口)。中ボス級は 区画の 右の かべの 手前
+const KGATE_MID = { taisho: 8, inoshishi: 8, hyogolem: 7, oyabun: 7, oochochin: 7, knight: 6 };
+function addStrongGates(def, ents) {
+  if (def.daily || def.tutorial || def.roam) return;
+  const add = [];
+  for (const e of ents) {
+    if (e.kind !== 'enemy') continue;
+    const d = ENEMY[e.type];
+    if (!d || d.boss || !(d.strong || d.mid)) continue;
+    let gx = null;
+    const cage = ents.find(h => h.kind === 'hazard' && h.type === 'f7_gate' && h.x > e.x && h.x - e.x < 12);
+    if (cage) gx = cage.x + 8;
+    else if (KGATE_MID[e.type] !== undefined) gx = e.x + KGATE_MID[e.type];
+    if (gx === null) continue;
+    add.push({ kind: 'hazard', type: 'kgate', x: gx, y: 0, opt: {}, link: e });
+  }
+  ents.push(...add);
+}
+
+// 2026-10-18 夜 持ち主「中間地点が やたら 多い。1面 1つ 程度、長い 面だけ 2つ」→ 区間ごとに 置いていた 中間(1面 6〜12こ)を 間引く。
+// 長い 面(ゴール/ボス部屋まで 560マス 以上)は 3分の1 と 3分の2 に いちばん 近い 2つ、ほかは まんなかに いちばん 近い 1つ。今日の1面・れんしゅうは そのまま
+const CP_LONG = 560;
+function thinCheckpoints(def, ents, W) {
+  if (def.daily || def.tutorial) return;
+  const cps = ents.filter(e => e.kind === 'C');
+  if (cps.length <= 1) return;
+  const goal = ents.find(e => e.kind === 'G');
+  const boss = ents.find(e => e.kind === 'enemy' && e.opt && e.opt.arena);
+  const end = boss ? boss.opt.arena[0] : goal ? goal.x : W;
+  const marks = end >= CP_LONG ? [1 / 3, 2 / 3] : [1 / 2];
+  const keep = new Set();
+  for (const m of marks) {
+    let best = null, bd = 1e9;
+    for (const c of cps) { if (keep.has(c)) continue; const d = Math.abs(c.x - end * m); if (d < bd) { bd = d; best = c; } }
+    if (best) keep.add(best);
+  }
+  for (let i = ents.length - 1; i >= 0; i--) if (ents[i].kind === 'C' && !keep.has(ents[i])) ents.splice(i, 1);
 }
 
 // 2026-10-17 夜: 区間を かさねた ときに コイン・星・キノコ・ハートが かべや だいの 中に うまる ことが あった(2-5・2-6 など)。
@@ -761,7 +806,7 @@ function startLevel(idx, fromCheckpoint = false) {
   let start = { x: 2 * TILE, y: 9 * TILE };
   for (const e of level.ents) {
     const o = spawn(e);
-    if (o) world.ents.push(o);
+    if (o) { world.ents.push(o); e.__o = o; }
     if (e.kind === 'P') start = { x: e.x * TILE + 10, y: (e.y + 1) * TILE - 54 };
   }
   if (keep) {
@@ -950,7 +995,7 @@ function spawn(e) {
       if (e.type === 'wind') {
         // 横風: 扇風機から dir の向きに吹く。on/off を決めると吹く・止むをくり返す(止む前後は弱く吹いて知らせる)
         const dir = o.dir || 1, w = (o.w || 5) * TILE, fx = o.fx !== undefined ? o.fx : (dir > 0 ? e.x - 1 : e.x + (o.w || 5));
-        return { id, t: 'wind', x: X, y: (e.y ?? 2) * TILE, w, h: (o.h || 8) * TILE, dir, v: o.v || 170, on: o.on || 0, off: o.off || 0, ph: o.phase || 0, fx: fx * TILE + 24, fgy: groundYBelow(fx) * TILE, blow: 1 };
+        return { id, t: 'wind', x: X, y: (e.y ?? 2) * TILE, w, h: (o.h || 8) * TILE, dir, v: o.v || 170, on: o.on || 0, off: o.off || 0, ph: o.phase || 0, fx: fx * TILE + 24, fgy: groundYBelow(fx) * TILE, blow: 1, water: !!o.water };
       }
       return null;
     }
@@ -1023,7 +1068,7 @@ const GRAV = 2300, MAXFALL = 860, ACC = 2800, AIRACC = 2200, MAXV = 300, JUMPV =
 const GRAV_UP = 1650, GRAV_CUT = 4200, GRAV_LAUNCH = 1900, GRAV_DOWN = 2500;
 
 // 星の合計で育つ力(ずっと残る)
-function totalStars() { return Object.values(save.stars || {}).reduce((s2, a) => s2 + a.filter(Boolean).length, 0); }
+function totalStars() { return Object.entries(save.stars || {}).reduce((s2, [id, a]) => { const d = LEVELS[LV_BY_ID[id]]; return d && d.removed ? s2 : s2 + a.filter(Boolean).length; }, 0); } // 2026-10-18 夜: 地図から 消した 面(しんでん・1-✦)の 星は 数えない
 const PERKS = [
   { need: 4, name: 'ハートの うつわ', desc: 'ハートの さいだい +1' },
   { need: 10, name: 'ながい けん', desc: 'けんが とどく はんいが ひろがる' },
@@ -1123,7 +1168,7 @@ function hurtPlayer(fromX, big = false) {
 function killPlayer() {
   if (P.dead) return;
   if (world && world.def.daily) dailyMark(2);
-  if (P.mount) { P.mount.gone = true; P.mount = null; P.h = 54; P.y += 26; }
+  if (P.mount) { P.mount.gone = true; P.mount = null; P.h = 54; P.y += 26; if (P.w !== 28) { P.x += (P.w - 28) / 2; P.w = 28; } }
   if (P.carry) dropCarry(false);
   if (P.cart) { P.cart.ridden = false; P.cart = null; }
   P.swing = null; P.tube = null; P.gdir = 1;
@@ -1427,7 +1472,7 @@ function updatePlayer(dt) {
   if (consume('item')) dropReserve();
   if (p.mountCD > 0) p.mountCD -= dt;
   if (p.swim && p.mount) mountOff('quiet');
-  updateCarry(p);
+  updateCarry(p, dt);
   const L = held('left'), R = held('right');
   let dir = (R ? 1 : 0) - (L ? 1 : 0);
   // さかさま(じゅうりょくが 上向き)の とき gd = -1
@@ -1747,7 +1792,12 @@ function mountRide(m) {
   const x0 = Math.floor((p.x + 2) / TILE), x1 = Math.floor((p.x + p.w - 2) / TILE), ty = Math.floor((p.y - 26) / TILE);
   for (let tx = x0; tx <= x1; tx++) if (isSolid(tx, ty)) return;
   if (p.carry) dropCarry(false);
+  // 2026-10-18 夜: のっている 間は 当たりの 幅を もこりゅうと 同じ 44 に(前は ハルの 28 の まま → かべに 走ると もこりゅうが 8px かべに めりこんだ)
+  let nx = p.x + p.w / 2 - 22;
+  const colsFree = x => { const a0 = Math.floor(x / TILE), a1 = Math.floor((x + 44 - 0.01) / TILE), b0 = Math.floor((p.y - 26) / TILE), b1 = Math.floor((p.y + p.h - 1) / TILE); for (let ty = b0; ty <= b1; ty++) for (let tx = a0; tx <= a1; tx++) if (isSolid(tx, ty)) return false; return true; };
+  if (!colsFree(nx)) { if (colsFree(p.x)) nx = p.x; else if (colsFree(p.x + p.w - 44)) nx = p.x + p.w - 44; else return; }
   p.mount = m; m.state = 'ridden'; m.vx = 0; m.timer = 0;
+  p.x = nx; p.w = 44;
   p.y -= 26; p.h = 80; p.fly = null; p.spin = false;
   sfx('powerup', 1.25); sfx('jump2', 0.7); sparkle(m.x + m.w / 2, m.y, 12);
   if (!save.seen.moko) { save.seen.moko = true; writeSave(); toast = { text: 'もこりゅうに のった!', sub: usingTouch ? 'けん: したで たべる / スピン: とびおりる' : 'X: したを のばして たべる  V: とびおりる(高く とべる)', t: 3.4 }; }
@@ -1756,11 +1806,18 @@ function mountOff(how, fromX) {
   const p = P, m = p.mount;
   if (!m) return;
   p.mount = null; p.h = 54; p.y += 26;
-  m.x = p.x + p.w / 2 - m.w / 2; m.y = p.y + p.h - m.h; m.tongue = null; m.vy = 0;
+  m.x = p.x + p.w / 2 - m.w / 2;
+  if (p.w !== 28) { p.x += (p.w - 28) / 2; p.w = 28; } m.y = p.y + p.h - m.h; m.tongue = null; m.vy = 0;
   if (how === 'jump') {
     // ふみ台に して 高く とぶ
     p.vy = -JUMPV * 1.08; p.jumping = true; p.onGround = false; p.coyote = 0; p.mountCD = 0.6; p.airJumps = maxAirJumps();
-    m.state = 'idle'; m.vy = 380; m.y = p.y + p.h + 2;
+    // 2026-10-18 夜: 前は もこりゅうを ハルの 足の 2px 下に 置いていた → 地面の 上で とびおりると 地面の 2だんめに うまったまま(1-1 の 平地で 188回中 121回)。
+    // もこりゅうは 今 いる 所(足もと)に のこし、ハルは もこりゅうの 頭の 上から とぶ(頭の 上が ふさがっていたら そのまま)
+    const feet = p.y + p.h;
+    m.state = 'idle'; m.vy = 0; m.y = feet - m.h;
+    const ny = feet - m.h - p.h, cx0 = Math.floor((p.x + 2) / TILE), cx1 = Math.floor((p.x + p.w - 2) / TILE);
+    let room = true; for (let tx = cx0; tx <= cx1; tx++) if (isSolid(tx, Math.floor(ny / TILE))) room = false;
+    if (room) p.y = ny;
     sfx('jump', 1.2); dust(m.x + m.w / 2, m.y, 5);
   } else if (how === 'hurt') {
     const away = fromX !== undefined && fromX > p.x + p.w / 2 ? -1 : 1;
@@ -1879,7 +1936,7 @@ function capeQuake(p) {
 }
 
 // ---------- もちはこび(こうら・なげブロック・ばね・ぎんの スイッチ) ----------
-// C / Shift(ダッシュの ボタン)を おしたまま ふれると もつ。はなすと なげる(↑を おしていると 上へ、↓で そっと おく)。
+// C / Shift(ダッシュの ボタン)を おして ふれると もつ。はなしても もったまま、もう いちど おすと なげる(↑を おしていると 上へ、↓で そっと おく)。
 const canCarry = o => o && !o.gone && !o.held && ((o.t === 'enemy' && o.type === 'shell' && o.state === 'shell') || ((o.t === 'tblock' || o.t === 'pswitch' || o.t === 'spring' || o.t === 'lantern' || o.t === 'skey') && o.carry && !(o.t === 'pswitch' && o.pressed)));
 function nearCarry() {
   if (!P || !world || scene !== 'play') return false;
@@ -1887,20 +1944,25 @@ function nearCarry() {
   const box = { x: P.x - 10, y: P.y, w: P.w + 20, h: P.h + 4 };
   return world.ents.some(o => canCarry(o) && overlap(box, o));
 }
-function updateCarry(p) {
+function updateCarry(p, dt = 1 / 120) {
   if (p.carry) {
     const o = p.carry;
     if (o.gone) { p.carry = null; return; }
     o.x = p.x + p.w / 2 + p.face * 18 - o.w / 2; o.y = p.y + 14 - (o.h - 34) / 2; o.vx = 0; o.vy = 0;
-    if (!held('dash')) throwCarry(p);
+    // 2026-10-18 夜 持ち主「鍵は 押し続けなくても 持ったままに」→ ボタンを はなしても もったまま。もう いちど おすと なげる(↑ 上へ・↓ そっと おく)
+    if (p.carryT > 0) p.carryT -= dt;
+    if (pressed.dash && !(p.carryT > 0)) { consume('dash'); throwCarry(p); p.carryCD = 0.35; }
     return;
   }
-  if (!held('dash') || p.mount || p.climb || p.swim || p.zip || p.inCannon) return;
+  // なげた すぐ あとは ボタンを おしたままでも もちなおさない(なげた 物を すぐ つかんでいた)
+  if (p.carryCD > 0) { p.carryCD -= dt; if (!pressed.dash) return; }
+  if (!(held('dash') || pressed.dash) || p.mount || p.climb || p.swim || p.zip || p.inCannon) return;
   const box = { x: p.x - 8, y: p.y + 4, w: p.w + 16, h: p.h };
   for (const o of world.ents) if (canCarry(o) && overlap(box, o)) {
     p.carry = o; o.held = true; o.thrown = false; if (o.t === 'enemy') { o.state = 'carried'; o.timer = 6; }
+    consume('dash'); p.carryT = 0.15;
     sfx('click', 0.9); sfx('item', 1.5);
-    if (!world.seenCarry) { world.seenCarry = true; toast = { text: 'もちあげた!', sub: 'ボタンを はなすと なげる(↑で 上へ・↓で そっと おく)', t: 2.6 }; }
+    if (!world.seenCarry) { world.seenCarry = true; toast = { text: 'もちあげた!', sub: 'はなしても もったまま。もう いちど おすと なげる(↑で 上へ・↓で そっと おく)', t: 2.8 }; }
     break;
   }
 }
@@ -2081,9 +2143,10 @@ function updateEnemy(o, dt) {
     case 'ghost': {
       const looking = (P.face > 0 && ex > px) || (P.face < 0 && ex < px);
       o.shy = looking;
-      if (!looking && Math.abs(px - ex) < 420) {
-        const a = Math.atan2(py - ey, px - ex);
-        o.x += Math.cos(a) * 70 * dt; o.y += Math.sin(a) * 70 * dt;
+      // 2026-10-18 夜: ともしびん(ろうそくの おばけ)。見られると 止まらずに ほのおが ちぢんで ゆっくり あとずさる(有名ゲームの おばけと 同じ 見せ方を やめた)
+      if (Math.abs(px - ex) < 420) {
+        const a = Math.atan2(py - ey, px - ex), sp = looking ? -26 : 70;
+        o.x += Math.cos(a) * sp * dt; o.y += Math.sin(a) * sp * dt * (looking ? 0.3 : 1);
         o.face = px < ex ? -1 : 1;
       }
       break;
@@ -2463,7 +2526,7 @@ function updateEnemy(o, dt) {
     case 'oobake': {
       const looking = (P.face > 0 && ex > px) || (P.face < 0 && ex < px);
       o.shy = looking;
-      if (!looking && Math.abs(px - ex) < 700) { const a = Math.atan2(py - ey, px - ex); o.x += Math.cos(a) * 46 * dt; o.y += Math.sin(a) * 46 * dt; o.face = px < ex ? -1 : 1; }
+      if (Math.abs(px - ex) < 700) { const a = Math.atan2(py - ey, px - ex), sp = looking ? -18 : 46; o.x += Math.cos(a) * sp * dt; o.y += Math.sin(a) * sp * dt * (looking ? 0.3 : 1); o.face = px < ex ? -1 : 1; }
       break;
     }
     case 'hone': {
@@ -2757,12 +2820,9 @@ function updateThing(o, dt) {
         o.on = true; world.checkpoint = { x: o.x + 6, y: o.y + o.h - 54 }; world.cpIdx = o.idx;
         world.cpCoins = world.coins; world.cpScore = world.score; world.cpStars = [...world.stars]; world.cpShards = [...world.shards]; world.cpMaxHearts = p.maxHearts; world.cpPowers = [...p.powers]; world.cpLifeGot = world.lifeGot || 0;
         sfx('checkpoint'); sparkle(o.x + 20, o.y + 10, 16);
-        if (p.hearts < p.maxHearts) p.hearts = p.maxHearts;
-        // ちゅうかんゲート: 力も たても ないときは たてを もらえる(すこし 強くなる)
-        const gift = !p.shield && !(p.powers && p.powers.length);
-        if (gift) { p.shield = true; sfx('shield', 1.1); }
+        // 2026-10-18 夜 持ち主「中間地点の 体力全開は 必要ない。余りにも ヌルゲー」→ ハートは もどさない(たての おまけも やめた)
         o.tapeT = 0.6;
-        toast = { text: 'ちゅうかんゲート!', sub: gift ? 'ここから やりなおせる。たてを もらった!' : 'ここから やりなおせる', t: 1.8 };
+        toast = { text: 'ちゅうかんゲート!', sub: 'ここから やりなおせる', t: 1.8 };
       }
       break;
     }
@@ -2953,7 +3013,7 @@ function updateThing(o, dt) {
         const cyc = o.ph % (o.on + o.off);
         o.blow = cyc < o.on ? (cyc > o.on - 0.5 ? 0.25 : 1) : (cyc > o.on + o.off - 0.6 ? 0.25 : 0);
       } else o.blow = 1;
-      if (o.blow > 0 && !p.dead && !p.climb && overlap(p, o)) p.windAcc = (p.windAcc || 0) + o.dir * o.v * (o.blow === 1 ? 1 : 0.25);
+      if (o.blow > 0 && !p.dead && !p.climb && (!o.water || p.swim) && overlap(p, o)) p.windAcc  /* 10-18 夜: 水の ながれは およいでいる 時だけ */ = (p.windAcc || 0) + o.dir * o.v * (o.blow === 1 ? 1 : 0.25);
       if (o.blow > 0 && Math.abs(o.x + o.w / 2 - (cam.x + VW / 2)) < VW) {
         const rate = o.w * o.h / 9000 * o.blow;
         if (Math.random() < dt * rate) parts.push({ x: o.dir > 0 ? o.x + rnd(0, o.w * 0.4) : o.x + o.w - rnd(0, o.w * 0.4), y: o.y + rnd(10, o.h - 10), vx: o.dir * rnd(420, 560), vy: rnd(-20, 20), life: o.w / 520, max: o.w / 520, color: 'rgba(235,250,255,.7)', size: rnd(18, 40), g: 0, streak: true });
@@ -3285,12 +3345,17 @@ function levelClear(goal) {
   }
   const secretNew = !!goal.secret && !save.secret[id];
   if (goal.secret) save.secret[id] = true;
+  // 2026-10-18 夜: 近道の つつ(2-6・6-7 の カギの ひみつゴール)を なくした → はじめて カギを はこぶと 1UP×3 と コイン 50(行く 得を はっきり)
+  let secretGift = null;
+  if (secretNew && !extraLv && !WORLDS.some(W => (W.extra || []).some(e => e.cond === 'secret' && e.from === id))) {
+    secretGift = '1UP×3・コイン 50'; save.lives = Math.min(99, lives() + 3); save.wallet = (save.wallet || 0) + 50; sfx('oneup');
+  }
   if (!world.def.daily) save.wallet = (save.wallet || 0) + world.coins;
   writeSave();
   for (const t of ZK_TOUGH) if (world.zkSeen && world.zkSeen[t]) zukanEscape(t);
   const afterStars = totalStars();
   const newPerk = PERKS.find(pk => beforeStars < pk.need && afterStars >= pk.need);
-  clearInfo = { timeBonus, heartBonus: P.hearts * 500, newPerk, secret: !!goal.secret, secretNew, firstClear, tape, palace: !!goal.palace, saved: ['fort', 'boss', 'switch', 'ghost'].includes(world.def.kind) };
+  clearInfo = { timeBonus, heartBonus: P.hearts * 500, newPerk, secret: !!goal.secret, secretNew, secretGift, firstClear, tape, palace: !!goal.palace, saved: ['fort', 'boss', 'switch', 'ghost'].includes(world.def.kind) };
   if (world.def.daily) clearInfo.daily = dailyFinish();
 }
 
@@ -3329,6 +3394,8 @@ function spawn5(e, X, Y, o, id) {
     case 'keyhole': { const gy = groundYBelow(e.x, e.y ?? 0); return { id, t: 'keyhole', x: X, y: gy * TILE - 96, w: 48, h: 96 }; }
     case 'tstep': return { id, t: 'tstep', x: X, y: 0, w: (o.w || 10) * TILE, h: 1, n: o.n, cond: o.cond, text: o.text, sub: o.sub, subT: o.subT, arrow: o.arrow, arrowY: o.arrowY };
     case 'tgate': { const gy = groundYBelow(e.x); return { id, t: 'tgate', x: X + 8, y: (gy - 5) * TILE, w: 32, h: 5 * TILE, n: o.n, solid: true, open: 0 }; }
+    // 2026-10-18 夜 持ち主「マップ中の 強敵は 倒さないと 先に 進めない」: つよい敵・中ボス級の 右の まほうの かべ(画面の 上の 外から 地面まで)。たおすと きえる
+    case 'kgate': { const gy = groundYBelow(e.x, 2); return { id, t: 'kgate', x: X + 8, y: -4 * TILE, w: 32, h: (gy + 4) * TILE, gy, link: e.link || null, solid: true, open: 0, ph: 0 }; }
     case 'snowb': { const gy = groundYBelow(e.x, e.y ?? 0), r = o.r || 22; return { id, t: 'snowb', x: X + 24 - r, y: gy * TILE - r * 2, w: r * 2, h: r * 2, r, rmax: o.rmax || 46, vx: 0, vy: 0, state: 'idle', rot: 0, home: { x: X + 24 - r, y: gy * TILE - r * 2, r } }; }
   }
   return null;
@@ -3732,7 +3799,7 @@ function updateThing5(o, dt) {
     }
     case 'lantern': {
       if (!o.held) { updateLoose(o, dt); if (o.gone) { o.gone = false; o.x = o.x0; o.y = o.y0; o.vx = 0; o.vy = 0; o.thrown = false; sparkle(o.x + 14, o.y + 10, 10); } }
-      if (!world.seenLantern && !p.dead && Math.abs(p.x - o.x) < 3 * TILE) { world.seenLantern = true; toast = { text: 'ランタン', sub: usingTouch ? '「もつ」で もちあげると まわりが あかるく なる' : 'C を おしたまま さわると もてる。まわりが あかるく なる', t: 2.8 }; }
+      if (!world.seenLantern && !p.dead && Math.abs(p.x - o.x) < 3 * TILE) { world.seenLantern = true; toast = { text: 'ランタン', sub: usingTouch ? '「もつ」で もちあげると まわりが あかるく なる' : 'C を おして さわると もてる。まわりが あかるく なる', t: 2.8 }; }
       break;
     }
     case 'lflower': {
@@ -3771,6 +3838,23 @@ function updateThing5(o, dt) {
     }
     case 'tstep': updateTutStep(o, dt); break;
     case 'tgate': break;
+    case 'kgate': {
+      o.ph += dt;
+      if (o.open) { o.open += dt; if (o.open > 1.2) o.gone = true; break; }
+      const en = o.link && o.link.__o;
+      // 中間から はじめて もう かべの 右に いる ときは あけておく
+      if (!o.chk) { o.chk = true; if (p.x > o.x + o.w) { o.open = 0.01; o.solid = false; break; } }
+      const alive = en && !en.gone && !en.dying && world.ents.includes(en);
+      if (!alive) {
+        o.open = 0.01; o.solid = false;
+        if (Math.abs(p.x - o.x) < 16 * TILE) { sfx('door'); sfx('powerup', 1.3); for (let k = 0; k < 6; k++) sparkle(o.x + o.w / 2, o.gy * TILE - 40 - k * 60, 4); toast = { text: 'まほうの かべが きえた!', sub: '', t: 1.6 }; }
+        break;
+      }
+      // つよい敵は かべの 右へ 行かない
+      if (en.x + en.w > o.x - 2) { en.x = o.x - 2 - en.w; if (en.vx > 0) en.vx = -Math.abs(en.vx); en.face = -1; }
+      if (!o.hinted && !p.dead && p.x + p.w > o.x - 2.5 * TILE && p.x < o.x + o.w) { o.hinted = true; toast = { text: 'まほうの かべ', sub: 'つよい てきを たおすと きえる', t: 2.4 }; }
+      break;
+    }
     case 'skey': {
       if (!o.held) { updateLoose(o, dt); if (o.gone) { o.gone = false; o.x = o.x0; o.y = o.y0; o.vx = 0; o.vy = 0; o.thrown = false; sparkle(o.x + 16, o.y + 10, 12); } }
       if (!world.seenSkey && !p.dead && Math.abs(p.x - o.x) < 3 * TILE) { world.seenSkey = true; toast = { text: 'ひみつの かぎ', sub: 'もったまま かぎあなまで はこぶと ひみつの ゴール', t: 2.8 }; }
@@ -4088,6 +4172,7 @@ function drawThing5(o, t) {
     }
     case 'tstep': drawTutStep(o, t); break;
     case 'tgate': drawTutGate(o, t); break;
+    case 'kgate': drawKGate(o, t); break;
     case 'skey': { ctx.save(); ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 16; drawFit('key', o.x + o.w / 2, o.y + o.h + 2 + (o.held ? 0 : Math.sin(t * 4) * 2), 40); ctx.restore(); if (Math.random() < 0.06) sparkle(o.x + 16, o.y + 10, 1); break; }
     case 'keyhole': {
       ctx.save(); ctx.translate(o.x + 24, o.y + o.h);
@@ -4253,7 +4338,7 @@ let zkWorlds = null, zkStages = null;
 function zkComputeWorlds() {
   zkWorlds = {}; zkStages = {};
   for (const d of LEVELS) {
-    if (d.roam || d.tutorial || d.daily) continue;
+    if (d.roam || d.tutorial || d.daily || d.removed) continue;
     let lv; try { lv = buildLevel(d); } catch (e) { continue; }
     for (const e of lv.ents) if (e.kind === 'enemy') {
       (zkWorlds[e.type] = zkWorlds[e.type] || new Set()).add(d.world);
@@ -4662,7 +4747,7 @@ function drawHelp(t) {
   const p = help.page, y0 = 116;
   if (p === 0) {
     const rows = [[['←', '→'], 'あるく(はしる)', 'hero_run'], [['スペース', 'Z'], 'ジャンプ(ながおしで たかく)', 'hero_jump'], [['V'], 'スピンジャンプ(トゲの てきも ふめる)', 'spiky'], [['X'], 'けん', 'hero_attack'],
-      [['C', 'Shift'], 'ダッシュ(ブーツ)・おしたまま さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる・くうちゅうで ヒップドロップ', 'hero_hipdrop'], [['↑'], 'とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
+      [['C', 'Shift'], 'ダッシュ(ブーツ)・おして さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる・くうちゅうで ヒップドロップ', 'hero_hipdrop'], [['↑'], 'とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
     rows.forEach((r, i) => helpRow(y0 - 4 + i * 40, r[0], r[1], r[2]));
   } else if (p === 1) {
     // スマホの 画面の ボタンの ならび(小さな 画面の 絵)
@@ -4687,7 +4772,7 @@ function drawHelp(t) {
     const rows = [
       [['X'], 'もこりゅう: したを のばして たべる', 'moko_idle', P0 && P0.mount], [['V'], 'もこりゅう: とびおりて たかく ジャンプ', 'moko_idle', P0 && P0.mount],
       [['→→', 'ジャンプ'], 'マント: はしって メーターが たまったら とぶ・←→で のぼる/おりる', 'p_cape', P0 && hasPower('cape')],
-      [['C はなす'], 'もちあげ中: はなすと なげる(↑で 上・↓で そっと おく)', 'throw_block', P0 && P0.carry],
+      [['C もういちど'], 'もちあげ中: もういちど おすと なげる(↑で 上・↓で そっと おく)', 'throw_block', P0 && P0.carry],
       [['ジャンプ'], 'トロッコ: すすみつづける。ジャンプで とびこえる', 'mine_cart', P0 && P0.cart],
       [['←', '→', 'ジャンプ'], 'ぶらんこ: ←→で こいで、ジャンプで とびだす', 'swing_vine', P0 && P0.swing],
       [['ジャンプ'], 'さかさま: てんじょうを あるく。下むきの 玉で もどる', 'grav_orb', P0 && (P0.gdir || 1) < 0],
@@ -4749,6 +4834,22 @@ function drawTutStep(o, t) {
   if (!o.done && o.arrow !== undefined && o.itemAt === undefined) { const ax0 = o.arrow * TILE + 24; o.itemAt = world.ents.some(e => !e.gone && ['boots', 'wing', 'fire', 'jet', 'magnet', 'cape'].includes(e.t) && Math.abs(e.x + (e.w || 0) / 2 - ax0) < 3 * TILE); }
   const itemGone = o.itemAt && !world.ents.some(e => !e.gone && ['boots', 'wing', 'fire', 'jet', 'magnet', 'cape'].includes(e.t) && Math.abs(e.x + (e.w || 0) / 2 - (o.arrow * TILE + 24)) < 3 * TILE);
   if (!o.done && o.arrow !== undefined && !itemGone && !(o.cond === 'dash' && hasPower('dash'))) { const ax = o.arrow * TILE + 24, ay = (o.arrowY || 7) * TILE + Math.sin(t * 6) * 6; outlined('▼', ax, ay, '#ffd84a', '#2a1a3a', 5, titleFont(28)); }
+}
+function drawKGate(o, t) {
+  const a = o.open ? Math.max(0, 1 - o.open / 1.2) : 1;
+  if (a <= 0) return;
+  const top = Math.max(o.y, cam.y - 20), bot = o.gy * TILE;
+  ctx.save(); ctx.globalAlpha = a;
+  const g = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
+  g.addColorStop(0, 'rgba(170,90,255,0.15)'); g.addColorStop(0.5, 'rgba(210,150,255,0.65)'); g.addColorStop(1, 'rgba(170,90,255,0.15)');
+  ctx.fillStyle = g; ctx.fillRect(o.x, top, o.w, bot - top);
+  ctx.strokeStyle = 'rgba(255,240,255,0.9)'; ctx.lineWidth = 2;
+  for (let y = bot - ((t * 60) % 36); y > top; y -= 36) { ctx.beginPath(); ctx.moveTo(o.x + 6, y); ctx.lineTo(o.x + o.w / 2, y - 12); ctx.lineTo(o.x + o.w - 6, y); ctx.stroke(); }
+  // 地面の 近くに 錠の しるし
+  ctx.fillStyle = '#7a3cc8'; ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 3; rr(o.x - 6, bot - 92, o.w + 12, 34, 8); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ffe14d'; ctx.font = font(20, 900); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', o.x + o.w / 2, bot - 75);
+  if (Math.random() < 0.2) sparkle(o.x + o.w / 2, top + Math.random() * (bot - top), 1);
+  ctx.restore();
 }
 function drawTutGate(o, t) {
   if (o.open >= 1.5) return;
@@ -5106,7 +5207,7 @@ function edPhase(t) { const T = edTimes(); if (t < T.recap) return ['recap', t];
 function endingTap() { const T = edTimes(), [ph] = edPhase(titleT); if (ph === 'recap') titleT = Math.min(T.recap, (Math.floor(titleT / 4) + 1) * 4); else if (ph === 'parade') titleT = T.recap + T.parade; else if (ph === 'staff') titleT = T.recap + T.parade + T.staff; else if (titleT > T.recap + T.parade + T.staff + 2) goMap(); }
 function edCompletion() {
   const st = totalStars(), maxSt = LEVELS.filter(d => !d.noStars).length * 3;
-  const sh = Object.values(save.shards || {}).reduce((a, s2) => a + s2.filter(Boolean).length, 0), maxSh = LEVELS.filter(d => !d.noShards).length * 5;
+  const sh = Object.entries(save.shards || {}).reduce((a, [id, s2]) => { const d = LEVELS[LV_BY_ID[id]]; return d && d.removed ? a : a + s2.filter(Boolean).length; }, 0), maxSh = LEVELS.filter(d => !d.noShards).length * 5;
   const zkAll = ZK_ENEMIES.length + ZK_BOSSES.length, zkN = ZK_ENEMIES.filter(zkGot).length + ZK_BOSSES.filter(id => zkGot('B' + id)).length;
   const r = (st / maxSt + sh / maxSh + zkN / zkAll) / 3;
   return { st, maxSt, sh, maxSh, zkN, zkAll, r, perfect: st >= maxSt && sh >= maxSh && zkN >= zkAll };
@@ -5466,9 +5567,17 @@ function updateMap(dt) {
     else if (consume('pause')) map.pick = null;
     return;
   }
-  // 地図を うろつく 敵: ぶつかると ばったり バトル
+  // 地図を うろつく 敵: ぶつかると「たたかう / にげる」を えらぶ(2026-10-18 夜 持ち主「ばったりバトルは 強制ではなく 選べるように」)
+  if (map.roamAsk) {
+    const ra = map.roamAsk;
+    if (consume('right') || consume('down') || consume('left') || consume('up')) { ra.i = 1 - ra.i; sfx('click'); }
+    else if (consume('ok') || consume('jump')) { map.roamAsk = null; if (ra.i === 0) { startRoamBattle(ra.r); return; } roamFlee(ra.r); }
+    else if (consume('pause')) { map.roamAsk = null; roamFlee(ra.r); }
+    return;
+  }
   if (map.roamCD > 0) map.roamCD -= dt;
-  else if (!map.rv && !map.reveals.length) { const r = roamHit(); if (r) { startRoamBattle(r); return; } }
+  else if (!map.rv && !map.reveals.length) { const r = roamHit(); if (r) { map.roamAsk = { r, i: 0 }; sfx('door', 0.8); return; } }
+  if (map.roamIgnore) { const [wi, j] = map.roamIgnore.split(':').map(Number); const W = WORLDS[wi], q = W && W.roam && W.roam[j] ? roamPos(wi, W.roam[j], j) : null; if (wi !== map.wi || !q || Math.hypot(q.x - map.hx, q.y - map.hy) > 46) map.roamIgnore = null; }
   if (map.walk) {
     const w = map.walk; w.t += dt / w.dur;
     const k = Math.min(1, w.t);
@@ -5545,9 +5654,11 @@ function roamPos(wi, r, j) {
 function roamHit() {
   const W = WORLDS[map.wi]; if (!W.roam) return null;
   map.roamOff = map.roamOff || {};
-  for (let j = 0; j < W.roam.length; j++) { if (map.roamOff[map.wi + ':' + j]) continue; const q = roamPos(map.wi, W.roam[j], j); if (q && Math.hypot(q.x - map.hx, q.y - map.hy) < 22) return { wi: map.wi, j, type: W.roam[j].type }; }
+  for (let j = 0; j < W.roam.length; j++) { if (map.roamOff[map.wi + ':' + j] || map.roamIgnore === map.wi + ':' + j) continue; const q = roamPos(map.wi, W.roam[j], j); if (q && Math.hypot(q.x - map.hx, q.y - map.hy) < 22) return { wi: map.wi, j, type: W.roam[j].type }; }
   return null;
 }
+// にげる: その 敵からは はなれるまで もう 出会わない(はなれて また ぶつかると もう いちど きく)
+function roamFlee(r) { map.roamIgnore = r.wi + ':' + r.j; map.roamCD = 0.6; sfx('jump', 1.3); }
 function startRoamBattle(r) {
   map.roamOff = map.roamOff || {}; map.roamOff[r.wi + ':' + r.j] = true; map.roamCD = 3;
   // 出会った 場所(歩いて いた とちゅうなら その 点と 行き先)を おぼえて、バトルの あと ここへ もどる
@@ -6373,7 +6484,13 @@ function drawThing0(o, t) {
       }
       break;
     }
-    case 'crusher': drawImg('crusher', o.x + (o.shake || 0), o.y, o.w, o.h); break;
+    case 'crusher': {
+      // 2026-10-18 夜: ぶらさがり きりかぶ。画面の 上から つるで ぶらさがり、まつ 間は すこし ゆれる
+      const sw = o.state === 'wait' ? Math.sin(o.ph * 2.2) * 3 : 0, cx2 = o.x + o.w / 2 + (o.shake || 0) + sw, top2 = Math.min(o.y0, cam.y) - 60;
+      ctx.strokeStyle = '#3f6b2a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(o.x + o.w / 2, top2); ctx.quadraticCurveTo(o.x + o.w / 2 + sw * 2, (top2 + o.y) / 2, cx2, o.y - 28); ctx.stroke();
+      ctx.strokeStyle = '#7fbf4a'; ctx.lineWidth = 2; ctx.stroke();
+      drawFit('crusher', cx2, o.y + o.h + 6, 100); break;
+    }
     case 'saw': {
       ctx.save(); ctx.translate(o.x + 26, o.y + 26); ctx.rotate(t * 10);
       const im = IMG.saw;
@@ -6629,8 +6746,9 @@ function drawEnemy(o, t) {
       ctx.filter = ART.boss_yurei ? (o.hp <= o.maxHp / 2 ? 'saturate(1.5)' : 'none') : o.hp <= o.maxHp / 2 ? 'hue-rotate(250deg) saturate(1.6)' : 'hue-rotate(160deg) saturate(1.3)';
       drawFit(name, 0, 0, h, flip);
       ctx.filter = 'none'; ctx.shadowBlur = 0;
+      if (!ART.boss_yurei) { /* 2026-10-18 夜: 新しい 絵は 燭台の かんむりを 描いてあるので 金の かんむりは 絵が ない ときだけ */
       ctx.fillStyle = '#ffd84a'; ctx.globalAlpha = Math.max(0.3, o.alpha);
-      ctx.beginPath(); ctx.moveTo(-24, -h + 2); ctx.lineTo(-24, -h - 12); ctx.lineTo(-12, -h - 4); ctx.lineTo(0, -h - 16); ctx.lineTo(12, -h - 4); ctx.lineTo(24, -h - 12); ctx.lineTo(24, -h + 2); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-24, -h + 2); ctx.lineTo(-24, -h - 12); ctx.lineTo(-12, -h - 4); ctx.lineTo(0, -h - 16); ctx.lineTo(12, -h - 4); ctx.lineTo(24, -h - 12); ctx.lineTo(24, -h + 2); ctx.closePath(); ctx.fill(); }
       if (o.state === 'stun') for (let i = 0; i < 3; i++) { const a = t * 5 + i * 2.1; drawImg('ui_star', Math.cos(a) * 34 - 10, -h - 26 + Math.sin(a) * 8, 20, 18); }
       break;
     }
@@ -6725,7 +6843,7 @@ function drawEnemy(o, t) {
     case 'fish': { ctx.translate(cx, o.y + o.h / 2); ctx.rotate(o.vy * 0.0008 * -o.face); drawFit(name, 0, h / 2, h, o.vy > 0); break; }
     case 'orb': ctx.shadowColor = '#7fe0ff'; ctx.shadowBlur = 20; drawFit(name, cx, bottom + 8, h, false); break;
     case 'eye': drawFit(name, cx, bottom, h, flip); break;
-    case 'ghost': ctx.globalAlpha = o.shy ? 0.55 : 0.9; drawFit(name, cx, bottom + Math.sin(t * 3) * 4, h, flip); break;
+    case 'ghost': { ctx.globalAlpha = o.shy ? 0.7 : 0.95; const sq = o.shy ? 0.9 : 1; ctx.translate(cx, bottom + Math.sin(t * 3) * 4); ctx.scale(1, sq); drawFit(name, 0, 0, h, flip); break; }
     case 'shell': {
       if (ART.kame_shell) {
         const inShell = o.state === 'shell' || o.state === 'slide' || o.held;
@@ -7009,7 +7127,7 @@ function drawOffscreen(t) {
     outlined('!', ax + (right ? -22 : 22), sy, '#fff', '#2a1a3a', 4, titleFont(22)); ctx.restore();
   }
 }
-const BACK_T = new Set(['tgate', 'rails', 'tube', 'tide', 'bvent', 'swing', 'goal', 'checkpoint', 'door', 'axe', 'geyser', 'updraft', 'wind', 'portal', 'gate', 'roller', 'lowgrav', 'wheelhub', 'zip', 'wdoor', 'well']);
+const BACK_T = new Set(['tgate', 'kgate', 'rails', 'tube', 'tide', 'bvent', 'swing', 'goal', 'checkpoint', 'door', 'axe', 'geyser', 'updraft', 'wind', 'portal', 'gate', 'roller', 'lowgrav', 'wheelhub', 'zip', 'wdoor', 'well']);
 // ---------- カメラ ----------
 // 横: 画面の まんなかに 遊び(±44px)を作り、そこを出たときだけ 追う。先読みは 同じ向きに 0.35秒 走りつづけたときだけ ゆっくり ふやす(ふりむくだけでは 画面を ふらない)。
 // 縦: 着地した高さを 目標にする。ジャンプ中は 画面の 上の はしに 近づいたときだけ 追い、落ちるときは 下が 見えるよう 早めに 追う。
@@ -7372,7 +7490,7 @@ function drawMap(t) {
     outlined((d.label ? d.label + '  ' : d.kind === 'switch' ? '' : d.num === '✦' ? 'ひみつ ' : stageLabel(d) + '  ') + d.name, VW / 2, 424, '#fff', '#2a1a3a', 5, font(22));
     ctx.fillStyle = '#ffe9a8'; ctx.font = font(14, 700); ctx.textAlign = 'center';
     const best = save.best[id], sh = shardCount(id);
-    ctx.fillText(!isOpenId(id) ? 'まだ みちが ひらいていない' : needsFull(i) ? '完全版で あそべます' : (kindName ? '[' + kindName + ']  ' : '') + (best ? 'ベスト ' + best : 'はじめての ステージ') + '  かけら ' + sh + '/5' + (d.secretGoal && isCleared(id) && !save.secret[id] ? '  ・ひみつの ゴールの 先に みどりキノコ' : '') + (d.num === '✦' && isOpenId(id) ? '  ・みどりキノコ 2こ・たからこぞう' : ''), VW / 2, 448);
+    ctx.fillText(!isOpenId(id) ? 'まだ みちが ひらいていない' : needsFull(i) ? '完全版で あそべます' : (kindName ? '[' + kindName + ']  ' : '') + (best ? 'ベスト ' + best : 'はじめての ステージ') + '  かけら ' + sh + '/5' + (d.secretGoal && isCleared(id) && !save.secret[id] ? (d.id === 72 || d.id === 77 ? '  ・カギを はこぶと 1UP×3・コイン50' : '  ・ひみつの へやに みどりキノコ') : '') + (d.num === '✦' && isOpenId(id) ? '  ・みどりキノコ 2こ・たからこぞう' : ''), VW / 2, 448);
   } else {
     outlined(nd.shortcut !== undefined ? 'ワープの つつ' : nd.bonus ? 'おまけの あな' : nd.warp ? 'ほしの あな' : 'かえりの あな', VW / 2, 424, '#fff', '#2a1a3a', 5, font(22));
     ctx.fillStyle = '#ffe9a8'; ctx.font = font(14, 700); ctx.textAlign = 'center';
@@ -7389,6 +7507,16 @@ function drawMap(t) {
   if (!usingTouch) { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.font = font(12, 700); ctx.textAlign = 'right'; ctx.fillText('←→↑↓ いどう  Enter あそぶ', VW - 16, 398); }
   if (map.flash > 0) { ctx.fillStyle = `rgba(255,250,220,${map.flash * 1.6})`; ctx.fillRect(0, 0, VW, VH); }
   if (map.saved > 0) { const a = Math.min(1, map.saved * 2); ctx.save(); ctx.globalAlpha = a; rr(VW / 2 - 150, 92, 300, 40, 14); ctx.fillStyle = 'rgba(30,20,60,.8)'; ctx.fill(); outlined('ファイル' + saveSlot + 'に きろくしました', VW / 2, 112, '#7dff8a', '#2a1a3a', 5, font(18)); ctx.restore(); }
+  if (map.roamAsk) {
+    const ra = map.roamAsk;
+    ctx.save(); ctx.fillStyle = 'rgba(10,6,24,.72)'; ctx.fillRect(0, 0, VW, VH);
+    outlined('ばったり!', VW / 2, 150, '#ffe14d', '#2a1a3a', 8, titleFont(44));
+    outlined('ちずを うろつく てきに みつかった!', VW / 2, 206, '#ffffff', '#2a1a3a', 6, font(22));
+    outlined('たたかうと つよい てきと たからこぞう。たからばこまで いけば ごほうび', VW / 2, 240, '#c8f5ff', '#2a1a3a', 5, font(16));
+    button(VW / 2 - 230, 300, 200, 64, 'たたかう', () => { ra.i = 0; pressed.ok = true; }, { sel: ra.i === 0, size: 26 });
+    button(VW / 2 + 30, 300, 200, 64, 'にげる', () => { ra.i = 1; pressed.ok = true; }, { sel: ra.i === 1, size: 26 });
+    ctx.restore();
+  }
   if (map.pick) {
     const pk = map.pick;
     ctx.save(); ctx.fillStyle = 'rgba(10,6,24,.82)'; ctx.fillRect(0, 0, VW, VH);
@@ -7622,7 +7750,7 @@ function drawClear(t) {
   ctx.save(); ctx.translate(VW / 2, 408); if (done) ctx.scale(1 + Math.sin(t * 6) * 0.03, 1 + Math.sin(t * 6) * 0.03);
   outlined('スコア ' + sc, 0, 0, done ? '#fff36b' : '#ffffff', '#3a1a08', 7, titleFont(34));
   ctx.restore();
-  if (clearInfo.secret && world.clearT > 4.2) { ctx.save(); ctx.translate(VW / 2, 136); ctx.scale(1 + Math.sin(t * 5) * 0.05, 1 + Math.sin(t * 5) * 0.05); outlined(clearInfo.secretNew ? 'ひみつの ゴール! かくれた みちが ひらいた!' : 'ひみつの ゴール!', 0, 0, '#e6b8ff', '#3a1a08', 6, font(20)); ctx.restore(); }
+  if (clearInfo.secret && world.clearT > 4.2) { ctx.save(); ctx.translate(VW / 2, 136); ctx.scale(1 + Math.sin(t * 5) * 0.05, 1 + Math.sin(t * 5) * 0.05); outlined(clearInfo.secretGift ? 'ひみつの ゴール! ' + clearInfo.secretGift + ' もらった!' : clearInfo.secretNew ? 'ひみつの ゴール! かくれた みちが ひらいた!' : 'ひみつの ゴール!', 0, 0, '#e6b8ff', '#3a1a08', 6, font(20)); ctx.restore(); }
   if (clearInfo.newPerk && world.clearT > 5) { ctx.save(); ctx.translate(VW / 2, 446); ctx.scale(1 + Math.sin(t * 5) * 0.04, 1 + Math.sin(t * 5) * 0.04); outlined('せいちょう! ' + clearInfo.newPerk.name + '(' + clearInfo.newPerk.desc + ')', 0, 0, '#7dff8a', '#3a1a08', 6, fitFont('せいちょう! ' + clearInfo.newPerk.name + '(' + clearInfo.newPerk.desc + ')', 520, 19)); ctx.restore(); }
   const best = save.best[world.def.id];
   if (done && best === world.score) { ctx.save(); ctx.translate(VW / 2 + 200, 430); ctx.rotate(-0.12); outlined('ベスト こうしん!', 0, 0, '#ff8fb0', '#3a1a08', 5, font(17)); ctx.restore(); }
