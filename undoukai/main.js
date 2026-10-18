@@ -84,6 +84,8 @@ const Store = {
     if (!Store.busyShown) { Store.busyShown = true; toast(BUSY_MSG, 4000); }
     return true;
   },
+  // init(ログイン)をしないで online.js だけ読む。覚えた物・pool.json だけで済む時、読む関数が自分で init する時に使う
+  mod() { return import('./online.js'); },
   async remote() {
     if (Store.online) return Store.online;
     const m = await import('./online.js');
@@ -711,15 +713,14 @@ $('prepGoBtn').onclick = () => {
 // ひとりで: 毎回ちがう相手5匹(みんなのらくがきから取れていれば、そのうち最大3匹は本物の絵)
 G.cpuRecent = { kinds: [], names: [] };
 G.galPool = [];
-// みんなのらくがきは起動の時には読まない(ひとりで走るコースえらびの時だけ。online.js が端末に60分覚えて使い回す)。
-// 混み合っている時・つながらない時は G.galPool が空のままで、CPU は作った絵だけで走る。
+// みんなの絵は Firestore から読まない(pool.json と、みんなのらくがきを開いた時に端末に覚えた1ページ目)。ログインもしない。
 let galPoolAt = 0;
 async function prefetchGalleryPool() {
   if (Date.now() - galPoolAt < 5 * 60 * 1000) return;
   galPoolAt = Date.now();
   try {
-    const m = await Store.remote();
-    const items = m.poolCreatures ? await m.poolCreatures() : (await m.listCreatures(null)).items;
+    const m = await Store.mod();
+    const items = await m.poolCreatures();
     G.galPool = (items || []).map(it => it.creature).filter(c => c && c.strokes && c.strokes.length);
   } catch (e) { Store.busy(e); }
 }
@@ -1451,10 +1452,10 @@ async function openGallery() {
   try { await galleryMore(); } catch (e) { $('galStatus').textContent = e && e.busy ? BUSY_MSG + '。ひとりで走る・描く・共有はそのまま遊べます' : 'いまは読みこめません(' + (e.message || e) + ')。ひとりで走る・描く・共有はそのまま遊べます'; $('galMoreBtn').classList.add('hidden'); }
 }
 async function galleryMore() {
-  const m = await Store.remote();
-  const { items, cursor } = await m.listCreatures(Gal.cursor);
+  const m = await Store.mod();
+  const { items, cursor, stale } = await m.listCreatures(Gal.cursor);
   Gal.cursor = cursor;
-  $('galStatus').textContent = items.length || Gal.items.length ? 'さわって「走る」で対戦できます' : 'まだだれも出していません';
+  $('galStatus').textContent = stale ? (stale === 'busy' ? 'いまは混み合っているので' : 'いまはつながらないので') + '、少し前のみんなの絵を出しています。さわって「走る」で対戦できます' : items.length || Gal.items.length ? 'さわって「走る」で対戦できます' : 'まだだれも出していません';
   $('galMoreBtn').classList.toggle('hidden', !cursor);
   for (const it of items) {
     Gal.items.push(it);
@@ -1473,7 +1474,7 @@ async function galleryMore() {
 function vsGallery(cr) { G.opponent = cr; startDraw('gallery', { title: `「${cr.name}」と走る生き物を描いてね`, rivals: [cr] }); }
 $('galleryBtn').onclick = () => openGallery();
 $('galMoreBtn').onclick = () => galleryMore().catch(e => toast(e && e.busy ? BUSY_MSG : e.message, 3500));
-$('galRandomBtn').onclick = async () => { try { const m = await Store.remote(); const it = await m.randomCreature(); if (!it) { toast('まだだれもいません'); return; } vsGallery(it.creature); } catch (e) { toast(e && e.busy ? BUSY_MSG : (e.message || '読みこめません'), 3500); } };
+$('galRandomBtn').onclick = async () => { try { const m = await Store.mod(); const it = await m.randomCreature(); if (!it) { toast('まだだれもいません'); return; } vsGallery(it.creature); } catch (e) { toast(e && e.busy ? BUSY_MSG : (e.message || '読みこめません'), 3500); } };
 $('galBackBtn').onclick = () => goTitle();
 
 // ---------- タイトル ----------
@@ -1878,7 +1879,7 @@ async function openRank() {
   $('rankStatus').textContent = '読みこみ中…';
   const myTurn = (G.rankSeq = (G.rankSeq || 0) + 1);
   try {
-    const m = await Store.remote();
+    const m = await Store.mod();
     const { course, period } = G.rankTab;
     const rows = await m.listRank(course, period, st => verifyTime(course, st));
     if (myTurn !== G.rankSeq) return;
@@ -1898,7 +1899,7 @@ async function openRank() {
       if (r.uid === m.uid()) mine = { rank: shown, t: tv, name: r.name };
     }
     const label = RANK_PERIODS.find(p => p[0] === period)[1];
-    $('rankStatus').textContent = shown ? `${label}の上位 ${shown} 匹(みんなの端末で走らせ直して確かめたタイムだけ)` + (dropped ? ` / 合わない ${dropped} 件は出していません` : '') : `${label}はまだだれも記録していません。一番乗りのチャンス!`;
+    $('rankStatus').textContent = (shown ? `${label}の上位 ${shown} 匹(みんなの端末で走らせ直して確かめたタイムだけ)` + (dropped ? ` / 合わない ${dropped} 件は出していません` : '') : `${label}はまだだれも記録していません。一番乗りのチャンス!`) + (rows.stale ? '。いまは混み合っているので少し前の表です' : '');
     const mb = $('rankMine');
     if (mine) { mb.innerHTML = `あなたは <b>${mine.rank}位</b>(${mine.name}・${mine.t.toFixed(2)}秒)`; mb.classList.remove('hidden'); }
     else { const my = await m.myRank(course, period).catch(() => null); if (my) { mb.innerHTML = `あなたの記録 ${my.t.toFixed(2)}秒(上位${m.RANK_LIMIT || 20}位の外)`; mb.classList.remove('hidden'); } }

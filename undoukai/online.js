@@ -16,11 +16,12 @@ const firebaseConfig = {
 let app, auth, db, F, user = null;
 const RU = window.RU;
 const PER_BYTES = 380;
-// 読みの回数を減らす(無料の Spark は1日の読み取り5万件まで。10/17 に X で伸びて使い切った)
-//   みんなのらくがきの1ページ目: 端末に10分(CPU に混ぜる分は60分まで使い回す)/ ランキング: 板ごとに5〜15分 / 自分の記録: 端末に覚えて読まない
-const GAL_MS = 10 * 60 * 1000, POOL_MS = 60 * 60 * 1000;
-const RANK_MS = { d: 5 * 60 * 1000, w: 10 * 60 * 1000, all: 15 * 60 * 1000 };
-export const RANK_LIMIT = 20;
+// 読みの回数を減らす(無料枠は1日の読み取り5万件。10/17 に X で伸びて1日20万件になった)
+//   みんなのらくがきの1ページ目: 端末に30分 / CPU に混ぜる絵・ランダムな相手: 読まない(pool.json と端末に覚えた1ページ目)
+//   ランキング: 上位10件を板ごとに10〜60分 / 自分の記録: 端末に覚えて読まない / 混み合い(429)の時は端末の古い覚えを出す
+const GAL_MS = 30 * 60 * 1000, POOL_MS = 6 * 3600 * 1000;
+const RANK_MS = { d: 10 * 60 * 1000, w: 30 * 60 * 1000, all: 60 * 60 * 1000 };
+export const RANK_LIMIT = 10;
 const LS = {
   get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
@@ -33,6 +34,9 @@ const BUSY_KEY = 'rkg_busy_until';
 export function isBusy() { const u = LS.get(BUSY_KEY); return !!(u && Date.now() < u); }
 function markBusy(ms) { LS.set(BUSY_KEY, Date.now() + ms); }
 export function isQuotaError(e) { const t = String(e && (e.code || '')) + ' ' + String(e && e.message || ''); return /resource-exhausted|quota|429/i.test(t); }
+// 読み取りの数(試験で数える用。Firestore は空の検索も1件と数える)
+export const stats = { reads: 0 };
+function cnt(s) { stats.reads += s && s.docs ? Math.max(1, s.docs.length) : 1; return s; }
 function busyError() { const e = new Error(BUSY_MSG); e.code = 'busy'; e.busy = true; return e; }
 const TIMEOUT_MS = 9000;
 // 読み(retry=true)は、混み合い・控えしか返らない時に3秒待って1回だけやり直す
@@ -82,8 +86,10 @@ async function initRaw() {
   db = F.getFirestore(app);
   const cred = await F.signInAnonymously(auth);
   user = cred.user;
+  LS.set('rkg_uid', user.uid);
 }
-export function uid() { return user ? user.uid : ''; }
+// ログイン前(覚えた表だけで済んだ時)も、前に使った uid で自分の行・記録がわかるようにする
+export function uid() { return user ? user.uid : (LS.get('rkg_uid') || ''); }
 // 試験用(ルールの試験で生の SDK を使う)
 export function _raw() { return { F, db, auth }; }
 
@@ -130,11 +136,23 @@ export async function listCreatures(cursor) {
   if (!cursor) {
     const c = LS.get(GAL_KEY);
     if (c && c.items && Date.now() - c.at < GAL_MS) return { items: fromCache(c), cursor: c.items.length >= 12 ? { cached: c.last } : null };
+    try { return await listRemote(null); }
+    catch (e) {
+      // 混み合い・つながらない時は、前に覚えた1ページ目(古くても)か pool.json を出して遊び続けられるようにする
+      if (!(e && (e.busy || e.code === 'offline'))) throw e;
+      const items = c && c.items && c.items.length ? fromCache(c) : await bundledPool();
+      if (!items.length) throw e;
+      return { items, cursor: null, stale: e.busy ? 'busy' : 'offline' };
+    }
   }
+  return listRemote(cursor);
+}
+async function listRemote(cursor) {
+  await init();
   let q = F.query(F.collection(db, 'creatures'), F.where('visible', '==', true), F.orderBy('created', 'desc'), F.limit(12));
   if (cursor && cursor.snap) q = F.query(q, F.startAfter(cursor.snap));
   else if (cursor && cursor.cached) q = F.query(q, F.startAfter(F.Timestamp.fromMillis(cursor.cached)));
-  const snap = await guard(() => F.getDocs(q), 0, true);
+  const snap = cnt(await guard(() => F.getDocs(q), 0, true));
   const items = snap.docs.map(toItem).filter(Boolean);
   if (!cursor) {
     const lastDoc = snap.docs[snap.docs.length - 1];
@@ -142,28 +160,37 @@ export async function listCreatures(cursor) {
   }
   return { items, cursor: snap.docs.length >= 12 ? { snap: snap.docs[snap.docs.length - 1] } : null };
 }
-// CPU に混ぜる絵・「ランダムな相手」: 1ページ目を60分まで使い回す(読みは60分に1回・12件まで)
+// CPU に混ぜる絵・「ランダムな相手」: Firestore は読まない。
+// 端末に覚えたみんなのらくがき1ページ目(6時間まで)と、公開のたびに作る pool.json(tools/make_pool.py、24匹)を混ぜて使う。init もいらない。
+let bundled = null;
+async function bundledPool() {
+  if (!bundled) bundled = fetch(new URL('pool.json', import.meta.url)).then(r => r.ok ? r.json() : { items: [] }).then(j => fromCache(j)).catch(() => { bundled = null; return []; });
+  return (await bundled) || [];
+}
 export async function poolCreatures() {
   const c = LS.get(GAL_KEY);
-  if (c && c.items && c.items.length && Date.now() - c.at < POOL_MS) return fromCache(c);
-  return (await listCreatures(null)).items;
+  const recent = c && c.items && c.items.length && Date.now() - c.at < POOL_MS ? fromCache(c) : [];
+  const ids = new Set(recent.map(x => x.id));
+  return recent.concat((await bundledPool()).filter(x => !ids.has(x.id)));
 }
 export async function randomCreature() {
-  const pool = await poolCreatures().catch(e => { if (e && e.busy) throw e; return []; });
+  const pool = await poolCreatures().catch(() => []);
   if (pool.length >= 4) return pool[Math.floor(Math.random() * pool.length)];
+  await init();
   return guard(randomRaw, 0, true);
 }
 async function randomRaw() {
   const r = Math.random();
   const col = F.collection(db, 'creatures');
-  let snap = await F.getDocs(F.query(col, F.where('visible', '==', true), F.where('rnd', '>=', r), F.orderBy('rnd'), F.limit(1)));
-  if (snap.empty) snap = await F.getDocs(F.query(col, F.where('visible', '==', true), F.where('rnd', '<', r), F.orderBy('rnd'), F.limit(1)));
+  let snap = cnt(await F.getDocs(F.query(col, F.where('visible', '==', true), F.where('rnd', '>=', r), F.orderBy('rnd'), F.limit(1))));
+  if (snap.empty) snap = cnt(await F.getDocs(F.query(col, F.where('visible', '==', true), F.where('rnd', '<', r), F.orderBy('rnd'), F.limit(1))));
   if (snap.empty) return null;
   const it = toItem(snap.docs[0]);
   if (it && it.creature && false) return null;
   return it;
 }
 export async function report(id) {
+  await init();
   const ref = F.doc(db, 'creatures', id);
   const rref = F.doc(db, 'creatures', id, 'reports', uid());
   await guard(() => F.runTransaction(db, async tx => {
@@ -271,38 +298,52 @@ export async function submitRank(course, cr, t, verify) {
     const entry = { name, data, t, at: F.serverTimestamp(), v: 2 };
     if (mine && mine.calc === CALC) {
       if (!(t < mine.t)) continue;
-      try { await guard(() => F.setDoc(ref, entry)); LS.set(myKey(b), { t, calc: CALC, name }); LS.del('rkg_rank_' + b); improved = true; continue; }
+      try { await guard(() => F.setDoc(ref, entry)); LS.set(myKey(b), { t, calc: CALC, name }); patchRankCache(b, { uid: uid(), name, data, t }); improved = true; continue; }
       catch (e) { if (e && e.busy) throw e; }
     }
-    const s = await guard(() => F.getDoc(ref));
+    const s = cnt(await guard(() => F.getDoc(ref)));
     if (s.exists()) {
       if (staleEntry(s.data(), verify)) await guard(() => F.deleteDoc(ref));
       else if (!(t < s.data().t)) { LS.set(myKey(b), { t: s.data().t, calc: CALC, name: s.data().name }); continue; }
     }
     await guard(() => F.setDoc(ref, entry));
-    LS.set(myKey(b), { t, calc: CALC, name }); LS.del('rkg_rank_' + b);
+    LS.set(myKey(b), { t, calc: CALC, name }); patchRankCache(b, { uid: uid(), name, data, t });
     improved = true;
   }
   return { improved };
 }
-// 上位20件ずつ読み、板ごとに端末へ5〜15分覚える。
-// 前の計算で登録された記録(走らせ直すと合わない)が上に居座っている時は、合う物が10件になるまで最大3回(60件)まで続きを読む。
+// 自分が登録した時は、覚えている板の表に自分の行を入れなおす(読みに行かずに自分の順位が見える)
+function patchRankCache(b, row) {
+  const key = 'rkg_rank_' + b, c = LS.get(key);
+  if (!c || !c.rows) return;
+  c.rows = c.rows.filter(r => r.uid !== row.uid).concat([row]).sort((x, y) => x.t - y.t);
+  LS.set(key, c);
+}
+// 上位10件ずつ読み、板ごとに端末へ10〜60分覚える。
+// 前の計算で登録された記録(走らせ直すと合わない)が上に居座っている時は、合う物が6件に足りなければ1回(10件)だけ続きを読む。
+// 混み合い(429)・つながらない時は、1日以内に覚えた表があればそれを出す(rows.stale = true)。
 export async function listRank(course, period, verify) {
   const b = boardId(course, period), key = 'rkg_rank_' + b;
   const c = LS.get(key);
   if (c && c.rows && Date.now() - c.at < (RANK_MS[period] || RANK_MS.all)) return c.rows;
   const rows = [];
   let last = null, ok = 0;
-  for (let page = 0; page < 3; page++) {
-    let q = F.query(F.collection(db, 'rank', b, 'entries'), F.orderBy('t'), F.limit(RANK_LIMIT));
-    if (last) q = F.query(q, F.startAfter(last));
-    const snap = await guard(() => F.getDocs(q), 0, true);
-    for (const d of snap.docs) {
-      const x = d.data(); rows.push({ uid: d.id, name: x.name, data: x.data, t: x.t });
-      if (!verify || !staleEntry(x, verify)) ok++;
+  try {
+    await init();
+    for (let page = 0; page < 2; page++) {
+      let q = F.query(F.collection(db, 'rank', b, 'entries'), F.orderBy('t'), F.limit(RANK_LIMIT));
+      if (last) q = F.query(q, F.startAfter(last));
+      const snap = cnt(await guard(() => F.getDocs(q), 0, true));
+      for (const d of snap.docs) {
+        const x = d.data(); rows.push({ uid: d.id, name: x.name, data: x.data, t: x.t });
+        if (!verify || !staleEntry(x, verify)) ok++;
+      }
+      if (!verify || ok >= 6 || snap.docs.length < RANK_LIMIT) break;
+      last = snap.docs[snap.docs.length - 1];
     }
-    if (!verify || ok >= 10 || snap.docs.length < RANK_LIMIT) break;
-    last = snap.docs[snap.docs.length - 1];
+  } catch (e) {
+    if (e && e.busy && c && c.rows) { const r = c.rows.slice(); r.stale = true; return r; }
+    throw e;
   }
   LS.set(key, { at: Date.now(), rows });
   // 1日より古い板の覚えを捨てる
