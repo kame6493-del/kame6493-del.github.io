@@ -117,7 +117,8 @@ def page(x, q, prev, nxt, qs=(), latest=None):
     full = latest is None or ex == latest
     url = f"{BASE}/q/{key}/{ex}/{q['id']}/"
     stem1 = re.sub(r"\s+", " ", q["stem"])
-    title = f"第{ex}回{name}国家試験 {label(q)} {'解答と解説' if full else '解答'}|{q['subject']}"
+    head1 = stem1[:30].rstrip("、。 ") + ("…" if len(stem1) > 30 else "")
+    title = f"{head1}|第{ex}回{name} {label(q)} {'解答と解説' if full else '解答'}"
     desc = f"{stem1[:70]}… {'正答と、選択肢ごとの解説' if full else '正答つき'}。第{ex}回{name}国家試験 {label(q)}({q['subject']})。"
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebPage", "@id": url, "url": url, "name": title, "description": desc, "inLanguage": "ja",
@@ -147,6 +148,7 @@ def page(x, q, prev, nxt, qs=(), latest=None):
 {nav}
 {rounds_nav(x, ex) if latest else ""}
 {related(x, q, qs)}
+{subj_link(key, q["subject"], name)}
 {app_cta(name, state, key)}
 {B.ADMAX}
 {B.NC_ASSETS}
@@ -158,9 +160,10 @@ def index_page(x, qs, latest=None):
     key, name, _, ex, org, lic, state = x
     full = latest is None or ex == latest
     url = f"{BASE}/q/{key}/{ex}/"
-    title = f"第{ex}回{name}国家試験 過去問{'と解説' if full else 'と正答'}(全{len(qs)}問)"
-    desc = (f"第{ex}回{name}国家試験の問題を1問ずつ、正答と選択肢ごとの解説つきで載せています。科目別に並べています。" if full else
-            f"第{ex}回{name}国家試験の問題を1問ずつ、正答つきで載せています。科目別に並べています。解説はアプリの完全版で読めます。")
+    subs = list(dict.fromkeys(q["subject"] for q in qs))
+    title = f"第{ex}回{name}国家試験の過去問 全{len(qs)}問の{'解答・解説' if full else '解答'}(科目別・1問ずつ)"
+    desc = (f"第{ex}回{name}国家試験の全{len(qs)}問を1問ずつ、正答と選択肢ごとの解説つきで。{'・'.join(subs[:4])}など{len(subs)}科目に分けて並べ、苦手な科目だけ解き直せます。" if full else
+            f"第{ex}回{name}国家試験の全{len(qs)}問を1問ずつ、正答つきで。{'・'.join(subs[:4])}など{len(subs)}科目に分けて並べています。解説はアプリの完全版で読めます。")
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "url": url, "name": title,
           "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
     rows = []
@@ -177,9 +180,10 @@ def index_page(x, qs, latest=None):
     body = f"""<main class="wrap">
 <style>{EXTRA_CSS}</style>
 <p class="q-meta"><a href="/exam/{key}/">{e(name)}国家試験</a></p>
-<h1>{e(title)}</h1>
+<h1>第{ex}回{e(name)}国家試験 過去問{'と解説' if full else 'と正答'}(全{len(qs)}問)</h1>
 <p>{e(desc)} 図を使う問題と、正答が公表されなかった問題は載せていません。</p>
 {rounds_nav(x, ex) if latest else ""}
+{kamoku_nav(key)}
 {app_cta(name, state, key)}
 {''.join(rows)}
 {B.srcs([(f"{org} 第{ex}回{name}国家試験", qs[0]["source"]), lic])}
@@ -189,13 +193,91 @@ def index_page(x, qs, latest=None):
     return B.head(title, desc, url, ld) + body + B.FOOT
 
 
+SUBJ = {}  # key -> [(slug, 科目名)]
+
+
+def kamoku_nav(key):
+    if not SUBJ.get(key):
+        return ""
+    a = " / ".join(f'<a href="/q/{key}/kamoku/{sl}/">{e(nm)}</a>' for sl, nm in SUBJ[key])
+    return f'<p class="q-meta">科目ごとの過去問: {a}</p>'
+
+
+def subj_link(key, subj, name):
+    sl = next((a for a, b in SUBJ.get(key, []) if b == subj), None)
+    if not sl:
+        return ""
+    return f'<p class="q-meta"><a href="/q/{key}/kamoku/{sl}/">{e(name)}の「{e(subj)}」の過去問を、回をまたいでまとめて見る</a></p>'
+
+
+def usable(q, latest):
+    return (not q.get("excluded") and not q.get("figure") and q.get("answer")
+            and (q.get("explanation") or q["exam"] != latest))
+
+
+def prep_subjects(x, allq):
+    key, latest = x[0], x[3]
+    rounds = [latest] + OLDER.get(key, [])
+    qs = [q for q in allq if q["exam"] in rounds and usable(q, latest)]
+    SUBJ[key] = [(f"s{i:02d}", nm) for i, nm in enumerate(dict.fromkeys(q["subject"] for q in sorted(qs, key=lambda q: (q["exam"] != latest, q["id"]))), 1)]
+    return qs
+
+
+def kamoku_page(x, sl, subj, qs):
+    key, name, _, latest, org, lic, state = x
+    rounds = sorted({q["exam"] for q in qs}, reverse=True)
+    url = f"{BASE}/q/{key}/kamoku/{sl}/"
+    rng = f"第{rounds[-1]}回〜第{rounds[0]}回" if len(rounds) > 1 else f"第{rounds[0]}回"
+    title = f"{name}国家試験 {subj}の過去問 {rng}(全{len(qs)}問・解答つき)"
+    desc = (f"{name}国家試験の「{subj}」の問題だけを、{rng}から全{len(qs)}問まとめました。1問ずつ正答つきで、"
+            f"第{latest}回は選択肢ごとの解説も読めます。")
+    ld = {"@context": "https://schema.org", "@type": "CollectionPage", "url": url, "name": title,
+          "description": desc, "inLanguage": "ja", "dateModified": B.UPDATED}
+    order = {"午前": 0, "午後": 1}
+    rows = []
+    for r in rounds:
+        part = sorted([q for q in qs if q["exam"] == r], key=lambda q: (order.get(q["session"], 2), q.get("session_no") or q["no"]))
+        rows.append(f'<h2>第{r}回({len(part)}問{"・解説つき" if r == latest else ""})</h2><ul class="q-list">')
+        for q in part:
+            rows.append(f'<li><a href="/q/{key}/{r}/{q["id"]}/">{e(label(q))}</a> '
+                        f'<span class="q-meta">{e(re.sub(r"[ 　]+", " ", q["stem"])[:48])}…</span></li>')
+        rows.append("</ul>")
+    body = f"""<main class="wrap">
+<style>{EXTRA_CSS}</style>
+<p class="q-meta"><a href="/exam/{key}/">{e(name)}国家試験</a> / 科目ごとの過去問</p>
+<h1>{e(name)}国家試験 {e(subj)}の過去問({e(rng)})</h1>
+<p>{e(desc)} 図を使う問題と、正答が公表されなかった問題は載せていません。</p>
+{app_cta(name, state, key)}
+{''.join(rows)}
+{kamoku_nav(key)}
+{B.srcs([(f"{org} {name}国家試験", qs[0]["source"]), lic])}
+{B.ADMAX}
+{B.NC_ASSETS}
+</main>"""
+    return B.head(title, desc, url, ld) + body + B.FOOT
+
+
+def build_kamoku(x, qs, urls):
+    key = x[0]
+    for sl, nm in SUBJ[key]:
+        part = [q for q in qs if q["subject"] == nm]
+        d = os.path.join(ROOT, "q", key, "kamoku", sl)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+            f.write(kamoku_page(x, sl, nm, part))
+        urls.append(f"{BASE}/q/{key}/kamoku/{sl}/")
+    print(key, "kamoku", len(SUBJ[key]))
+
+
 def main():
     urls = []
     for x in EXAMS:
         key, name, path, ex = x[0], x[1], x[2], x[3]
         allq = json.load(open(os.path.join(APPDIR, path), encoding="utf-8"))
+        sq = prep_subjects(x, allq)
         for r in [ex] + OLDER.get(key, []):
             build_round(x, allq, r, urls)
+        build_kamoku(x, sq, urls)
     write_sitemap(urls)
 
 
@@ -223,7 +305,7 @@ def write_sitemap(urls):
     sm = os.path.join(ROOT, "sitemap.xml")
     s = open(sm, encoding="utf-8").read()
     s = re.sub(r"<url><loc>[^<]*/q/[^<]*</loc>[^\n]*\n", "", s)
-    add = "".join(f"<url><loc>{u}</loc><lastmod>{B.UPDATED}</lastmod></url>\n" for u in urls)
+    add = "".join(f"<url><loc>{u}</loc><lastmod>{__import__('datetime').date.today().isoformat()}</lastmod></url>\n" for u in urls)
     s = s.replace("</urlset>", add + "</urlset>")
     open(sm, "w", encoding="utf-8", newline="\n").write(s)
     print("sitemap +", len(urls))
