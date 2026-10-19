@@ -86,7 +86,16 @@ const Store = {
   },
   // init(ログイン)をしないで online.js だけ読む。覚えた物・pool.json だけで済む時、読む関数が自分で init する時に使う
   mod() { return import('./online.js'); },
+  // アプリ版は、みんなに見える物(みんなのらくがき・部屋・ランキング)を初めて使う時に利用規約への同意をもらう
+  termsOk() {
+    if (!Full.native()) return true;
+    try { if (localStorage.getItem(CFG.STORE_KEY + '_terms') === '1') return true; } catch (e) { }
+    if (!confirm('みんなのらくがき・3人の部屋・ランキングでは、描いた絵と名前がほかの人にも見えます。\n利用規約(不快な絵・名前・いやがらせの禁止など)に同意して使いますか?\n規約はタイトル画面の「利用規約・配信について」で読めます。不快な絵は「通報」「見ない」で消せます。')) return false;
+    try { localStorage.setItem(CFG.STORE_KEY + '_terms', '1'); } catch (e) { }
+    return true;
+  },
   async remote() {
+    if (!Store.termsOk()) throw Object.assign(new Error('利用規約に同意すると使えます'), { terms: true });
     if (Store.online) return Store.online;
     const m = await import('./online.js');
     await m.init();
@@ -1751,6 +1760,7 @@ const Room = {
 };
 function roomFail(e) {
   console.error(e);
+  if (e && e.terms) { toast('3人の部屋は利用規約に同意すると使えます', 3500); goTitle(); return; }
   if (e && e.busy) { toast('いまは混み合っていて部屋につながりません。「挑戦状リンクを回す」なら遊べます', 4500); goTitle(); return; }
   toast((e && e.message ? e.message + '。' : '') + '部屋につながりません。「挑戦状リンクを回す」なら遊べます', 4500);
   goTitle();
@@ -1783,7 +1793,9 @@ async function galleryMore() {
     const b = document.createElement('button'); b.textContent = '走る'; b.onclick = () => vsGallery(it.creature);
     const rp = document.createElement('button'); rp.className = 'rp'; rp.textContent = '通報';
     rp.onclick = async () => { if (!confirm('この絵を通報しますか?(不快な絵・名前など)')) return; try { await m.report(it.id); d.style.opacity = 0.3; rp.disabled = true; toast('通報しました'); } catch (e) { toast(e.message || '通報できませんでした'); } };
-    row.appendChild(b); row.appendChild(rp); d.appendChild(row);
+    const bk = document.createElement('button'); bk.className = 'rp'; bk.textContent = '見ない';
+    bk.onclick = () => { if (!confirm('この人の絵をこの端末ではもう出さないようにしますか?(みんなのらくがき・相手・ランキング)')) return; m.block(it); d.remove(); toast('この人の絵を出さないようにしました'); };
+    row.appendChild(b); row.appendChild(rp); row.appendChild(bk); d.appendChild(row);
     $('galGrid').appendChild(d);
   }
 }
@@ -2216,7 +2228,7 @@ async function submitTA(sc) {
     const m = await Store.remote();
     const r = await m.submitRank(sc.course, e.cr, Math.round(t * 1000) / 1000, st => verifyTime(sc.course, st));
     add(r.improved ? 'ランキングに登録しました' : 'ランキングは前のタイムのまま', 'blue');
-  } catch (err) { add(err && err.busy ? 'いまは混み合っていてランキングに送れません' : 'ランキングに送れませんでした(オフラインかも)', ''); }
+  } catch (err) { add(err && err.terms ? 'ランキングは利用規約に同意すると使えます' : err && err.busy ? 'いまは混み合っていてランキングに送れません' : 'ランキングに送れませんでした(オフラインかも)', ''); }
 }
 
 // ---------- ランキング ----------
@@ -2248,6 +2260,7 @@ async function openRank() {
     for (const r of rows) {
       let cr = null; try { cr = m.unpackCreature(r.data); } catch (e) { }
       const tv = cr ? verifyTime(course, cr.strokes) : null;
+      if (r.uid !== m.uid() && m.isBlocked({ uid: r.uid })) continue;
       if (tv == null || Math.abs(tv - r.t) > 0.002) { dropped++; continue; }
       if (shown >= (m.RANK_LIMIT || 50)) break;
       shown++;
@@ -2256,6 +2269,7 @@ async function openRank() {
       li.innerHTML = `<span class="no">${shown}</span>`; li.appendChild(c);
       const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name || '名なし'; li.appendChild(nm);
       const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = tv.toFixed(2) + '秒'; li.appendChild(tm);
+      if (r.uid !== m.uid()) { const bk = document.createElement('button'); bk.className = 'tiny rkBlock'; bk.textContent = '見ない'; bk.onclick = () => { if (!confirm('この人の絵をこの端末ではもう出さないようにしますか?(みんなのらくがき・相手・ランキング)')) return; m.block({ uid: r.uid }); li.remove(); toast('この人の絵を出さないようにしました'); }; li.appendChild(bk); }
       ol.appendChild(li);
       if (r.uid === m.uid()) mine = { rank: shown, t: tv, name: r.name };
     }

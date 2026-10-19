@@ -27,6 +27,20 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
   del(k) { try { localStorage.removeItem(k); } catch (e) { } },
 };
+// ---------- 見ない(ブロック。この端末だけ) ----------
+// 絵の id と出した人の uid を覚えて、みんなのらくがき・相手えらび・ランキングに出さない。サーバーには何も送らない。
+const BLOCK_KEY = 'rkg_block';
+function blockData() { const b = LS.get(BLOCK_KEY); return { ids: (b && b.ids) || [], uids: (b && b.uids) || [] }; }
+export function isBlocked(it) { if (!it) return false; const b = blockData(); return !!((it.id && b.ids.includes(it.id)) || (it.uid && b.uids.includes(it.uid))); }
+export function block(it) {
+  const b = blockData();
+  if (it.id && !b.ids.includes(it.id)) b.ids.push(it.id);
+  if (it.uid && it.uid !== uid() && !b.uids.includes(it.uid)) b.uids.push(it.uid);
+  LS.set(BLOCK_KEY, { ids: b.ids.slice(-500), uids: b.uids.slice(-500) });
+}
+export function blockCount() { const b = blockData(); return b.ids.length + b.uids.length; }
+export function unblockAll() { LS.del(BLOCK_KEY); }
+const unblocked = a => a.filter(x => !isBlocked(x));
 // ---------- 混み合っている時(無料枠切れ = resource-exhausted / 429) ----------
 // 一度出たら5分はサーバーに行かずにすぐ「混み合っている」を返す(つながらない・時間切れは2分)。
 export const BUSY_MSG = 'いまは混み合っていて、みんなの絵とランキングが一時的に見られません';
@@ -125,15 +139,16 @@ function toItem(d) {
   try {
     const cr = unpackCreature(x.data); cr.name = x.name || cr.name;
     const c = x.created && x.created.toDate ? x.created.toDate() : null;
-    return { id: d.id, creature: cr, created: c ? `${c.getMonth() + 1}/${c.getDate()}` : '', reports: x.reports };
+    return { id: d.id, uid: x.uid || '', creature: cr, created: c ? `${c.getMonth() + 1}/${c.getDate()}` : '', reports: x.reports };
   } catch (e) { return null; }
 }
 // 一覧は12件ずつ。1ページ目は端末(localStorage)に覚えて、10分は読みに行かない。
 const GAL_KEY = 'rkg_gal_first2';
 function fromCache(c) {
-  return c.items.map(it => { try { const cr = unpackCreature(it.data); cr.name = it.name || cr.name; return { id: it.id, creature: cr, created: it.created }; } catch (e) { return null; } }).filter(Boolean);
+  return c.items.map(it => { try { const cr = unpackCreature(it.data); cr.name = it.name || cr.name; return { id: it.id, uid: it.uid || '', creature: cr, created: it.created }; } catch (e) { return null; } }).filter(Boolean);
 }
-export async function listCreatures(cursor) {
+export async function listCreatures(cursor) { const r = await listCreatures0(cursor); return Object.assign({}, r, { items: unblocked(r.items) }); }
+async function listCreatures0(cursor) {
   if (!cursor) {
     const c = LS.get(GAL_KEY);
     if (c && c.items && Date.now() - c.at < GAL_MS) return { items: fromCache(c), cursor: c.items.length >= 12 ? { cached: c.last } : null };
@@ -157,7 +172,7 @@ async function listRemote(cursor) {
   const items = snap.docs.map(toItem).filter(Boolean);
   if (!cursor) {
     const lastDoc = snap.docs[snap.docs.length - 1];
-    LS.set(GAL_KEY, { at: Date.now(), last: lastDoc && lastDoc.data().created ? lastDoc.data().created.toMillis() : 0, items: snap.docs.map(d => { const it = toItem(d); return { id: d.id, data: d.data().data, name: d.data().name, created: it ? it.created : '' }; }) });
+    LS.set(GAL_KEY, { at: Date.now(), last: lastDoc && lastDoc.data().created ? lastDoc.data().created.toMillis() : 0, items: snap.docs.map(d => { const it = toItem(d); return { id: d.id, uid: d.data().uid || '', data: d.data().data, name: d.data().name, created: it ? it.created : '' }; }) });
   }
   return { items, cursor: snap.docs.length >= 12 ? { snap: snap.docs[snap.docs.length - 1] } : null };
 }
@@ -172,7 +187,7 @@ export async function poolCreatures() {
   const c = LS.get(GAL_KEY);
   const recent = c && c.items && c.items.length && Date.now() - c.at < POOL_MS ? fromCache(c) : [];
   const ids = new Set(recent.map(x => x.id));
-  return recent.concat((await bundledPool()).filter(x => !ids.has(x.id)));
+  return unblocked(recent.concat((await bundledPool()).filter(x => !ids.has(x.id))));
 }
 export async function randomCreature() {
   const pool = await poolCreatures().catch(() => []);
@@ -187,6 +202,7 @@ async function randomRaw() {
   if (snap.empty) snap = cnt(await F.getDocs(F.query(col, F.where('visible', '==', true), F.where('rnd', '<', r), F.orderBy('rnd'), F.limit(1))));
   if (snap.empty) return null;
   const it = toItem(snap.docs[0]);
+  if (isBlocked(it)) return null;
   if (it && it.creature && false) return null;
   return it;
 }
