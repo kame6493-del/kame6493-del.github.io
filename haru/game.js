@@ -178,12 +178,12 @@ const SPRITES = ['hero_idle', 'hero_run', 'hero_jump', 'hero_attack', 'goomy', '
   'p_boots', 'p_wing', 'p_1up', 'p_magnet', 'p_speed', 'thorn', 'zapper', 'antigrav', 'balloon', 'bubble', 'sand', 'eye', 'beetle', 'wizard', 'fish', 'orb', 'stoneblk', 'ladder2', 'lava',
   'metal', 'trampoline', 'booster', 'icicle', 'geyser', 'firebar', 'chest', 'bouncepad',
   'fan', 'switch', 'portal', 'boulder', 'disappear', 'plate', 'timer',
-  'vine', 'rope', 'springy', 'cannon', 'bridge', 'cloud_far'];
+  'vine', 'rope', 'springy', 'cannon', 'bridge', 'cloud_far', 'used_block'];
 const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261019b';
+const SPRITE_V = '20261019q';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -255,8 +255,11 @@ function bakeTiles() {
   bake('groundTop', TILE, TILE, (g, w, h) => g.drawImage(gr, 0, 0, gr.width, gr.height, -2, 0, w + 4, h + 2));
   bake('dirt', TILE, TILE, (g, w, h) => g.drawImage(gr, 0, gr.height * 0.48, gr.width, gr.height * 0.5, -2, 0, w + 4, h + 1));
   bake('brick', TILE, TILE, (g, w, h) => g.drawImage(IMG.brick, 0, 0, w, h));
+  // 2026-10-19 q: なにか 入っている ブロック。前は 黄色い 四角に「？」で 有名な ゲームの ハテナブロックに 近かった
+  // → ChatGPT で 描いた 青緑の 木の 箱に 金の 葉の ふち・星の どんぐり(question.png)と、叩いた 後の 空の 箱(used_block.png)。元の 絵は expansion_1019q/old/
   bake('question', TILE, TILE, (g, w, h) => g.drawImage(IMG.question, 0, 0, w, h));
   bake('used', TILE, TILE, (g, w, h) => {
+    if (IMG.used_block && IMG.used_block.naturalWidth) { g.drawImage(IMG.used_block, 0, 0, w, h); return; }
     g.drawImage(IMG.question, 0, 0, w, h);
     g.globalCompositeOperation = 'source-atop';
     g.fillStyle = 'rgba(120,80,40,.82)'; g.fillRect(0, 0, w, h);
@@ -311,7 +314,8 @@ function bakeTiles() {
   bake('crystalFill', TILE, TILE, (g, w, h) => stoneBlock(g, w, h, '#2d3b6b', '#3c4c85', '#1d2647'));
   // ワールド6〜8(素材の色替え。ChatGPT の絵 seed_block / vine_tile / note_block があれば そちらを使う)
   const artTile = (name, fb) => bake(name, TILE, TILE, (g, w, h) => { if (ART[name]) g.drawImage(ART[name], 0, 0, w, h); else fb(g, w, h); });
-  artTile('seed_block', (g, w, h) => { g.drawImage(IMG.question, 0, 0, w, h); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(40,200,60,.5)'; g.fillRect(0, 0, w, h); g.globalCompositeOperation = 'source-over'; const v = IMG.vine; g.drawImage(v, v.width * 0.42, v.height * 0.05, v.width * 0.2, v.height * 0.5, w * 0.3, h * 0.1, w * 0.4, h * 0.8); });
+  // 10-19 q: つるの 絵は 地が 透けない ので 四角く 汚れて 見えた → 緑に 寄せた 箱の どんぐりから 芽が 2まい 出ている 絵に
+  artTile('seed_block', (g, w, h) => { g.drawImage(IMG.question, 0, 0, w, h); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(50,190,40,.4)'; g.fillRect(0, 0, w, h); g.globalCompositeOperation = 'source-over'; g.strokeStyle = '#1d4a12'; g.lineWidth = 2; g.fillStyle = '#5ee04a'; g.beginPath(); g.moveTo(w / 2, h * 0.36); g.quadraticCurveTo(w / 2 + 1, h * 0.22, w / 2, h * 0.14); g.stroke(); for (const sx of [-1, 1]) { g.beginPath(); g.ellipse(w / 2 + sx * 6, h * 0.16, 6, 3.2, sx * -0.5, 0, 7); g.fill(); g.stroke(); } });
   artTile('vine_tile', (g, w, h) => { const v = IMG.vine; g.drawImage(v, v.width * 0.4, 0, v.width * 0.24, v.height * 0.9, 4, -2, w - 8, h + 4); });
   artTile('note_block', (g, w, h) => { g.drawImage(IMG.springy, 2, 0, w - 4, h); });
   bake('jungleTop', TILE, TILE, (g, w, h) => { g.drawImage(TB.groundTop, 0, 0, w, h); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(0,90,40,.3)'; g.fillRect(0, 0, w, h); });
