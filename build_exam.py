@@ -19,6 +19,8 @@ APP_RINSHO = "https://apps.apple.com/jp/app/id6818536142"
 # 試験ごとの専用ページ(カスタムプロダクトページ)。承認されたものだけ。写真と説明がその試験だけになる
 APP_CPP = {
     "kaigo": APP_MULTI + "?ppid=a40c3453-5460-4911-b67d-c67c16387fc0",
+    "shakai": APP_MULTI + "?ppid=e8f54464-e411-4c52-8be0-3d1ff93b5f71",
+    "seishin": APP_MULTI + "?ppid=a0e511e2-65c3-445e-863c-8035ca37b1d1",
     "kanri": APP_MULTI + "?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5",
     "pt": APP_MULTI + "?ppid=c66bda58-4649-4a61-8f7e-c97e17cb7081",
 }
@@ -250,7 +252,7 @@ EXAMS = [
         ],
         "app": {
             "status": "live",
-            "store": APP_MULTI,
+            "store": APP_CPP["shakai"],
             "range": "第37回・第38回の258問",
             "free": "第38回の129問",
             "price": "¥900",
@@ -321,7 +323,7 @@ EXAMS = [
         ],
         "app": {
             "status": "live",
-            "store": APP_MULTI,
+            "store": APP_CPP["seishin"],
             "range": "第27回・第28回の264問",
             "free": "第28回の132問",
             "price": "¥900",
