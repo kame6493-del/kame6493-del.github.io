@@ -178,12 +178,12 @@ const SPRITES = ['hero_idle', 'hero_run', 'hero_jump', 'hero_attack', 'goomy', '
   'p_boots', 'p_wing', 'p_1up', 'p_magnet', 'p_speed', 'thorn', 'zapper', 'antigrav', 'balloon', 'bubble', 'sand', 'eye', 'beetle', 'wizard', 'fish', 'orb', 'stoneblk', 'ladder2', 'lava',
   'metal', 'trampoline', 'booster', 'icicle', 'geyser', 'firebar', 'chest', 'bouncepad',
   'fan', 'switch', 'portal', 'boulder', 'disappear', 'plate', 'timer',
-  'vine', 'rope', 'springy', 'cannon', 'bridge'];
+  'vine', 'rope', 'springy', 'cannon', 'bridge', 'cloud_far'];
 const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261019a';
+const SPRITE_V = '20261019b';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -5969,7 +5969,8 @@ function drawBackground0(theme, cx, t) {
   for (let i = 0; i < 6; i++) {
     const span = VW + 300;
     const x = ((i * 260 - cx * 0.3 - t * 12) % span + span) % span - 150;
-    drawFit('cloud', x, 120 + (i % 3) * 50 + (theme === 'sky' ? 80 : 0), theme === 'sky' ? 70 : 50, false, theme === 'night' ? 0.35 : theme === 'sky' ? 0.9 : 0.8);
+    // 2026-10-19 Discord「背景の 雲を 足場と まちがえて 落ちた」: 背景の 雲は ぼかした うすい 絵(cloud_far)で、空の 上の ほうだけに
+    drawFit(IMG.cloud_far && IMG.cloud_far.naturalWidth ? 'cloud_far' : 'cloud', x, 110 + (i % 3) * 40 + (theme === 'sky' ? 40 : 0), theme === 'sky' ? 60 : 46, false, theme === 'night' ? 0.3 : theme === 'sky' ? 0.7 : 0.65);
   }
   // 近い丘
   ctx.fillStyle = th.near;
@@ -5990,7 +5991,8 @@ function drawBackground0(theme, cx, t) {
     for (let i = 0; i < 5; i++) {
       const span = VW + 400;
       const x = ((i * 330 - cx * 0.55) % span + span) % span - 200;
-      drawFit('cloud', x, 470 + (i % 2) * 30, 110, false, theme === 'night' ? 0.5 : 0.95);
+      // 下の 雲は 足場の 高さに 来ないよう 画面の いちばん 下(地面より 下)に しずめ、ぼかして うすく(雲海)
+      drawFit(IMG.cloud_far && IMG.cloud_far.naturalWidth ? 'cloud_far' : 'cloud', x, VH + 40 + (i % 2) * 14, 96, false, theme === 'night' ? 0.35 : 0.6);
     }
   }
 }
@@ -6006,7 +6008,7 @@ function drawTiles() {
       if (c === '~' || c === '=') {
         let n = 0; while (tx + n <= x1 + 6 && level.tiles[ty][tx + n] === c) n++;
         const X = tx * TILE, Y = ty * TILE;
-        if (c === '~') drawImg('cloud', X - 8, Y - 10, n * TILE + 16, 44);
+        if (c === '~') { /* 乗れる 雲の 足場は 下に 影を つけて 手前に 見せる(背景の 雲と 見分ける) */ ctx.save(); ctx.shadowColor = th === 'night' ? 'rgba(0,0,20,.6)' : 'rgba(30,50,110,.5)'; ctx.shadowOffsetY = 7; ctx.shadowBlur = 3; drawImg('cloud', X - 8, Y - 10, n * TILE + 16, 44); ctx.restore(); }
         else {
           for (let i = 0; i < n; i++) ctx.drawImage(TB.plank, X + i * TILE, Y, TILE, TILE);
           ctx.fillStyle = 'rgba(60,30,10,.25)'; ctx.fillRect(X, Y + 18, n * TILE, 3);
