@@ -1,0 +1,30 @@
+Tsukau - credits and licences
+=============================
+
+App code and the "Scenes" phrases (data/scenes.json) are written for Tsukau by its developer.
+
+Vocabulary (data/vocab_n5.json, vocab_n4.json, vocab_n3.json, wod.json)
+  - JLPT vocabulary lists by Jonathan Waller, tanos.co.uk, released under CC BY.
+  - Taken via open-anki-jlpt-decks by Jamie Sinclair (MIT License)
+    https://github.com/jamsinclair/open-anki-jlpt-decks
+  - Some English glosses may come from JMdict by the Electronic Dictionary Research and
+    Development Group (EDRDG). Because of this, Tsukau treats these files as CC BY-SA 4.0.
+  - Changes: trimmed long meanings to the first two senses, removed duplicates across levels.
+
+Kanji readings and meanings (data/kanji_n5.json, kanji_n4.json, kanji_n3.json)
+  - KANJIDIC2, Electronic Dictionary Research and Development Group (EDRDG)
+    https://www.edrdg.org/wiki/index.php/KANJIDIC_Project
+    Used under the EDRDG licence: https://www.edrdg.org/edrdg/licence.html (CC BY-SA 4.0)
+  - JLPT level labels (N5/N4/N3) from kanji-data by David Gouveia (MIT License)
+    https://github.com/davidluzgouveia/kanji-data
+    (WaniKani fields in that file are not used.)
+  - Changes: kept up to 3 on/kun readings and 3 English meanings, sorted by frequency.
+
+Stroke order (data/strokes.json)
+  - KanjiVG, copyright (C) 2009-2023 Ulrich Apel, CC BY-SA 3.0
+    https://kanjivg.tagaini.net/
+  - Changes: kept only the stroke paths, packed into one JSON file.
+
+The files in data/ are shared under the same licences as their sources (CC BY-SA).
+JLPT (Japanese-Language Proficiency Test) is run by the Japan Foundation and
+Japan Educational Exchanges and Services. Tsukau is not affiliated with them.
