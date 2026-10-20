@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tsukau: Real Japanese Phrases</title>
+<meta name="description" content="Learn the Japanese you will actually use. Real lines for the konbini, the train, the ramen shop and the summer festival, plus kana and JLPT words five minutes a day. Android testing is open.">
+<meta name="theme-color" content="#0b1230">
+<link rel="canonical" href="https://yurustudio.github.io/tsukau/">
+<link rel="icon" href="img/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tsukau">
+<meta property="og:title" content="Tsukau: Real Japanese Phrases">
+<meta property="og:description" content="The Japanese you will actually use, scene by scene. Konbini, trains, ramen shops and festivals. Android testers wanted.">
+<meta property="og:url" content="https://yurustudio.github.io/tsukau/">
+<meta property="og:image" content="https://yurustudio.github.io/tsukau/img/og.jpg">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="500">
+<meta property="og:image:alt" content="Tsukau logo and its bird mascot on a night train platform in Japan">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tsukau: Real Japanese Phrases">
+<meta name="twitter:description" content="The Japanese you will actually use, scene by scene. Android testers wanted.">
+<meta name="twitter:image" content="https://yurustudio.github.io/tsukau/img/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@500;700;800&family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b1230; --ink2: #121a42; --ink3: #1b2456; --panel: rgba(18, 26, 66, .82);
+    --gold: #e8c078; --gold2: #f6dca6; --line: rgba(232, 192, 120, .45); --line2: rgba(232, 192, 120, .18);
+    --shu: #e0473a; --shu2: #ff6a4d; --take: #57d89a;
+    --text: #fff7ec; --sub: #c8c3d9; --muted: #9a98b8;
+    --jp: "Shippori Mincho B1", "Noto Serif JP", "Yu Mincho", serif;
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--ink); color: var(--text); font: 17px/1.65 var(--sans); overflow-x: hidden; }
+  a { color: var(--gold2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  [lang="ja"] { font-family: var(--jp); }
+
+  /* hero */
+  .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line2);
+    background: linear-gradient(180deg, rgba(11,18,48,.15) 0%, rgba(11,18,48,.55) 55%, var(--ink) 100%), url(img/hero_bg.jpg) center 35% / cover no-repeat; }
+  .hero .wrap { padding-top: 34px; padding-bottom: 56px; display: grid; gap: 28px; grid-template-columns: 1.15fr .85fr; align-items: center; }
+  .logo { width: 220px; filter: drop-shadow(0 3px 10px rgba(0,0,0,.5)); }
+  h1 { font: 700 clamp(34px, 6vw, 54px)/1.08 var(--serif); margin: 18px 0 12px; text-shadow: 0 3px 18px rgba(0,0,0,.6); }
+  .lead { font-size: 19px; color: var(--text); max-width: 34em; text-shadow: 0 2px 10px rgba(0,0,0,.7); margin: 0 0 22px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 999px; font: 800 17px/1 var(--sans); text-decoration: none; }
+  .btn.main { background: linear-gradient(180deg, var(--shu2), var(--shu)); color: #fff; box-shadow: 0 10px 26px rgba(224,71,58,.4); }
+  .btn.soft { border: 1.5px solid var(--line); color: var(--gold2); background: rgba(11,18,48,.6); }
+  .hero .phone { justify-self: center; }
+
+  .phone { width: 100%; max-width: 300px; border-radius: 34px; padding: 9px; background: #05091f; border: 1.5px solid var(--line);
+    box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+  .phone img { border-radius: 26px; aspect-ratio: 9 / 16; object-fit: cover; object-position: top; width: 100%; }
+
+  section { padding: 64px 0; }
+  .kicker { font: 800 13px/1 var(--sans); letter-spacing: 1.8px; text-transform: uppercase; color: var(--shu2); margin: 0 0 12px; }
+  h2 { font: 700 clamp(28px, 4.6vw, 40px)/1.15 var(--serif); margin: 0 0 16px; }
+  h3 { font: 700 21px/1.3 var(--serif); margin: 0 0 6px; }
+  p { margin: 0 0 14px; }
+  .sub { color: var(--sub); }
+  .split { display: grid; grid-template-columns: 1fr 300px; gap: 48px; align-items: center; }
+  .split.rev { grid-template-columns: 300px 1fr; }
+  .split.rev .phone { order: -1; }
+
+  /* scene dialogue */
+  .talk { display: grid; gap: 10px; margin: 22px 0 18px; }
+  .b { border: 1.5px solid var(--line); border-radius: 18px; padding: 12px 16px; background: var(--panel); max-width: 430px; }
+  .b.you { margin-left: auto; border-color: rgba(255,106,77,.55); background: rgba(70, 24, 34, .55); }
+  .b .who { font: 800 11.5px/1 var(--sans); letter-spacing: 1.4px; text-transform: uppercase; color: #8fb0ff; }
+  .b.you .who { color: var(--shu2); }
+  .b .jp { font: 800 23px/1.4 var(--jp); margin-top: 6px; }
+  .b .kn { font: 600 13.5px/1.4 var(--jp); color: var(--gold); }
+  .b .en { font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: 14.5px; color: var(--gold2); background: rgba(11,18,48,.5); }
+  .chip span { font-family: var(--jp); margin-right: 6px; }
+
+  .band { background: linear-gradient(180deg, var(--ink2), var(--ink)); border-top: 1px solid var(--line2); border-bottom: 1px solid var(--line2); }
+  .pile { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 6px; }
+  .pile div { border: 1px solid var(--line2); border-radius: 18px; padding: 16px; background: rgba(27,36,86,.45); }
+  .pile b { display: block; font: 700 18px/1.3 var(--serif); color: var(--gold2); margin-bottom: 4px; font-weight: 700; }
+  .pile p { margin: 0; font-size: 15.5px; color: var(--sub); }
+
+  /* gallery */
+  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 26px; }
+  .gallery figure { margin: 0; }
+  .gallery .phone { max-width: none; border-radius: 26px; padding: 6px; }
+  .gallery .phone img { border-radius: 21px; }
+  .gallery figcaption { text-align: center; color: var(--sub); font-size: 15px; margin-top: 10px; }
+
+  /* tester steps */
+  .steps { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 14px; counter-reset: s; }
+  .steps li { position: relative; border: 1.5px solid var(--line); border-radius: 22px; background: var(--panel); padding: 20px 20px 20px 78px; counter-increment: s; }
+  .steps li::before { content: counter(s); position: absolute; left: 20px; top: 20px; width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 21px/1 var(--serif); color: #fff; background: linear-gradient(180deg, var(--shu2), var(--shu)); }
+  .steps .btn { margin-top: 6px; min-height: 46px; font-size: 15.5px; padding: 0 20px; }
+  .steps p { margin: 0 0 6px; color: var(--sub); }
+  .note { margin-top: 18px; color: var(--muted); font-size: 15px; }
+  .ios { margin-top: 26px; display: flex; gap: 14px; align-items: center; border: 1px dashed var(--line); border-radius: 18px; padding: 16px 18px; color: var(--sub); }
+  .ios .tag { flex: none; font: 800 12px/1 var(--sans); letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink); background: var(--gold); border-radius: 999px; padding: 7px 12px; }
+
+  footer { border-top: 1px solid var(--line2); padding: 30px 0 46px; color: var(--muted); font-size: 14.5px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+  footer .sp { flex: 1; }
+
+  @media (max-width: 860px) {
+    .hero .wrap, .split, .split.rev { grid-template-columns: 1fr; gap: 30px; }
+    .split.rev .phone { order: 0; }
+    .phone { max-width: 270px; justify-self: center; margin: 0 auto; }
+    .pile { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  }
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .hero .wrap { padding-top: 24px; padding-bottom: 40px; }
+    .logo { width: 180px; }
+    .lead { font-size: 17px; }
+    .btn { width: 100%; justify-content: center; }
+    section { padding: 48px 0; }
+    .steps li { padding: 70px 18px 18px; }
+    .steps li::before { left: 18px; top: 18px; }
+    .b .jp { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <img class="logo" src="img/logo.png" alt="Tsukau" width="720" height="195">
+      <h1>Learn the Japanese you will actually use</h1>
+      <p class="lead">Tsukau means “to use”. It teaches the lines you hear at the konbini counter, on the train and at the ramen shop, and what to say back. Kana and JLPT words come with it, five minutes a day.</p>
+      <div class="btns">
+        <a class="btn main" href="#android">Join the Android test</a>
+        <a class="btn soft" href="#scenes">See a Scene</a>
+      </div>
+    </div>
+    <div class="phone"><img src="img/2_home.jpg" alt="Tsukau home screen with today's word, a streak and Scenes" width="540" height="960"></div>
+  </div>
+</header>
+
+<main>
+<section id="scenes">
+  <div class="wrap split">
+    <div>
+      <p class="kicker">Scenes</p>
+      <h2>Real lines for real moments in Japan</h2>
+      <p class="sub">Each Scene is one place in Japan. You get what the staff will say to you and what you can say back, written by a Japanese developer. Kana readings under every line, a short tip on when to use it, and a button to hear it.</p>
+      <div class="talk" aria-label="Example from the Konbini Scene">
+        <div class="b"><div class="who">They say</div><div class="jp" lang="ja">袋はご利用ですか?</div><div class="kn" lang="ja">ふくろはごりようですか?</div><div class="en">Would you like a bag?</div></div>
+        <div class="b you"><div class="who">You say</div><div class="jp" lang="ja">大丈夫です。</div><div class="kn" lang="ja">だいじょうぶです。</div><div class="en">I'm fine (no thanks).</div></div>
+        <div class="b you"><div class="who">Or</div><div class="jp" lang="ja">袋、お願いします。</div><div class="kn" lang="ja">ふくろ、おねがいします。</div><div class="en">A bag, please.</div></div>
+      </div>
+      <div class="chips">
+        <span class="chip"><span lang="ja">コンビニ</span>Konbini</span>
+        <span class="chip"><span lang="ja">電車</span>Train</span>
+        <span class="chip"><span lang="ja">ラーメン屋</span>Ramen shop</span>
+        <span class="chip"><span lang="ja">夏祭り</span>Summer festival</span>
+        <span class="chip"><span lang="ja">ホテル</span>Hotel</span>
+        <span class="chip"><span lang="ja">居酒屋</span>Izakaya</span>
+        <span class="chip"><span lang="ja">道を聞く</span>Asking the way</span>
+        <span class="chip"><span lang="ja">学校の屋上</span>School rooftop</span>
+      </div>
+    </div>
+    <div class="phone"><img src="img/1_scene.jpg" alt="The Konbini Scene in Tsukau, with the cashier's lines and your replies" width="540" height="960"></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap split rev">
+    <div class="phone"><img src="img/3_card.jpg" alt="A word card with Again, Hard, Good and Easy buttons showing the next review date" width="540" height="960"></div>
+    <div>
+      <p class="kicker">Five minutes a day</p>
+      <h2>Take a few days off. Your reviews won't pile up.</h2>
+      <p class="sub">Most flashcard apps punish a break: miss a week and 50 reviews turn into 500. Tsukau keeps a daily cap on new words and on reviews. If you miss a few days, the older reviews are spread over the next days.</p>
+      <div class="pile">
+        <div><b>A small daily set</b><p>A few new JLPT N5 words and kanji each day, with spaced repetition.</p></div>
+        <div><b>A cap on reviews</b><p>The day ends when you reach it, so a session stays short.</p></div>
+        <div><b>Spread, not stacked</b><p>Coming back after a break feels like a normal day.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Inside the app</p>
+    <h2>Kana, words and your own name</h2>
+    <p class="sub">Hiragana and katakana with stroke order, quick quizzes on the ones you miss, and your name written in katakana, letter by letter.</p>
+    <div class="gallery">
+      <figure><div class="phone"><img src="img/4_scenes.jpg" alt="The list of Scenes" width="540" height="960"></div><figcaption>Eight Scenes so far</figcaption></figure>
+      <figure><div class="phone"><img src="img/5_kana.jpg" alt="Hiragana chart with a stroke order animation" width="540" height="960"></div><figcaption>Kana with stroke order</figcaption></figure>
+      <figure><div class="phone"><img src="img/7_name.jpg" alt="The name Sophia written as ソフィア in katakana" width="540" height="960"></div><figcaption>Your name in Japanese</figcaption></figure>
+      <figure><div class="phone"><img src="img/6_quiz.jpg" alt="A kana quiz with four answer choices" width="540" height="960"></div><figcaption>Quick kana quizzes</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="android" class="band">
+  <div class="wrap">
+    <p class="kicker">Android testers wanted</p>
+    <h2>Help me test Tsukau on Android</h2>
+    <p class="sub">Before a new app can go public on Google Play, it has to be tested by real people for 14 days. If you have an Android phone, it takes three steps.</p>
+    <ol class="steps">
+      <li><h3>Join the tester group</h3><p>Join the Google Group with the Google account you use on your phone.</p>
+        <a class="btn soft" href="https://groups.google.com/g/nigatecho-testers" target="_blank" rel="noopener">Open the tester group</a></li>
+      <li><h3>Open the test link</h3><p>Open it with the same account, tap “Become a tester”, then install Tsukau from Google Play.</p>
+        <a class="btn main" href="https://play.google.com/apps/testing/jp.tsukau.app" target="_blank" rel="noopener">Become a tester</a></li>
+      <li><h3>Keep it installed for 14 days</h3><p>Open it now and then if you like. Feedback is welcome, but keeping it on your phone is the main help.</p></li>
+    </ol>
+    <p class="note">If the test link says the app is not available, the group join may not have reached Google Play yet. Wait a few minutes and open it again with the same account.</p>
+    <div class="ios"><span class="tag">iPhone</span><span>The iPhone version is in preparation.</span></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Tsukau, made by YURU Studio in Japan</span>
+    <span class="sp"></span>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Use</a>
+    <a href="mailto:kame6493@gmail.com">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
