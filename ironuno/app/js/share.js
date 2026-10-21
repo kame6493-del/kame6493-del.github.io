@@ -1,9 +1,11 @@
 // 結果カードの保存と共有。画像は端末の中で作り、送り先は本人が共有の画面で選ぶ。
 import { SEASONS } from './seasons.js';
+import { friendLink } from './friends.js';
 
 export function shareText(result) {
   const T = SEASONS[result.top], T2 = SEASONS[result.second];
-  return `顔のまわりに布の色を当てて見比べたら、${T.name}でした。2番目は${T2.name}。\n#似合う色 #${T.name} #パーソナルカラー`;
+  // リンクには季節の短い記号だけが入る(開いた人は、自分の結果と並べて見られる)
+  return `顔のまわりに布の色を当てて見比べたら、${T.name}でした。2番目は${T2.name}。\nあなたの似合う色も → ${friendLink(result)}\n#似合う色 #${T.name} #パーソナルカラー`;
 }
 
 // mode: 'share' | 'save'。戻り値: 'shared' | 'downloaded'

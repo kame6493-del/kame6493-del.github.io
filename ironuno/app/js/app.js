@@ -10,14 +10,19 @@ import { createPurchase } from './purchase.js';
 import { drawCard, cardLines, cardAssets } from './card.js';
 import { shareCanvas, shareText } from './share.js';
 import { paintDrape, drapeAssets, cropHead } from './drape.js';
+import { parseFriend, compare, KIND_TEXT, FREE_FRIENDS, friendCode, SITE_SHORT } from './friends.js';
 
 export const APP_NAME = 'イロヌノ';
 const $ = (s, el = document) => el.querySelector(s);
 const appEl = $('#app'), scr = $('#screen'), tabsEl = $('#tabs'), sheet = $('#sheet'), toastEl = $('#toast');
 const store = openStore(safeLS());
 const Buy = createPurchase();
-const X = { screen: 'home', photo: null, white: null, face: null, head: null, skin: null, rounds: [], picks: [], step: 0, answers: {}, q: 0, result: null, saved: false, shelf: null, from: null };
+const X = { incoming: readIncoming(), draft: null, screen: 'home', photo: null, white: null, face: null, head: null, skin: null, rounds: [], picks: [], step: 0, answers: {}, q: 0, result: null, saved: false, shelf: null, from: null };
 
+// 友だちが共有したリンク(?f=sp.au)から来た時の季節。読んだらアドレスから消す
+function readIncoming() {
+  try { const f = parseFriend(location.search || ''); if (location.search && history.replaceState) history.replaceState(null, '', location.pathname); return f; } catch (e) { return null; }
+}
 function safeLS() { try { return window.localStorage; } catch (e) { return null; } }
 
 // ---- 小さな部品
@@ -43,8 +48,8 @@ function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('on'); cl
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // ---- 画面の切り替え
-const MODE = { home: 'dark', result: 'dark', card: 'dark', prep: 'lab', white: 'lab', face: 'lab', quiz: 'lab', drape: 'neutral', shelf: 'light', history: 'light', settings: 'light' };
-const TABBED = { home: 'home', result: 'home', shelf: 'shelf', history: 'history' };
+const MODE = { friends: 'light', home: 'dark', result: 'dark', card: 'dark', prep: 'lab', white: 'lab', face: 'lab', quiz: 'lab', drape: 'neutral', shelf: 'light', history: 'light', settings: 'light' };
+const TABBED = { friends: 'history', home: 'home', result: 'home', shelf: 'shelf', history: 'history' };
 const SCREENS = {};
 function go(name, opts = {}) {
   X.screen = name; closeSheet(true);
@@ -82,14 +87,20 @@ SCREENS.home = () => {
         : `<button class="btn btn-pearl" id="start">診断をはじめる${ICON.arr}</button>`}
       ${privacy(true)}
     </div>
+    ${X.incoming ? `<button class="fr-in" id="frIn" style="--acc:${SEASONS[X.incoming.top].key}"><span class="k">友だちの似合う色が届きました</span>
+        <b class="serif">${SEASONS[X.incoming.top].name}</b>${X.incoming.second ? `<small>2番目 ${SEASONS[X.incoming.second].name}</small>` : ''}
+        <span class="go">${last ? '自分の色と並べて見る' : 'まず自分の色を比べてみる'}${ICON.arr}</span></button>` : ''}
     ${last ? `<button class="lastcard" id="lastRes" style="--acc:${SEASONS[last.top].key}">
         <span class="lc-k">前回の結果</span><i class="lc-line"></i>${ICON.arr}
         <b class="serif">${SEASONS[last.top].name}</b><small>2番目 ${SEASONS[last.second].name}</small>
         <span class="lc-dots">${SEASONS[last.top].best.slice(0, FREE_COUNT).map(c => `<i style="background:${c.hex}"></i>`).join('')}</span>
         <img src="img/fabric_${last.top}.jpg" alt="">
       </button>` : `<ol class="home-flow" aria-label="診断の流れ"><li><b>1</b>白い紙と一緒に撮る</li><li><b>2</b>布を当てて12回見比べる</li><li><b>3</b>5つの質問に答える</li></ol>`}
+    ${Buy.owned ? '' : `<button class="home-buy" id="homeBuy"><img src="img/po_all.jpg" alt="" aria-hidden="true"><span><b>色の本棚を全部ひらく</b><small>${Buy.isApp() ? '買い切り・月額なし' : 'アプリ版で買い切り'}</small></span>${priceTag('homePrice')}</button>`}
     <p class="fine on-dark">結果は見え方の目安です。照明・カメラ・画面によって変わります。</p>
   </section>`;
+  const hb = $('#homeBuy'); if (hb) hb.onclick = () => paywall('home');
+  const fi = $('#frIn'); if (fi) fi.onclick = () => { if (!store.latest()) { resetRun(); go('prep'); return; } X.draft = Object.assign({}, X.incoming); go('friends'); };
   $('#start').onclick = () => { resetRun(); go('prep'); };
   const r = $('#resume'); if (r) r.onclick = () => go(resumeScreen());
   $('#gear').onclick = () => go('settings');
@@ -321,23 +332,42 @@ SCREENS.result = () => {
       ${r.clarity === 'close' ? `<p class="note">${CLARITY_TEXT.close}</p>` : ''}
       ${!r.calibrated ? '<p class="note">今回は白い紙で合わせずに比べました。紙を一緒に写すと、明かりの色を合わせてから比べられます。</p>' : ''}
     </div>
-    ${Buy.owned ? `<button class="shelf-cta owned" id="toShelf"><span class="serif">色の本棚をひらく</span><small>メイク・服の色・髪色・顔から離したい色</small>${ICON.arr}</button>` : `
-    <div class="shelf-cta" id="promo">
-      <img src="img/promo_silk.jpg" alt="" aria-hidden="true">
-      <p class="serif">似合う色を、<br>毎日の選択へ。</p>
-      <p class="sub">コスメ、服、髪色まで。あなたの季節の色をもっと詳しく。</p>
-      <ul class="locks"><li><img src="img/lk_makeup.png" alt="">メイク${ICON.lock}</li><li><img src="img/lk_wear.png" alt="">服の色${ICON.lock}</li><li><img src="img/lk_hair.png" alt="">髪色${ICON.lock}</li></ul>
-      <button class="btn btn-pearl" id="openAll">色の本棚を全部ひらく${ICON.arr}</button>
-    </div>`}
+    ${Buy.owned ? `<button class="shelf-cta owned" id="toShelf"><span class="serif">色の本棚をひらく</span><small>メイク・服の色・髪色・顔から離したい色</small>${ICON.arr}</button>` : peekBlock(r.top)}
+    <button class="fr-cta" id="toFriends"><img src="img/po_friends.jpg" alt="" aria-hidden="true"><span><b class="serif">友だちと比べる</b><small>二人とも似合う色・おそろいの色</small></span>${ICON.arr}</button>
     <button class="btn-text on-dark" id="again">もう一度比べる</button>
   </section>`;
   bindChips();
   onBack(() => go('home'));
   $('#toCard').onclick = $('#shareTop').onclick = () => go('card');
-  const oa = $('#openAll'); if (oa) oa.onclick = () => paywall('result');
+  scr.querySelectorAll('.peek-more').forEach(b => b.onclick = () => paywall('peek'));
+  $('#toFriends').onclick = () => go('friends');
   const ts = $('#toShelf'); if (ts) ts.onclick = () => { X.shelf = r.top; go('shelf'); };
   $('#again').onclick = () => { resetRun(); go('prep'); };
 };
+
+// 結果の直後に見せる「続き」: 有料の中身の本物を少しだけ(各段の先頭)見せて、残りはぼかす
+const PEEK = [
+  ['all', '全部の色見本', 'po_all', T => [T.best.slice(FREE_COUNT, FREE_COUNT + 2), T.best.slice(FREE_COUNT + 2, FREE_COUNT + 8)], T => T.best.length - FREE_COUNT - 2],
+  ['makeup', 'メイクの色', 'po_makeup', T => [T.makeup.lip.slice(0, 2), T.makeup.lip.slice(2).concat(T.makeup.cheek, T.makeup.eye).slice(0, 6)], T => T.makeup.lip.length + T.makeup.cheek.length + T.makeup.eye.length - 2],
+  ['wear', '服の色', 'po_wear', T => [T.wear.base.slice(0, 1), T.wear.base.slice(1).concat(T.wear.accent).slice(0, 6)], T => T.wear.base.length + T.wear.accent.length - 1],
+  ['hair', '髪色', 'po_hair', T => [T.hair.slice(0, 1), T.hair.slice(1)], T => T.hair.length - 1],
+  ['avoid', '顔から離したい色', 'po_avoid', T => [T.avoid.slice(0, 1), T.avoid.slice(1)], T => T.avoid.length - 1],
+];
+function peekBlock(season) {
+  const T = SEASONS[season];
+  return `<section class="peek" id="peek">
+    <p class="latin">Your colors, continued</p>
+    <h2 class="serif">あなたの色の、続き</h2>
+    <p class="sub">${T.name}のメイク・服・髪色を、各段の最初の色だけ先に見られます。</p>
+    ${PEEK.map(([k, title, img, get, rest]) => { const [open, hid] = get(T); return `<div class="pk-row" data-k="${k}">
+      <img class="pk-ic" src="img/${img}.jpg" alt="" aria-hidden="true">
+      <div class="pk-body"><h3>${title}<small>${ICON.lock}あと${rest(T)}色</small></h3>
+        <div class="pk-chips">${open.map(c => `<button class="chip pk-open" data-hex="${c.hex}" data-name="${esc(c.name)}" style="--c:${c.hex}" aria-label="${esc(c.name)}"><i></i></button>`).join('')}<span class="pk-names">${open.map(c => esc(c.name)).join('・')}</span>
+        <span class="veil pk-hid" aria-hidden="true">${hid.map(c => `<i style="background:${c.hex}"></i>`).join('')}</span></div></div></div>`; }).join('')}
+    <button class="btn btn-pearl peek-more" id="openAll">続きを見る${ICON.arr}</button>
+  </section>`;
+}
+function priceTag(id) { return `<em class="pt" id="${id}">${Buy.isApp() ? esc(Buy.price || '') : ''}</em>`; }
 
 // ---- 09 結果カード
 SCREENS.card = () => {
@@ -349,6 +379,7 @@ SCREENS.card = () => {
     <label class="toggle ${canFace ? '' : 'off'}"><span><b>顔写真を入れる</b><small>${canFace ? '最初は写真なし' : 'いま撮った写真がある時だけ入れられます'}</small></span>
       <input type="checkbox" id="withFace" role="switch" ${store.data.showFace && canFace ? 'checked' : ''} ${canFace ? '' : 'disabled'}><i></i></label>
     <div class="row2"><button class="btn btn-line-dark" id="saveBtn">保存する</button><button class="btn btn-pearl" id="shareBtn">共有する</button></div>
+    <div id="nudge"></div>
     <details class="post"><summary>Threads・X に添える文</summary><textarea id="postTxt" readonly rows="3">${esc(shareText(r))}</textarea><button class="btn-text on-dark" id="copyTxt">文をコピー</button></details>
   </section>`;
   const make = () => {
@@ -370,7 +401,16 @@ async function doShare(mode) {
   try {
     const how = await shareCanvas(X.card, { text: shareText(X.result), filename: `ironunu-${X.result.top}.png`, mode });
     if (how === 'downloaded') toast('画像を保存しました');
+    if (how !== 'cancelled') nudgeOnce();
   } catch (e) { toast('保存できませんでした'); }
+}
+// 保存・共有のあとに一度だけ(これまでに一度も出していない時だけ)、控えめに続きを案内する
+function nudgeOnce() {
+  if (Buy.owned || store.data.nudged || X.screen !== 'card') return;
+  const box = $('#nudge'); if (!box) return;
+  store.data.nudged = true; store.save();
+  box.innerHTML = `<div class="nudge"><p>${esc(SEASONS[X.result.top].name)}のメイク・服・髪色の色も、色の本棚で見られます。</p><button class="btn-text on-dark" id="nudgeGo">続きを見る</button></div>`;
+  $('#nudgeGo').onclick = () => paywall('card');
 }
 
 // ---- 11 色の本棚(白地の見本帳)
@@ -394,15 +434,19 @@ SCREENS.shelf = () => {
   scr.innerHTML = `<section class="shelf">
     <div class="sh-art" aria-hidden="true"><img src="img/card_${s}.jpg" alt=""></div>
     <header class="sh-head"><p class="latin dark">Color library</p><h1 class="serif">色の本棚</h1>
-      <p class="lead-l">${last ? `あなたの季節は <b>${SEASONS[last.top].name}</b>。<br>ほかの季節も見られます。` : 'まだ診断していません。<br>季節を選ぶと見本を見られます。'}</p></header>
-    <div class="seg" role="tablist">${ORDER.map(x => `<button role="tab" data-s="${x}" aria-selected="${x === s}">${SEASONS[x].name}</button>`).join('')}</div>
+      <p class="lead-l">${last ? `あなたの季節は <b>${SEASONS[last.top].name}</b>。<br>4つの季節の96色を集める見本帳です。` : 'まだ診断していません。<br>4つの季節の96色を集める見本帳です。'}</p></header>
+    ${(() => { const got = own ? 96 : (last ? FREE_COUNT : 0); return `<div class="dex" id="dex"><span>集めた色</span><b><em id="dexGot">${got}</em> / 96</b><i><s style="width:${got / 96 * 100}%"></s></i></div>`; })()}
+    <div class="seg" role="tablist">${ORDER.map(x => { const lk = !own && !(last && last.top === x); return `<button role="tab" data-s="${x}" aria-selected="${x === s}" ${lk ? 'data-locked="1"' : ''}>${lk ? ICON.lock : ''}${SEASONS[x].name}</button>`; }).join('')}</div>
     ${SHELF.map(([k, title, get, desc]) => {
       const v = get(s);
       if (k === 'best') {
-        const rest = T.best.slice(palette.length);
-        return `<section class="book" data-k="best"><h2 class="serif">${title} ${T.best.length}色</h2>
-          ${palette.length ? body('best', palette) : ''}
-          ${rest.length ? `<div class="lockwrap">${palette.length ? '<p class="desc more">ここから先の色</p>' : `<p class="desc">${desc}</p>`}<div class="veil" aria-hidden="true">${body('best', rest.slice(0, 12))}</div><button class="btn btn-navy sm unlock" data-k="best">${ICON.lock}全部ひらく</button></div>` : ''}</section>`;
+        // 図鑑のように24枠を番号つきで並べる。ひらいていない枠は色をぼかして鍵
+        return `<section class="book" data-k="best"><h2 class="serif">${title}<small>${palette.length} / ${T.best.length}</small></h2>
+          ${!palette.length ? `<div class="lockbook" id="lockbook"><img src="img/locked_book.jpg" alt="" aria-hidden="true"><p>${T.name}の${T.best.length}色は、まだ閉じています</p></div>` : ''}
+          <ol class="dexgrid">${T.best.map((c, i) => i < palette.length
+            ? `<li class="got"><button class="chip" data-hex="${c.hex}" data-name="${esc(c.name)}" style="--c:${c.hex}" aria-label="${esc(c.name)}"><i></i></button><span>${softName(c.name)}</span></li>`
+            : `<li class="lk"><i class="lkc" style="--c:${c.hex}" aria-hidden="true"></i>${ICON.lock}<span>No.${String(i + 1).padStart(2, '0')}</span></li>`).join('')}</ol>
+          ${palette.length < T.best.length ? `<button class="btn btn-navy sm unlock-inline unlock" data-k="best">${ICON.lock}全部ひらく</button>` : ''}</section>`;
       }
       return `<section class="book ${own ? 'open' : 'locked'}" data-k="${k}"><h2 class="serif">${own ? '' : ICON.lock}${title}</h2><p class="desc">${desc}</p>
         ${own ? body(k, v) : `<div class="lockwrap"><div class="veil" aria-hidden="true">${body(k, v)}</div><button class="btn btn-navy sm unlock" data-k="${k}">${ICON.lock}全部ひらく</button></div>`}</section>`;
@@ -431,11 +475,13 @@ SCREENS.history = () => {
     ${last ? `<button class="rec-last" id="lastRes"><img src="img/fabric_${last.top}.jpg" alt="" aria-hidden="true"><span class="k">いちばん新しい結果</span><b class="serif">${SEASONS[last.top].name}<em class="latin">${SEASONS[last.top].en}</em></b><small>2番目 ${SEASONS[last.second].name}</small><small>${fmt(last.at)}</small></button>` : '<p class="lead-l">まだ記録がありません。診断をすると、ここに残ります。</p>'}
     ${list.length ? `<section class="book ${Buy.owned ? 'open' : 'locked'}" id="recs"><h2 class="serif">${Buy.owned ? '' : ICON.lock}これまでの記録<small>${sm.count}回</small></h2>
       ${Buy.owned ? recList(list, sm) : `<div class="lockwrap"><p class="desc">光や季節を変えて比べ直すと、どこに落ち着くかが見えてきます。</p><div class="veil" aria-hidden="true">${recList(list.length > 2 ? list : list.concat(list, list), sm)}</div><button class="btn btn-navy sm unlock" data-k="history">${ICON.lock}全部ひらく</button></div>`}</section>` : ''}
+    <button class="fr-cta light" id="toFriends"><img src="img/po_friends.jpg" alt="" aria-hidden="true"><span><b class="serif">友だちと比べる</b><small>${store.data.friends.length ? `${store.data.friends.length}人の色` : '二人とも似合う色・おそろいの色'}</small></span>${ICON.arr}</button>
     <button class="btn btn-navy" id="again">もう一度比べる${ICON.arr}</button>
     <p class="fine">記録に残すのは結果の季節と割合、日時だけです。写真は残しません。</p>
   </section>`;
   const lr = $('#lastRes'); if (lr) lr.onclick = () => { X.result = fromRecord(last); X.from = 'history'; go('result'); };
   scr.querySelectorAll('.unlock').forEach(b => b.onclick = () => paywall('history'));
+  $('#toFriends').onclick = () => go('friends');
   $('#again').onclick = () => { resetRun(); go('prep'); };
 };
 function recList(list, sm) {
@@ -443,6 +489,52 @@ function recList(list, sm) {
     <ul class="hist">${list.slice(0, 20).map(h => `<li><time>${fmt(h.at)}</time><i style="background:${SEASONS[h.top].key}"></i><b>${SEASONS[h.top].name}</b><span class="hb"><i style="width:${h.shares[h.top]}%;background:${SEASONS[h.top].key}"></i></span><em>${h.shares[h.top]}%</em></li>`).join('')}</ul>`;
 }
 function fmt(t) { const d = new Date(t); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`; }
+
+// ---- 12b 友だちと比べる(友だちの季節は、共有された文のリンクか、本人が選んで入れる。写真は使わない)
+const chipsOf = list => `<ul class="sw named">${list.map(c => `<li><button class="chip" data-hex="${c.hex}" data-name="${esc(c.name)}" style="--c:${c.hex}" aria-label="${esc(c.name)}"><i></i></button><span>${softName(c.name)}</span></li>`).join('')}</ul>`;
+function friendCard(f, me, open) {
+  const F = SEASONS[f.top]; const c = me ? compare(me.top, f.top) : null;
+  const body = c ? `<p class="desc">${KIND_TEXT[c.kind]}</p><h4>二人とも似合う色</h4>${chipsOf(c.both)}<h4>おそろいで着るなら</h4>${chipsOf(c.wear)}<h4>${esc(f.name)}さんに贈るなら</h4>${chipsOf(c.gift)}`
+    : `<p class="desc">自分の色を比べると、二人とも似合う色が出ます。</p><h4>${esc(f.name)}さんの得意な色</h4>${chipsOf(F.best.slice(0, 4))}`;
+  return `<section class="book fr ${open ? 'open' : 'locked'}" data-id="${f.id}">
+    <div class="fr-h"><span class="fr-dots"><i style="background:${me ? SEASONS[me.top].key : '#CDD2D7'}"></i><i style="background:${F.key}"></i></span>
+      <h2 class="serif">${esc(f.name)}<small>${F.name}${f.second ? ` ・ 2番目 ${SEASONS[f.second].name}` : ''}</small></h2>
+      <button class="fr-del" data-id="${f.id}" aria-label="${esc(f.name)}を消す">×</button></div>
+    ${open ? body : `<div class="lockwrap"><div class="veil" aria-hidden="true">${body}</div><button class="btn btn-navy sm unlock" data-k="friends">${ICON.lock}全部ひらく</button></div>`}
+  </section>`;
+}
+SCREENS.friends = () => {
+  const me = store.latest(); const list = store.data.friends; const d = X.draft || { top: null, second: null, name: '' };
+  scr.innerHTML = `<section class="shelf friends">
+    <div class="set-top"><button class="back" id="back" aria-label="戻る">${ICON.back}</button><h1 class="serif">友だちと比べる</h1><span></span></div>
+    <p class="lead-l">友だちの季節を入れると、二人とも似合う色やおそろいの色が出ます。${Buy.owned ? '' : `<br><small>1人目はそのまま見られます。2人目からは全部ひらくで。</small>`}</p>
+    ${me ? `<p class="fr-me">あなた <b>${SEASONS[me.top].name}</b></p>` : `<button class="btn btn-navy" id="frStart">まず自分の色を比べる${ICON.arr}</button>`}
+    ${list.map((f, i) => friendCard(f, me, Buy.owned || i < FREE_FRIENDS)).join('')}
+    <section class="book fr-add" id="frAdd"><h2 class="serif">友だちを入れる</h2>
+      <p class="desc">友だちが共有した文のリンクを貼るか、季節を選んでください。</p>
+      <label class="fr-field"><span>呼び名</span><input id="frName" maxlength="10" placeholder="例 ゆい" value="${esc(d.name || '')}"></label>
+      <label class="fr-field"><span>リンク</span><input id="frLink" inputmode="url" placeholder="?f= のついたリンク"></label>
+      <p class="fr-k">季節</p><div class="seg" id="frTop">${ORDER.map(x => `<button data-s="${x}" aria-pressed="${d.top === x}">${SEASONS[x].name}</button>`).join('')}</div>
+      <p class="fr-k">2番目(分かれば)</p><div class="seg" id="frSec">${ORDER.map(x => `<button data-s="${x}" aria-pressed="${d.second === x}">${SEASONS[x].name}</button>`).join('')}</div>
+      <button class="btn btn-navy" id="frSave" ${d.top ? '' : 'disabled'}>この友だちを入れる</button>
+      <p class="fine">入れた友だちは、この端末の中だけに残ります。</p>
+    </section>
+    <p class="fine">${me ? `あなたのコード <b id="myCode">${friendCode(me.top, me.second)}</b>(結果カードの共有の文に、リンクとして入ります)` : 'あなたのコードは、診断のあとに出ます'}</p>
+  </section>`;
+  const keep = () => { X.draft = { top: d.top, second: d.second, name: $('#frName').value }; };
+  onBack(() => { X.draft = null; go(store.latest() ? 'history' : 'home'); });
+  const fs = $('#frStart'); if (fs) fs.onclick = () => { resetRun(); go('prep'); };
+  scr.querySelectorAll('#frTop button').forEach(b => b.onclick = () => { d.top = b.dataset.s; if (d.second === d.top) d.second = null; keep(); SCREENS.friends(); });
+  scr.querySelectorAll('#frSec button').forEach(b => b.onclick = () => { d.second = d.second === b.dataset.s || b.dataset.s === d.top ? null : b.dataset.s; keep(); SCREENS.friends(); });
+  $('#frLink').oninput = e => { const f = parseFriend(e.target.value); if (f) { d.top = f.top; d.second = f.second; keep(); SCREENS.friends(); toast('リンクから季節を読みました'); } };
+  $('#frSave').onclick = () => {
+    if (!d.top) return; store.addFriend({ name: $('#frName').value, top: d.top, second: d.second });
+    X.draft = null; X.incoming = null; toast('友だちを入れました'); go('friends');
+  };
+  scr.querySelectorAll('.fr-del').forEach(b => b.onclick = () => { store.removeFriend(b.dataset.id); SCREENS.friends(); });
+  scr.querySelectorAll('.unlock').forEach(b => b.onclick = () => paywall('friends'));
+  bindChips();
+};
 
 // ---- 13 設定
 SCREENS.settings = () => {
@@ -470,22 +562,25 @@ SCREENS.settings = () => {
 };
 
 // ---- 10 全部ひらく(下から出るシート)
-const PERKS = [['pk_palette', '季節の色見本をすべて見る', '4つの季節、各24色'], ['pk_makeup', 'メイク・服・髪色のヒント', 'リップ・チーク・アイシャドウ、着回しの色'], ['pk_avoid', '避けたい色と取り入れ方', '顔から離して使うコツ'], ['pk_record', '再診断の記録を残す', 'いちばん多く出た季節も']];
+// 何がひらくかを絵で並べる(絵は ChatGPT に作らせた物 design/chatgpt_paywall)
+const PERKS = [['po_makeup', 'メイクの色', 'リップ・チーク・アイシャドウ'], ['po_wear', '服の色', '土台の色と差し色'], ['po_hair', '髪色', '美容室で見せる見本'],
+  ['po_avoid', '顔から離したい色', '着るなら顔から遠くに'], ['po_all', '4つの季節の96色', '色の本棚を全部'], ['po_friends', '友だちと比べる', '2人目からも何人でも']];
 function paywall(from) {
   const app = Buy.isApp();
   openSheet(`<div class="pw" data-from="${from}">
-    <div class="pw-art" aria-hidden="true"><img src="img/paywall_silk.jpg" alt=""></div>
     <button class="x on-dark" id="pwClose" aria-label="閉じる">×</button>
     <p class="latin">Ironuno color library</p>
-    <h2 class="serif">似合う色を、<br>毎日の味方に。</h2>
-    <p class="pw-sub">診断で見つけた色を、もっと使いこなそう。</p>
-    <ul class="perks">${PERKS.map(([ic, t, d]) => `<li><img src="img/${ic}.jpg" alt=""><span><b>${t}</b><small>${d}</small></span></li>`).join('')}</ul>
-    ${app ? `<button class="btn btn-pearl" id="buy" ${Buy.busy ? 'disabled' : ''}>全部ひらく${Buy.price ? `<span class="price">${esc(Buy.price)}</span>` : ''}</button>
-      <p class="once">一度の購入でずっと使える・月額料金なし</p>
+    <h2 class="serif">色の本棚を、<br>全部ひらく。</h2>
+    <p class="pw-sub">一度の購入で、ひらくのはこの6つです。</p>
+    <ul class="tiles">${PERKS.map(([ic, t, d]) => `<li><img src="img/${ic}.jpg" alt=""><b>${t}</b><small>${d}</small></li>`).join('')}</ul>
+    <p class="pw-rec">診断の記録の一覧(いちばん多く出た季節)もひらきます。</p>
+    ${app ? `<div class="pw-price"><span>買い切り</span>${priceTag('pwPrice')}</div>
+      <button class="btn btn-pearl" id="buy" ${Buy.busy ? 'disabled' : ''}>${Buy.price ? `${esc(Buy.price)}で全部ひらく` : '全部ひらく'}</button>
+      <p class="once">一度の購入でずっと使える・月額なし・自動更新なし</p>
       <div class="pw-links"><button class="btn-text on-dark" id="later">今は見ない</button><button class="btn-text on-dark" id="restore">購入を復元</button></div>`
       : `<p class="webonly" id="webOnly">全部ひらくのは、アプリ版でできます。ブラウザ版では購入できません。</p>
       ${playUrl() ? `<p class="once"><a class="on-dark" id="playLink" href="${esc(playUrl())}" target="_blank" rel="noopener">Android 版のテストに参加する</a></p>` : ''}
-      <p class="once">アプリ版は一度の購入でずっと使えます・月額料金なし</p>
+      <p class="once">アプリ版は一度の購入でずっと使えます・月額なし</p>
       <div class="pw-links"><button class="btn-text on-dark" id="later">今は見ない</button></div>`}
     <p class="status" id="pwStatus" role="status">${esc(Buy.message || '')}</p>
     <p class="legal on-dark"><a href="https://yurustudio.github.io/ironuno/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><span aria-hidden="true"> ・ </span><a href="https://yurustudio.github.io/ironuno/terms.html" target="_blank" rel="noopener">利用規約</a></p>
@@ -503,7 +598,7 @@ Buy.onChange = () => {
   const st = $('#pwStatus') || $('#setStatus'); if (st) st.textContent = Buy.message || '';
   const b = $('#buy'); if (b) b.disabled = Buy.busy;
   if (Buy.owned && sheet.dataset.kind === 'paywall' && !sheet.hidden) { const m = Buy.message; closeSheet(); if (m) toast(m); go(X.screen, { keepScroll: true }); }
-  else if (Buy.ready && ['result', 'shelf', 'history', 'settings'].includes(X.screen) && sheet.hidden) go(X.screen, { keepScroll: true });
+  else if (Buy.ready && ['home', 'result', 'shelf', 'history', 'settings', 'friends'].includes(X.screen) && sheet.hidden) go(X.screen, { keepScroll: true });
 };
 
 function playUrl() { const c = window.IRO_CONFIG; return (c && c.playUrl) || ''; }

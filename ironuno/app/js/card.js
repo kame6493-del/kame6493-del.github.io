@@ -1,6 +1,7 @@
 // 結果カード(1080x1350)を端末の中で描く。サーバーは使わない。値段や「無料」は入れない。
 // 見た目は ChatGPT の案(design/chatgpt_v2/iro2_08_card.png)。地の絹の絵はその案から切り出した物(img/card_<季節>.jpg)。
 import { SEASONS, ORDER, FREE_COUNT } from './seasons.js';
+import { SITE_SHORT } from './friends.js';
 
 export const CARD_W = 1080, CARD_H = 1350;
 const SERIF = '"Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif CJK JP", serif';
@@ -20,7 +21,7 @@ export function cardLines(result, appName) {
   return ['IRONUNO · MY COLOR', 'わたしの似合う色', T.name, T.en.toUpperCase(), '2番目に合う季節 ' + T2.name, T.tone,
     'あなたの得意な6色', ...T.best.slice(0, FREE_COUNT).map(c => c.name),
     '4つの季節の傾向', ...ORDER.map(s => `${SEASONS[s].name} ${result.shares[s]}%`), '選んだ布と回答から出した目安です。',
-    `#似合う色 #${T.name}`, appName];
+    `#似合う色 #${T.name}`, 'あなたの似合う色も ' + SITE_SHORT, appName];
 }
 
 function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
@@ -84,8 +85,10 @@ export function drawCard(result, { appName = 'イロヌノ', face = null } = {})
     ctx.fillStyle = INK; ctx.font = `500 28px ${SANS}`; ctx.textAlign = 'right'; ctx.fillText(result.shares[k] + '%', CARD_W - 106, y + 10); ctx.textAlign = 'left';
   });
   // 下: ハッシュタグとアプリ名
-  ctx.strokeStyle = 'rgba(30,42,58,.15)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(L, 1270); ctx.lineTo(720, 1270); ctx.stroke();
-  ctx.fillStyle = INK; ctx.font = `500 32px ${SANS}`; ctx.fillText(`#似合う色  #${T.name}`, L, 1316);
+  // 見た人が自分も比べられるように、ハッシュタグと診断のサイトの短い URL
+  ctx.strokeStyle = 'rgba(30,42,58,.15)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(L, 1254); ctx.lineTo(720, 1254); ctx.stroke();
+  ctx.fillStyle = INK; ctx.font = `600 30px ${SANS}`; ctx.fillText(`#似合う色  #${T.name}`, L, 1297);
+  ctx.fillStyle = SUB; ctx.font = `500 22px ${SANS}`; ctx.fillText('あなたの似合う色も  ' + SITE_SHORT, L, 1333);
   ctx.textAlign = 'right'; ctx.font = `500 40px ${SERIF}`; spacedRight(ctx, appName, CARD_W - 60, 1312, 8);
   ctx.font = `500 15px ${LATIN}`; spacedRight(ctx, 'IRONUNO', CARD_W - 60, 1336, 8); ctx.textAlign = 'left';
   return cv;
