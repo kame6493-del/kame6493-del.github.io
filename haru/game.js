@@ -36,9 +36,7 @@ try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); }
 // ---------- 課金(完全版)と店 ----------
 // ワールド1(4面)は無料。完全版(買い切り)でワールド2・3が遊べる。
 // アプリ版(Capacitor + RevenueCat の Purchases プラグイン)では本当に買える。ブラウザ版では買えないので案内を出す。
-// 手元の試験だけは URL に ?dev=1 を付けると「テストで解放」が出る(本番では出ない)。
 const FULL_PRICE = '¥480';
-const DEV = /[?&]dev=1/.test(location.search || '');
 // 進みぐあい: クリアした面(save.cleared)と 見つけた ひみつのゴール(save.secret)で ちずの道が ひらく
 function fixSave() {
   for (const k of ['cleared', 'secret', 'seen', 'stars', 'best', 'bag', 'shards', 'palace', 'shortcut', 'zukan']) if (!save[k] || typeof save[k] !== 'object') save[k] = {};
@@ -173,9 +171,9 @@ const SPRITES = ['hero_idle', 'hero_run', 'hero_jump', 'hero_attack', 'goomy', '
   'spiky', 'plant', 'turret', 'skeleton', 'firespirit', 'bomb', 'coin', 'coin_side', 'star', 'gem', 'heart', 'key',
   'potion', 'shield', 'brick', 'question', 'ground', 'cliff', 'floating', 'fence', 'crate', 'ladder', 'water', 'ice',
   'oneway', 'cloud', 'spring', 'movplat', 'lift', 'fallplat', 'checkpoint', 'goal', 'spikes', 'flame', 'saw', 'axe',
-  'crusher', 'cannon', 'mushroom', 'door', 'lamp', 'sign', 'rocks', 'pillar', 'tree', 'torch', 'crystal',
+  'crusher', 'cannon', 'door', 'lamp', 'sign', 'rocks', 'pillar', 'tree', 'torch', 'crystal',
   'ui_heart', 'ui_heart_empty', 'ui_coin', 'ui_star', 'conveyor',
-  'p_boots', 'p_wing', 'p_1up', 'p_magnet', 'p_speed', 'thorn', 'zapper', 'antigrav', 'balloon', 'bubble', 'sand', 'eye', 'beetle', 'wizard', 'fish', 'orb', 'stoneblk', 'ladder2', 'lava',
+  'p_boots', 'p_wing', 'p_magnet', 'p_speed', 'thorn', 'zapper', 'antigrav', 'balloon', 'bubble', 'sand', 'eye', 'beetle', 'wizard', 'fish', 'orb', 'stoneblk', 'ladder2', 'lava',
   'metal', 'trampoline', 'booster', 'icicle', 'geyser', 'firebar', 'chest', 'bouncepad',
   'fan', 'switch', 'portal', 'boulder', 'disappear', 'plate', 'timer',
   'vine', 'rope', 'springy', 'cannon', 'bridge', 'cloud_far', 'used_block'];
@@ -183,7 +181,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261019q';
+const SPRITE_V = '20261021a';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -941,7 +939,6 @@ function spawn(e) {
     case 'G': return { id, t: 'goal', x: X, y: Y - 96, w: 48, h: 144, ph: 0 };
     case '$': return { id, t: 'goal', x: X, y: Y - 96, w: 48, h: 144, secret: true, ph: 0.8 };
     case 'T': return { id, t: 'spring', x: X + 4, y: Y + 10, w: 40, h: 38, sq: 0, power: 1050, carry: true, vx: 0, vy: 0, x0: X + 4, y0: Y + 10 };
-    case 'm': return { id, t: 'mushroom', x: X + 2, y: Y + 4, w: 44, h: 44, sq: 0, power: 940 };
     case 'w': return { id, t: 'wing', x: X + 4, y: Y + 8, w: 40, h: 34, ph: 0 };
     case 'b': return { id, t: 'boots', x: X + 6, y: Y + 8, w: 36, h: 34, ph: 0 };
     case 'n': return { id, t: 'magnet', x: X + 6, y: Y + 8, w: 36, h: 34, ph: 0 };
@@ -2951,7 +2948,7 @@ function updateThing(o, dt) {
       }
       break;
     }
-    case 'spring': case 'mushroom': {
+    case 'spring': {
       o.sq = Math.max(0, o.sq - dt * 4);
       if (!p.dead && p.vy > 0 && overlap(p, o) && p.y + p.h - p.vy * (1 / 60) <= o.y + 16) {
         p.y = o.y - p.h; p.vy = -o.power; p.jumping = false; o.sq = 1; p.airJumps = maxAirJumps(); p.airDash = 1;
@@ -5618,7 +5615,7 @@ function warpTo(wi, k) {
 function enterNode() {
   if (map.walk || map.path.length || map.rv || map.reveals.length) return;
   const nd = mapNode(map.wi, map.k);
-  // ひみつの ゴールで ひらく 近道の つつ: その ワールドへ ワープ
+  // ひみつの ゴールで ひらく 近道の とびら: その ワールドへ ワープ
   if (nd.shortcut !== undefined) { save.shortcut = save.shortcut || {}; save.shortcut[nd.shortcut] = true; writeSave(); warpTo(nd.shortcut, 0); return; }
   // おまけの あな: ほしの みちを ぜんぶ まわると ひらく
   if (nd.bonus) { const bw = WORLDS.findIndex(W => W.bonus); save.bonusOpen = true; writeSave(); warpTo(bw, 0); return; }
@@ -6388,7 +6385,7 @@ function drawThing0(o, t) {
     case 'wing': ctx.save(); ctx.shadowColor = '#fff'; ctx.shadowBlur = 18; drawFit('p_wing', cx, o.y + o.h + Math.sin(t * 4) * 5, 40); ctx.restore(); if (Math.random() < 0.08) sparkle(cx, o.y + 10, 1); break;
     case 'boots': drawFit('p_boots', cx, o.y + o.h + Math.sin(t * 4) * 3, 38); break;
     case 'magnet': drawFit('p_magnet', cx, o.y + o.h + Math.sin(t * 4) * 3, 36); break;
-    case 'oneup': drawFit(ART.g7_1up_0 ? 'g7_1up_0' : 'p_1up', cx, o.y + o.h + Math.sin(t * 4) * 2, ART.g7_1up_0 ? 44 : 38); break;
+    case 'oneup': drawFit('g7_1up_0', cx, o.y + o.h + Math.sin(t * 4) * 2, 44); break;
     case 'fire': ctx.save(); ctx.shadowColor = '#ff8a2a'; ctx.shadowBlur = 18; drawFit('firespirit', cx, o.y + o.h + Math.sin(t * 5) * 4, 40); ctx.restore(); break;
     case 'jet': ctx.save(); ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 18; drawFit('p_speed', cx, o.y + o.h + Math.sin(t * 5) * 4, 40); ctx.restore(); break;
     case 'chest': drawFit('chest', cx, o.y + o.h + 2, 46, false, o.open ? 0.55 : 1); if (!o.open && Math.random() < 0.05) sparkle(cx, o.y + 10, 1); break;
@@ -6458,11 +6455,6 @@ function drawThing0(o, t) {
     case 'spring': {
       const sy = 1 - o.sq * 0.35;
       ctx.save(); ctx.translate(cx, o.y + o.h); ctx.scale(1, sy); drawFit('spring', 0, 0, 48); ctx.restore();
-      break;
-    }
-    case 'mushroom': {
-      const sy = 1 - o.sq * 0.3;
-      ctx.save(); ctx.translate(cx, o.y + o.h + 2); ctx.scale(1 + o.sq * 0.15, sy); drawFit('mushroom', 0, 0, 52); ctx.restore();
       break;
     }
     case 'move': drawImg('movplat', o.x - 6, o.y - 18, o.w + 12, 48); break;
@@ -7384,12 +7376,6 @@ function drawNodeIcon(nd, kind, open, clr, t, d) {
     ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 4, 20, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
     if (on) { ctx.save(); ctx.globalAlpha = 0.35 + Math.sin(t * 4) * 0.2; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, -2, 34, 0, 7); ctx.fill(); ctx.restore(); }
     ctx.fillStyle = '#fff'; ctx.beginPath(); sparkPath(ctx, 0, -6, 10); ctx.fill();
-  } else if (kind === 'pipe') {
-    // 近道の つつ(ひみつの ゴールで ひらく)
-    ctx.fillStyle = '#5ac8a0'; ctx.fillRect(-16, -18, 32, 36); ctx.strokeRect(-16, -18, 32, 36);
-    ctx.fillStyle = '#7ae8c0'; rr(-22, -28, 44, 14, 5); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fillRect(-10, -14, 5, 28);
-    ctx.save(); ctx.translate(0, -36 + Math.sin(t * 3) * 3); outlined('➜', 0, 0, '#ffe066', '#2a1a3a', 4, titleFont(18)); ctx.restore();
   } else if (kind === 'warp') {
     // ほしの あな: うずまく 穴
     ctx.fillStyle = '#1a0e3a'; ctx.beginPath(); ctx.ellipse(0, 4, 26, 14, 0, 0, 7); ctx.fill(); ctx.stroke();
@@ -7445,7 +7431,7 @@ function drawMap(t) {
     if (d && !open && kind === 'normal') drawFit('key', 0, 14, 26, false, 0.9);
     else if (i !== undefined && needsFull(i) && open) drawFit('chest', 0, 14, 28, false, 0.95);
     ctx.restore();
-    const label = n.shortcut !== undefined ? 'ワープの つつ' : n.bonus ? 'おまけの あな' : n.warp ? 'ほしの あな' : n.back ? 'かえりの あな' : kind === 'switch' ? PALACE_NAME[n.color] + 'の しんでん' : d ? (d.label || (d.kind === 'boss' ? d.world + '-しろ' : d.num === '✦' ? '✦' : stageLabel(d))) : '';
+    const label = n.shortcut !== undefined ? 'ちかみちの とびら' : n.bonus ? 'おまけの あな' : n.warp ? 'ほしの あな' : n.back ? 'かえりの あな' : kind === 'switch' ? PALACE_NAME[n.color] + 'の しんでん' : d ? (d.label || (d.kind === 'boss' ? d.world + '-しろ' : d.num === '✦' ? '✦' : stageLabel(d))) : '';
     outlined(label, n.x, n.y + 36, '#fff', '#2a1a3a', 5, titleFont(kind === 'switch' || n.warp || n.back ? 13 : 16));
     if (clr) {
       // クリアの しるし: 小さな 旗
@@ -7498,7 +7484,7 @@ function drawMap(t) {
     const best = save.best[id], sh = shardCount(id);
     ctx.fillText(!isOpenId(id) ? 'まだ みちが ひらいていない' : needsFull(i) ? '完全版で あそべます' : (kindName ? '[' + kindName + ']  ' : '') + (best ? 'ベスト ' + best : 'はじめての ステージ') + '  かけら ' + sh + '/5' + (d.secretGoal && isCleared(id) && !save.secret[id] ? (d.id === 72 || d.id === 77 ? '  ・カギを はこぶと 1UP×3・コイン50' : '  ・ひみつの へやに みどりキノコ') : '') + (d.num === '✦' && isOpenId(id) ? '  ・みどりキノコ 2こ・たからこぞう' : ''), VW / 2, 448);
   } else {
-    outlined(nd.shortcut !== undefined ? 'ワープの つつ' : nd.bonus ? 'おまけの あな' : nd.warp ? 'ほしの あな' : 'かえりの あな', VW / 2, 424, '#fff', '#2a1a3a', 5, font(22));
+    outlined(nd.shortcut !== undefined ? 'ちかみちの とびら' : nd.bonus ? 'おまけの あな' : nd.warp ? 'ほしの あな' : 'かえりの あな', VW / 2, 424, '#fff', '#2a1a3a', 5, font(22));
     ctx.fillStyle = '#ffe9a8'; ctx.font = font(14, 700); ctx.textAlign = 'center';
     ctx.fillText(nd.shortcut !== undefined ? 'ワールド' + WORLDS[nd.shortcut].n + 'へ ちかみち!' : nd.bonus ? 'ほしの はての おまけの ワールドへ' : nd.warp ? 'とびこむと「ほしの みち」へ ワープ!' : WORLDS[map.wi].star && !WORLDS[map.wi].bonus ? 'すきな ワールドを えらんで もどる' : 'もとの ばしょへ もどる', VW / 2, 448);
   }
@@ -7509,7 +7495,6 @@ function drawMap(t) {
   button(24, 420, 140, 42, 'そうさ', () => openHelp('map'), { size: 18 });
   { const inf = dailyInfo(); button(156, 476, 202, 46, inf.cleared ? '今日の1面 ✔' : '今日の1面', () => { if (!map.walk && !map.path.length && !map.pick) startDaily('map'); }, { size: 18, c1: inf.cleared ? '#c8f5ff' : '#9dffb0', c2: inf.cleared ? '#6ec8ff' : '#2fc46a' }); }
   button(VW - 214, 476, 200, 46, 'モンスターずかん', () => openZukan('map'), { size: 17 });
-  if (DEV) button(VW - 200, 76, 186, 30, '(テスト)ぜんぶ ひらく', () => { for (const L2 of LEVELS) save.cleared[L2.id] = true; for (const W2 of WORLDS) for (const e of W2.extra || []) if (e.cond === 'secret') save.secret[e.from] = true; save.full = true; save.starOpen = true; writeSave(); }, { size: 13 });
   if (!usingTouch) { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.font = font(12, 700); ctx.textAlign = 'right'; ctx.fillText('←→↑↓ いどう  Enter あそぶ', VW - 16, 398); }
   if (map.flash > 0) { ctx.fillStyle = `rgba(255,250,220,${map.flash * 1.6})`; ctx.fillRect(0, 0, VW, VH); }
   if (map.saved > 0) { const a = Math.min(1, map.saved * 2); ctx.save(); ctx.globalAlpha = a; rr(VW / 2 - 150, 92, 300, 40, 14); ctx.fillStyle = 'rgba(30,20,60,.8)'; ctx.fill(); outlined('ファイル' + saveSlot + 'に きろくしました', VW / 2, 112, '#7dff8a', '#2a1a3a', 5, font(18)); ctx.restore(); }
@@ -7640,7 +7625,6 @@ function drawShop(t) {
   else button(110, 352, 260, 56, IS_IOS ? (Store.price ? '完全版を かう ' + Store.price : '完全版を かう') : '完全版を かう ' + FULL_PRICE, () => Store.buyFull(), { sel: true, size: 22 });
   button(150, 414, 180, 38, 'こうにゅうを ふくげん', () => Store.restore(), { size: 15 });
   }
-  if (DEV && !save.full) button(40, 470, 180, 40, '(テスト)完全版にする', () => Store.unlock(), { size: 14 });
   // コインで買う道具(つぎのステージで使う)
   woodPlate(470, 80, 450, 380);
   outlined('つぎのステージで つかう', 695, 112, '#fff', '#3a1a08', 6, font(22));
