@@ -114,7 +114,7 @@ const Full = {
   owned: false, pkg: null, price: '', busy: false, ready: null, prev: null,
   platform() { const C = window.Capacitor; try { if (C && C.isNativePlatform && C.isNativePlatform() && C.getPlatform) return C.getPlatform(); } catch (e) { } return 'web'; },
   native() { const p = Full.platform(); return p === 'android' || p === 'ios'; },
-  has() { return (Full.native() && Full.owned) || (TEST && params.get('full') === '1'); },
+  has() { return Full.native() && Full.owned; },
   plugin() { if (!Full.native()) return null; const C = window.Capacitor; return (C && C.Plugins && C.Plugins.Purchases) || null; },
   isFull(info) { return !!(info && info.entitlements && info.entitlements.active && info.entitlements.active[Full.ENT]); },
   cancelled(e) { return !!(e && (e.userCancelled || (e.data && e.data.userCancelled) || String(e.code) === '1')); },
@@ -197,7 +197,7 @@ const Full = {
   render() {
     if (!$('fullScreen')) return;
     const nat = Full.native();
-    $('fullWebBox').classList.toggle('hidden', nat);
+    if ($('fullWebBox')) $('fullWebBox').classList.toggle('hidden', nat); // アプリ版の www には この欄が無い(copy_www.py で外す)
     $('fullBuyBox').classList.toggle('hidden', !nat);
     $('fullOwned').classList.toggle('hidden', !Full.has());
     $('fullBuyBtn').classList.toggle('hidden', Full.has());
@@ -1830,7 +1830,7 @@ $('fullBtn').onclick = () => Full.open('title');
 $('fullBuyBtn').onclick = () => Full.buy();
 $('fullRestoreBtn').onclick = () => Full.restore();
 $('fullBackBtn').onclick = () => Full.back();
-$('fullPlayLink').href = Full.PLAY_URL;
+if ($('fullPlayLink')) $('fullPlayLink').href = Full.PLAY_URL;
 
 // ---------- ループ ----------
 function frame(dt) {
