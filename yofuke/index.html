@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>よふけの預かり所 物語でわかる16の品 #わすれもの診断</title>
+<meta name="description" content="夜だけひらく忘れ物の店で、一晩だけ係をする物語。選んだことから、あなたに似た16の品のひとつが見つかる遊びの診断です。回答は端末の外へ送りません。Android のテスターを募集しています。">
+<meta name="theme-color" content="#142235">
+<link rel="canonical" href="https://yurustudio.github.io/yofuke/">
+<link rel="icon" href="img/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="よふけの預かり所">
+<meta property="og:title" content="よふけの預かり所 物語でわかる16の品 #わすれもの診断">
+<meta property="og:description" content="夜だけひらく忘れ物の店で、一晩だけ係をする物語。夜明けに、あなたに似た品が見つかる。Android のテスター募集中。">
+<meta property="og:url" content="https://yurustudio.github.io/yofuke/">
+<meta property="og:image" content="https://yurustudio.github.io/yofuke/img/og.jpg">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="500">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="よふけの預かり所 #わすれもの診断">
+<meta name="twitter:image" content="https://yurustudio.github.io/yofuke/img/og.jpg">
+<style>
+  :root {
+    --night: #142235; --night2: #1a2c42; --shelf: #263b52; --panel: rgba(38, 59, 82, .62);
+    --lamp: #e5b779; --lamp2: #f1cd95; --paper: #f3e6cf;
+    --line: rgba(229, 183, 121, .32); --line2: rgba(237, 241, 244, .12);
+    --text: #edf1f4; --sub: #c3ccd6; --muted: #93a0b0;
+    --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+    --sans: -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--night); color: var(--text); font: 17px/1.85 var(--sans); overflow-x: hidden; }
+  a { color: var(--lamp2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line2);
+    background: linear-gradient(90deg, rgba(20,34,53,.97) 0%, rgba(20,34,53,.84) 45%, rgba(20,34,53,.2) 100%), url(img/hero_bg.jpg) right 35% / cover no-repeat; }
+  .hero .wrap { padding-top: 40px; padding-bottom: 60px; display: grid; gap: 28px; grid-template-columns: 1.15fr .85fr; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 56px; height: 56px; border-radius: 14px; }
+  .brand span { font: 700 21px/1 var(--mincho); letter-spacing: .14em; color: var(--paper); }
+  h1 { font: 700 clamp(32px, 5.6vw, 52px)/1.35 var(--mincho); margin: 22px 0 14px; letter-spacing: .04em; color: var(--paper); }
+  .lead { font-size: 18px; max-width: 32em; margin: 0 0 24px; }
+  .tag { display: inline-block; font: 700 14px/1 var(--sans); color: var(--lamp2); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; margin-bottom: 18px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; }
+  .btn.main { background: linear-gradient(180deg, var(--lamp2), var(--lamp)); color: #2a1d0c; box-shadow: 0 10px 26px rgba(229,183,121,.28); }
+  .btn.soft { border: 1.5px solid var(--line); color: var(--paper); background: rgba(20,34,53,.6); }
+  .hero .phone { justify-self: center; }
+
+  .phone { width: 100%; max-width: 290px; border-radius: 34px; padding: 9px; background: #0a121d; border: 1.5px solid var(--line);
+    box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+  .phone img { border-radius: 26px; aspect-ratio: 9 / 16; object-fit: cover; object-position: top; width: 100%; }
+
+  section { padding: 64px 0; }
+  .kicker { font: 700 13px/1 var(--sans); letter-spacing: .2em; color: var(--lamp); margin: 0 0 12px; }
+  h2 { font: 700 clamp(26px, 4.2vw, 36px)/1.45 var(--mincho); margin: 0 0 16px; color: var(--paper); }
+  h3 { font: 700 19px/1.5 var(--mincho); margin: 0 0 6px; color: var(--paper); }
+  p { margin: 0 0 14px; }
+  .sub { color: var(--sub); }
+  .split { display: grid; grid-template-columns: 1fr 290px; gap: 48px; align-items: center; }
+  .split.rev { grid-template-columns: 290px 1fr; }
+  .split.rev .phone { order: -1; }
+  .band { background: linear-gradient(180deg, var(--night2), var(--night)); border-top: 1px solid var(--line2); border-bottom: 1px solid var(--line2); }
+
+  .chapters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 22px 0 6px; padding: 0; list-style: none; }
+  .chapters li { border: 1px solid var(--line2); border-radius: 18px; padding: 14px 16px; background: var(--panel); }
+  .chapters b { display: block; font: 700 16px/1.5 var(--mincho); color: var(--lamp2); margin-bottom: 2px; }
+  .chapters p { margin: 0; font-size: 15px; color: var(--sub); }
+
+  .items { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .items li { font: 500 14.5px/1 var(--mincho); color: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: rgba(243,230,207,.06); }
+
+  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 26px; }
+  .gallery figure { margin: 0; }
+  .gallery .phone { max-width: none; border-radius: 26px; padding: 6px; }
+  .gallery .phone img { border-radius: 21px; }
+  .gallery figcaption { text-align: center; color: var(--sub); font-size: 15px; margin-top: 10px; }
+
+  .free { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+  .free div { border: 1px solid var(--line2); border-radius: 18px; padding: 18px 20px; background: var(--panel); }
+  .free ul { margin: 8px 0 0; padding-left: 1.2em; color: var(--sub); font-size: 15.5px; }
+
+  .steps { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 14px; counter-reset: s; }
+  .steps li { position: relative; border: 1.5px solid var(--line); border-radius: 22px; background: var(--panel); padding: 20px 20px 20px 78px; counter-increment: s; }
+  .steps li::before { content: counter(s); position: absolute; left: 20px; top: 20px; width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 20px/1 var(--mincho); color: #2a1d0c; background: linear-gradient(180deg, var(--lamp2), var(--lamp)); }
+  .steps .btn { margin-top: 6px; min-height: 46px; font-size: 15px; padding: 0 20px; }
+  .steps p { margin: 0 0 6px; color: var(--sub); }
+  .note { margin-top: 18px; color: var(--muted); font-size: 15px; }
+  .web { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; border: 1px dashed var(--line); border-radius: 18px; padding: 16px 18px; color: var(--sub); }
+
+  footer { border-top: 1px solid var(--line2); padding: 30px 0 46px; color: var(--muted); font-size: 14.5px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+  footer .sp { flex: 1; }
+
+  @media (max-width: 860px) {
+    .hero { background: linear-gradient(180deg, rgba(20,34,53,.62) 0%, rgba(20,34,53,.92) 55%, var(--night) 100%), url(img/hero_bg.jpg) center top / cover no-repeat; }
+    .hero .wrap, .split, .split.rev { grid-template-columns: 1fr; gap: 30px; }
+    .split.rev .phone { order: 0; }
+    .phone { max-width: 260px; justify-self: center; margin: 0 auto; }
+    .chapters, .free { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  }
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .hero .wrap { padding-top: 26px; padding-bottom: 40px; }
+    .lead { font-size: 16.5px; }
+    .btn { width: 100%; }
+    section { padding: 48px 0; }
+    .steps li { padding: 70px 18px 18px; }
+    .steps li::before { left: 18px; top: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <div class="brand"><img src="img/icon.png" alt="" width="256" height="256"><span>よふけの預かり所</span></div>
+      <h1>夜だけひらく、<br>わすれものの店。</h1>
+      <p class="lead">今夜は、あなたが一晩だけの係です。訪ねてくる人たちに、どう応えるかを選んでいくと、夜明けに16の「わすれもの」のどれかが、あなたの品として見つかります。</p>
+      <p class="tag">#わすれもの診断</p>
+      <div class="btns">
+        <a class="btn main" href="#android">Android のテストに参加する</a>
+        <a class="btn soft" href="app/">ブラウザで遊ぶ</a>
+      </div>
+    </div>
+    <div class="phone"><img src="img/1_prologue.jpg" alt="プロローグの画面。灯りのともる帳場と鍵束の絵" width="540" height="960"></div>
+  </div>
+</header>
+
+<main>
+<section>
+  <div class="wrap split">
+    <div>
+      <p class="kicker">THE STORY</p>
+      <h2>問題に答えるのではなく、物語の中で選ぶ</h2>
+      <p class="sub">運河ぞいの階段を下りた所にある小さな店。先輩の係の灯(あかり)さんは「朝には戻るから」と鍵束を置いて出ていきました。場面は16。1回のタップで次へ進み、途中でやめても続きから読めます。</p>
+      <ol class="chapters">
+        <li><b>第一章 雨の夜の傘</b><p>黄色い長ぐつの女の子が、傘の棚の前から動かない。</p></li>
+        <li><b>第二章 二秒の声</b><p>孫の赤ん坊のころの声を探すおじいさん。</p></li>
+        <li><b>第三章 三丁目の猫</b><p>黒猫が、棚の奥から手紙と押し花の箱を出してくる。</p></li>
+        <li><b>第四章 宛名だけのハガキ</b><p>何を忘れたか覚えていない青年と、書きかけのハガキ。</p></li>
+      </ol>
+    </div>
+    <div class="phone"><img src="img/2_scene.jpg" alt="第一章の場面。傘の棚の前に立つ黄色い長ぐつの女の子と、選ぶ答え" width="540" height="960" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap split rev">
+    <div class="phone"><img src="img/4_result.jpg" alt="結果の画面。夜明けに見つかった品の絵と名前、灯さんのひと言" width="540" height="960" loading="lazy"></div>
+    <div>
+      <p class="kicker">AT DAWN</p>
+      <h2>夜明けに、あなたの品が見つかる</h2>
+      <p class="sub">「あんたは、ここの品でいえば――」。選んだことから、16の品のどれかがあなたの品になります。品の名前と一行、短いお話、灯さんのひと言、4つの傾向(にぎわい/しずけさ・手ざわり/気配・ものさし/ぬくもり・地図/風まかせ)が出ます。</p>
+      <ul class="items">
+        <li>合鍵の束</li><li>片方だけのスニーカー</li><li>手書きのレシピ帳</li><li>お祭りのうちわ</li><li>書きかけの地図</li><li>ふたの開いたびっくり箱</li><li>寄せ書きの色紙</li><li>糸の切れた風船</li><li>ねじを巻いた懐中時計</li><li>ポケットの方位磁石</li><li>つくろった手袋</li><li>色の減ったクレヨン</li><li>しおりの挟まった分厚い本</li><li>ほどけかけた知恵の輪</li><li>消印のない手紙</li><li>ビー玉の入ったラムネ瓶</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">INSIDE THE APP</p>
+    <h2>カードで見せ合って、ふたりの棚を見る</h2>
+    <p class="sub">結果は縦長のカードにして保存・共有できます。友達の品を選ぶと、ふたりの品が同じ棚に並ぶか、反対側の棚にあるかを読めます。物語を楽しむための遊びの診断です。占い・医療・心理検査ではありません。</p>
+    <div class="gallery">
+      <figure><div class="phone"><img src="img/6_card.jpg" alt="結果カードの画面" width="540" height="960" loading="lazy"></div><figcaption>結果カード</figcaption></figure>
+      <figure><div class="phone"><img src="img/5_detail.jpg" alt="品の詳しいお話の画面" width="540" height="960" loading="lazy"></div><figcaption>詳しいお話</figcaption></figure>
+      <figure><div class="phone"><img src="img/7_compat.jpg" alt="ふたりの相性の画面" width="540" height="960" loading="lazy"></div><figcaption>ふたりの相性</figcaption></figure>
+      <figure><div class="phone"><img src="img/8_zukan.jpg" alt="16の品の図鑑の画面" width="540" height="960" loading="lazy"></div><figcaption>わすれもの図鑑</figcaption></figure>
+    </div>
+    <div class="free">
+      <div><h3>買う前にできること</h3><ul><li>物語の16の場面を、最後まで</li><li>品の名前・一行・短いお話・灯さんのひと言・4つの傾向</li><li>詳しいお話の1つ目</li><li>結果カードの保存と共有、相性1組</li></ul></div>
+      <div><h3>買い切りで開くこと(Android アプリ)</h3><ul><li>詳しいお話の全部(人といる時・好きな人との距離・向いている仕事など)</li><li>16の品すべてとの相性と、図鑑の中身</li><li>もう一つの物語「夜明けの配達」12の場面</li></ul><p class="sub" style="margin:8px 0 0;font-size:14.5px">一度だけの支払いです。月額・自動更新・お試し期間はありません。</p></div>
+    </div>
+    <p class="note">名前もメールも聞きません。回答と結果はスマホの中だけに残り、外へ送りません。広告もありません。</p>
+  </div>
+</section>
+
+<section id="android" class="band">
+  <div class="wrap">
+    <p class="kicker">ANDROID TESTERS</p>
+    <h2>Android のテストに参加してください</h2>
+    <p class="sub">新しいアプリを Google Play で公開するには、その前に14日間、実際の人に試してもらう必要があります。Android のスマホをお持ちなら、3つの手順で参加できます。</p>
+    <ol class="steps">
+      <li><h3>テスターのグループに参加する</h3><p>スマホで使っている Google アカウントで、Google グループに参加します。</p>
+        <a class="btn soft" href="https://groups.google.com/g/nigatecho-testers" target="_blank" rel="noopener">テスターのグループを開く</a></li>
+      <li><h3>テスト用のページを開く</h3><p>同じアカウントで開き、「テスターになる」を押してから、Google Play でよふけの預かり所を入れます。</p>
+        <a class="btn main" href="https://play.google.com/apps/testing/jp.yofuke.app" target="_blank" rel="noopener">テスターになる</a></li>
+      <li><h3>14日間、入れたままにしておく</h3><p>ときどき開いてもらえるとうれしいです。気づいたことがあればメールで教えてください。入れたままにしてもらうのがいちばんの助けです。</p></li>
+    </ol>
+    <p class="note">テスト用のページで「アプリが見つからない」と出る時は、グループへの参加が Google Play にまだ届いていないことがあります。数分待ってから、同じアカウントでもう一度開いてください。</p>
+    <div class="web"><span>スマホのブラウザでも、物語と結果・結果カードまでは遊べます(購入はできません)。</span><a class="btn soft" href="app/">ブラウザで遊ぶ</a></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>よふけの預かり所 YURU Studio</span>
+    <span class="sp"></span>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="terms.html">利用規約</a>
+    <a href="mailto:kame6493@gmail.com">お問い合わせ</a>
+  </div>
+</footer>
+
+</body>
+</html>
