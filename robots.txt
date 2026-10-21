@@ -3,3 +3,4 @@ Allow: /
 Sitemap: https://kame6493-del.github.io/sitemap_index.xml
 Sitemap: https://kame6493-del.github.io/sitemap.xml
 Sitemap: https://kame6493-del.github.io/kachimake-site/sitemap.xml
+Sitemap: https://yurustudio.github.io/sitemap-yuru.xml
