@@ -181,7 +181,7 @@ const IMG = {};
 let loaded = 0;
 const total = SPRITES.length;
 // 絵を 直したら ここを かえる(ブラウザに 古い 絵が のこらないように)
-const SPRITE_V = '20261021a';
+const SPRITE_V = '20261021b';
 for (const n of SPRITES) {
   const im = new Image();
   im.onload = () => { loaded++; if (loaded === total) bakeTiles(); };
@@ -483,9 +483,14 @@ addEventListener('keydown', e => {
   initAudio();
   usingTouch = false;
   if (!keys[k]) pressed[k] = true;
+  // 2026-10-21 持ち主「上の キーで ジャンプ」: キーボードの ↑ / W は ジャンプにも なる(きめるのは updatePlayer。はしご・とびら・もちあげ中 は そちら)。
+  // ▲ ボタン(スマホ)は これまでどおり ジャンプに しない
+  if (k === 'up' && !keys.up) pressed.ujump = true;
   keys[k] = true;
 });
-addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) keys[k] = false; });
+addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) keys[k] = false; if (k === 'up') upJumpHeld = false; });
+// ↑ で とんだ ときは ↑ を おしている あいだ「ジャンプを ながおし」と おなじ(たかく とぶ・はなすと ひくく)
+let upJumpHeld = false;
 
 let usingTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 const pointers = new Map();
@@ -580,7 +585,7 @@ cv.addEventListener('pointerup', e => { const g = gesturePending; if (g && g.id 
 cv.addEventListener('pointercancel', () => { gesturePending = null; });
 cv.addEventListener('pointerup', endPointer);
 cv.addEventListener('pointercancel', endPointer);
-const held = k => keys[k] || touchKeys[k];
+const held = k => keys[k] || touchKeys[k] || (k === 'jump' && upJumpHeld && keys.up);
 function consume(k) { const v = pressed[k]; pressed[k] = false; return v; }
 
 // ---------- 面を組み立てる ----------
@@ -849,9 +854,9 @@ function startLevel(idx, fromCheckpoint = false) {
   world.bossBgm = null; bgm(levelBgm(def));
   if (def.daily) dailyBegin(fromCheckpoint);
   if (!fromCheckpoint && def.daily) {
-    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: usingTouch ? '左下の ◀▶ で いどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん', t: 3.2 };
+    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: usingTouch ? '左下の ◀▶ で いどう / ジャンプ / けん' : '←→ いどう   スペース・↑ ジャンプ   X けん', t: 3.2 };
   } else if (!fromCheckpoint) {
-    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: idx === 0 ? (usingTouch ? '左下の ◀▶ で いどう / ジャンプ / けん' : '←→ いどう   スペース ジャンプ   X けん') : 'ほしを3つあつめよう', t: 3.2 };
+    toast = { text: `${stageLabel(def)}  ${def.name}`, sub: idx === 0 ? (usingTouch ? '左下の ◀▶ で いどう / ジャンプ / けん' : '←→ いどう   スペース・↑ ジャンプ   X けん') : 'ほしを3つあつめよう', t: 3.2 };
   } else if (!(keep && keep.deaths >= 4 && toast && toast.text === 'おたすけ たて!')) {
     toast = null;
   }
@@ -1408,6 +1413,8 @@ function defeat(o, flip = false, combo = 1, poof = false) {
 
 function updatePlayer(dt) {
   const p = P;
+  // キーボードの ↑ / W の おしはじめ(ジャンプに つかうかは 下で きめる。ほかの 処理で return したら つかわない)
+  let upJ = consume('ujump');
   // 風(前のフレームで 風の中にいた分)とワープの出口のロック
   const wind = p.windAcc || 0; p.windAcc = 0;
   p.warpLock = !!p.touchPortal; p.touchPortal = false;
@@ -1569,11 +1576,15 @@ function updatePlayer(dt) {
     }
   }
   // おばけやしきの とびら: ↑で 入る(ジャンプより 先に みる)
-  if (pressed.up && p.onGround) { const dr = world.ents.find(o => o.t === 'wdoor' && o.near); if (dr) { consume('up'); dr.open = 1; warpPlayer(dr.to[0], dr.to[1], 0.2); const back = world.ents.find(o => o.t === 'wdoor' && Math.abs(o.x - dr.to[0] * TILE) < 2); if (back) { back.open = 1; back.near = true; } } }
+  if (pressed.up && p.onGround) { const dr = world.ents.find(o => o.t === 'wdoor' && o.near); if (dr) { consume('up'); upJ = false; dr.open = 1; warpPlayer(dr.to[0], dr.to[1], 0.2); const back = world.ents.find(o => o.t === 'wdoor' && Math.abs(o.x - dr.to[0] * TILE) < 2); if (back) { back.open = 1; back.near = true; } } }
   // ジャンプ(先行入力と崖のゆとり)。スピンジャンプは V。もこりゅうに のっているときは とびおりる(ふみ台に して 高く)
   if (consume('spin')) { if (p.mount) mountOff('jump'); else { p.jumpBuf = 0.15; p.spinReq = true; } }
-  consume('up'); // ↑ / ▲ は はしご・とびら・がけ 用。ジャンプには しない(2026-10-16 テスターの 声)
-  if (consume('jump')) { p.jumpBuf = 0.15; p.spinReq = false; }
+  consume('up'); // ▲(スマホ)は はしご・とびら・がけ 用。ジャンプには しない(2026-10-16 テスターの 声)
+  // 2026-10-21 持ち主: キーボードの ↑ / W でも ジャンプ。はしご(上で つかまって return 済み)・とびら(上で 入った)・
+  // もちあげ中(↑を おしながら なげると 上へ)は いままでどおり ジャンプに しない
+  if (upJ && p.carry) upJ = false;
+  if (upJ) upJumpHeld = true;
+  if (consume('jump') || upJ) { p.jumpBuf = 0.15; p.spinReq = false; }
   p.jumpBuf -= dt;
   p.coyote = p.onGround ? 0.12 : p.coyote - dt;
   if (p.onGround) { p.airJumps = maxAirJumps(); p.airDash = 1; p.glideT = 0; p.lastWJ = 0; }
@@ -4748,7 +4759,7 @@ function drawHelp(t) {
   const p = help.page, y0 = 116;
   if (p === 0) {
     const rows = [[['←', '→'], 'あるく(はしる)', 'hero_run'], [['スペース', 'Z'], 'ジャンプ(ながおしで たかく)', 'hero_jump'], [['V'], 'スピンジャンプ(トゲの てきも ふめる)', 'spiky'], [['X'], 'けん', 'hero_attack'],
-      [['C', 'Shift'], 'ダッシュ(ブーツ)・おして さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる・くうちゅうで ヒップドロップ', 'hero_hipdrop'], [['↑'], 'とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
+      [['C', 'Shift'], 'ダッシュ(ブーツ)・おして さわると もつ', 'p_boots'], [['↓'], 'しゃがむ・いど/つつに はいる・くうちゅうで ヒップドロップ', 'hero_hipdrop'], [['↑', 'W'], 'ジャンプ・とびら・はしご・がけを のぼる', 'ladder'], [['Q', 'E'], 'よびの はこの アイテムを だす', 'reserve_box'], [['Esc'], 'いちじていし', null]];
     rows.forEach((r, i) => helpRow(y0 - 4 + i * 40, r[0], r[1], r[2]));
   } else if (p === 1) {
     // スマホの 画面の ボタンの ならび(小さな 画面の 絵)
@@ -5266,6 +5277,7 @@ function drawEnding(t) {
 
 // ---------- 1フレーム ----------
 function update(dt) {
+  if (scene !== 'play') pressed.ujump = false; // メニュー・地図・店の ↑ は 上へ うごくだけ(あとで ステージで とばない)
   if (scene === 'play') {
     if (consume('pause')) { scene = 'pause'; pauseSel = 0; sfx('pause'); if (bgmEl) bgmEl.pause(); return; }
     checkCoinLife();
