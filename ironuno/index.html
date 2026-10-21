@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>イロヌノ 似合う色を布で見比べる</title>
+<meta name="description" content="顔のまわりに4つの季節の色の布を当てて、自分の目で見比べる似合う色のアプリ。白い紙で部屋の明かりの色を合わせてから比べます。写真は端末の外へ送りません。Android のテスターを募集しています。">
+<meta name="theme-color" content="#111f30">
+<link rel="canonical" href="https://yurustudio.github.io/ironuno/">
+<link rel="icon" href="img/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="イロヌノ">
+<meta property="og:title" content="イロヌノ 似合う色を布で見比べる">
+<meta property="og:description" content="顔のまわりに布の色を当てて、自分の目で見比べる。写真は端末の外へ送りません。Android のテスター募集中。">
+<meta property="og:url" content="https://yurustudio.github.io/ironuno/">
+<meta property="og:image" content="https://yurustudio.github.io/ironuno/img/og.jpg">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="500">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="イロヌノ 似合う色を布で見比べる">
+<meta name="twitter:image" content="https://yurustudio.github.io/ironuno/img/og.jpg">
+<style>
+  :root {
+    --navy: #111f30; --navy2: #172a40; --navy3: #20364f; --panel: rgba(23, 42, 64, .82);
+    --silk: #f4ece4; --coral: #f2765a; --coral2: #ff8f72; --rose: #e58fae; --blue: #3b5bd6;
+    --line: rgba(244, 236, 228, .28); --line2: rgba(244, 236, 228, .12);
+    --text: #f6f1ea; --sub: #c4ccd8; --muted: #94a0b2;
+    --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+    --sans: -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--navy); color: var(--text); font: 17px/1.8 var(--sans); overflow-x: hidden; }
+  a { color: var(--coral2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line2);
+    background: linear-gradient(90deg, rgba(17,31,48,.96) 0%, rgba(17,31,48,.82) 45%, rgba(17,31,48,.25) 100%), url(img/hero_bg.jpg) right 30% / cover no-repeat; }
+  .hero .wrap { padding-top: 40px; padding-bottom: 60px; display: grid; gap: 28px; grid-template-columns: 1.15fr .85fr; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 56px; height: 56px; border-radius: 14px; }
+  .brand span { font: 700 22px/1 var(--mincho); letter-spacing: .12em; }
+  h1 { font: 700 clamp(32px, 5.6vw, 52px)/1.3 var(--mincho); margin: 22px 0 14px; letter-spacing: .02em; }
+  .lead { font-size: 18px; color: var(--text); max-width: 32em; margin: 0 0 24px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; }
+  .btn.main { background: linear-gradient(180deg, var(--coral2), var(--coral)); color: #fff; box-shadow: 0 10px 26px rgba(242,118,90,.35); }
+  .btn.soft { border: 1.5px solid var(--line); color: var(--silk); background: rgba(17,31,48,.6); }
+  .hero .phone { justify-self: center; }
+
+  .phone { width: 100%; max-width: 290px; border-radius: 34px; padding: 9px; background: #070d16; border: 1.5px solid var(--line);
+    box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+  .phone img { border-radius: 26px; aspect-ratio: 9 / 16; object-fit: cover; object-position: top; width: 100%; }
+
+  section { padding: 64px 0; }
+  .kicker { font: 700 13px/1 var(--sans); letter-spacing: .2em; color: var(--coral2); margin: 0 0 12px; }
+  h2 { font: 700 clamp(26px, 4.2vw, 36px)/1.4 var(--mincho); margin: 0 0 16px; }
+  h3 { font: 700 19px/1.5 var(--mincho); margin: 0 0 6px; }
+  p { margin: 0 0 14px; }
+  .sub { color: var(--sub); }
+  .split { display: grid; grid-template-columns: 1fr 290px; gap: 48px; align-items: center; }
+  .split.rev { grid-template-columns: 290px 1fr; }
+  .split.rev .phone { order: -1; }
+  .band { background: linear-gradient(180deg, var(--navy2), var(--navy)); border-top: 1px solid var(--line2); border-bottom: 1px solid var(--line2); }
+
+  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 6px; padding: 0; list-style: none; counter-reset: f; }
+  .flow li { border: 1px solid var(--line2); border-radius: 18px; padding: 16px; background: rgba(32,54,79,.45); counter-increment: f; }
+  .flow b { display: block; font: 700 17px/1.4 var(--mincho); color: var(--silk); margin-bottom: 4px; }
+  .flow b::before { content: counter(f) "  "; color: var(--coral2); }
+  .flow p { margin: 0; font-size: 15px; color: var(--sub); }
+
+  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 26px; }
+  .gallery figure { margin: 0; }
+  .gallery .phone { max-width: none; border-radius: 26px; padding: 6px; }
+  .gallery .phone img { border-radius: 21px; }
+  .gallery figcaption { text-align: center; color: var(--sub); font-size: 15px; margin-top: 10px; }
+
+  .free { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+  .free div { border: 1px solid var(--line2); border-radius: 18px; padding: 18px 20px; background: rgba(32,54,79,.45); }
+  .free ul { margin: 8px 0 0; padding-left: 1.2em; color: var(--sub); font-size: 15.5px; }
+
+  .steps { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 14px; counter-reset: s; }
+  .steps li { position: relative; border: 1.5px solid var(--line); border-radius: 22px; background: var(--panel); padding: 20px 20px 20px 78px; counter-increment: s; }
+  .steps li::before { content: counter(s); position: absolute; left: 20px; top: 20px; width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 20px/1 var(--mincho); color: #fff; background: linear-gradient(180deg, var(--coral2), var(--coral)); }
+  .steps .btn { margin-top: 6px; min-height: 46px; font-size: 15px; padding: 0 20px; }
+  .steps p { margin: 0 0 6px; color: var(--sub); }
+  .note { margin-top: 18px; color: var(--muted); font-size: 15px; }
+  .web { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; border: 1px dashed var(--line); border-radius: 18px; padding: 16px 18px; color: var(--sub); }
+
+  footer { border-top: 1px solid var(--line2); padding: 30px 0 46px; color: var(--muted); font-size: 14.5px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+  footer .sp { flex: 1; }
+
+  @media (max-width: 860px) {
+    .hero { background: linear-gradient(180deg, rgba(17,31,48,.7) 0%, rgba(17,31,48,.92) 60%, var(--navy) 100%), url(img/hero_bg.jpg) center 20% / cover no-repeat; }
+    .hero .wrap, .split, .split.rev { grid-template-columns: 1fr; gap: 30px; }
+    .split.rev .phone { order: 0; }
+    .phone { max-width: 260px; justify-self: center; margin: 0 auto; }
+    .flow, .free { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  }
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .hero .wrap { padding-top: 26px; padding-bottom: 40px; }
+    .lead { font-size: 16.5px; }
+    .btn { width: 100%; }
+    section { padding: 48px 0; }
+    .steps li { padding: 70px 18px 18px; }
+    .steps li::before { left: 18px; top: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <div class="brand"><img src="img/icon.png" alt="" width="256" height="256"><span>イロヌノ</span></div>
+      <h1>似合う色を、<br>自分の目で見つける。</h1>
+      <p class="lead">顔のまわりに、春・夏・秋・冬の4つの季節の色の布を当てて、顔色が明るく見える方を選んでいくアプリです。白い紙で部屋の明かりの色を合わせてから比べます。</p>
+      <div class="btns">
+        <a class="btn main" href="#android">Android のテストに参加する</a>
+        <a class="btn soft" href="app/">ブラウザで試す</a>
+      </div>
+    </div>
+    <div class="phone"><img src="img/1_home.jpg" alt="イロヌノのホーム画面" width="540" height="960"></div>
+  </div>
+</header>
+
+<main>
+<section>
+  <div class="wrap split">
+    <div>
+      <p class="kicker">HOW IT WORKS</p>
+      <h2>鏡の前で服を当てる、あの見比べを</h2>
+      <p class="sub">「こっちの方が顔色がいいかも」。服を顔に当てて迷ったことがある人は多いと思います。イロヌノは、その見比べをスマホの中でやります。季節の名前は出さずに、左右に2色の布を並べて12回。左右の位置と順番は毎回ばらばらです。</p>
+      <ol class="flow">
+        <li><b>白い紙と一緒に撮る</b><p>窓ぎわなど、顔に均一な光が当たる所で。</p></li>
+        <li><b>布を当てて12回比べる</b><p>くま・影・赤みが目立たない方を選ぶ。</p></li>
+        <li><b>5つの質問に答える</b><p>金と銀、日焼けのしかたなど。</p></li>
+      </ol>
+    </div>
+    <div class="phone"><img src="img/3_drape.jpg" alt="左右に別の色の布を当てた顔を並べて比べる画面" width="540" height="960" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap split rev">
+    <div class="phone"><img src="img/2_white.jpg" alt="写真の中の白い紙をタップして、補正の前と後を見比べる画面" width="540" height="960" loading="lazy"></div>
+    <div>
+      <p class="kicker">WHITE BALANCE</p>
+      <h2>電球色の部屋でも、白い紙で合わせる</h2>
+      <p class="sub">夜の部屋で撮ると、顔も布も黄色っぽく写ります。写真の中の白い紙をタップすると、紙の白を基準に明かりの色を合わせてから比べます。補正の前と後は、つまみを動かして見比べられます。紙が暗い・白く飛んでいる・明かりの色が強すぎる時は、その場でお知らせします。</p>
+      <p class="sub">写真の読み込みも補正も見比べも、すべてスマホの中で行います。写真を外へ送ったり、保存したりはしません。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">INSIDE THE APP</p>
+    <h2>結果と、毎日の色選び</h2>
+    <p class="sub">いちばん近い季節と2番目の季節、得意な6色、4つの季節の傾向を出します。結果は照明やカメラで変わる目安なので、2つの季節が近い時はそのままお伝えします。</p>
+    <div class="gallery">
+      <figure><div class="phone"><img src="img/4_result.jpg" alt="結果の画面。季節の名前と得意な6色" width="540" height="960" loading="lazy"></div><figcaption>季節と得意な6色</figcaption></figure>
+      <figure><div class="phone"><img src="img/5_card.jpg" alt="結果カードを作る画面" width="540" height="960" loading="lazy"></div><figcaption>結果カード</figcaption></figure>
+      <figure><div class="phone"><img src="img/6_shelf.jpg" alt="色の本棚。季節ごとの色見本" width="540" height="960" loading="lazy"></div><figcaption>色の本棚</figcaption></figure>
+      <figure><div class="phone"><img src="img/7_history.jpg" alt="これまでの診断の記録" width="540" height="960" loading="lazy"></div><figcaption>診断の記録</figcaption></figure>
+    </div>
+    <div class="free">
+      <div><h3>買う前にできること</h3><ul><li>白い紙での補正と、布の見比べ12回・質問5問</li><li>季節・2番目の季節・得意な6色・4つの傾向</li><li>結果カードの保存と共有</li><li>いちばん新しい結果の記録</li></ul></div>
+      <div><h3>買い切りでひらくこと(Android アプリ)</h3><ul><li>4つの季節、それぞれ24色の色見本</li><li>メイク・服・髪色の色のヒント</li><li>顔から離して使いたい色と取り入れ方</li><li>これまでの診断の記録</li></ul><p class="sub" style="margin:8px 0 0;font-size:14.5px">一度の購入でずっと使えます。月額の支払いはありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="android" class="band">
+  <div class="wrap">
+    <p class="kicker">ANDROID TESTERS</p>
+    <h2>Android のテストに参加してください</h2>
+    <p class="sub">新しいアプリを Google Play で公開するには、その前に14日間、実際の人に試してもらう必要があります。Android のスマホをお持ちなら、3つの手順で参加できます。</p>
+    <ol class="steps">
+      <li><h3>テスターのグループに参加する</h3><p>スマホで使っている Google アカウントで、Google グループに参加します。</p>
+        <a class="btn soft" href="https://groups.google.com/g/nigatecho-testers" target="_blank" rel="noopener">テスターのグループを開く</a></li>
+      <li><h3>テスト用のページを開く</h3><p>同じアカウントで開き、「テスターになる」を押してから、Google Play でイロヌノを入れます。</p>
+        <a class="btn main" href="https://play.google.com/apps/testing/jp.ironuno.app" target="_blank" rel="noopener">テスターになる</a></li>
+      <li><h3>14日間、入れたままにしておく</h3><p>ときどき開いてもらえるとうれしいです。気づいたことがあればメールで教えてください。入れたままにしてもらうのがいちばんの助けです。</p></li>
+    </ol>
+    <p class="note">テスト用のページで「アプリが見つからない」と出る時は、グループへの参加が Google Play にまだ届いていないことがあります。数分待ってから、同じアカウントでもう一度開いてください。</p>
+    <div class="web"><span>スマホのブラウザでも、診断と結果までは試せます(購入はできません)。</span><a class="btn soft" href="app/">ブラウザで試す</a></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>イロヌノ YURU Studio</span>
+    <span class="sp"></span>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="terms.html">利用規約</a>
+    <a href="mailto:kame6493@gmail.com">お問い合わせ</a>
+  </div>
+</footer>
+
+</body>
+</html>
