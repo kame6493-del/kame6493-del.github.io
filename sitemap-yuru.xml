@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url><loc>https://yurustudio.github.io/</loc><lastmod>2026-10-24</lastmod></url>
+<url><loc>https://yurustudio.github.io/haru/</loc><lastmod>2026-10-24</lastmod></url>
+<url><loc>https://yurustudio.github.io/tsukau/</loc><lastmod>2026-10-24</lastmod></url>
+<url><loc>https://yurustudio.github.io/ironuno/</loc><lastmod>2026-10-24</lastmod></url>
+<url><loc>https://yurustudio.github.io/yofuke/</loc><lastmod>2026-10-24</lastmod></url>
+<url><loc>https://yurustudio.github.io/menkyo-shitami/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://yurustudio.github.io/kachimake/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://yurustudio.github.io/undoukai/</loc><lastmod>2026-10-16</lastmod></url>
 <url><loc>https://yurustudio.github.io/kanjisan/</loc><lastmod>2026-10-12</lastmod></url>
@@ -27,7 +32,7 @@
 <url><loc>https://yurustudio.github.io/blog/closed-test-12.html</loc><lastmod>2026-10-03</lastmod></url>
 <url><loc>https://yurustudio.github.io/blog/promo-video-python.html</loc><lastmod>2026-10-03</lastmod></url>
 <url><loc>https://yurustudio.github.io/blog/kokushi-answer-numbers.html</loc><lastmod>2026-10-07</lastmod></url>
-<url><loc>https://yurustudio.github.io/uchiwa/</loc><lastmod>2026-10-07</lastmod></url>
+<url><loc>https://yurustudio.github.io/uchiwa/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://yurustudio.github.io/blog/kaigo-subject-counts.html</loc><lastmod>2026-10-07</lastmod></url>
 <url><loc>https://yurustudio.github.io/blog/kanri-subject-counts.html</loc><lastmod>2026-10-07</lastmod></url>
 <url><loc>https://yurustudio.github.io/blog/shakai-subject-counts.html</loc><lastmod>2026-10-07</lastmod></url>
