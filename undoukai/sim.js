@@ -806,6 +806,6 @@
     return { v: 1, name: def.name, created: '2026-10-14', strokes, cpu: def.id };
   }
 
-  const API = { mulberry32, hashStr, clamp, Creature, Challenge, COURSE_IDS, analyze, COURSES, FINISH, groundH, terrainAt, MODE, traitBonus, courseFit, simulate, STATE_NAME, CPU_DEFS, cpuCreature, randomCpus, TYPE_NAMES, BASE, rdp, abilities, quality, AB_KEYS, terrainMul, timeAttack };
+  const API = { mulberry32, hashStr, clamp, Creature, Challenge, COURSE_IDS, analyze, COURSES, FINISH, groundH, terrainAt, MODE, traitBonus, courseFit, simulate, STATE_NAME, CPU_DEFS, cpuCreature, randomCpus, NAME_A, NAME_B, TYPE_NAMES, BASE, rdp, abilities, quality, AB_KEYS, terrainMul, timeAttack };
   if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.RU = API;
 })(typeof window !== 'undefined' ? window : globalThis);

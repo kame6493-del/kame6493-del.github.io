@@ -1,6 +1,6 @@
 :root{
   --sky:#b9e9ff; --grass:#65c982; --earth:#ea8359; --ink:#19263d; --white:#ffffff; --yellow:#ffd54f; --aqua:#35b8e8; --red:#e2483d;
-  --font:"Hiragino Maru Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;
+  --font:"Hiragino Maru Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic UI","Meiryo","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--sky);color:var(--ink);font-family:var(--font);overflow:hidden;
@@ -296,3 +296,13 @@ html.full #titleScreen .menu .fullBtn{background:#fff}
 .ownedCard{text-align:center}
 .penDot{display:block;width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);margin:4px}
 .penIt.wd img{width:30px;height:30px}
+
+/* 言葉の切り替え(2026-10-24) */
+.langRow{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.langRow .tiny{padding:4px 10px}
+.langRow .tiny.on{background:var(--yellow);font-weight:900}
+html[lang="ko"]{--font:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR","Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif;word-break:keep-all}
+html[lang="en"] .logo .l1,html[lang="ko"] .logo .l1{font-size:34px}
+html[lang="en"] .logo{font-size:38px}
+html[lang="en"] .lock::after{content:"Full Version"}
+html[lang="ko"] .lock::after{content:"완전판"}

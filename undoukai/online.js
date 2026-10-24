@@ -15,6 +15,8 @@ const firebaseConfig = {
 
 let app, auth, db, F, user = null;
 const RU = window.RU;
+// 言葉(i18n.js の L)。無い時は日本語のまま
+const L = (s, v) => (window.L ? window.L(s, v) : s);
 const PER_BYTES = 380;
 // 読みの回数を減らす(無料枠は1日の読み取り5万件。10/17 に X で伸びて1日20万件になった)
 //   みんなのらくがきの1ページ目: 端末に30分 / CPU に混ぜる絵・ランダムな相手: 読まない(pool.json と端末に覚えた1ページ目)
@@ -43,7 +45,7 @@ export function unblockAll() { LS.del(BLOCK_KEY); }
 const unblocked = a => a.filter(x => !isBlocked(x));
 // ---------- 混み合っている時(無料枠切れ = resource-exhausted / 429) ----------
 // 一度出たら5分はサーバーに行かずにすぐ「混み合っている」を返す(つながらない・時間切れは2分)。
-export const BUSY_MSG = 'いまは混み合っていて、みんなの絵とランキングが一時的に見られません';
+export const BUSY_MSG = L('いまは混み合っていて、みんなの絵とランキングが一時的に見られません');
 const BUSY_KEY = 'rkg_busy_until';
 export function isBusy() { const u = LS.get(BUSY_KEY); return !!(u && Date.now() < u); }
 function markBusy(ms) { LS.set(BUSY_KEY, Date.now() + ms); }
@@ -88,9 +90,9 @@ export function unpackCreature(str) { return RU.Creature.unpackBytes(unb64(str))
 export async function init() {
   if (db) return;
   if (isBusy()) throw busyError();
-  if (!firebaseConfig) throw new Error('オンラインの設定がまだです');
+  if (!firebaseConfig) throw new Error(L('オンラインの設定がまだです'));
   try { await guard(initRaw, 12000); }
-  catch (e) { if (e && e.busy) throw e; const x = new Error('ネットにつながっていないかも'); x.code = 'offline'; throw x; }
+  catch (e) { if (e && e.busy) throw e; const x = new Error(L('ネットにつながっていないかも')); x.code = 'offline'; throw x; }
 }
 async function initRaw() {
   if (db) return;
@@ -120,15 +122,15 @@ export async function postCreature(cr, info) {
       if (u.exists()) {
         const d = u.data();
         const last = d.lastPost && d.lastPost.toMillis ? d.lastPost.toMillis() : 0;
-        if (Date.now() - last < 30000) throw new Error('少し待ってからもう一度出してね(30秒に1回まで)');
-        if (d.day === day && d.count >= 10) throw new Error('出せるのは1日10匹までです');
+        if (Date.now() - last < 30000) throw new Error(L('少し待ってからもう一度出してね(30秒に1回まで)'));
+        if (d.day === day && d.count >= 10) throw new Error(L('出せるのは1日10匹までです'));
         tx.update(userRef, { lastPost: F.serverTimestamp(), day, count: d.day === day ? d.count + 1 : 1 });
       } else tx.set(userRef, { lastPost: F.serverTimestamp(), day, count: 1 });
       tx.set(ref, { uid: uid(), name: (cr.name || '').slice(0, 12), data, mode: info ? info.mode : '', created: F.serverTimestamp(), reports: 0, visible: true, rnd: Math.random() * 0.998 + 0.001 });
     }), 15000);
   } catch (e) {
     if (e && e.busy) throw e;
-    if (e && /permission/i.test(e.code || e.message)) throw new Error('いまは出せません(回数の上限かもしれません)');
+    if (e && /permission/i.test(e.code || e.message)) throw new Error(L('いまは出せません(回数の上限かもしれません)'));
     throw e;
   }
   LS.del(GAL_KEY);
@@ -212,8 +214,8 @@ export async function report(id) {
   const rref = F.doc(db, 'creatures', id, 'reports', uid());
   await guard(() => F.runTransaction(db, async tx => {
     const s = await tx.get(ref); const r = await tx.get(rref);
-    if (!s.exists()) throw new Error('もうありません');
-    if (r.exists()) throw new Error('通報ずみです');
+    if (!s.exists()) throw new Error(L('もうありません'));
+    if (r.exists()) throw new Error(L('通報ずみです'));
     const n = (s.data().reports || 0) + 1;
     tx.update(ref, { reports: n, visible: n < 3 });
     tx.set(rref, { at: F.serverTimestamp() });
@@ -236,18 +238,18 @@ export async function createRoom() {
       return code;
     } catch (e) { if (e.message !== 'dup') throw e; }
   }
-  throw new Error('部屋をつくれませんでした');
+  throw new Error(L('部屋をつくれませんでした'));
 }
 export async function joinRoom(code) {
   const ref = F.doc(db, 'rooms', code);
   await guard(() => F.runTransaction(db, async tx => {
     const s = await tx.get(ref);
-    if (!s.exists()) throw new Error('その部屋はありません');
+    if (!s.exists()) throw new Error(L('その部屋はありません'));
     const d = s.data();
-    if (d.created && d.created.toMillis && Date.now() - d.created.toMillis() > 3 * 3600 * 1000) throw new Error('その部屋はもう終わっています');
+    if (d.created && d.created.toMillis && Date.now() - d.created.toMillis() > 3 * 3600 * 1000) throw new Error(L('その部屋はもう終わっています'));
     if ((d.members || []).includes(uid())) return;
-    if (d.state !== 'lobby') throw new Error('その部屋はもう始まっています');
-    if ((d.members || []).length >= 3) throw new Error('その部屋はいっぱいです');
+    if (d.state !== 'lobby') throw new Error(L('その部屋はもう始まっています'));
+    if ((d.members || []).length >= 3) throw new Error(L('その部屋はいっぱいです'));
     tx.update(ref, { members: d.members.concat([uid()]), names: Object.assign({}, d.names, { [uid()]: '' }) });
   }), 15000);
 }

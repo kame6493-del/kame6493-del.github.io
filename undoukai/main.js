@@ -1,10 +1,18 @@
 'use strict';
 // らくがき運動会: 画面・絵・音・共有。形の読み取りとレースの計算は sim.js(RU)。
 const { Creature, Challenge, analyze, COURSES, FINISH, groundH, simulate, STATE_NAME, CPU_DEFS, cpuCreature, clamp, mulberry32, hashStr, timeAttack } = RU;
+// 言葉(i18n.js)。コース名・CPU の名前は表示用の文字だけ入れ替える(計算には使っていない)
+const L = window.L || ((s, v) => (v ? s.replace(/\{(\w+)(?::ord)?\}/g, (m, k) => (k in v ? String(v[k]) : m)) : s));
+if (window.L && L.lang !== 'ja') {
+  for (const c of Object.values(COURSES)) { c.name = L(c.name); c.sub = L(c.sub); }
+  for (const d of CPU_DEFS) d.name = L(d.name);
+  if (L.names && RU.NAME_A && RU.NAME_A.length === L.names[0].length && RU.NAME_B.length === L.names[1].length) { RU.NAME_A.splice(0, RU.NAME_A.length, ...L.names[0]); RU.NAME_B.splice(0, RU.NAME_B.length, ...L.names[1]); }
+}
 
 const CFG = {
   SHARE_URL: 'https://yurustudio.github.io/undoukai/', // 公開する場所(公開前はこの URL を予定として入れてある)
-  TAG: '#らくがき運動会',
+  TAG: (window.L && L.shareTag) || '#らくがき運動会', // 共有の文のタグ(英語・韓国語は その言葉のタグ + #らくがき運動会)
+  IMG_TAG: (window.L && L.tag) || '#らくがき運動会', // 画像・動画に入れるタグ
   AUTHOR: '@apkderete', // 共有文に作った人を入れる(遊んだ人の投稿に気づける)
   STORE_KEY: 'rakugaki_undoukai_v1',
   SIZE: 120,          // レースでの生き物の大きさ(世界の単位。画面の高さ = 760)
@@ -13,7 +21,7 @@ const CFG = {
   VS_SIZE: 3,
   PER_BYTES: 380,     // URL に詰める1体の上限(バイト)。3体で約1,550文字
 };
-const FONT = '"Hiragino Maru Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif';
+const FONT = '"Hiragino Maru Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic UI","Meiryo","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif';
 const params = new URLSearchParams(location.search);
 const TEST = params.has('test');
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -67,11 +75,11 @@ function bgm(name, force) {
   const s = SND.ctx.createBufferSource(); s.buffer = SND.buf[name]; s.loop = true; s.loopStart = 0.05; s.loopEnd = s.buffer.duration - 0.03;
   const g = SND.ctx.createGain(); g.gain.value = 0.32; s.connect(g); g.connect(SND.master); s.start(); SND.bgmNode = s;
 }
-function setSound(on) { SND.on = on; if (SND.master) SND.master.gain.value = on ? 1 : 0; $('soundBtn').textContent = '音: ' + (on ? 'ON' : 'OFF'); try { localStorage.setItem(CFG.STORE_KEY + '_snd', on ? '1' : '0'); } catch (e) { } }
+function setSound(on) { SND.on = on; if (SND.master) SND.master.gain.value = on ? 1 : 0; $('soundBtn').textContent = L('音: {v}', { v: on ? 'ON' : 'OFF' }); try { localStorage.setItem(CFG.STORE_KEY + '_snd', on ? '1' : '0'); } catch (e) { } }
 document.addEventListener('pointerdown', () => audioInit(), { capture: true });
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('button')) se('click', 0.35); }, { capture: true });
 
-const BUSY_MSG = 'いまは混み合っていて、みんなの絵とランキングが一時的に見られません';
+const BUSY_MSG = L('いまは混み合っていて、みんなの絵とランキングが一時的に見られません');
 // ---------- 生き物の保存・読み込み(ここ1か所にまとめる。みんなのらくがきは online.js) ----------
 const Store = {
   saveMine(cr) { try { const a = Store.listMine(); a.unshift(cr); localStorage.setItem(CFG.STORE_KEY + '_mine', JSON.stringify(a.slice(0, 12))); } catch (e) { } },
@@ -90,12 +98,12 @@ const Store = {
   termsOk() {
     if (!Full.native()) return true;
     try { if (localStorage.getItem(CFG.STORE_KEY + '_terms') === '1') return true; } catch (e) { }
-    if (!confirm('みんなのらくがき・3人の部屋・ランキングでは、描いた絵と名前がほかの人にも見えます。\n利用規約(不快な絵・名前・いやがらせの禁止など)に同意して使いますか?\n規約はタイトル画面の「利用規約・配信について」で読めます。不快な絵は「通報」「見ない」で消せます。')) return false;
+    if (!confirm(L('みんなのらくがき・3人の部屋・ランキングでは、描いた絵と名前がほかの人にも見えます。\n利用規約(不快な絵・名前・いやがらせの禁止など)に同意して使いますか?\n規約はタイトル画面の「利用規約・配信について」で読めます。不快な絵は「通報」「見ない」で消せます。'))) return false;
     try { localStorage.setItem(CFG.STORE_KEY + '_terms', '1'); } catch (e) { }
     return true;
   },
   async remote() {
-    if (!Store.termsOk()) throw Object.assign(new Error('利用規約に同意すると使えます'), { terms: true });
+    if (!Store.termsOk()) throw Object.assign(new Error(L('利用規約に同意すると使えます')), { terms: true });
     if (Store.online) return Store.online;
     const m = await import('./online.js');
     await m.init();
@@ -148,39 +156,39 @@ const Full = {
   own(quiet) {
     Full.owned = true; try { localStorage.setItem(Full.KEY, '1'); } catch (e) { }
     Full.refreshUi();
-    if (!quiet) { se('fanfare', 0.45); toast('完全版になりました。ありがとうございます!', 3500); }
+    if (!quiet) { se('fanfare', 0.45); toast(L('完全版になりました。ありがとうございます!'), 3500); }
   },
   msg(t) { const el = $('fullStatus'); if (el) el.textContent = t || ''; },
   async buy() {
     const Pur = Full.plugin();
-    if (!Pur) { Full.msg(Full.native() ? 'ストアにつなげませんでした' : '完全版はアプリ版(Android)で使えます'); return; }
+    if (!Pur) { Full.msg(Full.native() ? L('ストアにつなげませんでした') : L('完全版はアプリ版(Android)で使えます')); return; }
     if (Full.busy) return;
-    if (Full.offline()) { Full.msg('ネットにつながっていません。つながる所でもう一度どうぞ'); return; }
-    Full.busy = true; Full.msg('ストアにつないでいます…'); Full.render();
+    if (Full.offline()) { Full.msg(L('ネットにつながっていません。つながる所でもう一度どうぞ')); return; }
+    Full.busy = true; Full.msg(L('ストアにつないでいます…')); Full.render();
     try {
       if (!Full.pkg) await Full.load();
-      if (Full.owned) { Full.msg('完全版です。ありがとうございます'); return; }
+      if (Full.owned) { Full.msg(L('完全版です。ありがとうございます')); return; }
       if (!Full.pkg) throw new Error('no package');
       const r = await Pur.purchasePackage({ aPackage: Full.pkg });
-      if (Full.isFull(r && r.customerInfo)) { Full.own(); Full.msg('完全版になりました。ありがとうございます!'); }
-      else Full.msg('購入の手続きが終わると完全版になります');
+      if (Full.isFull(r && r.customerInfo)) { Full.own(); Full.msg(L('完全版になりました。ありがとうございます!')); }
+      else Full.msg(L('購入の手続きが終わると完全版になります'));
     } catch (e) {
-      Full.msg(Full.cancelled(e) ? '購入をやめました' : Full.pending(e) ? '支払いの手続き中です。終わると完全版になります(「購入を復元」で確かめられます)'
-        : Full.offline() ? 'ネットにつながっていません。つながる所でもう一度どうぞ' : '購入できませんでした。しばらくしてからもう一度ためしてください');
+      Full.msg(Full.cancelled(e) ? L('購入をやめました') : Full.pending(e) ? L('支払いの手続き中です。終わると完全版になります(「購入を復元」で確かめられます)')
+        : Full.offline() ? L('ネットにつながっていません。つながる所でもう一度どうぞ') : L('購入できませんでした。しばらくしてからもう一度ためしてください'));
     } finally { Full.busy = false; Full.render(); }
   },
   async restore() {
     const Pur = Full.plugin();
-    if (!Pur) { Full.msg(Full.native() ? 'ストアにつなげませんでした' : '購入の復元はアプリ版でできます'); return; }
+    if (!Pur) { Full.msg(Full.native() ? L('ストアにつなげませんでした') : L('購入の復元はアプリ版でできます')); return; }
     if (Full.busy) return;
-    if (Full.offline()) { Full.msg('ネットにつながっていません。つながる所でもう一度どうぞ'); return; }
-    Full.busy = true; Full.msg('購入のきろくをさがしています…'); Full.render();
+    if (Full.offline()) { Full.msg(L('ネットにつながっていません。つながる所でもう一度どうぞ')); return; }
+    Full.busy = true; Full.msg(L('購入のきろくをさがしています…')); Full.render();
     try {
       await Full.init();
       const r = await Pur.restorePurchases();
-      if (Full.isFull(r && r.customerInfo)) { Full.own(true); Full.msg('完全版をもどしました'); toast('完全版をもどしました', 3000); }
-      else Full.msg('購入のきろくが見つかりませんでした(買った時と同じストアのアカウントか確かめてください)');
-    } catch (e) { Full.msg(Full.offline() ? 'ネットにつながっていません。つながる所でもう一度どうぞ' : 'ストアにつなげませんでした。しばらくしてからもう一度ためしてください'); }
+      if (Full.isFull(r && r.customerInfo)) { Full.own(true); Full.msg(L('完全版をもどしました')); toast(L('完全版をもどしました'), 3000); }
+      else Full.msg(L('購入のきろくが見つかりませんでした(買った時と同じストアのアカウントか確かめてください)'));
+    } catch (e) { Full.msg(Full.offline() ? L('ネットにつながっていません。つながる所でもう一度どうぞ') : L('ストアにつなげませんでした。しばらくしてからもう一度ためしてください')); }
     finally { Full.busy = false; Full.render(); }
   },
   // 案内の画面
@@ -202,11 +210,11 @@ const Full = {
     $('fullOwned').classList.toggle('hidden', !Full.has());
     $('fullBuyBtn').classList.toggle('hidden', Full.has());
     $('fullBuyBtn').disabled = Full.busy; $('fullRestoreBtn').disabled = Full.busy;
-    $('fullBuyBtn').textContent = Full.price ? `完全版にする ${Full.price}` : '完全版にする';
+    $('fullBuyBtn').textContent = Full.price ? L('完全版にする {p}', { p: Full.price }) : L('完全版にする');
   },
   refreshUi() {
     Full.render();
-    const tb = $('fullBtn'); if (tb) tb.textContent = Full.has() ? '完全版(購入済み)' : Full.native() ? '完全版' : '完全版(アプリ版)';
+    const tb = $('fullBtn'); if (tb) tb.textContent = L(Full.has() ? '完全版(購入済み)' : Full.native() ? '完全版' : '完全版(アプリ版)');
     document.documentElement.classList.toggle('full', Full.has());
     if (typeof buildPenPanel === 'function') buildPenPanel();
   },
@@ -598,7 +606,7 @@ function drawTrack(ctx, cam, W, H, course, lanes, opt) {
     ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#19263d'; ctx.lineWidth = 4;
     for (const py of [lineYs[0] - 8, lineYs[lineYs.length - 1] + 6]) { ctx.beginPath(); ctx.rect(FINISH + (py > 700 ? 30 : 0) - 8, py - 260, 16, 260); ctx.fill(); ctx.stroke(); }
     ctx.fillStyle = '#ffd54f'; ctx.beginPath(); ctx.rect(FINISH - 60, lineYs[0] - 300, 150, 52); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#19263d'; ctx.font = `bold 34px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('ゴール', FINISH + 15, lineYs[0] - 274);
+    ctx.fillStyle = '#19263d'; ctx.font = `bold 34px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(L('ゴール'), FINISH + 15, lineYs[0] - 274);
   }
   ctx.restore();
   return lineYs;
@@ -691,7 +699,7 @@ function renderScene(ctx, W, H, scene, t, cam, opt) {
       if (e.isMe || scene.ents.length <= 4 || opt.allTags) {
         const ty = ground - (e.doodle.h + 26) * S - r.air * S;
         ctx.font = `bold ${Math.round(24 * S)}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        const label = e.isMe && scene.ents.filter(x => x.isMe).length === 1 && scene.mode === 'solo' ? 'あなた' : e.name;
+        const label = e.isMe && scene.ents.filter(x => x.isMe).length === 1 && scene.mode === 'solo' ? L('あなた') : e.name;
         const tw = ctx.measureText(label).width + 18 * S;
         ctx.fillStyle = e.isMe ? '#ffd54f' : 'rgba(255,255,255,0.92)'; ctx.strokeStyle = '#19263d'; ctx.lineWidth = e.isMe ? 3.5 : 2.5;
         roundRect(ctx, gx - tw / 2, ty - 17 * S, tw, 34 * S, 12 * S); ctx.fill(); ctx.stroke();
@@ -717,15 +725,15 @@ function renderScene(ctx, W, H, scene, t, cam, opt) {
   // 「よーい、ドン!」
   if (t < 0.8 && !opt.noCount) {
     const tc = t + CFG.COUNTDOWN;
-    let text = '', p = 0;
-    if (tc < 0.9) { text = '位置について'; p = tc / 0.25; }
-    else if (tc < CFG.COUNTDOWN) { text = 'よーい'; p = (tc - 0.9) / 0.25; }
-    else { text = 'ドン!'; p = (tc - CFG.COUNTDOWN) / 0.18; }
-    const fs = Math.min(W * 0.16, H * 0.12) * (text === 'ドン!' ? 1.35 : 0.8);
+    let text = '', p = 0, go = false;
+    if (tc < 0.9) { text = L('位置について'); p = tc / 0.25; }
+    else if (tc < CFG.COUNTDOWN) { text = L('よーい'); p = (tc - 0.9) / 0.25; }
+    else { text = L('ドン!'); p = (tc - CFG.COUNTDOWN) / 0.18; go = true; }
+    const fs = Math.min(W * 0.16, H * 0.12) * (go ? 1.35 : 0.8);
     ctx.save(); ctx.translate(W / 2, H * 0.36); const sc = easeOutBack(clamp(p, 0, 1)); ctx.scale(sc, sc); ctx.rotate(-0.05);
     ctx.font = `900 ${fs}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.lineWidth = fs * 0.18; ctx.strokeStyle = '#19263d'; ctx.lineJoin = 'round'; ctx.strokeText(text, 0, 0);
-    ctx.fillStyle = text === 'ドン!' ? '#e2483d' : '#ffffff'; ctx.fillText(text, 0, 0);
+    ctx.lineWidth = fs * 0.18; ctx.strokeStyle = '#19263d'; ctx.lineJoin = 'round'; ctx.strokeText(text, 0, 0, W * 0.9);
+    ctx.fillStyle = go ? '#e2483d' : '#ffffff'; ctx.fillText(text, 0, 0, W * 0.9);
     ctx.restore();
   }
   // 写真判定
@@ -733,7 +741,7 @@ function renderScene(ctx, W, H, scene, t, cam, opt) {
     const fs = Math.min(W * 0.12, H * 0.09);
     ctx.save(); ctx.translate(W / 2, H * 0.28); ctx.rotate(-0.04);
     ctx.font = `900 ${fs}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.lineWidth = fs * 0.16; ctx.strokeStyle = '#19263d'; ctx.strokeText('写真判定!', 0, 0); ctx.fillStyle = '#ffd54f'; ctx.fillText('写真判定!', 0, 0); ctx.restore();
+    ctx.lineWidth = fs * 0.16; ctx.strokeStyle = '#19263d'; ctx.strokeText(L('写真判定!'), 0, 0, W * 0.9); ctx.fillStyle = '#ffd54f'; ctx.fillText(L('写真判定!'), 0, 0, W * 0.9); ctx.restore();
   }
 }
 function sceneCam(scene, t, W, H, followX) {
@@ -773,6 +781,7 @@ const LINES = {
   recover: ['○○、すぐ起き上がった!', '○○、転んでもくじけない!'],
   cheer: ['○○に応援が届いた!', '○○、気合いが入った!'],
 };
+for (const k of Object.keys(LINES)) LINES[k] = LINES[k].map(x => L(x));
 function pickLine(type, name, k) { const a = LINES[type]; if (!a) return ''; return a[k % a.length].replace('○○', name); }
 
 // ---------- 画面の大きさ ----------
@@ -815,21 +824,21 @@ pad.addEventListener('pointerup', endStroke); pad.addEventListener('pointercance
 function buildColorButtons() {
   const box = $('colors');
   COLORS.forEach((c, i) => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'sw' + (i ? '' : ' on'); b.style.background = c; b.setAttribute('aria-label', '色 ' + (i + 1));
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sw' + (i ? '' : ' on'); b.style.background = c; b.setAttribute('aria-label', L('色 {n}', { n: i + 1 }));
     b.onclick = () => { penColor = c; if (penKind && penKind !== 'glitter') penKind = ''; box.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b)); updatePenBtn(); };
     box.appendChild(b);
   });
 }
 // 完全版のペン(金・銀・虹・ラメ・ピンク・水色・レモン)と太さ(極細・極太)。見た目だけ
 let penKind = '';
-const PEN_LIST = [['gold', '金'], ['silver', '銀'], ['rainbow', '虹'], ['glitter', 'ラメ'], ['pink', 'ピンク'], ['sky', '水色'], ['lemon', 'レモン']];
-const WIDTH_NAMES = { 4: '極細', 7: '細い線', 14: '太い線', 22: '極太' };
+const PEN_LIST = [['gold', L('金')], ['silver', L('銀')], ['rainbow', L('虹')], ['glitter', L('ラメ')], ['pink', L('ピンク')], ['sky', L('水色')], ['lemon', L('レモン')]];
+const WIDTH_NAMES = { 4: L('極細'), 7: L('細い線'), 14: L('太い線'), 22: L('極太') };
 function updatePenBtn() {
   const pb = $('penBtn'); if (!pb) return;
   const k = Full.has() ? penKind : '';
-  pb.textContent = k ? (PEN_LIST.find(x => x[0] === k) || ['', 'ペン'])[1] + 'のペン' : 'とくべつなペン';
+  pb.textContent = k ? L('{c}のペン', { c: (PEN_LIST.find(x => x[0] === k) || ['', L('ペン')])[1] }) : L('とくべつなペン');
   pb.classList.toggle('on', !!k);
-  $('widthBtn').textContent = WIDTH_NAMES[penWidth] || '太い線';
+  $('widthBtn').textContent = WIDTH_NAMES[penWidth] || L('太い線');
   const panel = $('penPanel');
   if (panel) panel.querySelectorAll('[data-pen]').forEach(b => b.classList.toggle('on', b.dataset.pen === k));
   if (panel) panel.querySelectorAll('[data-w]').forEach(b => b.classList.toggle('on', +b.dataset.w === penWidth));
@@ -837,7 +846,7 @@ function updatePenBtn() {
 function buildPenPanel() {
   const panel = $('penPanel'); if (!panel) return;
   const full = Full.has();
-  panel.innerHTML = `<p class="pp">とくべつなペン${full ? '' : '<small>完全版</small>'}</p>`;
+  panel.innerHTML = `<p class="pp">${L('とくべつなペン')}${full ? '' : '<small>' + L('完全版') + '</small>'}</p>`;
   const grid = document.createElement('div'); grid.className = 'penGrid';
   const item = (key, label, img, onPick) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'penIt' + (full || !key ? '' : ' lock');
@@ -847,11 +856,11 @@ function buildPenPanel() {
     b.onclick = () => { if (!Full.has() && key) { $('penPanel').classList.add('hidden'); Full.open('pens'); return; } onPick(); updatePenBtn(); };
     grid.appendChild(b); return b;
   };
-  item('', 'ふつう', '', () => { penKind = ''; }).dataset.pen = '';
+  item('', L('ふつう'), '', () => { penKind = ''; }).dataset.pen = '';
   const ICON = { gold: 1, silver: 1, rainbow: 1, glitter: 1 };
   for (const [k, label] of PEN_LIST) item(k, label, ICON[k] ? `assets/pen_${k}.png` : '', () => { penKind = k; }).dataset.pen = k;
   panel.appendChild(grid);
-  const wl = document.createElement('p'); wl.className = 'pp'; wl.textContent = '線の太さ'; panel.appendChild(wl);
+  const wl = document.createElement('p'); wl.className = 'pp'; wl.textContent = L('線の太さ'); panel.appendChild(wl);
   const wg = document.createElement('div'); wg.className = 'penGrid w';
   for (const w of [4, 7, 14, 22]) {
     const b = document.createElement('button'); b.type = 'button'; b.dataset.w = w; b.className = 'penIt wd' + (full || w === 7 || w === 14 ? '' : ' lock');
@@ -860,8 +869,8 @@ function buildPenPanel() {
     wg.appendChild(b);
   }
   panel.appendChild(wg);
-  const note = document.createElement('p'); note.className = 'pn'; note.textContent = full ? '見た目だけ変わります。走る速さは変わりません' : '完全版で使えます。見た目だけで、走る速さは変わりません'; panel.appendChild(note);
-  const close = document.createElement('button'); close.type = 'button'; close.className = 'sub'; close.textContent = 'とじる'; close.onclick = () => panel.classList.add('hidden'); panel.appendChild(close);
+  const note = document.createElement('p'); note.className = 'pn'; note.textContent = L(full ? '見た目だけ変わります。走る速さは変わりません' : '完全版で使えます。見た目だけで、走る速さは変わりません'); panel.appendChild(note);
+  const close = document.createElement('button'); close.type = 'button'; close.className = 'sub'; close.textContent = L('とじる'); close.onclick = () => panel.classList.add('hidden'); panel.appendChild(close);
   updatePenBtn();
 }
 $('penBtn').onclick = () => { buildPenPanel(); $('penPanel').classList.toggle('hidden'); };
@@ -881,18 +890,18 @@ function startDraw(mode, opts) {
   strokes = []; renderPad(); updateLiveType();
   $('penPanel').classList.add('hidden'); updatePenBtn();
   $('nameInput').value = opts.keepName ? $('nameInput').value : '';
-  $('drawTitle').textContent = opts.title || '生き物を1匹描いてね';
+  $('drawTitle').textContent = opts.title || L('生き物を1匹描いてね');
   const rs = $('rivalStrip'); rs.innerHTML = '';
   if (opts.rivals && opts.rivals.length) {
     rs.classList.remove('hidden');
-    for (const cr of opts.rivals) { const d = document.createElement('div'); d.className = 'rv'; const c = document.createElement('canvas'); c.width = 80; c.height = 80; drawThumb(c, cr); d.appendChild(c); d.appendChild(document.createTextNode(cr.name || '名なし')); rs.appendChild(d); }
+    for (const cr of opts.rivals) { const d = document.createElement('div'); d.className = 'rv'; const c = document.createElement('canvas'); c.width = 80; c.height = 80; drawThumb(c, cr); d.appendChild(c); d.appendChild(document.createTextNode(dispName(cr.name))); rs.appendChild(d); }
   } else rs.classList.add('hidden');
   $('drawTimer').classList.toggle('hidden', !opts.timer);
   show('drawScreen');
   bgm('bgm_title');
 }
 function myCreature() {
-  const name = cleanName($('nameInput').value) || '名なしのらくがき';
+  const name = cleanName($('nameInput').value) || L('名なしのらくがき');
   // URL に詰めた形に一度通す(対戦相手の端末と同じ線でレースするため)
   const cr = Creature.roundTrip(Creature.make(strokes, name, Full.has() ? Full.fx() : ''), CFG.PER_BYTES);
   cr.created = new Date().toISOString().slice(0, 10);
@@ -902,7 +911,7 @@ $('drawDoneBtn').onclick = () => {
   if (!strokes.length) return;
   const cr = myCreature();
   const info = analyze(cr.strokes);
-  if (!info) { toast('もう少し描いてね'); return; }
+  if (!info) { toast(L('もう少し描いてね')); return; }
   G.me = cr; G.meInfo = info;
   Store.saveMine(cr);
   if (G.mode === 'room') { Room.submit(cr); return; }
@@ -917,20 +926,20 @@ function openPrep() {
   const pet = Rec.pet(G.me);
   if (!Full.has()) delete G.me.fx;
   buildFxRow();
-  $('prepName').textContent = G.me.name || '名なし';
-  $('prepRec').innerHTML = pet && pet.n ? `これまで <b>${pet.n}</b> 戦 <b>${pet.wins}</b> 勝` : 'はじめてのレース';
+  $('prepName').textContent = dispName(G.me.name);
+  $('prepRec').innerHTML = pet && pet.n ? L('これまで <b>{n}</b> 戦 <b>{w}</b> 勝', { n: pet.n, w: pet.wins }) : L('はじめてのレース');
   const box = $('courses'); box.innerHTML = '';
   for (const id of RU.COURSE_IDS) {
     const c = COURSES[id], b = document.createElement('button'); b.type = 'button'; b.className = 'course' + (id === G.course ? ' on' : '');
     const best = pet && pet.best && pet.best[id];
-    b.innerHTML = `<span class="cn">${c.name}</span><span class="cs">${c.sub}</span><span class="pb">${best ? '自己ベスト ' + best.t.toFixed(2) + '秒・' + best.r + '位' : 'まだ走っていない'}</span>`;
+    b.innerHTML = `<span class="cn">${c.name}</span><span class="cs">${c.sub}</span><span class="pb">${best ? L('自己ベスト {t}秒・{r}位', { t: best.t.toFixed(2), r: best.r }) : L('まだ走っていない')}</span>`;
     const cv = document.createElement("canvas"); cv.width = 360; cv.height = 120; drawCourseIcon(cv, id); b.appendChild(cv);
     b.onclick = () => { G.course = id; box.querySelectorAll('.course').forEach(x => x.classList.toggle('on', x === b)); Persist.save(); };
     box.appendChild(b);
   }
   const link = G.mode === 'link';
-  $('courseTitle').textContent = link ? '挑戦状のコースをえらぶ' : 'コースをえらぶ';
-  $('prepGoBtn').textContent = link ? 'このコースで挑戦状をつくる' : 'このコースに決定!';
+  $('courseTitle').textContent = L(link ? '挑戦状のコースをえらぶ' : 'コースをえらぶ');
+  $('prepGoBtn').textContent = L(link ? 'このコースで挑戦状をつくる' : 'このコースに決定!');
   show('prepScreen');
   if (G.mode === 'solo') prefetchGalleryPool();
   const d = new Doodle(G.me, G.meInfo, 210);
@@ -948,11 +957,11 @@ function openPrep() {
   se('prep', 0.4);
 }
 // キラキラ(完全版)をえらぶ。準備運動の絵ですぐ見られる。見た目だけ
-const FX_LIST = [['', 'なし'], ['kira', '光の粒'], ['aura', 'オーラ'], ['star', '流れ星'], ['petal', '花びら']];
+const FX_LIST = [['', L('なし')], ['kira', L('光の粒')], ['aura', L('オーラ')], ['star', L('流れ星')], ['petal', L('花びら')]];
 function buildFxRow() {
   const box = $('fxRow'); if (!box) return;
   const full = Full.has(), curFx = (G.me && G.me.fx) || '';
-  box.innerHTML = `<p class="fxT">キラキラ${full ? '' : '<small>完全版</small>'}</p>`;
+  box.innerHTML = `<p class="fxT">${L('キラキラ')}${full ? '' : '<small>' + L('完全版') + '</small>'}</p>`;
   const row = document.createElement('div'); row.className = 'fxBtns';
   for (const [id, label] of FX_LIST) {
     const b = document.createElement('button'); b.type = 'button'; b.dataset.fx = id;
@@ -1038,7 +1047,7 @@ function buildScene(ents, course, seed, mode, cheers) {
   const lanes = laneLayout(ents.length);
   const sc = {
     mode, course, seed, lanes, cheers: (cheers || []).slice(), infos,
-    ents: ents.map((e, i) => ({ cr: e.cr, info: infos[i], doodle: new Doodle(e.cr, infos[i], CFG.SIZE), name: e.cr.name || '名なし', isMe: !!e.isMe, cpu: !!e.cpu })),
+    ents: ents.map((e, i) => ({ cr: e.cr, info: infos[i], doodle: new Doodle(e.cr, infos[i], CFG.SIZE), name: dispName(e.cr.name), isMe: !!e.isMe, cpu: !!e.cpu })),
     meIndex: ents.findIndex(e => e.isMe),
     evIdx: 0, ticker: [], tickT: -9, said: {}, lastLine: '',
     pops: [], fx: [], shake: 0, prevRank: 0, rankHold: 0, cheerTaps: 0, lastCheerT: -9,
@@ -1080,12 +1089,12 @@ function startRace(ents, course, seed, mode, cheers) {
   const cheerOk = mode === 'solo' && scene.meIndex >= 0;
   $('cheerBtn').classList.toggle('hidden', !cheerOk);
   updateCheerBtn();
-  $('skipBtn').textContent = 'スキップ';
+  $('skipBtn').textContent = L('スキップ');
   bgm('');
   scene.beeps = 0;
 }
 function buildProg() {
-  const p = $('prog'); p.innerHTML = '<span class="goal">ゴール</span>';
+  const p = $('prog'); p.innerHTML = '<span class="goal">' + L('ゴール') + '</span>';
   scene.dots = scene.ents.map((e, i) => { const d = document.createElement('div'); d.className = 'dot' + (e.isMe ? ' me' : ''); d.style.background = e.isMe ? '#ffd54f' : (e.cr.strokes[0] && e.cr.strokes[0].c) || '#fff'; p.appendChild(d); return d; });
   // 順位の札(小さな絵が入れ替わる)
   const o = $('order'); o.innerHTML = '';
@@ -1106,12 +1115,12 @@ function stepRace(dt) {
   const tc = t + CFG.COUNTDOWN;
   if (before + CFG.COUNTDOWN < 0.9 && tc >= 0.9) se('whistle', 0.45);
   if (before + CFG.COUNTDOWN < CFG.COUNTDOWN - 0.05 && tc >= CFG.COUNTDOWN - 0.05 && false) se('select', 0.5);
-  if (before < 0 && t >= 0) { se('pistol', 0.6); se('cheer', 0.25); bgm('bgm_race'); say(sc.mode === 'ta' ? 'タイムアタック、スタート!' : sc.mode === 'solo' ? 'よーい、ドン!' : '3人対戦、スタート!', 9); }
+  if (before < 0 && t >= 0) { se('pistol', 0.6); se('cheer', 0.25); bgm('bgm_race'); say(L(sc.mode === 'ta' ? 'タイムアタック、スタート!' : sc.mode === 'solo' ? 'よーい、ドン!' : '3人対戦、スタート!'), 9); }
   const evs = sc.race.events;
   while (sc.evIdx < evs.length && evs[sc.evIdx].t <= t) { onRaceEvent(evs[sc.evIdx], t); sc.evIdx++; }
   const me = sc.meIndex >= 0 ? racerAt(sc, sc.meIndex, t) : null;
   if (me && me.x > FINISH - 520 && !sc.said.last) { sc.said.last = 1; say(pickLine('last', sc.ents[sc.meIndex].name, Math.floor(sc.seed % 2)), 3); }
-  if (me && me.x > FINISH - 600 && !sc.said.final && sc.mode !== 'ta') { sc.said.final = 1; pop('ラスト20m!', '', '#ffffff', 1.1, 0.8); se('last', 0.5); }
+  if (me && me.x > FINISH - 600 && !sc.said.final && sc.mode !== 'ta') { sc.said.final = 1; pop(L('ラスト20m!'), '', '#ffffff', 1.1, 0.8); se('last', 0.5); }
   sc.shake = Math.max(0, sc.shake - dt * 2.5);
   // 写真判定: 2匹目がゴールした瞬間に止めて光らせる
   if (sc.slow && sc.slow.photo && !sc.said.photo && t >= sc.slow.tf) { sc.said.photo = 1; sc.freeze = 1.0; sc.flashT = performance.now(); se('shutter', 0.8); }
@@ -1161,22 +1170,22 @@ function onRaceEvent(e, t) {
     case 'climb': if (mine) say(pickLine('climb', ent.name, k), pri); break;
     case 'fall': se('trip', mine ? 0.6 : 0.2); if (mine) sc.shake = 1.2; if (mine || near) say(pickLine('fall', ent.name, k), pri + 1); break;
     case 'splash': if (e.k === 1) { se('splash', mine ? 0.5 : 0.2); if (mine) say(pickLine('splash', ent.name, k), pri); } break;
-    case 'item': se('item', mine ? 0.6 : 0.2); if (mine) { pop('おにぎり!', 'ダッシュ!', '#ffffff', 0.9, 0.7); say(pickLine('item', ent.name, k), pri); } break;
+    case 'item': se('item', mine ? 0.6 : 0.2); if (mine) { pop(L('おにぎり!'), L('ダッシュ!'), '#ffffff', 0.9, 0.7); say(pickLine('item', ent.name, k), pri); } break;
     case 'spurt': if (mine) { se('spurt', 0.5); say(pickLine('spurt', ent.name, k), pri + 1); } else if (near && sc.race.rank[e.who] <= 2) say(pickLine('spurt', ent.name, k), 2); break;
     case 'recover': if (mine) say(pickLine('recover', ent.name, k), pri); break;
-    case 'cheer': if (mine) { se('kiai', 0.5); pop('気合い注入!', '', '#ff8fb1', 1.1, 0.9); say(pickLine('cheer', ent.name, k), 7); } break;
+    case 'cheer': if (mine) { se('kiai', 0.5); pop(L('気合い注入!'), '', '#ff8fb1', 1.1, 0.9); say(pickLine('cheer', ent.name, k), 7); } break;
     case 'lead': if (t > 2) say(pickLine('lead', ent.name, k), mine ? 6 : 2); break;
     case 'finish': {
       const rank = sc.race.rank[e.who];
-      if (rank === 1) { se('firework', 0.6); se('cheer', 0.4); if (sc.mode !== 'ta') say(`${ent.name}、1着でゴール!`, 8); burstFireworks(mine ? 7 : 3); }
+      if (rank === 1) { se('firework', 0.6); se('cheer', 0.4); if (sc.mode !== 'ta') say(L('{name}、1着でゴール!', { name: ent.name }), 8); burstFireworks(mine ? 7 : 3); }
       if (mine) {
         se(rank <= 3 || sc.mode === 'ta' ? 'fanfare' : 'chan', 0.55); bgm('');
-        if (sc.mode === 'ta') { pop('ゴール!', sc.race.times[e.who].toFixed(2) + '秒', '#ffd54f', 1.4, 2.2); say(`${ent.name}、${sc.race.times[e.who].toFixed(2)}秒でゴール!`, 9); }
+        if (sc.mode === 'ta') { pop(L('ゴール!'), L('{t}秒', { t: sc.race.times[e.who].toFixed(2) }), '#ffd54f', 1.4, 2.2); say(L('{name}、{t}秒でゴール!', { name: ent.name, t: sc.race.times[e.who].toFixed(2) }), 9); }
         else {
-          say(`${ent.name}、${rank}位でゴール!`, 9);
+          say(L('{name}、{r}位でゴール!', { name: ent.name, r: rank }), 9);
           // 写真判定がある時は、判定のあとに出す
           const wait = sc.slow && sc.slow.photo && sc.slow.pair.includes(e.who) && !sc.said.photo ? 2300 : 0;
-          if (rank === 1) pop('優勝!', 'この絵が優勝でいいのか', '#ffd54f', 1.6, 2.4, wait); else if (rank <= 3) pop(`${rank}位!`, '表彰台!', '#ffffff', 1.3, 1.8, wait); else pop(`${rank}位`, '', '#ffffff', 1.0, 1.2, wait);
+          if (rank === 1) pop(L('優勝!'), L('この絵が優勝でいいのか'), '#ffd54f', 1.6, 2.4, wait); else if (rank <= 3) pop(L('{r}位!', { r: rank }), L('表彰台!'), '#ffffff', 1.3, 1.8, wait); else pop(L('{r}位', { r: rank }), '', '#ffffff', 1.0, 1.2, wait);
         }
       }
       break;
@@ -1216,19 +1225,19 @@ function updateHud(t) {
   });
   if (sc.meIndex >= 0) {
     const myX = xs[sc.meIndex];
-    if (sc.mode === 'ta') { $('rankNow').textContent = Math.max(0, t).toFixed(1) + '秒'; }
+    if (sc.mode === 'ta') { $('rankNow').textContent = L('{t}秒', { t: Math.max(0, t).toFixed(1) }); }
     else {
       const rank = fin(sc.meIndex) ? sc.race.rank[sc.meIndex] : sc.chipOrd ? sc.chipOrd.indexOf(sc.meIndex) + 1 : rankAt(sc, t); // 札と同じ並びから
-      $('rankNow').innerHTML = `<small>いま</small>${rank}位`;
+      $('rankNow').innerHTML = L('<small>いま</small>{r}位', { r: rank });
     }
     const left = Math.max(0, Math.ceil((FINISH - myX) / 30));
-    $('leftM').textContent = fin(sc.meIndex) ? 'ゴール!' : t <= 0 ? '100m' : `のこり ${left}m`;
+    $('leftM').textContent = fin(sc.meIndex) ? L('ゴール!') : t <= 0 ? '100m' : L('のこり {m}m', { m: left });
     if (sc.meIndex >= 0 && sc.ents.length > 1 && !fin(sc.meIndex)) {
       // 前の子との差
       const ahead = xs.filter((x, i) => i !== sc.meIndex && x > myX && !fin(i)).sort((a, b) => a - b)[0];
-      if (ahead != null && t > 0) $('leftM').textContent += `  前まで ${Math.max(1, Math.round((ahead - myX) / 30))}m`;
+      if (ahead != null && t > 0) $('leftM').textContent += '  ' + L('前まで {m}m', { m: Math.max(1, Math.round((ahead - myX) / 30)) });
     }
-  } else { $('rankNow').textContent = '観戦'; $('leftM').textContent = ''; }
+  } else { $('rankNow').textContent = L('観戦'); $('leftM').textContent = ''; }
   updateCheerBtn();
 }
 // 応援: 8回押すと気合いが1回入る(1レース3回まで・4秒あけて)。ひとりで走る時だけ。押した時刻を種と一緒に計算に入れるので、同じ応援なら同じ結果
@@ -1237,7 +1246,7 @@ function updateCheerBtn() {
   if (!scene) return;
   const used = scene.cheers.length, left = CHEER_MAX - used;
   $('cheerFill').style.width = (left > 0 ? Math.min(1, scene.cheerTaps / CHEER_TAPS) * 100 : 100) + '%';
-  $('cheerLeft').textContent = left > 0 ? `あと${left}回` : 'おしまい';
+  $('cheerLeft').textContent = left > 0 ? L('あと{n}回', { n: left }) : L('おしまい');
   $('cheerBtn').disabled = left <= 0 || scene.ended;
 }
 $('cheerBtn').addEventListener('pointerdown', e => {
@@ -1262,9 +1271,10 @@ $('cheerBtn').addEventListener('pointerdown', e => {
 $('skipBtn').onclick = () => { if (scene && playing && !scene.ended) { const evs = scene.race.events; scene.evIdx = evs.length; scene.slow = null; scene.freeze = 0; raceClock = Math.max(raceClock, (scene.meIndex >= 0 ? scene.race.times[scene.meIndex] : scene.race.times[scene.race.order[0]]) + 0.3); bgm(''); } };
 
 // ---------- 結果 ----------
-const TITLES = ['この絵が優勝でいいのか', 'あと一歩で伝説だった', 'なんか惜しい生き物', '走り方に問題あり', '参加したことに意味がある', 'まず生物として頑張ろう'];
+const TITLES = ['この絵が優勝でいいのか', 'あと一歩で伝説だった', 'なんか惜しい生き物', '走り方に問題あり', '参加したことに意味がある', 'まず生物として頑張ろう'].map(x => L(x));
 // 珍プレー賞: レースで起きた出来事だけから決める(形や能力のことは言わない)
-function awardFor(sc, i) {
+function awardFor(sc, i) { return L(awardKey(sc, i)); }
+function awardKey(sc, i) {
   const s = sc.race.stats[i], rank = sc.race.rank[i], n = sc.ents.length;
   if (sc.photoT != null && sc.race.photo.some(p => p.includes(i))) return '写真判定で賞';
   if (sc.mode !== 'ta' && rank === 1 && s.trips + s.falls + s.bonks >= 1) return '転んでも勝ったで賞';
@@ -1284,7 +1294,7 @@ function awardFor(sc, i) {
 function resultInfoFor(sc) {
   const i = sc.meIndex >= 0 ? sc.meIndex : sc.race.order[0];
   const rank = sc.race.rank[i], n = sc.ents.length;
-  const title = sc.mode === 'ta' ? 'タイムアタック' : n === 6 ? TITLES[rank - 1] : (rank === 1 ? TITLES[0] : rank === n ? TITLES[5] : TITLES[2]);
+  const title = sc.mode === 'ta' ? L('タイムアタック') : n === 6 ? TITLES[rank - 1] : (rank === 1 ? TITLES[0] : rank === n ? TITLES[5] : TITLES[2]);
   return { i, rank, n, title, name: sc.ents[i].name, time: sc.race.times[i], award: awardFor(sc, i), course: COURSES[sc.course].name, mode: sc.mode };
 }
 let result = null;
@@ -1310,17 +1320,17 @@ async function finishRace(opts) {
   $('xBtn').href = intentUrl(result); $('xNote').textContent = '';
   $('videoNote').textContent = '';
   $('videoBtn').disabled = !canRecord();
-  if (!canRecord()) $('videoNote').textContent = 'この端末のブラウザでは動画を作れません';
+  if (!canRecord()) $('videoNote').textContent = L('この端末のブラウザでは動画を作れません');
   result.vvideo = null; $('vVideoBox').classList.add('hidden'); $('vVideoNote').textContent = ''; $('vVideoBtn').disabled = false;
-  $('vVideoBtn').textContent = Full.has() ? '縦動画をつくる' : '縦動画を保存';
+  $('vVideoBtn').textContent = L(Full.has() ? '縦動画をつくる' : '縦動画を保存');
   $('vVideoBtn').classList.toggle('lock', !Full.has());
   const mine = sc.meIndex >= 0;
   $('retryBtn').classList.toggle('hidden', !mine || vs);
-  $('retryBtn').textContent = sc.mode === 'ta' ? 'もう一回タイムアタック' : 'もう一回!';
+  $('retryBtn').textContent = L(sc.mode === 'ta' ? 'もう一回タイムアタック' : 'もう一回!');
   $('againBtn').classList.toggle('hidden', !mine || sc.mode === 'view');
   $('taBtn').classList.toggle('hidden', !mine);
   $('postBtn').classList.toggle('hidden', !mine);
-  $('postBtn').disabled = false; $('postBtn').textContent = 'みんなのらくがきに出す';
+  $('postBtn').disabled = false; $('postBtn').textContent = L('みんなのらくがきに出す');
   $('nextChallengeBtn').classList.toggle('hidden', !mine);
   renderBadges(badges);
   show('resultScreen');
@@ -1338,14 +1348,15 @@ function shareBase() { const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(l
 function shareParts(res) {
   const r = res.info, sc = res.scene;
   let text;
-  if (sc.mode === 'ta') text = `わたしのらくがき「${r.name}」が${r.course}のタイムアタックで${r.time != null ? r.time.toFixed(2) : '-'}秒!\n${CFG.TAG}`;
-  else if (sc.mode === 'solo') text = `わたしのらくがき「${r.name}」が${r.course}で${r.n}匹中${r.rank}位!\n${CFG.TAG} ${r.rank}位`;
+  const rk = L('{r}位', { r: r.rank });
+  if (sc.mode === 'ta') text = L('わたしのらくがき「{name}」が{c}のタイムアタックで{t}秒!', { name: r.name, c: r.course, t: r.time != null ? r.time.toFixed(2) : '-' }) + `\n${CFG.TAG}`;
+  else if (sc.mode === 'solo') text = L('わたしのらくがき「{name}」が{c}で{n}匹中{r}位!', { name: r.name, c: r.course, n: r.n, r: r.rank }) + `\n${CFG.TAG} ${rk}`;
   else if (sc.meIndex >= 0) {
     const others = sc.ents.filter((e, i) => i !== sc.meIndex && !e.cpu).map(e => e.name);
     const won = r.rank === 1;
-    text = `${others.length ? others.join('・') + ' と' : ''}3人対戦で「${r.name}」が${r.rank}位でした${won ? '。勝った!' : ''}\n${CFG.TAG} ${r.rank}位`;
-  } else text = `らくがき3人対戦の結果: 1位は「${sc.ents[sc.race.order[0]].name}」\n${CFG.TAG}`;
-  text += `\n作った人 ${CFG.AUTHOR}`;
+    text = (others.length ? L('{o} と3人対戦で「{name}」が{r}位でした', { o: others.join(L.lang === 'ja' || !window.L ? '・' : ', '), name: r.name, r: r.rank }) : L('3人対戦で「{name}」が{r}位でした', { name: r.name, r: r.rank })) + (won ? L('。勝った!') : '') + `\n${CFG.TAG} ${rk}`;
+  } else text = L('らくがき3人対戦の結果: 1位は「{name}」', { name: sc.ents[sc.race.order[0]].name }) + `\n${CFG.TAG}`;
+  text += '\n' + L('作った人 {a}', { a: CFG.AUTHOR });
   return { text, url: res.link || shareBase() };
 }
 function intentUrl(res) {
@@ -1371,16 +1382,23 @@ function makeCard(sc, r, badges) {
   ctx.strokeStyle = '#19263d'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, 735); ctx.lineTo(W, 735); ctx.stroke();
   // 題名
   ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round';
-  const logoTxt = (txt, x, y, fs, fill) => { ctx.font = `900 ${fs}px ${FONT}`; ctx.lineWidth = fs * 0.2; ctx.strokeStyle = '#19263d'; ctx.strokeText(txt, x, y); ctx.fillStyle = fill; ctx.fillText(txt, x, y); };
-  if (IMG.logo) { const im = IMG.logo, h = 132, w = h * im.naturalWidth / im.naturalHeight; ctx.drawImage(im, (W - w) / 2, 6, w, h); }
+  const logoTxt = (txt, x, y, fs, fill, mw) => { ctx.font = `900 ${fs}px ${FONT}`; ctx.lineWidth = fs * 0.2; ctx.strokeStyle = '#19263d'; ctx.strokeText(txt, x, y, mw); ctx.fillStyle = fill; ctx.fillText(txt, x, y, mw); };
+  if (window.L && L.lang !== 'ja' && L.logo) {
+    // 英語・韓国語: ロゴの絵は日本語なので字で描く(色はタイトルと同じ並び)
+    const LC = { 1: '#ffffff', 2: '#e2483d', 3: '#ffd54f', 4: '#35b8e8' }, parts = L.logo, gap = L.lang === 'en' ? 22 : 6;
+    const fsz = p => (p[1] === 1 ? 64 : 74);
+    const ws = parts.map(p => { ctx.font = `900 ${fsz(p)}px ${FONT}`; return ctx.measureText(p[0]).width; });
+    let x = (W - ws.reduce((a, b) => a + b, 0) - gap * (parts.length - 1)) / 2;
+    ctx.textAlign = 'left'; parts.forEach((p, k) => { logoTxt(p[0], x, 104, fsz(p), LC[p[1]]); x += ws[k] + gap; }); ctx.textAlign = 'center';
+  } else if (IMG.logo) { const im = IMG.logo, h = 132, w = h * im.naturalWidth / im.naturalHeight; ctx.drawImage(im, (W - w) / 2, 6, w, h); }
   else { logoTxt('らくがき', W / 2 - 110, 100, 64, '#ffffff'); logoTxt('運', W / 2 + 70, 104, 74, '#e2483d'); logoTxt('動', W / 2 + 150, 108, 74, '#ffd54f'); logoTxt('会', W / 2 + 230, 102, 74, '#35b8e8'); }
   // コースの札
-  ctx.font = `bold 30px ${FONT}`; const ctext = sc.mode === 'ta' ? `${r.course}・タイムアタック` : (sc.mode === 'solo' || sc.mode === 'gallery' && sc.ents.length !== 3) ? `${r.course}(${sc.ents.length}匹)` : `${r.course}・${sc.ents.length}人対戦`;
+  ctx.font = `bold 30px ${FONT}`; const ctext = sc.mode === 'ta' ? L('{c}・タイムアタック', { c: r.course }) : (sc.mode === 'solo' || sc.mode === 'gallery' && sc.ents.length !== 3) ? L('{c}({n}匹)', { c: r.course, n: sc.ents.length }) : L('{c}・{n}人対戦', { c: r.course, n: sc.ents.length });
   const cw = ctx.measureText(ctext).width + 40; ctx.fillStyle = '#ffffff'; roundRect(ctx, (W - cw) / 2, 140, cw, 46, 23); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#19263d'; ctx.stroke();
   ctx.fillStyle = '#19263d'; ctx.fillText(ctext, W / 2, 174);
   // 順位
   ctx.save(); ctx.translate(W / 2, 330); ctx.rotate(-0.04);
-  if (sc.mode === 'ta') logoTxt(`${r.time != null ? r.time.toFixed(2) : '-'}秒`, 0, 0, 140, '#ffd54f'); else logoTxt(`第${r.rank}位!`, 0, 0, 150, '#ffd54f');
+  if (sc.mode === 'ta') logoTxt(L('{t}秒', { t: r.time != null ? r.time.toFixed(2) : '-' }), 0, 0, 140, '#ffd54f', W - 80); else logoTxt(L('第{r}位!', { r: r.rank }), 0, 0, 150, '#ffd54f', W - 80);
   ctx.restore();
   // 称号はリボンの札に(ui_result の見本に合わせる)
   ctx.font = `900 44px ${FONT}`;
@@ -1410,7 +1428,7 @@ function makeCard(sc, r, badges) {
   roundRect(ctx, 40, 960, W - 80, 330, 30); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = '#19263d'; ctx.stroke();
   ctx.textAlign = 'left'; ctx.font = `bold 30px ${FONT}`; ctx.fillStyle = '#19263d';
   const bt = (badges || []).filter(b => b.c === 'gold' || b.c === 'red').map(b => b.t)[0];
-  ctx.fillText(`タイム ${r.time != null ? r.time.toFixed(2) + '秒' : '-'}${bt ? '  ・  ' + bt : ''}`, 80, 1010, W - 160);
+  ctx.fillText(L('タイム {t}', { t: r.time != null ? L('{t}秒', { t: r.time.toFixed(2) }) : '-' }) + (bt ? '  ・  ' + bt : ''), 80, 1010, W - 160);
   const order = sc.race.order, cols2 = order.length > 3 ? 2 : 1, rows = Math.ceil(order.length / cols2);
   order.forEach((idx, k) => {
     const col = Math.floor(k / rows), row = k % rows;
@@ -1419,16 +1437,16 @@ function makeCard(sc, r, badges) {
     if (idx === r.i) { ctx.fillStyle = '#ffd54f'; roundRect(ctx, x - 12, y - 4, 440, 56, 14); ctx.fill(); }
     const rc = ['#ffd54f', '#35b8e8', '#f08a24'][k];
     if (rc) { ctx.fillStyle = rc; roundRect(ctx, x - 6, y + 4, 76, 46, 10); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#19263d'; ctx.stroke(); }
-    ctx.fillStyle = '#19263d'; ctx.font = `900 34px ${FONT}`; ctx.fillText(`${k + 1}位`, x, y + 38);
+    ctx.fillStyle = '#19263d'; ctx.font = `900 34px ${FONT}`; ctx.fillText(L('{r}位', { r: k + 1 }), x, y + 38, 76);
     const tc = document.createElement('canvas'); tc.width = 70; tc.height = 54; drawThumb(tc, en.cr); ctx.drawImage(tc, x + 86, y);
     ctx.font = `bold 28px ${FONT}`; let n2 = en.name; while (ctx.measureText(n2).width > 250 && n2.length > 2) n2 = n2.slice(0, -1);
     ctx.fillText(n2, x + 166, y + 37);
   });
   // 珍プレー賞
   ctx.textAlign = 'center';
-  ctx.font = `900 34px ${FONT}`; const aw = `珍プレー賞: ${r.award}`; const aww = ctx.measureText(aw).width + 50;
-  ctx.fillStyle = '#e2483d'; roundRect(ctx, (W - aww) / 2, 1236, aww, 54, 27); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.fillText(aw, W / 2, 1275);
-  ctx.font = `bold 26px ${FONT}`; ctx.fillStyle = '#19263d'; ctx.fillText(`${CFG.TAG}   yurustudio.github.io/undoukai`, W / 2, 1328);
+  ctx.font = `900 34px ${FONT}`; const aw = L('珍プレー賞: {a}', { a: r.award }); const aww = Math.min(W - 80, ctx.measureText(aw).width + 50);
+  ctx.fillStyle = '#e2483d'; roundRect(ctx, (W - aww) / 2, 1236, aww, 54, 27); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.fillText(aw, W / 2, 1275, aww - 40);
+  ctx.font = `bold 26px ${FONT}`; ctx.fillStyle = '#19263d'; ctx.fillText(`${CFG.IMG_TAG}   yurustudio.github.io/undoukai`, W / 2, 1328);
   return c;
 }
 
@@ -1454,39 +1472,39 @@ $('xBtn').addEventListener('click', async (ev) => {
       return;
     }
   } catch (e) { /* 下の通常の動きへ */ }
-  note.textContent = '投稿画面が開いたら、「画像を保存」した絵を添えてください';
+  note.textContent = L('投稿画面が開いたら、「画像を保存」した絵を添えてください');
 });
 $('saveBtn').onclick = () => { if (result && result.blob) shareOrSave(result.blob, fileBase() + '.png', 'image/png'); };
 $('videoBtn').onclick = async () => {
   if (!result || $('videoBtn').disabled) return;
   $('videoBtn').disabled = true;
   try {
-    const v = await makeVideo(result.scene, result.canvas, s => { $('videoNote').textContent = `動画を作っています… あと ${s} 秒`; });
+    const v = await makeVideo(result.scene, result.canvas, s => { $('videoNote').textContent = L('動画を作っています… あと {s} 秒', { s }); });
     result.video = v;
-    $('videoNote').textContent = v.type.includes('mp4') ? '動画ができました(mp4)' : '動画ができました(webm。X に貼れない時は画像を使ってね)';
+    $('videoNote').textContent = L(v.type.includes('mp4') ? '動画ができました(mp4)' : '動画ができました(webm。X に貼れない時は画像を使ってね)');
     await shareOrSave(v.blob, fileBase() + (v.type.includes('mp4') ? '.mp4' : '.webm'), v.type.split(';')[0]);
-  } catch (e) { $('videoNote').textContent = '動画を作れませんでした'; console.error(e); }
+  } catch (e) { $('videoNote').textContent = L('動画を作れませんでした'); console.error(e); }
   $('videoBtn').disabled = false;
 };
 // 完全版: 縦動画(作ったら「端末に保存」「X・TikTok などへ」)
 $('vVideoBtn').onclick = async () => {
   if (!result) return;
   if (!Full.has()) { Full.open('video'); return; }
-  if (!canRecord()) { $('vVideoNote').textContent = 'この端末では動画を作れません'; return; }
+  if (!canRecord()) { $('vVideoNote').textContent = L('この端末では動画を作れません'); return; }
   $('vVideoBtn').disabled = true;
   try {
-    const v = await makeVideo(result.scene, result.canvas, s => { $('vVideoNote').textContent = `縦動画を作っています… あと ${s} 秒`; }, { vertical: true });
+    const v = await makeVideo(result.scene, result.canvas, s => { $('vVideoNote').textContent = L('縦動画を作っています… あと {s} 秒', { s }); }, { vertical: true });
     result.vvideo = v;
-    $('vVideoNote').textContent = v.type.includes('mp4') ? '縦動画ができました' : '縦動画ができました(webm。アプリによっては貼れないことがあります)';
+    $('vVideoNote').textContent = L(v.type.includes('mp4') ? '縦動画ができました' : '縦動画ができました(webm。アプリによっては貼れないことがあります)');
     $('vVideoBox').classList.remove('hidden');
-  } catch (e) { $('vVideoNote').textContent = '動画を作れませんでした'; console.error(e); }
+  } catch (e) { $('vVideoNote').textContent = L('動画を作れませんでした'); console.error(e); }
   $('vVideoBtn').disabled = false;
 };
 function vFile() { const v = result.vvideo; return [v.blob, fileBase() + '-tate' + (v.type.includes('mp4') ? '.mp4' : '.webm'), v.type.split(';')[0]]; }
 $('vSaveBtn').onclick = async () => {
   if (!result || !result.vvideo) return;
   const r = await saveToDevice(...vFile()).catch(() => 'err');
-  if (r === 'saved') $('vVideoNote').textContent = '端末の「Documents/RakugakiUndoukai」に保存しました';
+  if (r === 'saved') $('vVideoNote').textContent = L('端末の「Documents/RakugakiUndoukai」に保存しました');
 };
 $('vShareBtn').onclick = async () => {
   if (!result || !result.vvideo) return;
@@ -1497,13 +1515,13 @@ $('vShareBtn').onclick = async () => {
 $('againBtn').onclick = () => { if (!G.me) return; if (G.mode === 'ta') { openTA(G.me); return; } G.mode = G.mode === 'gallery' && G.opponent ? 'gallery' : 'solo'; openPrep(); };
 $('newBtn').onclick = () => startDraw('solo');
 $('homeBtn').onclick = () => goTitle();
-$('resLinkBtn').onclick = () => { if (result && result.link) sendLink(result.link, '3人対戦の結果'); };
+$('resLinkBtn').onclick = () => { if (result && result.link) sendLink(result.link, L('3人対戦の結果')); };
 $('nextChallengeBtn').onclick = () => { if (!G.me) return; G.mode = 'link'; G.challenge = null; openPrep(); };
 $('postBtn').onclick = async () => {
   if (!G.me) return;
   $('postBtn').disabled = true;
-  try { const m = await Store.remote(); await m.postCreature(G.me, G.meInfo); toast('みんなのらくがきに出しました'); $('postBtn').textContent = '出しました'; }
-  catch (e) { toast(e && e.busy ? 'いまは混み合っていて出せません。少したってからもう一度どうぞ' : (e && e.message ? e.message : '出せませんでした'), 3500); $('postBtn').disabled = false; }
+  try { const m = await Store.remote(); await m.postCreature(G.me, G.meInfo); toast(L('みんなのらくがきに出しました')); $('postBtn').textContent = L('出しました'); }
+  catch (e) { toast(e && e.busy ? L('いまは混み合っていて出せません。少したってからもう一度どうぞ') : (e && e.message ? e.message : L('出せませんでした')), 3500); $('postBtn').disabled = false; }
 };
 
 // ---------- 動画(レースの見どころ + 結果の1枚。MediaRecorder) ----------
@@ -1553,9 +1571,9 @@ function makeVideo(sc, card, onProg, opt) {
           while (ei < evs.length && evs[ei].t <= t) { const e = evs[ei++]; if (sp === 1) { if (e.type === 'finish' && e.who === sc.meIndex) se('fanfare', 0.5); if (e.type === 'trip' || e.type === 'bonk' || e.type === 'fall') se('trip', 0.4); } if (e.who === sc.meIndex && LINES[e.type]) said.text = pickLine(e.type, sc.ents[e.who].name, 0), said.t = t; }
           if (t >= 0 && !said.go) { said.go = 1; se('pistol', 0.6); bgm('bgm_race', true); }
           if (opt.vertical) vHead(ctx, W, sc);
-          if (sp > 1) { tag(ctx, W, '早送り ▶▶', 24, opt.vertical ? 132 : 24, '#ffffff'); }
+          if (sp > 1) { tag(ctx, W, L('早送り ▶▶'), 24, opt.vertical ? 132 : 24, '#ffffff'); }
           if (said.text && t - said.t < 1.6) banner(ctx, W, H - (opt.vertical ? 60 : 0), said.text);
-          tag(ctx, W, CFG.TAG, W - 24, H - 24, '#ffd54f', 'right');
+          tag(ctx, W, CFG.IMG_TAG, W - 24, H - 24, '#ffd54f', 'right');
           return;
         }
         acc += dur;
@@ -1565,7 +1583,7 @@ function makeVideo(sc, card, onProg, opt) {
       ctx.fillStyle = '#b9e9ff'; ctx.fillRect(0, 0, W, H);
       if (opt.vertical) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#7fd3fb'); g.addColorStop(1, '#d8f4ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
       const k = Math.min(W / card.width, H / card.height); ctx.drawImage(card, (W - card.width * k) / 2, (H - card.height * k) / 2, card.width * k, card.height * k);
-      if (opt.vertical) { vHead(ctx, W, sc); tag(ctx, W, CFG.TAG, W / 2, H - 60, '#ffd54f', 'center'); }
+      if (opt.vertical) { vHead(ctx, W, sc); tag(ctx, W, CFG.IMG_TAG, W / 2, H - 60, '#ffd54f', 'center'); }
     };
     const frame = (now) => {
       if (start == null) start = now;
@@ -1587,7 +1605,7 @@ function vHead(ctx, W, sc) {
   ctx.save(); ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.strokeStyle = '#19263d'; ctx.lineWidth = 4;
   roundRect(ctx, 20, 20, W - 40, 96, 22); ctx.fill(); ctx.stroke();
   ctx.font = `900 40px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#19263d';
-  ctx.fillText(`「${e.name}」の${COURSES[sc.course].name}`, W / 2, 68, W - 80); ctx.restore();
+  ctx.fillText(L('「{name}」の{c}', { name: e.name, c: COURSES[sc.course].name }), W / 2, 68, W - 80); ctx.restore();
 }
 function tag(ctx, W, text, x, y, color, align) {
   ctx.save(); ctx.font = `900 28px ${FONT}`; ctx.textAlign = align || 'left'; ctx.textBaseline = align ? 'bottom' : 'top';
@@ -1601,7 +1619,7 @@ function banner(ctx, W, H, text) {
 }
 
 // ---------- 挑戦状リンク(サーバー無し。URL の # 以降にだけ入れる) ----------
-$('linkVsBtn').onclick = () => { G.challenge = null; startDraw('link', { title: '挑戦状を出す生き物を描いてね' }); };
+$('linkVsBtn').onclick = () => { G.challenge = null; startDraw('link', { title: L('挑戦状を出す生き物を描いてね') }); };
 function makeChallenge() {
   const ch = { course: G.course, seed: newSeed(), size: CFG.VS_SIZE, creatures: [G.me], perBytes: CFG.PER_BYTES };
   G.challenge = ch;
@@ -1612,11 +1630,11 @@ function openLinkScreen(ch, myIdx) {
   const url = challengeUrl(ch);
   G.linkUrl = url;
   const left = ch.size - ch.creatures.length;
-  $('linkTitle').textContent = ch.creatures.length === 1 ? '挑戦状ができました' : `${ch.creatures.length}人そろいました`;
-  $('linkNote').textContent = `あと ${left} 人。このリンクを送ると、相手は描いて参加できます(コース: ${COURSES[ch.course].name})`;
+  $('linkTitle').textContent = ch.creatures.length === 1 ? L('挑戦状ができました') : L('{n}人そろいました', { n: ch.creatures.length });
+  $('linkNote').textContent = L('あと {left} 人。このリンクを送ると、相手は描いて参加できます(コース: {c})', { left, c: COURSES[ch.course].name });
   renderEntrants($('linkEntrants'), ch.creatures, ch.size);
   $('linkText').value = url;
-  const text = `らくがき運動会の挑戦状です。生き物を描いて参加してね(あと${left}人・${COURSES[ch.course].name})\n${CFG.TAG}\n作った人 ${CFG.AUTHOR}`;
+  const text = L('らくがき運動会の挑戦状です。生き物を描いて参加してね(あと{left}人・{c})', { left, c: COURSES[ch.course].name }) + `\n${CFG.TAG}\n` + L('作った人 {a}', { a: CFG.AUTHOR });
   $('linkXBtn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
   show('linkScreen');
 }
@@ -1624,17 +1642,17 @@ function renderEntrants(box, creatures, size) {
   box.innerHTML = '';
   for (let i = 0; i < size; i++) {
     const d = document.createElement('div');
-    if (creatures[i]) { d.className = 'ent'; const c = document.createElement('canvas'); c.width = 192; c.height = 160; drawThumb(c, creatures[i]); d.appendChild(c); d.appendChild(document.createTextNode(creatures[i].name || '名なし')); }
-    else { d.className = 'ent empty'; d.textContent = `${i + 1}人目 まち`; }
+    if (creatures[i]) { d.className = 'ent'; const c = document.createElement('canvas'); c.width = 192; c.height = 160; drawThumb(c, creatures[i]); d.appendChild(c); d.appendChild(document.createTextNode(dispName(creatures[i].name))); }
+    else { d.className = 'ent empty'; d.textContent = L('{i}人目 まち', { i: i + 1 }); }
     box.appendChild(d);
   }
 }
 async function sendLink(url, title) {
-  try { if (navigator.share && matchMedia('(pointer:coarse)').matches) { await navigator.share({ title: 'らくがき運動会', text: title, url }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
-  try { await navigator.clipboard.writeText(url); toast('リンクをコピーしました'); } catch (e) { $('linkText').select(); toast('リンクを選んだのでコピーしてね'); }
+  try { if (navigator.share && matchMedia('(pointer:coarse)').matches) { await navigator.share({ title: L('らくがき運動会'), text: title, url }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(url); toast(L('リンクをコピーしました')); } catch (e) { $('linkText').select(); toast(L('リンクを選んだのでコピーしてね')); }
 }
-$('linkShareBtn').onclick = () => sendLink(G.linkUrl, 'らくがき運動会の挑戦状');
-$('linkCopyBtn').onclick = async () => { try { await navigator.clipboard.writeText(G.linkUrl); toast('リンクをコピーしました'); } catch (e) { $('linkText').select(); } };
+$('linkShareBtn').onclick = () => sendLink(G.linkUrl, L('らくがき運動会の挑戦状'));
+$('linkCopyBtn').onclick = async () => { try { await navigator.clipboard.writeText(G.linkUrl); toast(L('リンクをコピーしました')); } catch (e) { $('linkText').select(); } };
 $('linkCpuBtn').onclick = () => { const ch = G.challenge; if (!ch) return; const meIdx = ch.creatures.length - 1; ch.size = ch.creatures.length; startLinkRace(ch, meIdx); };
 $('linkHomeBtn').onclick = () => goTitle();
 function startLinkRace(ch, meIdx) {
@@ -1656,7 +1674,7 @@ function joinChallenge(cr) {
 function readHash() {
   const h = location.hash || '';
   const m = h.match(/[#&]c=([A-Za-z0-9_-]+)/);
-  if (m) { try { return { challenge: Challenge.decode(m[1]) }; } catch (e) { toast('挑戦状のリンクが読めませんでした'); } }
+  if (m) { try { return { challenge: Challenge.decode(m[1]) }; } catch (e) { toast(L('挑戦状のリンクが読めませんでした')); } }
   const r = h.match(/[#&]room=([A-Za-z0-9]{4,6})/);
   if (r) return { room: r[1].toUpperCase() };
   return null;
@@ -1664,16 +1682,16 @@ function readHash() {
 function showInvite(ch) {
   const box = $('inviteBox');
   const full = ch.creatures.length >= ch.size;
-  box.innerHTML = `<p class="h2">${full ? '3人対戦の結果が届きました' : `${ch.creatures[0].name} から挑戦状!`}</p>`;
+  box.innerHTML = '<p class="h2"></p>'; box.firstChild.textContent = full ? L('3人対戦の結果が届きました') : L('{name} から挑戦状!', { name: dispName(ch.creatures[0].name) });
   const ents = document.createElement('div'); ents.className = 'entrants'; renderEntrants(ents, ch.creatures, ch.size); box.appendChild(ents);
-  const note = document.createElement('p'); note.className = 'note'; note.textContent = full ? `コース: ${COURSES[ch.course].name}。だれが開いても同じ結果になります` : `コース: ${COURSES[ch.course].name}。あと ${ch.size - ch.creatures.length} 人。あなたも描いて参加しよう`;
+  const note = document.createElement('p'); note.className = 'note'; note.textContent = full ? L('コース: {c}。だれが開いても同じ結果になります', { c: COURSES[ch.course].name }) : L('コース: {c}。あと {n} 人。あなたも描いて参加しよう', { c: COURSES[ch.course].name, n: ch.size - ch.creatures.length });
   box.appendChild(note);
   const b = document.createElement('button'); b.className = 'go'; b.type = 'button';
-  b.textContent = full ? 'レースを見る' : '描いて参加する';
+  b.textContent = L(full ? 'レースを見る' : '描いて参加する');
   b.onclick = () => {
     G.challenge = ch;
     if (full) { startLinkRace(ch, -1); }
-    else startDraw('link', { title: '参加する生き物を描いてね', rivals: ch.creatures });
+    else startDraw('link', { title: L('参加する生き物を描いてね'), rivals: ch.creatures });
   };
   box.appendChild(b);
   box.classList.remove('hidden');
@@ -1700,27 +1718,27 @@ const Room = {
   },
   onUpdate(data, entries, err) {
     Room.data = data; Room.entries = entries || {};
-    if (!data) { $('roomStatus').textContent = err && /resource-exhausted|quota/i.test(String(err.code || err.message)) ? 'いまは混み合っていて部屋につながりません。「挑戦状リンクを回す」なら遊べます' : 'この部屋は見つかりません'; return; }
+    if (!data) { $('roomStatus').textContent = err && /resource-exhausted|quota/i.test(String(err.code || err.message)) ? L('いまは混み合っていて部屋につながりません。「挑戦状リンクを回す」なら遊べます') : L('この部屋は見つかりません'); return; }
     const m = Store.online;
     const members = data.members || [];
     const mineIn = members.includes(m.uid());
-    renderEntrants($('roomMembers'), members.map((u, i) => ({ name: entries[u] ? entries[u].creature.name : (u === m.uid() ? 'あなた' : (i === 0 ? '部屋をつくった人' : (i + 1) + '人目')) + (entries[u] ? '' : (data.state === 'drawing' ? '(描いています)' : '')), strokes: entries[u] ? entries[u].creature.strokes : [] })), CFG.VS_SIZE);
+    renderEntrants($('roomMembers'), members.map((u, i) => ({ name: entries[u] ? entries[u].creature.name : (u === m.uid() ? L('あなた') : (i === 0 ? L('部屋をつくった人') : L('{i}人目', { i: i + 1 }))) + (entries[u] ? '' : (data.state === 'drawing' ? L('(描いています)') : '')), strokes: entries[u] ? entries[u].creature.strokes : [] })), CFG.VS_SIZE);
     $('roomShareBtn').classList.toggle('hidden', data.state !== 'lobby');
     $('roomStartBtn').classList.toggle('hidden', !(Room.isHost && data.state === 'lobby'));
-    $('roomStartBtn').textContent = members.length < CFG.VS_SIZE ? `${members.length}人で描きはじめる(残りはCPU)` : 'みんなで描きはじめる';
+    $('roomStartBtn').textContent = members.length < CFG.VS_SIZE ? L('{n}人で描きはじめる(残りはCPU)', { n: members.length }) : L('みんなで描きはじめる');
     if (data.state === 'lobby') {
-      $('roomStatus').textContent = `${members.length} / ${CFG.VS_SIZE} 人。${Room.isHost ? 'そろったら「描きはじめる」を押してね' : '部屋をつくった人が始めるのを待っています'}`;
-      $('roomHelp').textContent = 'つながらない時(会社や学校の回線など)は、タイトルの「挑戦状リンクを回す」で遊べます';
+      $('roomStatus').textContent = L('{n} / {max} 人。{msg}', { n: members.length, max: CFG.VS_SIZE, msg: L(Room.isHost ? 'そろったら「描きはじめる」を押してね' : '部屋をつくった人が始めるのを待っています') });
+      $('roomHelp').textContent = L('つながらない時(会社や学校の回線など)は、タイトルの「挑戦状リンクを回す」で遊べます');
     }
     if (data.state === 'drawing' && mineIn && !Room.submitted && $('drawScreen').classList.contains('hidden')) {
       Room.drawEnd = Date.now() + Math.max(5, (data.drawSec || 40) - (Date.now() - (data.drawStartLocal || Date.now())) / 1000) * 1000;
       Room.drawEnd = Date.now() + (data.drawSec || 40) * 1000;
-      startDraw('room', { title: `部屋 ${Room.code}: ${data.drawSec || 40}秒で描いてね`, timer: true });
+      startDraw('room', { title: L('部屋 {code}: {s}秒で描いてね', { code: Room.code, s: data.drawSec || 40 }), timer: true });
       Room.tick();
     }
     if (data.state === 'drawing' && Room.submitted) {
       const n = members.filter(u => entries[u]).length;
-      $('roomStatus').textContent = `描けた人 ${n} / ${members.length}。そろうとレースが始まります`;
+      $('roomStatus').textContent = L('描けた人 {n} / {m}。そろうとレースが始まります', { n, m: members.length });
       if (Room.isHost && (n >= members.length)) m.startRace(Room.code, members.filter(u => entries[u]));
     }
     if (data.state === 'race' && !Room.raced) {
@@ -1739,7 +1757,7 @@ const Room = {
     clearInterval(Room.timer);
     Room.timer = setInterval(() => {
       const left = Math.max(0, Math.ceil((Room.drawEnd - Date.now()) / 1000));
-      $('drawTimer').textContent = left + '秒';
+      $('drawTimer').textContent = L('{t}秒', { t: left });
       if (left <= 0) {
         clearInterval(Room.timer);
         if (!Room.submitted) {
@@ -1753,56 +1771,56 @@ const Room = {
   },
   async submit(cr) {
     Room.submitted = true;
-    try { await Store.online.submitEntry(Room.code, cr); } catch (e) { toast('送れませんでした'); }
-    show('roomScreen'); $('roomStatus').textContent = 'ほかの人を待っています…';
+    try { await Store.online.submitEntry(Room.code, cr); } catch (e) { toast(L('送れませんでした')); }
+    show('roomScreen'); $('roomStatus').textContent = L('ほかの人を待っています…');
   },
   leave() { Room.unsub && Room.unsub(); Room.unsub = null; clearInterval(Room.timer); if (Store.online && Room.code) Store.online.leaveRoom(Room.code).catch(() => { }); Room.code = ''; history.replaceState(null, '', location.pathname + location.search); },
 };
 function roomFail(e) {
   console.error(e);
-  if (e && e.terms) { toast('3人の部屋は利用規約に同意すると使えます', 3500); goTitle(); return; }
-  if (e && e.busy) { toast('いまは混み合っていて部屋につながりません。「挑戦状リンクを回す」なら遊べます', 4500); goTitle(); return; }
-  toast((e && e.message ? e.message + '。' : '') + '部屋につながりません。「挑戦状リンクを回す」なら遊べます', 4500);
+  if (e && e.terms) { toast(L('3人の部屋は利用規約に同意すると使えます'), 3500); goTitle(); return; }
+  if (e && e.busy) { toast(L('いまは混み合っていて部屋につながりません。「挑戦状リンクを回す」なら遊べます'), 4500); goTitle(); return; }
+  toast(e && e.message ? L('{e}。部屋につながりません。「挑戦状リンクを回す」なら遊べます', { e: e.message }) : L('部屋につながりません。「挑戦状リンクを回す」なら遊べます'), 4500);
   goTitle();
 }
 $('roomMakeBtn').onclick = () => Room.create();
-$('roomJoinBtn').onclick = () => { const c = $('roomCodeInput').value.trim().toUpperCase(); if (c.length >= 4) Room.join(c); else toast('部屋コードを入れてね'); };
+$('roomJoinBtn').onclick = () => { const c = $('roomCodeInput').value.trim().toUpperCase(); if (c.length >= 4) Room.join(c); else toast(L('部屋コードを入れてね')); };
 $('roomStartBtn').onclick = async () => { try { await Store.online.startDrawing(Room.code, 40); } catch (e) { roomFail(e); } };
-$('roomShareBtn').onclick = () => sendLink(shareBase() + '#room=' + Room.code, `らくがき運動会の部屋 ${Room.code} に来てね`);
+$('roomShareBtn').onclick = () => sendLink(shareBase() + '#room=' + Room.code, L('らくがき運動会の部屋 {code} に来てね', { code: Room.code }));
 $('roomLeaveBtn').onclick = () => { Room.leave(); goTitle(); };
 
 // ---------- みんなのらくがき ----------
 const Gal = { cursor: null, items: [] };
 async function openGallery() {
-  show('galleryScreen'); $('galStatus').textContent = '読みこみ中…'; $('galGrid').innerHTML = ''; Gal.cursor = null; Gal.items = [];
-  try { await galleryMore(); } catch (e) { $('galStatus').textContent = e && e.busy ? BUSY_MSG + '。ひとりで走る・描く・共有はそのまま遊べます' : 'いまは読みこめません(' + (e.message || e) + ')。ひとりで走る・描く・共有はそのまま遊べます'; $('galMoreBtn').classList.add('hidden'); }
+  show('galleryScreen'); $('galStatus').textContent = L('読みこみ中…'); $('galGrid').innerHTML = ''; Gal.cursor = null; Gal.items = [];
+  try { await galleryMore(); } catch (e) { $('galStatus').textContent = e && e.busy ? L('{b}。ひとりで走る・描く・共有はそのまま遊べます', { b: BUSY_MSG }) : L('いまは読みこめません({e})。ひとりで走る・描く・共有はそのまま遊べます', { e: e.message || e }); $('galMoreBtn').classList.add('hidden'); }
 }
 async function galleryMore() {
   const m = await Store.mod();
   const { items, cursor, stale } = await m.listCreatures(Gal.cursor);
   Gal.cursor = cursor;
-  $('galStatus').textContent = stale ? (stale === 'busy' ? 'いまは混み合っているので' : 'いまはつながらないので') + '、少し前のみんなの絵を出しています。さわって「走る」で対戦できます' : items.length || Gal.items.length ? 'さわって「走る」で対戦できます' : 'まだだれも出していません';
+  $('galStatus').textContent = L(stale ? (stale === 'busy' ? 'いまは混み合っているので、少し前のみんなの絵を出しています。さわって「走る」で対戦できます' : 'いまはつながらないので、少し前のみんなの絵を出しています。さわって「走る」で対戦できます') : items.length || Gal.items.length ? 'さわって「走る」で対戦できます' : 'まだだれも出していません');
   $('galMoreBtn').classList.toggle('hidden', !cursor);
   for (const it of items) {
     Gal.items.push(it);
     const d = document.createElement('div'); d.className = 'gi';
     const c = document.createElement('canvas'); c.width = 240; c.height = 200; drawThumb(c, it.creature); d.appendChild(c);
-    const n = document.createElement('div'); n.textContent = it.creature.name || '名なし'; d.appendChild(n);
-    const tt = document.createElement('div'); tt.className = 'gt'; tt.textContent = it.created ? it.created + ' に出た子' : ''; d.appendChild(tt);
+    const n = document.createElement('div'); n.textContent = dispName(it.creature.name); d.appendChild(n);
+    const tt = document.createElement('div'); tt.className = 'gt'; tt.textContent = it.created ? L('{d} に出た子', { d: it.created }) : ''; d.appendChild(tt);
     const row = document.createElement('div'); row.className = 'row';
-    const b = document.createElement('button'); b.textContent = '走る'; b.onclick = () => vsGallery(it.creature);
-    const rp = document.createElement('button'); rp.className = 'rp'; rp.textContent = '通報';
-    rp.onclick = async () => { if (!confirm('この絵を通報しますか?(不快な絵・名前など)')) return; try { await m.report(it.id); d.style.opacity = 0.3; rp.disabled = true; toast('通報しました'); } catch (e) { toast(e.message || '通報できませんでした'); } };
-    const bk = document.createElement('button'); bk.className = 'rp'; bk.textContent = '見ない';
-    bk.onclick = () => { if (!confirm('この人の絵をこの端末ではもう出さないようにしますか?(みんなのらくがき・相手・ランキング)')) return; m.block(it); d.remove(); toast('この人の絵を出さないようにしました'); };
+    const b = document.createElement('button'); b.textContent = L('走る'); b.onclick = () => vsGallery(it.creature);
+    const rp = document.createElement('button'); rp.className = 'rp'; rp.textContent = L('通報');
+    rp.onclick = async () => { if (!confirm(L('この絵を通報しますか?(不快な絵・名前など)'))) return; try { await m.report(it.id); d.style.opacity = 0.3; rp.disabled = true; toast(L('通報しました')); } catch (e) { toast(e.message || L('通報できませんでした')); } };
+    const bk = document.createElement('button'); bk.className = 'rp'; bk.textContent = L('見ない');
+    bk.onclick = () => { if (!confirm(L('この人の絵をこの端末ではもう出さないようにしますか?(みんなのらくがき・相手・ランキング)'))) return; m.block(it); d.remove(); toast(L('この人の絵を出さないようにしました')); };
     row.appendChild(b); row.appendChild(rp); row.appendChild(bk); d.appendChild(row);
     $('galGrid').appendChild(d);
   }
 }
-function vsGallery(cr) { G.opponent = cr; startDraw('gallery', { title: `「${cr.name}」と走る生き物を描いてね`, rivals: [cr] }); }
+function vsGallery(cr) { G.opponent = cr; startDraw('gallery', { title: L('「{name}」と走る生き物を描いてね', { name: dispName(cr.name) }), rivals: [cr] }); }
 $('galleryBtn').onclick = () => openGallery();
 $('galMoreBtn').onclick = () => galleryMore().catch(e => toast(e && e.busy ? BUSY_MSG : e.message, 3500));
-$('galRandomBtn').onclick = async () => { try { const m = await Store.mod(); const it = await m.randomCreature(); if (!it) { toast('まだだれもいません'); return; } vsGallery(it.creature); } catch (e) { toast(e && e.busy ? BUSY_MSG : (e.message || '読みこめません'), 3500); } };
+$('galRandomBtn').onclick = async () => { try { const m = await Store.mod(); const it = await m.randomCreature(); if (!it) { toast(L('まだだれもいません')); return; } vsGallery(it.creature); } catch (e) { toast(e && e.busy ? BUSY_MSG : (e.message || L('読みこめません')), 3500); } };
 $('galBackBtn').onclick = () => goTitle();
 
 // ---------- タイトル ----------
@@ -1826,6 +1844,11 @@ $('vsBtn').onclick = () => { $('mainMenu').classList.add('hidden'); $('vsMenu').
 $('vsBackBtn').onclick = () => { $('mainMenu').classList.remove('hidden'); $('vsMenu').classList.add('hidden'); };
 $('soundBtn').onclick = () => setSound(!SND.on);
 $('creditBtn').onclick = () => $('creditBox').classList.toggle('hidden');
+// 言葉の切り替え(日本語 / English / 한국어)。選んだ言葉は端末に覚え、読み直して全部の文字を入れ替える
+for (const b of document.querySelectorAll('#langRow [data-lang]')) {
+  b.classList.toggle('on', !!window.L && b.dataset.lang === L.lang); b.setAttribute('aria-pressed', String(!!window.L && b.dataset.lang === L.lang));
+  b.onclick = () => { if (window.L && b.dataset.lang !== L.lang) { Persist.save(); L.set(b.dataset.lang); } };
+}
 $('fullBtn').onclick = () => Full.open('title');
 $('fullBuyBtn').onclick = () => Full.buy();
 $('fullRestoreBtn').onclick = () => Full.restore();
@@ -1928,15 +1951,15 @@ function drawOverlay(ctx, W, H, sc, t) {
       const fs = u * 0.11;
       ctx.save(); ctx.translate(W / 2, H * 0.27); ctx.rotate(-0.05); const sc2 = easeOutBack(clamp(a / 0.3, 0, 1)); ctx.scale(sc2, sc2);
       ctx.font = `900 ${fs}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-      ctx.lineWidth = fs * 0.16; ctx.strokeStyle = '#19263d'; ctx.strokeText('写真判定!', 0, 0); ctx.fillStyle = '#ffd54f'; ctx.fillText('写真判定!', 0, 0);
-      if (a > 0.9 && sc.slow) { const [p, q] = sc.slow.pair; const gap = sc.race.times[q] - sc.race.times[p]; ctx.font = `900 ${fs * 0.42}px ${FONT}`; ctx.lineWidth = fs * 0.09; const tx = `${sc.ents[p].name} が ${gap.toFixed(3)}秒 先!`; ctx.strokeText(tx, 0, fs * 0.8); ctx.fillStyle = '#fff'; ctx.fillText(tx, 0, fs * 0.8); }
+      ctx.lineWidth = fs * 0.16; ctx.strokeStyle = '#19263d'; ctx.strokeText(L('写真判定!'), 0, 0, W * 0.9); ctx.fillStyle = '#ffd54f'; ctx.fillText(L('写真判定!'), 0, 0, W * 0.9);
+      if (a > 0.9 && sc.slow) { const [p, q] = sc.slow.pair; const gap = sc.race.times[q] - sc.race.times[p]; ctx.font = `900 ${fs * 0.42}px ${FONT}`; ctx.lineWidth = fs * 0.09; const tx = L('{name} が {g}秒 先!', { name: sc.ents[p].name, g: gap.toFixed(3) }); ctx.strokeText(tx, 0, fs * 0.8, W * 0.9); ctx.fillStyle = '#fff'; ctx.fillText(tx, 0, fs * 0.8, W * 0.9); }
       ctx.restore();
     }
   }
   // スロー中の印
   if (sc.slow && timeScale(Object.assign({}, sc, { slowInManual: true }), t) < 0.6 && !sc.flashT) {
     ctx.save(); ctx.fillStyle = 'rgba(25,38,61,0.75)'; const fs = u * 0.045; ctx.font = `900 ${fs}px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.fillText('スロー ▶', u * 0.04, H * 0.16); ctx.restore();
+    ctx.fillText(L('スロー ▶'), u * 0.04, H * 0.16); ctx.restore();
   }
   // 優勝! など
   sc.pops = sc.pops.filter(p => now - p.t0 < p.dur * 1000 + 300);
@@ -1947,8 +1970,8 @@ function drawOverlay(ctx, W, H, sc, t) {
     const alpha = a > p.dur ? 1 - (a - p.dur) / 0.3 : 1;
     ctx.save(); ctx.globalAlpha = clamp(alpha, 0, 1); ctx.translate(W / 2, H * 0.38); ctx.rotate(-0.04); const k = easeOutBack(clamp(a / 0.22, 0, 1)); ctx.scale(k, k);
     ctx.font = `900 ${fs}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-    ctx.lineWidth = fs * 0.18; ctx.strokeStyle = '#19263d'; ctx.strokeText(p.text, 0, 0); ctx.fillStyle = p.color; ctx.fillText(p.text, 0, 0);
-    if (p.sub) { const f2 = fs * 0.36; ctx.font = `900 ${f2}px ${FONT}`; ctx.lineWidth = f2 * 0.22; ctx.strokeText(p.sub, 0, fs * 0.72); ctx.fillStyle = '#ffffff'; ctx.fillText(p.sub, 0, fs * 0.72); }
+    ctx.lineWidth = fs * 0.18; ctx.strokeStyle = '#19263d'; ctx.strokeText(p.text, 0, 0, W * 0.92); ctx.fillStyle = p.color; ctx.fillText(p.text, 0, 0, W * 0.92);
+    if (p.sub) { const f2 = fs * 0.36; ctx.font = `900 ${f2}px ${FONT}`; ctx.lineWidth = f2 * 0.22; ctx.strokeText(p.sub, 0, fs * 0.72, W * 0.92); ctx.fillStyle = '#ffffff'; ctx.fillText(p.sub, 0, fs * 0.72, W * 0.92); }
     ctx.restore();
   }
   // 花火・ハート
@@ -2012,19 +2035,19 @@ const Rec = {
       p.races.unshift(row); p.races = p.races.slice(0, 40);
       if (sc.mode === 'ta') {
         const old = p.ta[sc.course];
-        if (t != null && (!old || t < old)) { p.ta[sc.course] = Math.round(t * 1000) / 1000; badges.push({ t: old ? 'タイム自己ベスト更新!' : 'タイムを記録!', c: 'gold' }); }
+        if (t != null && (!old || t < old)) { p.ta[sc.course] = Math.round(t * 1000) / 1000; badges.push({ t: L(old ? 'タイム自己ベスト更新!' : 'タイムを記録!'), c: 'gold' }); }
       } else {
         p.n++; d.races++; p.sumRank += info.rank;
-        if (info.rank === 1) { p.wins++; d.wins++; if (p.wins === 1) badges.push({ t: 'この子の初勝利!', c: 'gold' }); }
+        if (info.rank === 1) { p.wins++; d.wins++; if (p.wins === 1) badges.push({ t: L('この子の初勝利!'), c: 'gold' }); }
         if (info.rank <= 3) p.pod++;
         const b = p.best[sc.course];
-        if (t != null && info.n === 6 && (!b || t < b.t)) { p.best[sc.course] = { t: Math.round(t * 100) / 100, r: info.rank }; if (b) badges.push({ t: `自己ベスト更新! ${b.t.toFixed(2)}→${t.toFixed(2)}秒`, c: 'gold' }); }
+        if (t != null && info.n === 6 && (!b || t < b.t)) { p.best[sc.course] = { t: Math.round(t * 100) / 100, r: info.rank }; if (b) badges.push({ t: L('自己ベスト更新! {a}→{b}秒', { a: b.t.toFixed(2), b: t.toFixed(2) }), c: 'gold' }); }
         else if (b && info.rank < b.r) b.r = info.rank;
         if (sc.mode === 'solo') {
-          if (info.rank === 1) { d.streak++; if (d.streak >= 2) badges.push({ t: `${d.streak}連勝中!`, c: 'red' }); if (d.streak > d.bestStreak) { d.bestStreak = d.streak; if (d.streak >= 2) badges.push({ t: '連勝記録を更新!', c: 'red' }); } }
-          else { if (d.streak >= 2) badges.push({ t: `連勝は ${d.streak} でストップ`, c: '' }); d.streak = 0; }
+          if (info.rank === 1) { d.streak++; if (d.streak >= 2) badges.push({ t: L('{n}連勝中!', { n: d.streak }), c: 'red' }); if (d.streak > d.bestStreak) { d.bestStreak = d.streak; if (d.streak >= 2) badges.push({ t: L('連勝記録を更新!'), c: 'red' }); } }
+          else { if (d.streak >= 2) badges.push({ t: L('連勝は {n} でストップ', { n: d.streak }), c: '' }); d.streak = 0; }
         }
-        badges.push({ t: `この子 通算 ${p.wins}勝 / ${p.n}戦`, c: 'blue' });
+        badges.push({ t: L('この子 通算 {w}勝 / {n}戦', { w: p.wins, n: p.n }), c: 'blue' });
       }
       // 多すぎたら古い子から消す(60匹まで。完全版の図鑑は300匹まで・お気に入りは消さない)
       Rec.trim(Rec.cap());
@@ -2078,7 +2101,7 @@ const Persist = {
       if (st.me && st.me.strokes) { G.me = st.me; G.meInfo = analyze(st.me.strokes); }
       const sm = st.mode === 'gallery' && st.opp ? 'gallery' : 'solo';
       switch (st.screen) {
-        case 'drawScreen': startDraw(sm, st.opp ? { title: `「${st.opp.name}」と走る生き物を描いてね`, rivals: [st.opp] } : {}); strokes = Array.isArray(st.strokes) ? st.strokes : []; renderPad(); $('nameInput').value = st.name || ''; break;
+        case 'drawScreen': startDraw(sm, st.opp ? { title: L('「{name}」と走る生き物を描いてね', { name: dispName(st.opp.name) }), rivals: [st.opp] } : {}); strokes = Array.isArray(st.strokes) ? st.strokes : []; renderPad(); $('nameInput').value = st.name || ''; break;
         case 'prepScreen': if (!G.me) return false; G.mode = sm; openPrep(); break;
         case 'race': case 'resultScreen': {
           const r = st.race; if (!r || !r.ents) return false;
@@ -2109,6 +2132,10 @@ window.addEventListener('pageshow', e => { if (e.persisted) { lastTs = 0; if (SN
 setInterval(() => { if (curScreen === 'drawScreen') Persist.save(); }, 3000);
 
 // ---------- アルバム・1匹のきろく ----------
+// 名前の表示: 名前なしで描いた子の決まりの名前(どの言葉で描いたかによらず)は、今の言葉の決まりの名前で見せる。人が入れた名前はそのまま
+const DEFAULT_NAMES = ['名なしのらくがき', 'Nameless', '이름 없는 낙서'];
+function dispName(n) { return !n ? L('名なし') : DEFAULT_NAMES.includes(n) ? L('名なしのらくがき') : n; }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
 function fmtCourse(id) { return COURSES[id] ? COURSES[id].name : id; }
 function openAlbum() {
   const d = Rec.load(), full = Full.has();
@@ -2117,26 +2144,26 @@ function openAlbum() {
   if (full && sort === 'no') pets = pets.slice().sort((a, b) => (a.no || 0) - (b.no || 0));
   if (full && sort === 'win') pets = pets.slice().sort((a, b) => b.wins - a.wins || b.n - a.n);
   if (full && sort === 'fav') pets = pets.filter(p => p.fav);
-  $('albumTitle').textContent = full ? '自分の図鑑・きろく' : 'きろく・アルバム';
+  $('albumTitle').textContent = L(full ? '自分の図鑑・きろく' : 'きろく・アルバム');
   const zb = $('zukanBar'); zb.innerHTML = '';
   const all = Object.keys(d.pets).length;
   if (full) {
-    zb.innerHTML = `<p class="note strong">自分の図鑑 <b>${all}</b> / ${Rec.cap()} 匹(お気に入りの子は消えません)</p>`;
+    zb.innerHTML = `<p class="note strong">${L('自分の図鑑 <b>{n}</b> / {cap} 匹(お気に入りの子は消えません)', { n: all, cap: Rec.cap() })}</p>`;
     const tabs = document.createElement('div'); tabs.className = 'tabs small';
-    for (const [id, label] of [['new', '新しい順'], ['no', '番号順'], ['win', '勝った数'], ['fav', 'お気に入り']]) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tab' + (sort === id ? ' on' : ''); b.textContent = label; b.onclick = () => { G.albumSort = id; openAlbum(); }; tabs.appendChild(b); }
+    for (const [id, label] of [['new', L('新しい順')], ['no', L('番号順')], ['win', L('勝った数')], ['fav', L('お気に入り')]]) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tab' + (sort === id ? ' on' : ''); b.textContent = label; b.onclick = () => { G.albumSort = id; openAlbum(); }; tabs.appendChild(b); }
     zb.appendChild(tabs);
   } else {
-    zb.innerHTML = `<p class="note">${all} / ${Rec.cap()} 匹。いっぱいになると古い子から消えます</p>`;
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'sub lock'; b.textContent = '自分の図鑑(300匹まで・お気に入り)'; b.onclick = () => Full.open('zukan'); zb.appendChild(b);
+    zb.innerHTML = `<p class="note">${L('{n} / {cap} 匹。いっぱいになると古い子から消えます', { n: all, cap: Rec.cap() })}</p>`;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sub lock'; b.textContent = L('自分の図鑑(300匹まで・お気に入り)'); b.onclick = () => Full.open('zukan'); zb.appendChild(b);
   }
-  $('albumTotals').innerHTML = `<span><b>${pets.length}</b>匹</span><span><b>${d.races || 0}</b>戦</span><span><b>${d.wins || 0}</b>勝</span><span>いまの連勝 <b>${d.streak || 0}</b></span><span>最高 <b>${d.bestStreak || 0}</b>連勝</span>`;
+  $('albumTotals').innerHTML = L('<span><b>{p}</b>匹</span><span><b>{r}</b>戦</span><span><b>{w}</b>勝</span><span>いまの連勝 <b>{s}</b></span><span>最高 <b>{b}</b>連勝</span>', { p: pets.length, r: d.races || 0, w: d.wins || 0, s: d.streak || 0, b: d.bestStreak || 0 });
   const g = $('albumGrid'); g.innerHTML = '';
-  if (!pets.length) g.innerHTML = full && sort === 'fav' ? '<p class="note">お気に入りはまだいません。1匹のきろくの「お気に入り」から入れられます</p>' : '<p class="note">まだだれも走っていません。タイトルの「ひとりで走る」から描いてみよう</p>';
+  if (!pets.length) g.innerHTML = '<p class="note">' + L(full && sort === 'fav' ? 'お気に入りはまだいません。1匹のきろくの「お気に入り」から入れられます' : 'まだだれも走っていません。タイトルの「ひとりで走る」から描いてみよう') + '</p>';
   for (const p of pets) {
     const it = document.createElement('button'); it.type = 'button'; it.className = 'gi pet';
     const c = document.createElement('canvas'); c.width = 240; c.height = 200; drawThumb(c, p.cr); it.appendChild(c);
-    const n = document.createElement('div'); n.textContent = (full && p.no ? `No.${p.no} ` : '') + (p.cr.name || '名なし') + (full && p.fav ? ' ★' : ''); it.appendChild(n);
-    const tt = document.createElement('div'); tt.className = 'gt'; tt.textContent = `${p.wins}勝 / ${p.n}戦` + (p.n ? `・平均${(p.sumRank / p.n).toFixed(1)}位` : ''); it.appendChild(tt);
+    const n = document.createElement('div'); n.textContent = (full && p.no ? `No.${p.no} ` : '') + (dispName(p.cr.name)) + (full && p.fav ? ' ★' : ''); it.appendChild(n);
+    const tt = document.createElement('div'); tt.className = 'gt'; tt.textContent = L('{w}勝 / {n}戦', { w: p.wins, n: p.n }) + (p.n ? L('・平均{a}位', { a: (p.sumRank / p.n).toFixed(1) }) : ''); it.appendChild(tt);
     it.onclick = () => openPet(p.id);
     g.appendChild(it);
   }
@@ -2146,24 +2173,24 @@ function openPet(id) {
   const d = Rec.load(), p = d.pets[id]; if (!p) return false;
   G.petId = id;
   drawThumb($('petCanvas'), p.cr, { bg: '#ffffff' });
-  $('petName').textContent = p.cr.name || '名なし';
-  $('petBorn').textContent = (Full.has() && p.no ? `図鑑 No.${p.no}・` : '') + `${p.born} に描いた子`;
-  $('petFavBtn').textContent = !Full.has() ? 'お気に入り' : p.fav ? '★ お気に入り' : '☆ お気に入りにする';
+  $('petName').textContent = dispName(p.cr.name);
+  $('petBorn').textContent = (Full.has() && p.no ? L('図鑑 No.{n}・', { n: p.no }) : '') + L('{d} に描いた子', { d: p.born });
+  $('petFavBtn').textContent = L(!Full.has() ? 'お気に入り' : p.fav ? '★ お気に入り' : '☆ お気に入りにする');
   $('petFavBtn').classList.toggle('lock', !Full.has());
-  $('petTotals').innerHTML = `<span><b>${p.n}</b>戦</span><span><b>${p.wins}</b>勝</span><span>表彰台 <b>${p.pod}</b></span><span>平均 <b>${p.n ? (p.sumRank / p.n).toFixed(1) : '-'}</b>位</span>`;
+  $('petTotals').innerHTML = L('<span><b>{n}</b>戦</span><span><b>{w}</b>勝</span><span>表彰台 <b>{p}</b></span><span>平均 <b>{a}</b>位</span>', { n: p.n, w: p.wins, p: p.pod, a: p.n ? (p.sumRank / p.n).toFixed(1) : '-' });
   const b = $('petBests'); b.innerHTML = '';
   for (const c of RU.COURSE_IDS) {
     const bb = p.best[c], ta = p.ta && p.ta[c], runs = p.races.filter(r => r.c === c && r.m !== 'ta');
     const el = document.createElement('div'); el.className = 'best';
-    el.innerHTML = `<b>${fmtCourse(c)}</b><span>${bb ? bb.t.toFixed(2) + '秒(最高' + bb.r + '位)' : '—'}</span><small>${runs.length}回${ta ? '・タイムアタック ' + ta.toFixed(2) + '秒' : ''}</small>`;
+    el.innerHTML = `<b>${fmtCourse(c)}</b><span>${bb ? L('{t}秒(最高{r}位)', { t: bb.t.toFixed(2), r: bb.r }) : '—'}</span><small>${L('{n}回', { n: runs.length })}${ta ? L('・タイムアタック {t}秒', { t: ta.toFixed(2) }) : ''}</small>`;
     b.appendChild(el);
   }
   const rl = $('petRaces'); rl.innerHTML = '';
-  if (!p.races.length) rl.innerHTML = '<p class="note">まだ走っていません</p>';
+  if (!p.races.length) rl.innerHTML = '<p class="note">' + L('まだ走っていません') + '</p>';
   for (const r of p.races.slice(0, 30)) {
     const el = document.createElement('div'); el.className = 'race' + (r.r === 1 && r.m !== 'ta' ? ' win' : '');
-    const kind = r.m === 'ta' ? 'タイムアタック' : r.m === 'solo' ? 'ひとり' : r.m === 'gallery' ? 'みんな' : '対戦';
-    el.innerHTML = `<span class="rd">${r.d.slice(5)}</span><span class="rc">${fmtCourse(r.c)}<small>${kind}</small></span><span class="rr">${r.m === 'ta' ? '' : r.r + '位/' + r.n}</span><span class="rt">${r.t != null ? r.t.toFixed(2) + '秒' : ''}</span>`;
+    const kind = L(r.m === 'ta' ? 'タイムアタック' : r.m === 'solo' ? 'ひとり' : r.m === 'gallery' ? 'みんな' : '対戦');
+    el.innerHTML = `<span class="rd">${r.d.slice(5)}</span><span class="rc">${fmtCourse(r.c)}<small>${kind}</small></span><span class="rr">${r.m === 'ta' ? '' : L('{r}位/{n}', { r: r.r, n: r.n })}</span><span class="rt">${r.t != null ? L('{t}秒', { t: r.t.toFixed(2) }) : ''}</span>`;
     rl.appendChild(el);
   }
   show('petScreen');
@@ -2196,7 +2223,7 @@ function openTA(cr) {
   for (const id of RU.COURSE_IDS) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'course';
     const ta = p && p.ta && p.ta[id];
-    b.innerHTML = `<span class="cn">${fmtCourse(id)}</span><span class="pb">${ta ? 'ベスト ' + ta.toFixed(2) + '秒' : 'まだ'}</span>`;
+    b.innerHTML = `<span class="cn">${fmtCourse(id)}</span><span class="pb">${ta ? L('ベスト {t}秒', { t: ta.toFixed(2) }) : L('まだ')}</span>`;
     const cv = document.createElement('canvas'); cv.width = 360; cv.height = 120; drawCourseIcon(cv, id); b.appendChild(cv);
     b.onclick = () => startTA(cr, id);
     box.appendChild(b);
@@ -2212,11 +2239,11 @@ function startTA(cr, course) {
 $('taAll4Btn').onclick = async () => {
   const cr = taCreature(G.taPet); if (!cr) return;
   const ts = RU.COURSE_IDS.map(c => timeAttack(cr.strokes, c, TA_SEED[c]));
-  if (ts.some(x => x == null)) { toast('走りきれませんでした'); return; }
+  if (ts.some(x => x == null)) { toast(L('走りきれませんでした')); return; }
   const sum = Math.round(ts.reduce((a, b) => a + b, 0) * 1000) / 1000;
-  $('taNote').textContent = `4種目の合計 ${sum.toFixed(2)}秒(${RU.COURSE_IDS.map((c, i) => fmtCourse(c) + ' ' + ts[i].toFixed(2)).join(' / ')})。送っています…`;
-  try { const m = await Store.remote(); const r = await m.submitRank('all4', cr, sum, st => verifyTime('all4', st)); $('taNote').textContent += r.improved ? ' ランキングに登録しました' : ' (前のタイムの方が速いので、そのまま)'; G.rankTab = { course: 'all4', period: 'all' }; }
-  catch (e) { $('taNote').textContent += e && e.busy ? ' いまは混み合っていてランキングに送れません(記録は端末に残ります)。' : ' ランキングに送れませんでした(ネットにつながっていないかも)。'; }
+  $('taNote').textContent = L('4種目の合計 {s}秒({list})。送っています…', { s: sum.toFixed(2), list: RU.COURSE_IDS.map((c, i) => fmtCourse(c) + ' ' + ts[i].toFixed(2)).join(' / ') });
+  try { const m = await Store.remote(); const r = await m.submitRank('all4', cr, sum, st => verifyTime('all4', st)); $('taNote').textContent += ' ' + L(r.improved ? 'ランキングに登録しました' : '(前のタイムの方が速いので、そのまま)'); G.rankTab = { course: 'all4', period: 'all' }; }
+  catch (e) { $('taNote').textContent += ' ' + L(e && e.busy ? 'いまは混み合っていてランキングに送れません(記録は端末に残ります)。' : 'ランキングに送れませんでした(ネットにつながっていないかも)。'); }
 };
 $('taBackBtn').onclick = () => { if (G.petId) openPet(G.petId) || openAlbum(); else goTitle(); };
 $('taBtn').onclick = () => { if (G.me) openTA(G.me); };
@@ -2227,14 +2254,14 @@ async function submitTA(sc) {
   try {
     const m = await Store.remote();
     const r = await m.submitRank(sc.course, e.cr, Math.round(t * 1000) / 1000, st => verifyTime(sc.course, st));
-    add(r.improved ? 'ランキングに登録しました' : 'ランキングは前のタイムのまま', 'blue');
-  } catch (err) { add(err && err.terms ? 'ランキングは利用規約に同意すると使えます' : err && err.busy ? 'いまは混み合っていてランキングに送れません' : 'ランキングに送れませんでした(オフラインかも)', ''); }
+    add(L(r.improved ? 'ランキングに登録しました' : 'ランキングは前のタイムのまま'), 'blue');
+  } catch (err) { add(L(err && err.terms ? 'ランキングは利用規約に同意すると使えます' : err && err.busy ? 'いまは混み合っていてランキングに送れません' : 'ランキングに送れませんでした(オフラインかも)'), ''); }
 }
 
 // ---------- ランキング ----------
 // 送るのは絵(線)と名前とタイム。表示する時に、絵からもう一度走らせてタイムが合う物だけ出す(ズル対策)
 const RANK_COURSES = ['track', 'obstacle', 'slope', 'water', 'all4'];
-const RANK_PERIODS = [['d', '今日'], ['w', '今週'], ['all', '全期間']];
+const RANK_PERIODS = [['d', L('今日')], ['w', L('今週')], ['all', L('全期間')]];
 function verifyTime(course, strokes) {
   if (course === 'all4') { let s = 0; for (const c of RU.COURSE_IDS) { const t = timeAttack(strokes, c, TA_SEED[c]); if (t == null) return null; s += t; } return Math.round(s * 1000) / 1000; }
   return timeAttack(strokes, course, TA_SEED[course]);
@@ -2245,11 +2272,11 @@ async function openRank() {
     box.innerHTML = '';
     for (const [id, label] of list) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tab' + (G.rankTab[key] === id ? ' on' : ''); b.textContent = label; b.onclick = () => { G.rankTab[key] = id; openRank(); }; box.appendChild(b); }
   };
-  tabs($('rankCourseTabs'), RANK_COURSES.map(c => [c, c === 'all4' ? '4種目合計' : fmtCourse(c)]), 'course');
+  tabs($('rankCourseTabs'), RANK_COURSES.map(c => [c, c === 'all4' ? L('4種目合計') : fmtCourse(c)]), 'course');
   tabs($('rankPeriodTabs'), RANK_PERIODS, 'period');
   show('rankScreen');
   const ol = $('rankList'); ol.innerHTML = ''; $('rankMine').classList.add('hidden');
-  $('rankStatus').textContent = '読みこみ中…';
+  $('rankStatus').textContent = L('読みこみ中…');
   const myTurn = (G.rankSeq = (G.rankSeq || 0) + 1);
   try {
     const m = await Store.mod();
@@ -2267,26 +2294,26 @@ async function openRank() {
       const li = document.createElement('li'); li.className = 'rk' + (r.uid === m.uid() ? ' me' : '') + (shown <= 3 ? ' top' + shown : '');
       const c = document.createElement('canvas'); c.width = 72; c.height = 56; drawThumb(c, cr);
       li.innerHTML = `<span class="no">${shown}</span>`; li.appendChild(c);
-      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name || '名なし'; li.appendChild(nm);
-      const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = tv.toFixed(2) + '秒'; li.appendChild(tm);
-      if (r.uid !== m.uid()) { const bk = document.createElement('button'); bk.className = 'tiny rkBlock'; bk.textContent = '見ない'; bk.onclick = () => { if (!confirm('この人の絵をこの端末ではもう出さないようにしますか?(みんなのらくがき・相手・ランキング)')) return; m.block({ uid: r.uid }); li.remove(); toast('この人の絵を出さないようにしました'); }; li.appendChild(bk); }
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = dispName(r.name); li.appendChild(nm);
+      const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = L('{t}秒', { t: tv.toFixed(2) }); li.appendChild(tm);
+      if (r.uid !== m.uid()) { const bk = document.createElement('button'); bk.className = 'tiny rkBlock'; bk.textContent = L('見ない'); bk.onclick = () => { if (!confirm(L('この人の絵をこの端末ではもう出さないようにしますか?(みんなのらくがき・相手・ランキング)'))) return; m.block({ uid: r.uid }); li.remove(); toast(L('この人の絵を出さないようにしました')); }; li.appendChild(bk); }
       ol.appendChild(li);
       if (r.uid === m.uid()) mine = { rank: shown, t: tv, name: r.name };
     }
     const label = RANK_PERIODS.find(p => p[0] === period)[1];
-    $('rankStatus').textContent = (shown ? `${label}の上位 ${shown} 匹(みんなの端末で走らせ直して確かめたタイムだけ)` + (dropped ? ` / 合わない ${dropped} 件は出していません` : '') : `${label}はまだだれも記録していません。一番乗りのチャンス!`) + (rows.stale ? '。いまは混み合っているので少し前の表です' : '');
+    $('rankStatus').textContent = (shown ? L('{label}の上位 {n} 匹(みんなの端末で走らせ直して確かめたタイムだけ)', { label, n: shown }) + (dropped ? L(' / 合わない {n} 件は出していません', { n: dropped }) : '') : L('{label}はまだだれも記録していません。一番乗りのチャンス!', { label })) + (rows.stale ? L('。いまは混み合っているので少し前の表です') : '');
     const mb = $('rankMine');
-    if (mine) { mb.innerHTML = `あなたは <b>${mine.rank}位</b>(${mine.name}・${mine.t.toFixed(2)}秒)`; mb.classList.remove('hidden'); }
-    else { const my = await m.myRank(course, period).catch(() => null); if (my) { mb.innerHTML = `あなたの記録 ${my.t.toFixed(2)}秒(上位${m.RANK_LIMIT || 20}位の外)`; mb.classList.remove('hidden'); } }
+    if (mine) { mb.innerHTML = L('あなたは <b>{r}位</b>({name}・{t}秒)', { r: mine.rank, name: esc(dispName(mine.name)), t: mine.t.toFixed(2) }); mb.classList.remove('hidden'); }
+    else { const my = await m.myRank(course, period).catch(() => null); if (my) { mb.innerHTML = L('あなたの記録 {t}秒(上位{n}位の外)', { t: my.t.toFixed(2), n: m.RANK_LIMIT || 20 }); mb.classList.remove('hidden'); } }
   } catch (e) {
     console.error(e);
     const perm = /permission/i.test(String(e && (e.code || e.message)));
-    $('rankStatus').textContent = e && e.busy ? BUSY_MSG + '。ひとりで走る・描く・共有はそのまま遊べます' : perm ? 'ランキングはただいま準備中です。ほかの遊びはそのまま遊べます' : 'いまはランキングを読みこめません(ネットにつながっていないかも)。ほかの遊びはそのまま遊べます';
+    $('rankStatus').textContent = e && e.busy ? L('{b}。ひとりで走る・描く・共有はそのまま遊べます', { b: BUSY_MSG }) : perm ? L('ランキングはただいま準備中です。ほかの遊びはそのまま遊べます') : L('いまはランキングを読みこめません(ネットにつながっていないかも)。ほかの遊びはそのまま遊べます');
   }
 }
 $('rankBtn').onclick = () => openRank();
 $('rankBackBtn').onclick = () => goTitle();
-$('rankJoinBtn').onclick = () => { const pets = Rec.list(); if (!pets.length) { toast('まず1匹描いて走らせてね'); startDraw('solo'); return; } toast('アルバムから走らせる子をえらんでね'); openAlbum(); };
+$('rankJoinBtn').onclick = () => { const pets = Rec.list(); if (!pets.length) { toast(L('まず1匹描いて走らせてね')); startDraw('solo'); return; } toast(L('アルバムから走らせる子をえらんでね')); openAlbum(); };
 $('retryBtn').onclick = () => {
   if (!G.lastRace) return;
   const r = G.lastRace;
@@ -2301,7 +2328,7 @@ loadAssets().then(() => {
   Full.refreshUi();
   renderPad();
   setSound(SND.on);
-  if (IMG.logo) { $('logoImg').src = 'assets/logo.png'; $('logoImg').classList.remove('hidden'); $('logoText').classList.add('hidden'); }
+  if (IMG.logo && (!window.L || L.lang === 'ja')) { $('logoImg').src = 'assets/logo.png'; $('logoImg').classList.remove('hidden'); $('logoText').classList.add('hidden'); }
   goTitle();
   const h = readHash();
   if (!h && !TEST && !params.has('fresh')) Persist.restore();
