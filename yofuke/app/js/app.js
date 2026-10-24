@@ -56,11 +56,6 @@ function screenHome() {
         <h1 class="title">よふけの預かり所</h1>
         <p class="sub">夜だけひらく、わすれものの店。</p>
         ${prog ? `<p class="lead">おかえりなさい。夜は、まだ続いています。</p>` : `<p class="lead">今夜は、あなたが一晩だけの係です。<br>訪ねてくる人たちに、あなたならどう応えますか。</p>`}
-        <div class="promise" id="promise">
-          <p class="pr-free">16の場面・結果・結果カード・相性1組まで、<br>お金はかかりません</p>
-          <p class="pr-paid">詳しい解説・相性・図鑑・もう一つの物語は<br><b id="price" class="price">${priceLine()}</b> の買い切り</p>
-          <p class="pr-note">1回払い・月額なし・無料体験なし</p>
-        </div>
         ${prog ? `<button id="resume" class="btn lamp">続きから(${prog.answers.length + 1} / ${STORIES.main.count})</button>
                   <button id="start" class="btn ghost">はじめから</button>`
                : `<button id="start" class="btn lamp">今夜の係をはじめる</button>`}
@@ -431,16 +426,21 @@ function screenZukan() {
 // ---------- 12 設定 ----------
 function screenSettings() {
   mode('night');
+  // 物語を終える前は、値段と購入の案内を出さない(10/24 テスターの声: 最初から課金が見えて遊ぶ気がなくなる)
+  const hasRes = !!store.latest('main');
   view.innerHTML = `
   <section class="settings">
     <div class="strip tall"><img src="img/strip_desk.webp" alt=""><header class="bar"><button id="back" class="iconbtn backbtn" aria-label="戻る"></button><span class="bar-t">設定</span><span></span></header></div>
     <div class="set-card"><h2 class="sec-h">${tag('記録')}</h2>
       <p class="fine">回答と結果は、この端末の中にだけ残しています。名前やメールは聞きません。外へ送ることもありません。アプリを消すと、記録も消えます。</p>
       <button id="clear" class="btn ghost ic-trash">保存した記録を消す</button></div>
-    <div class="set-card"><h2 class="sec-h">${tag('買い切り')}</h2>
+    ${shop.owned || hasRes ? `<div class="set-card"><h2 class="sec-h">${tag('買い切り')}</h2>
       <p class="fine">${shop.owned ? 'すべて開いています。' : `詳しい解説・相性・図鑑・もう一つの物語は ${esc(shop.price)} の買い切りです。1回払い・月額なし・無料体験なし。`}</p>
       ${shop.isApp() ? '<button id="restore2" class="btn ghost ic-restore">購入を復元</button>' : ''}
-      ${shop.owned ? '' : '<button id="seeShop" class="btn ghost">中身を見る</button>'}</div>
+      ${shop.owned ? '' : '<button id="seeShop" class="btn ghost">中身を見る</button>'}</div>`
+      : shop.isApp() ? `<div class="set-card"><h2 class="sec-h">${tag('購入の復元')}</h2>
+      <p class="fine">別の端末で買った方は、ここで開けます。</p>
+      <button id="restore2" class="btn ghost ic-restore">購入を復元</button></div>` : ''}
     <div class="set-card"><h2 class="sec-h">${tag('この作品について')}</h2>
       <p class="fine">物語を楽しむための遊びの診断です。占い・医療・心理検査ではありません。結果は、物語の中で選んだことから出した目安です。物語・品・文章はすべてこのアプリのために作った物です。</p>${LEGAL}</div>
   </section>`;
