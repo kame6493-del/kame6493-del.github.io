@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>カチマケ パチンコ・競馬の収支管理アプリ</title>
+<meta name="description" content="パチンコ・スロット・競馬・競輪・ボートレース・オートレースの投資と回収を入れると、月の収支・回収率・時給がまとめて見られる Android の収支管理アプリです。貯玉・貯メダル、負けの上限、小役カウンターつき。記入は端末の中だけに保存します。">
+<meta name="theme-color" content="#18161e">
+<link rel="canonical" href="https://yurustudio.github.io/kachimake/">
+<link rel="icon" href="img/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="カチマケ">
+<meta property="og:title" content="カチマケ パチンコ・競馬の収支管理アプリ">
+<meta property="og:description" content="投資と回収を入れると、月の収支・回収率・時給がまとめて見られます。収支を見える化して、遊び方を見直すための収支ノートです。">
+<meta property="og:url" content="https://yurustudio.github.io/kachimake/">
+<meta property="og:image" content="https://yurustudio.github.io/kachimake/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="カチマケ パチンコ・競馬の収支管理アプリ">
+<meta name="twitter:image" content="https://yurustudio.github.io/kachimake/img/og.jpg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "カチマケ",
+      "operatingSystem": "Android",
+      "applicationCategory": "FinanceApplication",
+      "contentRating": "18+",
+      "url": "https://yurustudio.github.io/kachimake/",
+      "downloadUrl": "https://play.google.com/store/apps/details?id=jp.kachimake.app",
+      "image": "https://yurustudio.github.io/kachimake/img/icon.png",
+      "description": "パチンコ・スロット・競馬・競輪・ボートレース・オートレースの収支管理アプリ。投資と回収を入れると、月の収支・回収率・時給がまとめて見られます。"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "記入した収支はどこに保存されますか?", "acceptedAnswer": { "@type": "Answer", "text": "スマホの中だけです。サーバーには送りません。" } },
+        { "@type": "Question", "name": "どの種目に対応していますか?", "acceptedAnswer": { "@type": "Answer", "text": "パチンコ、スロット(パチスロ)、競馬、競輪、ボートレース、オートレースの6つです。ひとつのカレンダーにまとめて記入できます。" } },
+        { "@type": "Question", "name": "貯玉・貯メダルを使った日はどう記入しますか?", "acceptedAnswer": { "@type": "Answer", "text": "記入の画面の「貯玉を使った・貯めた」を開き、レートと玉数(枚数)を入れます。円に直して投資と回収に入れます。" } },
+        { "@type": "Question", "name": "使いすぎを止める仕組みはありますか?", "acceptedAnswer": { "@type": "Answer", "text": "月の負けの上限を決めておくと、上限に近づいたときにホームでお知らせします。" } },
+        { "@type": "Question", "name": "機種変更のときはどうすればいいですか?", "acceptedAnswer": { "@type": "Answer", "text": "設定からバックアップのファイルを書き出し、新しいスマホで読み込むと記入が戻ります。" } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  :root {
+    --bg: #18161e; --bg2: #211e29; --panel: #26222f; --line: rgba(240, 200, 110, .28); --line2: rgba(255, 255, 255, .09);
+    --gold: #c99a3e; --gold2: #f0c86e; --text: #f4f1ea; --sub: #c9c4d2; --muted: #9a94a6; --win: #4cc38a; --lose: #ff6b66;
+    --sans: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.8 var(--sans); overflow-x: hidden; }
+  a { color: var(--gold2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  .hero { border-bottom: 1px solid var(--line2); background: radial-gradient(900px 500px at 85% 20%, rgba(201,154,62,.22), transparent 70%), linear-gradient(180deg, #1d1a25, var(--bg)); }
+  .hero .wrap { padding-top: 40px; padding-bottom: 56px; display: grid; gap: 28px; grid-template-columns: 1.15fr .85fr; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 56px; height: 56px; border-radius: 14px; }
+  .brand span { font: 800 22px/1 var(--sans); letter-spacing: .1em; }
+  h1 { font: 800 clamp(30px, 5.4vw, 48px)/1.35 var(--sans); margin: 22px 0 14px; }
+  .lead { font-size: 18px; max-width: 32em; margin: 0 0 24px; color: var(--sub); }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; }
+  .btn.main { background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1b1408; box-shadow: 0 10px 26px rgba(201,154,62,.3); }
+  .btn.soft { border: 1.5px solid var(--line); color: var(--text); background: rgba(255,255,255,.04); }
+  .age { margin: 16px 0 0; font-size: 14.5px; color: var(--muted); }
+
+  .phone { width: 100%; max-width: 290px; border-radius: 34px; padding: 9px; background: #0c0b10; border: 1.5px solid var(--line); box-shadow: 0 24px 60px rgba(0,0,0,.5); justify-self: center; }
+  .phone img { border-radius: 26px; aspect-ratio: 9 / 16; object-fit: cover; object-position: top; width: 100%; }
+
+  section { padding: 64px 0; }
+  .band { background: var(--bg2); border-top: 1px solid var(--line2); border-bottom: 1px solid var(--line2); }
+  .kicker { font: 700 13px/1 var(--sans); letter-spacing: .2em; color: var(--gold2); margin: 0 0 12px; }
+  h2 { font: 800 clamp(24px, 4vw, 34px)/1.4 var(--sans); margin: 0 0 16px; }
+  h3 { font: 700 18px/1.5 var(--sans); margin: 0 0 6px; }
+  p { margin: 0 0 14px; }
+  .sub { color: var(--sub); }
+  .split { display: grid; grid-template-columns: 1fr 290px; gap: 48px; align-items: center; }
+  .split.rev { grid-template-columns: 290px 1fr; }
+  .split.rev .phone { order: -1; }
+
+  .steps { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 14px; counter-reset: s; grid-template-columns: repeat(4, 1fr); }
+  .steps li { position: relative; border: 1px solid var(--line2); border-radius: 20px; background: var(--panel); padding: 66px 18px 18px; counter-increment: s; }
+  .steps li::before { content: counter(s); position: absolute; left: 18px; top: 16px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 800 18px/1 var(--sans); color: #1b1408; background: linear-gradient(180deg, var(--gold2), var(--gold)); }
+  .steps p { margin: 0; font-size: 15px; color: var(--sub); }
+
+  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 26px; }
+  .gallery figure { margin: 0; }
+  .gallery .phone { max-width: none; border-radius: 26px; padding: 6px; }
+  .gallery .phone img { border-radius: 21px; }
+  .gallery figcaption { text-align: center; color: var(--sub); font-size: 15px; margin-top: 10px; }
+
+  .faq { margin-top: 22px; display: grid; gap: 12px; }
+  .faq details { border: 1px solid var(--line2); border-radius: 16px; background: var(--panel); padding: 14px 18px; }
+  .faq summary { cursor: pointer; font-weight: 700; }
+  .faq details p { margin: 10px 0 0; color: var(--sub); font-size: 15.5px; }
+
+  .care { border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; margin-top: 26px; color: var(--sub); font-size: 15px; }
+  .care p:last-child { margin: 0; }
+
+  footer { border-top: 1px solid var(--line2); padding: 30px 0 46px; color: var(--muted); font-size: 14.5px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+  footer .sp { flex: 1; }
+
+  @media (max-width: 860px) {
+    .hero .wrap, .split, .split.rev { grid-template-columns: 1fr; gap: 30px; }
+    .split.rev .phone { order: 0; }
+    .phone { max-width: 260px; margin: 0 auto; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .gallery { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  }
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .hero .wrap { padding-top: 26px; padding-bottom: 40px; }
+    .lead { font-size: 16.5px; }
+    .btn { width: 100%; }
+    section { padding: 48px 0; }
+    .steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <div class="brand"><img src="img/icon.png" alt="" width="256" height="256"><span>カチマケ</span></div>
+      <h1>今月いくら使って、<br>いくら戻ったか。</h1>
+      <p class="lead">パチンコ・スロット・競馬・競輪・ボートレース・オートレースの、使った額と戻った額を入れるだけの収支ノートです。月の収支・回収率・時給がまとめて見られるので、遊び方を見直すきっかけになります。</p>
+      <div class="btns">
+        <a class="btn main" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play で見る</a>
+        <a class="btn soft" href="#howto">使い方</a>
+      </div>
+      <p class="age">Android 版です。18歳以上の方向けのアプリです。</p>
+    </div>
+    <div class="phone"><img src="img/1_home.jpg" alt="ホーム画面。今月の収支・今年の収支・回収率・日別の推移" width="540" height="960"></div>
+  </div>
+</header>
+
+<main>
+<section id="howto">
+  <div class="wrap">
+    <p class="kicker">HOW TO USE</p>
+    <h2>記入は、2つの金額だけ</h2>
+    <p class="sub">ホールや競技場の帰りに、その日の数字を入れておくだけです。細かい項目はあとから足せます。</p>
+    <ol class="steps">
+      <li><h3>種目を選ぶ</h3><p>パチンコ・スロット・競馬・競輪・ボート・オートから選びます。「前回と同じ」で店や機種もそのまま入ります。</p></li>
+      <li><h3>使った額と戻った額</h3><p>2つの金額を入れると、今回の収支をその場で出します。貯玉・貯メダルはレートと玉数で円に直します。</p></li>
+      <li><h3>ホームで今月を見る</h3><p>今月の収支・回収率・記録件数と、日ごとの推移のグラフが並びます。</p></li>
+      <li><h3>上限を決めておく</h3><p>月の負けの上限を決めておくと、近づいたときにお知らせします。</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap split">
+    <div>
+      <p class="kicker">ANALYSIS</p>
+      <h2>回収率と時給、曜日ごとの収支</h2>
+      <p class="sub">分析の画面には、合計の収支・回収率・1回あたりの収支・勝率・時給が出ます。店・機種・曜日・券種ごとの収支も表になるので、どこでお金が出ていっているのかが分かります。</p>
+      <p class="sub">競馬・競輪・ボートは券種も残せます。遊技時間を入れておくと、時給も出ます。</p>
+    </div>
+    <div class="phone"><img src="img/4_analysis.jpg" alt="分析の画面。合計収支・回収率・月間収支の推移" width="540" height="960" loading="lazy"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap split rev">
+    <div class="phone"><img src="img/7_limit.jpg" alt="負けの上限の画面。今月の上限額と現在の状況" width="540" height="960" loading="lazy"></div>
+    <div>
+      <p class="kicker">LIMIT</p>
+      <h2>負けの上限で、使いすぎに気づく</h2>
+      <p class="sub">月ごとに負けの上限を決めておけます。上限までの残りが画面に出て、使った額が上限の80%に近づくとホームでお知らせします。</p>
+      <p class="sub">記録をつけると、思っていたより使っていた月がはっきり見えます。カチマケは、その数字を自分で確かめるための道具です。</p>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <p class="kicker">SCREENS</p>
+    <h2>アプリの画面</h2>
+    <p class="sub">画面は見本のデータです。</p>
+    <div class="gallery">
+      <figure><div class="phone"><img src="img/2_form.jpg" alt="記録を追加する画面。種目・レート・使った額・戻った額" width="540" height="960" loading="lazy"></div><figcaption>記入</figcaption></figure>
+      <figure><div class="phone"><img src="img/3_calendar.jpg" alt="カレンダー。日ごとの収支と種目の印" width="540" height="960" loading="lazy"></div><figcaption>カレンダー</figcaption></figure>
+      <figure><div class="phone"><img src="img/5_analysis.jpg" alt="曜日別の収支のグラフと、勝率・時給などの指標" width="540" height="960" loading="lazy"></div><figcaption>曜日別と時給</figcaption></figure>
+      <figure><div class="phone"><img src="img/8_counter.jpg" alt="小役カウンター。大きなボタンと出現確率" width="540" height="960" loading="lazy"></div><figcaption>小役カウンター</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <p class="kicker">FAQ</p>
+    <h2>よくある質問</h2>
+    <div class="faq">
+      <details><summary>記入した収支はどこに保存されますか?</summary><p>スマホの中だけです。サーバーには送りません。</p></details>
+      <details><summary>どの種目に対応していますか?</summary><p>パチンコ、スロット(パチスロ)、競馬、競輪、ボートレース、オートレースの6つです。ひとつのカレンダーにまとめて記入できます。</p></details>
+      <details><summary>貯玉・貯メダルを使った日はどう記入しますか?</summary><p>記入の画面の「貯玉を使った・貯めた」を開き、レート(4円・1円・20円・5円など)と玉数を入れます。再プレイした分も投資として円に直して入れるので、実際より勝っているように見えることがありません。</p></details>
+      <details><summary>使いすぎを止める仕組みはありますか?</summary><p>月の負けの上限を決めておくと、使った額が上限の80%に近づいたときにホームでお知らせします。</p></details>
+      <details><summary>機種変更のときはどうすればいいですか?</summary><p>設定からバックアップのファイルを書き出し、新しいスマホで読み込むと記入が戻ります。</p></details>
+      <details><summary>iPhone 版はありますか?</summary><p>いまは Android 版だけです。</p></details>
+    </div>
+    <p class="sub" style="margin-top:22px"><a href="https://kame6493-del.github.io/kachimake-site/">回収率・時給の計算機と、貯玉の数え方</a> ・ <a href="https://kame6493-del.github.io/kachimake-site/haraimodoshi.html">競馬・競輪・ボートの払戻率</a> ・ <a href="https://kame6493-del.github.io/kachimake-site/support.html">使い方とサポート</a></p>
+    <div class="care">
+      <p>カチマケは収支を記録するための道具で、賭け事そのものは提供しません。パチンコ・パチスロは18歳未満、公営競技の投票は20歳未満の方は法律で禁止されています。</p>    </div>
+    <div class="btns" style="margin-top:26px"><a class="btn main" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play で見る</a></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>カチマケ YURU Studio</span>
+    <span class="sp"></span>
+    <a href="https://kame6493-del.github.io/kachimake-site/privacy.html">プライバシーポリシー</a>
+    <a href="https://kame6493-del.github.io/kachimake-site/terms.html">利用規約</a>
+    <a href="https://kame6493-del.github.io/kachimake-site/support.html">サポート</a>
+    <a href="/">ほかのアプリ</a>
+  </div>
+</footer>
+
+</body>
+</html>
