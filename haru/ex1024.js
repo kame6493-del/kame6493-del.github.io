@@ -191,8 +191,8 @@ function m24MidStart(o, px, py, ex, ey) {
 // 技の なかみ。おわったら true
 function m24MidMove(o, dt, px, py, ex, ey) {
   const m = o.mv24, d = o.d;
-  m.t += dt;
   const fly = !!d.fly;
+  if (o.tame24 <= 0) m.t += dt; // m.t は ため の あとから 数える
   if (o.tame24 > 0) {
     // ため: 止まって 光る(空を とぶ 物は その場で ゆれる)
     if (!fly) { o.vx = 0; m24Grav(o, dt); }
@@ -512,7 +512,7 @@ function m24BossEnd(o, r) {
   if (o.type === 'queen' || o.type === 'medama') o.timer = Math.max(o.timer, 1.0);
 }
 function m24BossMove(o, dt, px, py, ex, ey) {
-  const m = o.mv24; m.t += dt;
+  const m = o.mv24; if (!(o.tame24 > 0)) m.t += dt; // m.t は ため の あとから 数える
   const [L0, R0] = m24Arena(o);
   const fly = !!M24_FLYB[o.type];
   if (o.tame24 > 0) {
