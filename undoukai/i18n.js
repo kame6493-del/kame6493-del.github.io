@@ -30,8 +30,8 @@
     'もどる': ['Back', '뒤로'],
     '音: {v}': ['Sound: {v}', '소리: {v}'],
     'クレジット': ['Credits', '크레딧'],
-    '利用規約・配信について': ['Terms (Japanese)', '이용약관(일본어)'],
-    'プライバシー': ['Privacy (Japanese)', '개인정보 처리방침(일본어)'],
+    '利用規約・配信について': ['Terms & streaming', '이용약관·방송 안내'],
+    'プライバシー': ['Privacy', '개인정보 처리방침'],
     'Android のテスター募集': ['Android testers wanted', 'Android 테스터 모집'],
     '音楽: 「かわいい運動会」ゆうきわたる /「かけっこ競争」ハヤシユウ(OpenTracks・旧 DOVA-SYNDROME)': ['Music: 「かわいい運動会」 by ゆうきわたる / 「かけっこ競争」 by ハヤシユウ (OpenTracks, formerly DOVA-SYNDROME)', '음악: 「かわいい運動会」 ゆうきわたる / 「かけっこ競争」 ハヤシユウ (OpenTracks, 구 DOVA-SYNDROME)'],
     '効果音: 効果音ラボ': ['Sound effects: 効果音ラボ (Sound Effect Lab)', '효과음: 効果音ラボ'],
@@ -479,6 +479,11 @@
     }
     const t = document.title; if (D[t]) document.title = D[t][idx];
     const md = document.querySelector('meta[name="description"]'); if (md && D[md.content]) md.content = D[md.content][idx];
+    // 利用規約・プライバシーのリンクは今の言葉のページへ(terms.html → terms_en.html / terms_ko.html。privacy も同じ)
+    for (const id of ['termsLink', 'privacyLink']) {
+      const el = document.getElementById(id), h = el && el.getAttribute('href');
+      if (h) el.setAttribute('href', h.replace(/(terms|privacy)\.html/, `$1_${lang}.html`));
+    }
     const logo = document.getElementById('logoText');
     if (logo) logo.innerHTML = LOGO[lang].map(([s, c]) => `<span class="l${c}">${s}</span>`).join(lang === 'en' ? ' ' : '');
   }
