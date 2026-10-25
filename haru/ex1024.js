@@ -5,11 +5,11 @@
 // 絵が 無い ときは 前の 絵の まま(光と ゆれと ! だけ)。game.js・ex1016.js・ex1017.js の 関数を つつんで 足す。
 'use strict';
 
-const M24_V = '20261024m';
+const M24_V = '20261025p';
 const M24_MID = ['inoshishi', 'knight', 'taisho', 'hyogolem', 'oochochin', 'oyabun'];
 const M24_ST = ['kuwagata', 'yukidaruma', 'raijin', 'ookami', 'gorira', 'kurekame', 'ryusei'];
-// ポーズの 絵が ある ボスだけ 読む(ChatGPT の 上限で 10/24 は 3体。のこりは 絵が 来たら 足す。無い ボスは 光と ゆれで ため を 見せる)
-const M24_BOSS = ['boss_slime', 'boss_maou', 'boss_maou2'];
+// ポーズの 絵が ある ボスだけ 読む(10/24 は 3体、10/25 に のこり 9体も ChatGPT で 描いて 12体 そろった。無い ボスは 光と ゆれで ため を 見せる)
+const M24_BOSS = ['boss_slime', 'boss_maou', 'boss_maou2', 'boss_karakara', 'boss_kabuto', 'boss_goronta', 'boss_yurei', 'boss_queen', 'boss_munyaru', 'boss_eye', 'boss_perari', 'boss_kage'];
 const M24_POSES = ['tame', 'atk', 'hurt', 'angry'];
 {
   const names = [];
