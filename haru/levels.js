@@ -128,7 +128,10 @@ function sections(L) {
     if (o.star) L.put(x + 14, hi(py - 3), '*');
     L.ground(x + 4 + gap, x + 8 + gap, top);
     return x + 9 + gap; };
-  S.water = (x, w, o = {}) => { L.ground(x, x + w - 1, 11); L.water(x, x + w - 1, 7); L.row(x + 2, 10, 'o'.repeat(Math.min(5, w - 4))); if (o.fish) o.fish.forEach((dx, i) => L.enemy(x + dx, 'fish', { jump: 680, phase: i * 0.7 })); if (o.pillars) o.pillars.forEach(dx => L.fill(x + dx, x + dx + 1, 4, 8, 'S')); if (o.star) L.put(x + o.star, 10, '*'); return x + w; };
+  S.water = (x, w, o = {}) => { L.ground(x, x + w - 1, 11); L.water(x, x + w - 1, 7); L.row(x + 2, 10, 'o'.repeat(Math.min(5, w - 4))); if (o.fish) o.fish.forEach((dx, i) => L.enemy(x + dx, 'fish', { jump: 680, phase: i * 0.7 })); if (o.pillars) o.pillars.forEach(dx => L.fill(x + dx, x + dx + 1, 4, 8, 'S')); if (o.star) L.put(x + o.star, 10, '*');
+    // 2026-10-25 持ち主「水の 上を ジャンプで こえられて 泳がない」→ 天井から 水の 中まで 下りる 石の かべ(0〜8行)。下の 2行を もぐって くぐる。くぐる 道に コイン
+    if (o.curtain) o.curtain.forEach(dx => { L.fill(x + dx, x + dx + 1, 0, 8, 'S'); L.row(x + dx - 1, 9, 'oooo'); });
+    return x + w; };
   S.door = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 5, top); L.wall(x + 2, top - 8, top - 3); L.door(x + 2, top - 1); if (o.star) L.put(x + 4, top - 1, '*'); L.row(x + 3, top - 3, 'gg'); return x + 6; };
   S.goal = (x, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 13, top); L.stairs(x + 1, top, 5, +1, o.ch || '#'); L.put(x + 10, top - 1, 'G'); if (o.deco) L.deco(x + 7, o.deco, 1); /* 2026-10-17 夜: x+12 だと ゴールの 柱に かさなっていた */ return x + 14; };
   S.boss = (x, hp, o = {}) => { const top = o.top ?? 10; L.ground(x, x + 25, top); L.wall(x + 26, 2, top - 1); L.ground(x + 26, x + 26, top); L.put(x + 3, top - 1, 'h'); L.put(x + 22, top - 1, 'p'); L.row(x + 4, top - 4, 'BRB'); if (o.star) L.put(x + 12, top - 4, '*'); L.enemy(x + 15, 'boss', { arena: [x + 1, x + 25], hp }); L.deco(x + 1, 'torch', 1); L.deco(x + 24, 'torch', 1); return x + 27; };
@@ -269,7 +272,8 @@ function sections(L) {
   };
   // ひみつの へや(ゴールの うしろの かべの むこう)。ワープで 入る。中に ひみつのゴール
 // ごほうびの 表(面の id → みどりキノコの 数 u・コインの 列 coins(1列 8まい)・たからこぞう takara)
-const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1, takara: 1, coins: 2 }, 15: { u: 1, coins: 3 }, 20: { u: 2, takara: 1 }, 27: { u: 2, coins: 3 }, 33: { u: 1, takara: 1, coins: 3 }, 42: { u: 3, coins: 3 } };
+// 2026-10-25 持ち主「1UP が 多すぎて 簡単すぎる」→ みどりキノコは どの へやも 1こ(へった ぶんは コインの 列)
+const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 1, coins: 2 }, 10: { u: 1, takara: 1, coins: 2 }, 15: { u: 1, coins: 3 }, 20: { u: 1, takara: 1, coins: 1 }, 27: { u: 1, coins: 3 }, 33: { u: 1, takara: 1, coins: 3 }, 42: { u: 1, coins: 3 } };
   S.secretRoom = (x, o = {}) => {
     const top = o.top ?? 10;
     L.fill(x, x, 0, top - 1, 'S'); L.ground(x, x + 12, top);
@@ -644,8 +648,9 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1
   };
   // 水の中の 道(上から 下まで 水)。ぷっくん と さかな
   S.deep = (x, w, o = {}) => {
-    L.ground(x, x + w - 1, 11); L.water(x, x + w - 1, 1, 10);
-    if (o.pillars) o.pillars.forEach(([dx, y0, y1]) => L.fill(x + dx, x + dx + 1, y0, y1, 'S'));
+    // 2026-10-25 持ち主「水の 面は 上で ジャンプすると 泳がなくて いい」→ 水を 0行まで 満たし、上は 天井(ex1025.js の tileAt)。上から 下りる 柱(1行から)も 0行から
+    L.ground(x, x + w - 1, 11); L.water(x, x + w - 1, 0, 10);
+    if (o.pillars) o.pillars.forEach(([dx, y0, y1]) => L.fill(x + dx, x + dx + 1, y0 <= 1 ? 0 : y0, y1, 'S'));
     if (o.coins) L.row(x + 2, o.coinY ?? 6, 'o'.repeat(Math.min(8, w - 4)));
     (o.fugu || []).forEach(([dx, y]) => L.enemy(x + dx, 'fugu', { y }));
     if (o.star) L.put(x + o.star[0], o.star[1], '*');
@@ -736,16 +741,18 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 2, coins: 1 }, 10: { u: 1
   };
   // しおの みちひき: ひくい ゆかの 道に 高い かべ。みちた ときに およいで かべを こえる。ひいた ときは ゆかの コイン
   S.tide = (x, w, o = {}) => {
-    const lo = 10, hi2 = o.hi ?? 4;
+    // 2026-10-25: かべを 2マス 高く(5→7・6→8)・しおは 2行目まで みちる。前は ひいた 時に 走りジャンプで かべに のれて、泳がずに こえられた
+    const lo = 10, hi2 = o.hi ?? 2;
     if (o.hint) L.hint(x, 'しおの みちひき', 'みずが ふえたら およいで かべの 上へ');
     L.ground(x, x + w - 1, 10);
-    (o.walls || []).forEach(([dx, h]) => L.fill(x + dx, x + dx + 1, 10 - h, 9, 'S'));
+    (o.walls || []).forEach(([dx, h]) => L.fill(x + dx, x + dx + 1, 10 - Math.min(8, h + 2), 9, 'S'));
     (o.ledges || []).forEach(([dx, y, n]) => L.fill(x + dx, x + dx + (n || 3) - 1, y, y, 'S'));
-    (o.logs || []).forEach(dx => L.hazard(x + dx, 'log', { y: 9, tide: true, sink: 30 }));
+    // (o.logs: 2026-10-25 から 置かない。しおと いっしょに うく 丸太の 上から、泳がずに かべを こえられた)
+    (o.logs || []).forEach(dx => L.row(x + dx, 8, 'oo'));
     L.hazard(x, 'tide', { w, lo, hi: hi2, per: o.per || 9, phase: o.phase || 0 });
     L.row(x + 2, 9, 'o'.repeat(Math.min(6, w - 4)));
     (o.fugu || []).forEach(([dx, y]) => L.enemy(x + dx, 'fugu', { y }));
-    if (o.star) L.put(x + o.star[0], o.star[1], '*');
+    if (o.star) { const inWall = (o.walls || []).some(([dx, h]) => o.star[0] >= dx && o.star[0] <= dx + 1 && o.star[1] >= 10 - Math.min(8, h + 2)); L.put(x + o.star[0] - (inWall ? 2 : 0), inWall ? hi2 + 1 : o.star[1], '*'); }
     en(x, o.en);
     return x + w;
   };
@@ -1121,23 +1128,23 @@ const LEVELS = [
       let x = 0;
       x = S.start(x, { top: 6, deco: 'pillar' });
       x = S.run(x, 8, { top: 6, en: [[5, 'plant']] });
-      x = S.water(x, 18, { fish: [6, 12], star: 15 });
+      x = S.water(x, 18, { fish: [5, 12], star: 15, curtain: [8] }); // 2026-10-25: 浅い 池の 水面を はねて こえられた → くぐる かべ
       x = S.run(x, 10, { top: 6, en: [[5, 'skeleton']], items: [[8, 'c']] });
       x = S.power(x, 'R', { top: 6 });
       x = S.run(x, 8, { top: 6, cp: 2, en: [[6, 'orb', { y: 3, r: 1.5 }]] });
-      x = S.water(x, 22, { fish: [5, 15], pillars: [7, 15] });
+      x = S.water(x, 22, { fish: [5, 15], pillars: [16], curtain: [10] }); // 2026-10-25: 柱を わたって 泳がずに こえられた → まんなかを くぐる かべに
       x = S.run(x, 10, { top: 6, en: [[4, 'plant', { v: 'spit' }], [8, 'skeleton']] });
       x = S.movers(x, 2, { top: 6, kind: 'lift' });
       x = S.run(x, 10, { top: 6, cp: 2, en: [[6, 'wizard']] });
       x = S.tower(x, { top: 6, ch: 'S', h: 4, star: true });
       const wx = x;
-      x = S.water(x, 16, { fish: [8] });
+      x = S.water(x, 16, { fish: [10], curtain: [5] }); // 2026-10-25: くぐる かべ(右下に ひみつの ワープ)
       x = S.run(x, 8, { top: 6, en: [[4, 'beetle']] });
       x = S.firebars(x, 10, 1, { top: 6 });
-      x = S.water(x, 14, { fish: [4, 10], star: 7 });
+      x = S.water(x, 14, { fish: [4, 10], star: 7, curtain: [6] }); // 2026-10-25: 星は くぐる かべの 下
       x = S.run(x, 10, { top: 6, en: [[5, 'plant', { v: 'spit' }]], items: [[2, 'h']] });
       x = S.run(x, 10, { top: 6, cp: 3, en: [[6, 'skeleton']] });
-      x = S.water(x, 18, { fish: [5, 11], pillars: [9] });
+      x = S.water(x, 18, { fish: [5, 13], curtain: [9] }); // 2026-10-25: 柱を くぐる かべに
       x = S.run(x, 8, { top: 6, en: [[4, 'wizard']] });
       x = S.firebars(x, 12, 2, { top: 6 });
       x = S.goal(x, { top: 6, ch: 'S' });
