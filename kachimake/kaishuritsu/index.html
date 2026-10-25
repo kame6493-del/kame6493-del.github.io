@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>回収率の出し方(パチスロ・競馬) | カチマケ</title>
+<meta name="description" content="回収率は、戻った額の合計を使った額の合計で割って100をかけた数字です。パチスロの機械割との違い、競馬の券種ごとの払戻率との比べ方、1日ずつの回収率を平均してはいけない理由まで、計算の例つきで説明します。">
+<meta name="theme-color" content="#18161e">
+<link rel="canonical" href="https://yurustudio.github.io/kachimake/kaishuritsu/">
+<link rel="icon" href="../img/icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="カチマケ">
+<meta property="og:title" content="回収率の出し方(パチスロ・競馬)">
+<meta property="og:description" content="回収率 = 戻った額 ÷ 使った額 × 100。パチスロの機械割との違いと、競馬の券種ごとの見方。">
+<meta property="og:url" content="https://yurustudio.github.io/kachimake/kaishuritsu/">
+<meta property="og:image" content="https://yurustudio.github.io/kachimake/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "回収率の出し方(パチスロ・競馬)",
+  "inLanguage": "ja",
+  "datePublished": "2026-10-25",
+  "dateModified": "2026-10-25",
+  "author": { "@type": "Organization", "name": "YURU Studio" },
+  "publisher": { "@type": "Organization", "name": "YURU Studio" },
+  "image": "https://yurustudio.github.io/kachimake/img/og.jpg",
+  "mainEntityOfPage": "https://yurustudio.github.io/kachimake/kaishuritsu/"
+}
+</script>
+<style>
+  :root {
+    --bg: #18161e; --bg2: #211e29; --panel: #26222f; --line: rgba(240, 200, 110, .28); --line2: rgba(255, 255, 255, .09);
+    --gold: #c99a3e; --gold2: #f0c86e; --text: #f4f1ea; --sub: #d6d1de; --muted: #9a94a6;
+    --sans: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.95 var(--sans); overflow-x: hidden; }
+  a { color: var(--gold2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .crumb { padding: 22px 0 0; font-size: 14px; color: var(--muted); }
+  .crumb a { color: var(--muted); }
+  h1 { font: 800 clamp(26px, 5vw, 36px)/1.45 var(--sans); margin: 18px 0 10px; }
+  .date { color: var(--muted); font-size: 14px; margin: 0 0 30px; }
+  h2 { font: 800 clamp(21px, 3.6vw, 25px)/1.5 var(--sans); margin: 46px 0 14px; padding-top: 18px; border-top: 1px solid var(--line2); }
+  p { margin: 0 0 18px; color: var(--sub); }
+  .ex { background: var(--panel); border: 1px solid var(--line2); border-radius: 14px; padding: 14px 18px; margin: 0 0 18px; color: var(--sub); font-size: 15.5px; }
+  .shot { max-width: 260px; margin: 6px auto 22px; border-radius: 26px; padding: 7px; background: #0c0b10; border: 1.5px solid var(--line); }
+  .shot img { border-radius: 20px; }
+  .app { margin: 46px 0 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg2); padding: 20px 20px 22px; }
+  .app p { margin-bottom: 14px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1b1408; }
+  .care { color: var(--muted); font-size: 14.5px; margin-top: 16px; }
+  footer { border-top: 1px solid var(--line2); padding: 26px 0 42px; color: var(--muted); font-size: 14px; margin-top: 40px; }
+  footer a { color: var(--muted); margin-right: 16px; }
+  @media (max-width: 480px) { body { font-size: 16px; } .btn { width: 100%; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="crumb"><a href="../">カチマケ</a> › 回収率の出し方</p>
+  <h1>回収率の出し方(パチスロ・競馬)</h1>
+  <p class="date">2026年10月25日</p>
+
+  <p>回収率は、使ったお金に対してどれだけ戻ってきたかを割合で表した数字です。式にするとこうなります。</p>
+  <p class="ex">回収率(%)= 戻った額の合計 ÷ 使った額の合計 × 100</p>
+  <p>100%ならちょうど使った分だけ戻っていて、100%より上ならプラス、下ならマイナスです。たとえば1か月で 60,000円使って 48,000円戻ったなら、48,000 ÷ 60,000 × 100 で回収率は80%、収支は −12,000円になります。</p>
+  <p>式そのものは単純ですが、何を「使った額」と「戻った額」に入れるか、どの期間で区切るかで、出てくる数字はかなり変わります。パチスロと競馬では気をつけるところも少し違うので、分けて書いておきます。</p>
+
+  <h2>合計どうしで割る。平均はしない</h2>
+  <p>最初に、どちらにも共通する落とし穴を一つ。1日ずつの回収率を出して、それを平均してはいけません。</p>
+  <p class="ex">1日目: 1,000円使って 3,000円戻った → 300%<br>2日目: 20,000円使って 10,000円戻った → 50%<br>2日の平均: (300 + 50)÷ 2 = 175%<br>合計で割る: 13,000 ÷ 21,000 × 100 = 約62%</p>
+  <p>平均だと175%でプラスに見えますが、実際には 8,000円のマイナスです。少ない額で当たった日の率が、平均を大きく引っぱってしまいます。回収率は、期間中の戻った額の合計を、使った額の合計で割って出します。</p>
+
+  <h2>パチスロの回収率</h2>
+  <p>パチスロでは、使った額にその日に入れた現金を、戻った額に交換して受け取った額を入れます。再プレイで貯メダルを使った日は、その枚数を貸し出しの値段で円に直して使った額に足し、出たメダルを貯めた日はその分を戻った額に足します。ここを入れないと、再プレイの日だけ使った額が小さくなり、回収率が実際より高く出ます。入れ方は<a href="../shushihyo/">収支表のつけ方</a>にもう少しくわしく書いています。</p>
+  <p>よく混同されるのが、機種の紹介に出てくる「機械割(出玉率)」です。機械割は、入れたメダルの枚数に対して出てきたメダルの枚数の割合で、台の性能をあらわす数字です。一方の回収率は、財布から出たお金と戻ったお金の割合です。交換するときの率が貸し出しの値段と違う店では、メダルの枚数が同じでも戻る金額は減りますし、閉店まで打てずにやめた日や、途中で台を移った日も回収率に入ってきます。なので、機械割が100%を超える設定の台を打っていたとしても、自分の回収率がその通りになるとは限りません。自分の遊び方の結果を知りたいなら、見るべきは回収率のほうです。</p>
+  <p>パチスロの1日の結果は振れ幅が大きいので、回収率は少なくとも月単位、できれば数か月分をまとめて見ると、傾向がつかみやすくなります。店ごと、機種ごとに分けて出すと、どこでお金が出ていっているのかも見えてきます。</p>
+
+  <h2>競馬の回収率</h2>
+  <p>競馬では、使った額が馬券の購入額、戻った額が払戻金です。外れた馬券の購入額も必ず入れます。当たったレースだけで計算すると、回収率はいくらでも高く見えてしまいます。</p>
+  <p>競馬で回収率を見るときは、券種ごとに分けるのがおすすめです。JRA の馬券は、売上のうち払い戻しに回る割合(払戻率)が券種ごとに決まっていて、単勝と複勝が80%、枠連・馬連・ワイドが77.5%、馬単と3連複が75%、3連単が72.5%、WIN5 が70%です。長く買い続けたときの回収率は、この数字がひとつの目安になります。自分の券種ごとの回収率をこの払戻率と並べてみると、どの買い方で多く使っているかがはっきりします。</p>
+  <p class="ex">例: 今年、3連複に 50,000円使って払戻 36,000円 → 72%<br>同じく単勝に 30,000円使って払戻 25,500円 → 85%</p>
+  <p>もう一つ、競馬の回収率は1回の大きな払戻で大きく動きます。3連単が1回当たっただけで、その月の回収率が何倍にも跳ねることがあります。月ごとの数字だけで判断せず、年間で見ること、そして当たった回数(的中率)と回収率を分けて見ることが大切です。的中率が高くても回収率が低い、という形はよくあります。</p>
+  <p>競輪・ボートレース・オートレースも計算のしかたは同じです。払戻率は競技や券種で違うので、<a href="https://kame6493-del.github.io/kachimake-site/haraimodoshi.html">競馬・競輪・ボートの払戻率</a>のページにまとめています。</p>
+
+  <h2>数字の使い道</h2>
+  <p>回収率は、当てるための数字ではなく、自分の遊び方を確かめるための数字だと思います。どの店、どの券種、どの曜日に使った額が集まっているかが分かれば、続けるかどうかを自分で決めやすくなります。月の負けの上限と一緒に見ておくと、使いすぎにも早めに気づけます。</p>
+
+  <div class="app">
+    <p>カチマケは、使った額と戻った額を入れると、月の収支と回収率を自動で出す収支アプリです。合計どうしで割った回収率を、今月・3か月・今年・全期間で切り替えて見られます。競馬・競輪・ボート・オートは券種も残せて、券種ごと・店ごと・機種ごとの収支が並びます。遊んだ時間を入れておくと時給も出ます。記録はスマホの中だけに保存します。</p>
+    <div class="shot"><img src="../img/4_analysis.jpg" alt="カチマケの分析画面。合計収支と回収率、月間の推移" width="540" height="960" loading="lazy"></div>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play でカチマケを見る</a>
+    <p class="care">Android 版です。18歳以上の方向けのアプリで、予想や買い方の情報は載っていません。賭け事そのものも提供しません。パチンコ・パチスロは18歳未満、公営競技の投票は20歳未満の方は法律で禁止されています。<br>https://play.google.com/store/apps/details?id=jp.kachimake.app</p>
+  </div>
+</main>
+<footer>
+  <div class="wrap">
+    <a href="../">カチマケのトップ</a>
+    <a href="../shushihyo/">収支表のつけ方</a>
+    <a href="https://kame6493-del.github.io/kachimake-site/privacy.html">プライバシーポリシー</a>
+    <a href="/">ほかのアプリ</a>
+  </div>
+</footer>
+</body>
+</html>

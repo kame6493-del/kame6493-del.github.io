@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>パチンコ・パチスロの収支表のつけ方 | カチマケ</title>
+<meta name="description" content="パチンコ・パチスロの収支表は、日付・店・機種・使った額・戻った額・遊んだ時間の6つがあれば続けられます。貯玉や再プレイの入れ方、月ごとのまとめ方、エクセルやスプレッドシートで作るときの式まで、順番に説明します。">
+<meta name="theme-color" content="#18161e">
+<link rel="canonical" href="https://yurustudio.github.io/kachimake/shushihyo/">
+<link rel="icon" href="../img/icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="カチマケ">
+<meta property="og:title" content="パチンコ・パチスロの収支表のつけ方">
+<meta property="og:description" content="使った額と戻った額、それに遊んだ時間。収支表に入れる項目と、貯玉・再プレイの扱い、月ごとのまとめ方。">
+<meta property="og:url" content="https://yurustudio.github.io/kachimake/shushihyo/">
+<meta property="og:image" content="https://yurustudio.github.io/kachimake/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "パチンコ・パチスロの収支表のつけ方",
+  "inLanguage": "ja",
+  "datePublished": "2026-10-25",
+  "dateModified": "2026-10-25",
+  "author": { "@type": "Organization", "name": "YURU Studio" },
+  "publisher": { "@type": "Organization", "name": "YURU Studio" },
+  "image": "https://yurustudio.github.io/kachimake/img/og.jpg",
+  "mainEntityOfPage": "https://yurustudio.github.io/kachimake/shushihyo/"
+}
+</script>
+<style>
+  :root {
+    --bg: #18161e; --bg2: #211e29; --panel: #26222f; --line: rgba(240, 200, 110, .28); --line2: rgba(255, 255, 255, .09);
+    --gold: #c99a3e; --gold2: #f0c86e; --text: #f4f1ea; --sub: #d6d1de; --muted: #9a94a6;
+    --sans: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.95 var(--sans); overflow-x: hidden; }
+  a { color: var(--gold2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .crumb { padding: 22px 0 0; font-size: 14px; color: var(--muted); }
+  .crumb a { color: var(--muted); }
+  h1 { font: 800 clamp(26px, 5vw, 36px)/1.45 var(--sans); margin: 18px 0 10px; }
+  .date { color: var(--muted); font-size: 14px; margin: 0 0 30px; }
+  h2 { font: 800 clamp(21px, 3.6vw, 25px)/1.5 var(--sans); margin: 46px 0 14px; padding-top: 18px; border-top: 1px solid var(--line2); }
+  p { margin: 0 0 18px; color: var(--sub); }
+  .ex { background: var(--panel); border: 1px solid var(--line2); border-radius: 14px; padding: 14px 18px; margin: 0 0 18px; color: var(--sub); font-size: 15.5px; }
+  .ex code { font-family: ui-monospace, Consolas, monospace; color: var(--text); }
+  .shot { max-width: 260px; margin: 6px auto 22px; border-radius: 26px; padding: 7px; background: #0c0b10; border: 1.5px solid var(--line); }
+  .shot img { border-radius: 20px; }
+  .app { margin: 46px 0 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg2); padding: 20px 20px 22px; }
+  .app p { margin-bottom: 14px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1b1408; }
+  .care { color: var(--muted); font-size: 14.5px; margin-top: 16px; }
+  footer { border-top: 1px solid var(--line2); padding: 26px 0 42px; color: var(--muted); font-size: 14px; margin-top: 40px; }
+  footer a { color: var(--muted); margin-right: 16px; }
+  @media (max-width: 480px) { body { font-size: 16px; } .btn { width: 100%; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="crumb"><a href="../">カチマケ</a> › 収支表のつけ方</p>
+  <h1>パチンコ・パチスロの収支表のつけ方</h1>
+  <p class="date">2026年10月25日</p>
+
+  <p>収支表というと、きっちりした表を作らないといけない気がしますが、実際に要るものはそれほど多くありません。日付、店、機種、使った額、戻った額、遊んだ時間。この6つが毎回そろっていれば、あとから月の収支も回収率も時給も出せます。逆に、ここが抜けた日が混ざると、月末に計算しても数字が合わなくなります。</p>
+  <p>このページでは、紙でもエクセルでもアプリでも同じように使える、収支表のつけ方をまとめておきます。収支アプリのカチマケを作っている立場から、記録がずれやすいところも書いておきます。</p>
+
+  <h2>1回分の記録に入れる6つの項目</h2>
+  <p>いちばん大事なのは「使った額」と「戻った額」です。使った額は、その日に台へ入れたお金の合計です。千円札を何回入れたかを覚えておくのが難しければ、店に入る前と出たあとの財布の中身の差で数えると、ほぼ間違いません。戻った額は、景品を交換して受け取った額です。持ち玉やメダルを流した数ではなく、手元に戻ってきた金額を書きます。</p>
+  <p>この2つの差がその日の収支です。戻った額から使った額を引いて、プラスなら勝ち、マイナスなら負けになります。</p>
+  <p class="ex">例: 使った額 18,000円、戻った額 11,000円 → 収支 −7,000円</p>
+  <p>店と機種は、あとで「どこで負けているのか」を見るために入れます。毎回書くのが面倒なら、店は略称、機種はシリーズ名くらいで十分です。大事なのは毎回同じ書き方にすることで、同じ店を「駅前」と「駅前店」で書き分けてしまうと、集計で別の店として数えられてしまいます。</p>
+  <p>遊んだ時間は、つい省きがちな項目です。ただ、時間がないと時給が出せません。同じ −5,000円でも、1時間で負けた日と6時間打って負けた日では意味がまったく違います。入店と退店の時刻をスマホのメモに残しておくだけでも、あとで計算できます。</p>
+
+  <h2>貯玉・貯メダルと再プレイの入れ方</h2>
+  <p>収支表がずれる原因で多いのが、貯玉や貯メダルです。再プレイで出したメダルは、現金を入れていないので「使った額 0円」に見えます。そのまま書くと、実際より勝っているように見える記録が積み重なります。</p>
+  <p>ずれない入れ方は、再プレイした分を貸し出しの値段で円に直して、使った額に足すことです。20円スロットで再プレイを250枚使ったなら、250枚 × 20円 = 5,000円を使った額に入れます。反対に、その日に出たメダルを交換せずに貯メダルにしたなら、その枚数を同じ値段で円に直して、戻った額に足します。</p>
+  <p class="ex">例: 現金 10,000円 + 再プレイ 250枚(20円)= 使った額 15,000円<br>交換 8,000円 + 貯メダル 300枚(20円)= 戻った額 14,000円 → 収支 −1,000円</p>
+  <p>交換の率は地域や店によって違うので、交換したときに受け取る額は、貸し出しの値段で計算した額より少なくなることがあります。厳密にやるなら貯メダルは交換するときの値段で数える方法もありますが、どちらでもかまいません。どちらかに決めて、ずっと同じやり方で続けることのほうが大切です。途中で数え方を変えると、前の月と比べられなくなります。</p>
+
+  <h2>月ごとにまとめて見る</h2>
+  <p>1日ずつの収支は、勝った日と負けた日で大きく揺れます。1日の数字だけを見ていると、勝った日の印象ばかりが残りがちです。収支表は月ごとに合計して見るのがおすすめです。</p>
+  <p>月の合計で見るのは、収支の合計、使った額の合計、回数、それに回収率です。回収率は、戻った額の合計を使った額の合計で割って100をかけた数字で、100%を下回っていればその月はマイナスです。くわしい出し方は<a href="../kaishuritsu/">回収率の出し方</a>のページに書いています。</p>
+  <p>月の合計がそろってくると、曜日や店ごとの差も見えてきます。どの曜日に負けが集まっているか、どの店に行った日が多いかは、1日ずつの記録を眺めていても気づきにくいところです。</p>
+
+  <h2>エクセルやスプレッドシートで作るとき</h2>
+  <p>自分で表を作るなら、1行を1回分にして、A列から日付・店・機種・使った額・戻った額・遊んだ時間(分)の順に並べると扱いやすくなります。G列に収支、H列に時給を出すなら、2行目にはそれぞれ次の式を入れて、下の行へコピーします。</p>
+  <p class="ex"><code>G2: =E2-D2</code>(収支)<br><code>H2: =IF(F2>0, G2/(F2/60), "")</code>(時給)</p>
+  <p>月の合計は、日付の列で絞り込んでから合計を取るか、ピボットテーブルで月ごとにまとめると楽です。回収率は合計の戻った額を合計の使った額で割ります。1日ずつの回収率を平均するとずれるので、必ず合計どうしで割ってください。</p>
+  <p>表計算で続けるときの弱点は、外出先で入れにくいことです。帰り道にスマホで仮のメモを取り、家で表に写す、という二段構えにしている人も多いと思います。写し忘れた日が出てくるのは、たいていこの間です。</p>
+
+  <h2>続けるためのちょっとしたこと</h2>
+  <p>記録は、その日のうちに入れるのがいちばん確実です。次の日になると、使った額があいまいになります。勝った日だけ書いて負けた日を飛ばすと表の意味がなくなるので、書きたくない日ほど先に書いてしまうくらいでちょうどいいと思います。</p>
+  <p>それから、月の負けの上限を先に決めておくと、収支表がただの記録ではなく、使いすぎに早めに気づくための道具になります。月の途中で合計を見て、上限まであといくら残っているかを確かめるだけでも、数字の見え方が変わります。</p>
+
+  <div class="app">
+    <p>この記録を、スマホだけで続けられるようにしたのがカチマケです。使った額と戻った額をボタンで足していくと、その場で収支が出て、月の収支・回収率・時給がホームとカレンダーにまとまります。貯玉・貯メダルはレートと玉数を入れると円に直して数えます。月の負けの上限を決めておくと、上限の8割に近づいたときにホームでお知らせします。記録はスマホの中だけに保存します。</p>
+    <div class="shot"><img src="../img/3_calendar.jpg" alt="カチマケのカレンダー。日ごとの収支が並ぶ" width="540" height="960" loading="lazy"></div>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play でカチマケを見る</a>
+    <p class="care">Android 版です。18歳以上の方向けのアプリで、賭け事そのものは提供しません。パチンコ・パチスロは18歳未満、公営競技の投票は20歳未満の方は法律で禁止されています。<br>https://play.google.com/store/apps/details?id=jp.kachimake.app</p>
+  </div>
+</main>
+<footer>
+  <div class="wrap">
+    <a href="../">カチマケのトップ</a>
+    <a href="../kaishuritsu/">回収率の出し方</a>
+    <a href="https://kame6493-del.github.io/kachimake-site/privacy.html">プライバシーポリシー</a>
+    <a href="/">ほかのアプリ</a>
+  </div>
+</footer>
+</body>
+</html>
