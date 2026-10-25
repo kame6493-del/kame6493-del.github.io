@@ -421,7 +421,8 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 1, coins: 2 }, 10: { u: 1
   // ほしの たいほう: はいると ななめ上へ とばされて 大きな 穴を こえる
   S.cannon = (x, gap, o = {}) => {
     const top = o.top ?? 10;
-    const gap0 = gap; gap = Math.max(gap, 28); o = Object.assign({}, o, { power: Math.round((o.power || 1100) * Math.sqrt(gap / Math.max(8, gap0)) * 1.0) });
+    // 2026-10-25: o.fit = 強制スクロールの 面。穴を 28マスに すると 着く 前に 画面の 右はしで とめられて 落ちた(61 ほうき星の ながれ)→ 穴は そのまま、強さは o.power
+    const gap0 = gap; if (!o.fit) { gap = Math.max(gap, 28); o = Object.assign({}, o, { power: Math.round((o.power || 1100) * Math.sqrt(gap / Math.max(8, gap0)) * 1.0) }); }
     if (!L.cpNear(x)) L.put(x + 1, top - 1, 'C');
     if (o.hint) L.hint(x, 'ほしの たいほう', 'はいると とびだすよ(ジャンプで すぐ うてる)');
     L.ground(x, x + 3, top);
@@ -742,17 +743,21 @@ const SECRET_REWARD = { 3: { u: 1, coins: 3 }, 6: { u: 1, coins: 2 }, 10: { u: 1
   // しおの みちひき: ひくい ゆかの 道に 高い かべ。みちた ときに およいで かべを こえる。ひいた ときは ゆかの コイン
   S.tide = (x, w, o = {}) => {
     // 2026-10-25: かべを 2マス 高く(5→7・6→8)・しおは 2行目まで みちる。前は ひいた 時に 走りジャンプで かべに のれて、泳がずに こえられた
-    const lo = 10, hi2 = o.hi ?? 2;
-    if (o.hint) L.hint(x, 'しおの みちひき', 'みずが ふえたら およいで かべの 上へ');
+    // 2026-10-25 夕: o.lo = ひいた ときの 水面(ない ときは 10=水が なくなる)。o.curtains = 天井から 下りる くぐる かべ [dx, 下の 行](下を くぐる 道に コイン)。
+    //   71 しおかぜの どうくつは 床からの かべを やめて、しおが ひいても 水が のこる(lo 6)+ くぐる かべに。前は みちた 水面を はねて かべの 上を こえられた
+    const lo = o.lo ?? 10, hi2 = o.hi ?? 2;
+    if (o.hint) L.hint(x, 'しおの みちひき', o.curtains ? 'みずの 中の かべは 下を くぐろう' : 'みずが ふえたら およいで かべの 上へ');
     L.ground(x, x + w - 1, 10);
     (o.walls || []).forEach(([dx, h]) => L.fill(x + dx, x + dx + 1, 10 - Math.min(8, h + 2), 9, 'S'));
+    (o.curtains || []).forEach(([dx, bot]) => { L.fill(x + dx, x + dx + 1, 0, bot, 'S'); L.row(x + dx - 1, 9, 'oooo'); });
     (o.ledges || []).forEach(([dx, y, n]) => L.fill(x + dx, x + dx + (n || 3) - 1, y, y, 'S'));
     // (o.logs: 2026-10-25 から 置かない。しおと いっしょに うく 丸太の 上から、泳がずに かべを こえられた)
     (o.logs || []).forEach(dx => L.row(x + dx, 8, 'oo'));
     L.hazard(x, 'tide', { w, lo, hi: hi2, per: o.per || 9, phase: o.phase || 0 });
     L.row(x + 2, 9, 'o'.repeat(Math.min(6, w - 4)));
     (o.fugu || []).forEach(([dx, y]) => L.enemy(x + dx, 'fugu', { y }));
-    if (o.star) { const inWall = (o.walls || []).some(([dx, h]) => o.star[0] >= dx && o.star[0] <= dx + 1 && o.star[1] >= 10 - Math.min(8, h + 2)); L.put(x + o.star[0] - (inWall ? 2 : 0), inWall ? hi2 + 1 : o.star[1], '*'); }
+    if (o.star && o.curtains) L.put(x + o.star[0], o.star[1], '*');
+    else if (o.star) { const inWall = (o.walls || []).some(([dx, h]) => o.star[0] >= dx && o.star[0] <= dx + 1 && o.star[1] >= 10 - Math.min(8, h + 2)); L.put(x + o.star[0] - (inWall ? 2 : 0), inWall ? hi2 + 1 : o.star[1], '*'); }
     en(x, o.en);
     return x + w;
   };
@@ -2602,7 +2607,10 @@ const LEVELS = [
       x = S.moon(x, 2, { star: true });
       x = S.clouds(x, 5, { top: 9 });
       x = S.run(x, 6, { cp: 2 });
-      x = S.cannon(x, 9, {});
+      // 2026-10-25: 強制スクロールでは たいほうの 玉が 画面の 右はしで とめられる。前は 穴が 28マス(とび先 111)で、107マスで とめられて 落ちて 先へ 行けなかった。
+      // 穴を 12マスに、画面の 右の ほうから うって とめられても 落ちる 先に 雲の 足場(ほうき星を よけながら わたる)
+      L.row(x + 5, 9, '~~'); L.row(x + 9, 8, '~~'); L.row(x + 13, 9, '~~');
+      x = S.cannon(x, 12, { fit: true, power: 1250 });
       x = S.comets(x, 20, { high: true, blocks: true });
       x = S.rail(x, 16, { star: true, sp: 190 });
       x = S.run(x, 6, { cp: 2 });
@@ -2753,15 +2761,17 @@ const LEVELS = [
       x = S.run(x, 8, {});
       L.hint(x - 4, 'ぶくガニ', 'ふく あわは ふむと はねる。よこから だと おされる');
       x = S.crabs(x, 14, { coins: true });
-      x = S.tide(x, 22, { hint: true, walls: [[11, 5]], per: 9 });
+      // 2026-10-25 夕: しおの 4か所は 水が のこる(ひいて 6行目・みちて 3行目)+ 天井から 7行目まで 下りる くぐる かべ。かべの 下(8〜9行目)を 泳いで くぐる。
+      //   前は 床からの かべで、みちた 水面を はねて かべの 上を こえられた(water_skip_1025.js で 4か所 とも NG)。星は くぐる 道の 上に
+      x = S.tide(x, 22, { hint: true, curtains: [[11, 7]], lo: 6, hi: 3, per: 9 });
       x = S.run(x, 8, { cp: 2 });
       x = S.logs(x, 3, { water: true, hint: true });
-      x = S.tide(x, 30, { walls: [[8, 5], [20, 6]], logs: [14], fugu: [[16, 6]], per: 9, phase: 3 });
+      x = S.tide(x, 30, { curtains: [[8, 7], [20, 7]], logs: [14], fugu: [[16, 6]], lo: 6, hi: 3, per: 9, phase: 3 });
       x = S.run(x, 8, { cp: 3, en: [[5, 'bukugani']] });
-      x = S.tide(x, 28, { walls: [[6, 5], [16, 6]], ledges: [[21, 3, 4]], star: [22, 2], per: 10, phase: 1 });
+      x = S.tide(x, 28, { curtains: [[6, 7], [16, 7]], ledges: [[21, 3, 4]], star: [17, 8], lo: 6, hi: 3, per: 10, phase: 1 });
       x = S.crabs(x, 16, { coins: true, cp: 2 });
       x = S.logs(x, 4, { water: true, star: true });
-      x = S.tide(x, 26, { walls: [[12, 6]], fugu: [[6, 6]], star: [12, 3], per: 9, phase: 5 });
+      x = S.tide(x, 26, { curtains: [[12, 7]], fugu: [[6, 6]], star: [13, 8], lo: 6, hi: 3, per: 9, phase: 5 });
       x = S.run(x, 8, { cp: 2, en: [[5, 'bukugani']] });
       x = S.logs(x, 3, { water: true });
       x = S.run(x, 6, { coins: 4 });
@@ -3071,7 +3081,8 @@ const LEVELS = [
       const S = sections(L);
       let x = 0;
       x = S.start(x, { deco: 'torch' });
-      x = S.tide(x, 24, { walls: [[10, 6]], logs: [5, 16], star: [10, 3], per: 8 });
+      // 2026-10-25 夕: 71 と 同じく 水が のこる しお+くぐる かべ(前は かべに 壁ジャンプで のぼって 泳がずに こえられた。water_skip_1025.js で NG)。星は かべの 下
+      x = S.tide(x, 24, { curtains: [[10, 7]], logs: [5, 16], star: [11, 8], lo: 6, hi: 3, per: 8 });
       x = S.run(x, 6, { cp: 2 });
       x = S.grav(x, 'CFCFC', {});
       x = S.snowWall(x, {});

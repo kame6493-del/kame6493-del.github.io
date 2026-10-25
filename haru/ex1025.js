@@ -10,7 +10,7 @@
 const X25_LIVES_MAX = 25;
 const X25_COIN_STEP = 200, X25_COIN_STEP_PERK = 160;
 // 画面の 上の そとを 天井に する 面(0行目が 水か 石の 列だけ)
-const X25_CAP_TOP = new Set([6, 57, 60]);
+const X25_CAP_TOP = new Set([6, 57, 60, 71, 84]);  // 71・84(10/25 夕): しおの くぐる かべの 上を 画面の 上の そとから こえない
 
 // ---------------- 水の 面の 天井 ----------------
 {
@@ -112,4 +112,5 @@ if (typeof EN_DICT !== 'undefined') Object.assign(EN_DICT, {
   'コイン +10': 'Coins +10',
   '1UP は はじめて そろえた ときだけ。コイン +10': 'The 1UP is only for the first full set. Coins +10',
   'のこり MAX  +5000': 'Lives MAX  +5000',
+  'みずの 中の かべは 下を くぐろう': 'Dive under the walls in the water',
 });
