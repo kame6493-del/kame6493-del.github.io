@@ -4,70 +4,167 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか｜YURU 開発日記</title>
-<meta name="description" content=" 管理栄養士の国家試験には、科目ごとの足切りがありません。第40回の合格基準は、1問1点の200点満点で総合点120点以上、それだけです。介護福祉士のように「1科目でも0点なら不合格」という決まりはないので、極端な話、苦">
+<meta name="description" content="管理栄養士国家試験は科目ごとの足切りがなく、総合点120点以上/200点で合格(第40回)。第36〜40回の科目ごとの問題数は5回とも同じでした。苦手科目をどの順番で、どう解き直すかを書きます。">
 <link rel="canonical" href="https://kame6493-del.github.io/blog/kanri-nigate-kamoku.html">
-<meta name="apple-itunes-app" content="app-id=6818535389">
-<meta property="og:title" content="管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか">
-<meta property="og:description" content=" 管理栄養士の国家試験には、科目ごとの足切りがありません。第40回の合格基準は、1問1点の200点満点で総合点120点以上、それだけです。介護福祉士のように「1科目でも0点なら不合格」という決まりはないので、極端な話、苦">
+<meta name="theme-color" content="#b3282f">
+<link rel="icon" href="/img/nigatecho-icon.png">
 <meta property="og:type" content="article">
+<meta property="og:site_name" content="YURU">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか">
+<meta property="og:description" content="管理栄養士国家試験は科目ごとの足切りがなく、総合点120点以上/200点で合格(第40回)。第36〜40回の科目ごとの問題数は5回とも同じでした。苦手科目をどの順番で、どう解き直すかを書きます。">
+<meta property="og:url" content="https://kame6493-del.github.io/blog/kanri-nigate-kamoku.html">
+<meta property="og:image" content="https://kame6493-del.github.io/img/nigatecho-card.jpg">
+<meta property="og:image:width" content="480">
+<meta property="og:image:height" content="853">
+<meta property="article:published_time" content="2026-10-17">
+<meta property="article:modified_time" content="2026-10-17">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@apkderete">
+<meta name="apple-itunes-app" content="app-id=6818535389">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか","description":"管理栄養士国家試験は科目ごとの足切りがなく、総合点120点以上/200点で合格(第40回)。第36〜40回の科目ごとの問題数は5回とも同じでした。苦手科目をどの順番で、どう解き直すかを書きます。","inLanguage":"ja","datePublished":"2026-10-17","dateModified":"2026-10-17","image":["https://kame6493-del.github.io/img/nigatecho-card.jpg"],"author":{"@type":"Person","name":"YURU","url":"https://x.com/apkderete"},"publisher":{"@type":"Organization","name":"YURU","url":"https://kame6493-del.github.io/","logo":{"@type":"ImageObject","url":"https://kame6493-del.github.io/img/nigatecho-icon.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://kame6493-del.github.io/blog/kanri-nigate-kamoku.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"YURU","item":"https://kame6493-del.github.io/"},{"@type":"ListItem","position":2,"name":"開発日記","item":"https://kame6493-del.github.io/blog/"},{"@type":"ListItem","position":3,"name":"管理栄養士 苦手科目のつぶし方","item":"https://kame6493-del.github.io/blog/kanri-nigate-kamoku.html"}]}]}</script>
 <style>
-  :root { --bg: #f4f4f1; --card: #fff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc; --link: #1b3a8a; color-scheme: light; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #121211; --card: #1d1d1b; --ink: #f1f1ec; --sub: #a3a39c; --line: #33332f; --link: #8fb0ff; color-scheme: dark; } }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.85 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
-  article { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; }
-  h1 { font-size: 23px; line-height: 1.45; margin: 0 0 6px; }
-  .date { color: var(--sub); font-size: 13px; margin: 0 0 20px; }
-  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
-  a { color: var(--link); }
-  table { border-collapse: collapse; width: 100%; font-size: 14px; display: block; overflow-x: auto; }
-  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; white-space: nowrap; }
-  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
-  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
-  hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
-  nav { margin: 0 0 16px; font-size: 14px; }
-  img { max-width: 100%; height: auto; border-radius: 10px; }
-  .appbox { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 20px 0 0; font-size: 15px; line-height: 1.7; }
-  .appbox p { margin: 0 0 8px; }
-  .ab-t { font-weight: 700; }
-  .ab-b { display: inline-flex; padding: 11px; margin: -3px 0 -11px -11px; line-height: 0; }
-  .ab-b img { height: 44px; width: auto; border-radius: 0; }
-  .ab-u { font-size: 12.5px; word-break: break-all; } .ab-u a { color: var(--sub); }
-  .ab-a { font-size: 13px; color: var(--sub); }
-  .ab-tm { font-size: 11px; color: var(--sub); margin: 10px 0 0 !important; }
+:root{--bg:#fff;--card:#fff;--ink:#1d222b;--sub:#4a5262;--mute:#6b7383;--line:#eadede;--soft:#fbf0f0;--accent:#b3282f;--accent2:#c9363d;--link:#9e1f27;--hd:#b3282f;--hd-ink:#ffffff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#141213;--card:#1d1a1b;--ink:#eeeaea;--sub:#bdb4b5;--mute:#bdb4b5;--line:#3a3032;--soft:#251e1f;--accent:#ff8b90;--accent2:#ff8b90;--link:#ff9ea2;--hd:#5a1418;color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.9 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;letter-spacing:.02em;overflow-wrap:anywhere;word-break:normal;line-break:strict}
+a{color:var(--link);text-underline-offset:.18em;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+img{max-width:100%;height:auto}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+.sh{background:var(--hd);color:var(--hd-ink)}
+.sh-in{max-width:1040px;margin:0 auto;padding:0 16px;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sh-logo{display:flex;align-items:center;gap:10px;color:var(--hd-ink);text-decoration:none;font-weight:800;font-size:17px;letter-spacing:.04em}
+.sh-logo img{width:30px;height:30px;border-radius:8px;display:block}
+.sh nav{display:flex;gap:4px 16px;flex-wrap:wrap;justify-content:flex-end}
+.sh nav a{color:var(--hd-ink);opacity:.92;text-decoration:none;font-size:13.5px;padding:10px 0}
+.crumb{margin:22px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:0 .5em;font-size:13px;line-height:1.7;color:var(--mute)}
+.crumb li+li::before{content:"›";margin-right:.5em;color:var(--mute)}
+.crumb a{color:var(--mute);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.ah{padding:6px 0 4px}
+.ah h1{font-size:clamp(25px,5.4vw,34px);line-height:1.45;font-weight:800;letter-spacing:.01em;margin:14px 0 18px;text-wrap:pretty}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:13.5px;color:var(--mute);margin:0 0 6px}
+.meta time{font-variant-numeric:tabular-nums}
+.rt::before{content:"";display:inline-block;width:.9em;height:.9em;margin-right:.35em;vertical-align:-.1em;border:2px solid currentColor;border-radius:50%}
+.for{margin:18px 0 0;padding:14px 18px;border-radius:12px;background:var(--soft);font-size:15px;line-height:1.75;color:var(--sub)}
+.for b{display:block;font-size:12.5px;letter-spacing:.08em;color:var(--accent);margin-bottom:2px}
+.toc{margin:28px 0 8px;padding:18px 20px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.toc p{margin:0 0 6px;font-weight:800;font-size:14px;letter-spacing:.08em;color:var(--accent)}
+.toc ol{margin:0;padding:0;list-style:none;counter-reset:t}
+.toc li{counter-increment:t;position:relative;padding:5px 0 5px 2em;font-size:15px;line-height:1.6;border-top:1px dashed var(--line)}
+.toc li:first-child{border-top:0}
+.toc li::before{content:counter(t);position:absolute;left:0;top:6px;width:1.45em;height:1.45em;border-radius:50%;background:var(--accent);color:var(--bg);font-size:11.5px;line-height:1.45em;text-align:center;font-weight:700}
+.toc a{color:var(--ink);text-decoration:none}
+.toc a:hover{color:var(--link);text-decoration:underline}
+.prose{margin-top:30px}
+.prose>p,.prose li{color:var(--ink)}
+.prose p{margin:0 0 1.35em}
+.prose h2{font-size:clamp(21px,4.2vw,25px);line-height:1.5;font-weight:800;margin:2.6em 0 .9em;padding:.15em 0 .15em .75em;border-left:5px solid var(--accent);text-wrap:pretty}
+.prose h3{font-size:clamp(18px,3.6vw,20px);line-height:1.55;font-weight:800;margin:2em 0 .7em;padding-bottom:.35em;border-bottom:1px solid var(--line)}
+.prose h2+h3{margin-top:1.2em}
+.prose ul,.prose ol{margin:0 0 1.4em;padding-left:1.5em}
+.prose li{margin:.35em 0}
+.prose li::marker{color:var(--accent)}
+.prose hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+.prose strong,.prose b{font-weight:700;background:linear-gradient(transparent 62%,color-mix(in srgb,var(--accent2) 22%,transparent) 0)}
+.prose blockquote,.prose .ex,.prose .note,.prose .lead,.prose .disc{margin:0 0 1.4em;padding:14px 18px;background:var(--soft);border-left:4px solid var(--accent2);border-radius:0 10px 10px 0;font-size:15.5px;line-height:1.8;color:var(--sub)}
+.prose blockquote p:last-child{margin-bottom:0}
+.prose .ex code,.prose code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em;background:var(--soft);padding:.1em .35em;border-radius:5px;color:var(--ink)}
+.prose .ex code{background:transparent;padding:0}
+.prose pre{margin:0 0 1.4em;padding:14px 16px;background:#1b2130;color:#e6e9f0;border-radius:10px;overflow-x:auto;font-size:13.5px;line-height:1.6}
+.prose pre code{background:none;color:inherit;padding:0;font-size:inherit}
+.prose .src{display:block;margin:-.4em 0 1.4em;font-size:12.5px;line-height:1.7;color:var(--mute)}
+.prose .src a{color:var(--mute)}
+.tbl{margin:0 0 1.5em;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px}
+.tbl table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.6;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.tbl th{background:var(--soft);font-weight:700;white-space:nowrap;color:var(--ink)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td{white-space:nowrap}.tbl td:first-child{white-space:normal;min-width:7.5em}
+.prose figure{margin:1.8em 0}
+.prose figure img,.prose p>img{display:block;margin:0 auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+.prose figcaption{margin-top:8px;font-size:13px;line-height:1.6;color:var(--mute);text-align:center}
+.prose dl{margin:0 0 1.4em}.prose dt{font-weight:700}.prose dd{margin:0 0 .8em 0;color:var(--sub)}
+.app{margin:56px 0 0;border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
+.app-h{margin:0;padding:10px 20px;background:var(--soft);font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.app-in{display:grid;grid-template-columns:132px 1fr;gap:20px;padding:20px}
+.app-shot img{display:block;width:132px;height:auto;border-radius:16px;border:1px solid var(--line)}
+.app-n{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-weight:800;font-size:18px;line-height:1.4}
+.app-n img{width:36px;height:36px;border-radius:9px;border:1px solid var(--line)}
+.app-n small{display:block;font-weight:400;font-size:12.5px;color:var(--mute)}
+.app-lead{margin:0 0 10px;font-size:15.5px;line-height:1.75;font-weight:700;color:var(--ink)}
+.app-more{margin:0 0 14px;font-size:13.5px;line-height:1.75;color:var(--sub)}
+.app-btns{grid-column:2;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:-6px}
+.app-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--accent);color:var(--bg)!important;font-weight:700;font-size:15px;text-decoration:none;line-height:1.3;text-align:center}
+.app-btn.gp{background:#1a1a1a;color:#fff!important}
+.app-btn.ghost{background:transparent;color:var(--link)!important;border:1.5px solid var(--line)}
+.as-b{display:inline-flex;align-items:center;padding:6px 0;line-height:0}
+.as-b img{height:44px;width:auto;display:block}
+.app-u{margin:8px 0 0;font-size:12px;word-break:break-all;color:var(--mute)}
+.app-u a{color:var(--mute)}
+.app-c{margin:6px 0 0;font-size:13px;color:var(--sub)}
+.app-c b{color:var(--accent);margin-left:.4em}
+.app-f{margin:0;padding:12px 20px 16px;border-top:1px solid var(--line);font-size:12px;line-height:1.7;color:var(--mute)}
+.app-f p{margin:0 0 4px}
+.ua-ios .nc-and,.ua-and .nc-ios{display:none!important}
+.rel{margin:48px 0 0}
+.rel h2{font-size:18px;margin:0 0 12px;font-weight:800}
+.rel ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.rel a{display:block;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--ink);background:var(--card)}
+.rel a:hover{border-color:var(--accent)}
+.rel span{display:block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.04em}
+.rel strong{display:block;font-size:15.5px;line-height:1.55;margin-top:2px}
+.extra{margin-top:24px}
+.sf{margin-top:56px;background:var(--soft);border-top:1px solid var(--line);padding:28px 0 40px;font-size:13.5px;line-height:1.8;color:var(--sub)}
+.sf p{margin:0 0 8px}
+.sf nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:12px}
+.sf a{color:var(--sub)}
+@media (max-width:560px){body{font-size:16.5px;line-height:1.85}.app-in{grid-template-columns:96px 1fr;gap:14px;padding:16px}.app-shot img{width:96px;border-radius:12px}.app-btn{width:100%}.app-btns{grid-column:1/-1;margin-top:0}.sh nav a.opt{display:none}.toc{padding:16px}}
+@media print{.sh,.app,.rel,.extra,.sf,.toc{display:none}}
 </style>
 </head>
 <body>
-<main>
-<nav><a href="../">← アプリ一覧へ</a></nav>
+<header class="sh"><div class="sh-in"><a class="sh-logo" href="/"><img src="/img/nigatecho-icon-64.webp" alt="" width="30" height="30">YURU</a><nav aria-label="サイト"><a href="/blog/">記事</a><a href="/exam/" class=opt>試験別ガイド</a><a href="/#apps" class=opt>アプリ</a></nav></div></header>
+<main class="wrap">
 <article>
+<header class="ah">
+<ol class="crumb"><li><a href="/">YURU</a></li><li><a href="/blog/">開発日記</a></li><li aria-current="page">管理栄養士 苦手科目のつぶし方</li></ol>
 <h1>管理栄養士 国家試験の苦手科目のつぶし方。足切りがない試験で、どの科目から手をつけるか</h1>
-<p class="date">2026-10-17 ・ <a href="https://x.com/apkderete">@apkderete</a></p>
+<div class="meta"><time datetime="2026-10-17">2026年10月17日</time><span class="rt">約4分で読めます</span></div>
+<p class="for"><b>こんな人に</b>管理栄養士国家試験で、苦手な科目からどう手をつけるか迷っている人</p>
+</header>
+<nav class="toc" aria-label="目次"><p>目次</p><ol><li><a href="#s1">科目ごとの問題数は5回とも同じ</a></li><li><a href="#s2">どの苦手から手をつけるか</a></li><li><a href="#s3">つぶし方</a></li><li><a href="#s4">出どころ</a></li></ol></nav>
+<div class="prose">
+<!--prose-->
 <p>管理栄養士の国家試験には、科目ごとの足切りがありません。第40回の合格基準は、1問1点の200点満点で総合点120点以上、それだけです。介護福祉士のように「1科目でも0点なら不合格」という決まりはないので、極端な話、苦手な科目がひとつ残っていても、ほかで取れていれば受かります。</p>
 <p>だからこそ、苦手科目をどこまで追いかけるかは自分で決めることになります。過去問アプリを作るときに第36回から第40回の5回分、1,000問をデータに入れたので、そこから数えた事実をもとに、苦手科目のつぶし方を考えてみます。</p>
-<h2>科目ごとの問題数は5回とも同じ</h2>
+<h2 id="s1">科目ごとの問題数は5回とも同じ</h2>
 <p>まず、科目ごとの問題数は、第36回から第40回まで5回ともまったく同じでした。いちばん多いのは応用力試験の30問。次が人体の構造と機能及び疾病の成り立ちと、臨床栄養学の26問ずつ。食べ物と健康が25問、給食経営管理論が18問、社会・環境と健康、応用栄養学、公衆栄養学が16問ずつ、基礎栄養学が14問、栄養教育論が13問です。くわしくは<a href="kanri-subject-counts.html">前に書いた記事</a>に図で載せています。</p>
 <p>人体と臨床栄養学と応用力試験の3つを足すと82問で、200問の4割を超えます。いっぽう、栄養教育論と基礎栄養学を足しても27問です。</p>
 <p>問い方も揃っていて、「最も適当なのはどれか」が各回150問から156問。「誤っているのはどれか」は各回11問から14問と少なめでした。図や表を使う問題は第36回の14問から、第37回22問、第38回26問、第39回25問、第40回27問と増えています。</p>
-<h2>どの苦手から手をつけるか</h2>
+<h2 id="s2">どの苦手から手をつけるか</h2>
 <p>まず第40回を通しで解いて、科目ごとの正答率を出します。苦手科目というと「感覚的に嫌いな科目」を思い浮かべがちですが、ここでは数字で決めたほうが迷いません。</p>
 <p>足切りがない試験では、点の伸びしろは「問題数 ×(6割 − いまの正答率)」くらいで考えられます。たとえば、26問の臨床栄養学が正答率4割なら、6割まで上げると5点くらい増えます。13問の栄養教育論が同じ4割から6割になっても、増えるのは3点くらい。同じくらい苦手なら、問題数の多い科目から手をつけたほうが総合点は動きます。</p>
 <p>ただ、応用力試験だけは別に考えたほうがいいと思います。30問ありますが、中身は事例を読んで、臨床栄養学や給食経営管理論、公衆栄養学などの知識を使って答える問題です。応用力試験で間違えた問題は、その問題がどの科目の知識を聞いていたのかを確かめて、元の科目の苦手として数えるほうが、何を覚え直せばいいかがはっきりします。</p>
-<h2>つぶし方</h2>
+<h2 id="s3">つぶし方</h2>
 <p>苦手科目が決まったら、その科目だけを5回分まとめて解きます。人体なら26問 × 5回で130問。回の順に全科目を解くより、同じ科目を続けて解くほうが、毎回どのあたりが聞かれているかが見えてきます。</p>
 <p>間違えた問題には、なぜ間違えたかを短く書いておきます。知らなかったのか、知っていたのに読み違えたのか、2つまで絞って外したのか。知らなかった問題はテキストに戻る、読み違えた問題は問題文の読み方を直す、2択で外した問題は2つの選択肢の違いを言えるようにする、と直し方が変わるからです。「誤っているのはどれか」の問題は数が少ないぶん、「最も適当なのは」のつもりで読んでしまいやすいので、読み違いの欄に入っていないかも見ておくといいと思います。</p>
 <p>解き直しは、解説を読んだ直後ではなく、日を空けてからにします。直後に解くとほぼ必ず正解するので、覚えたかどうかがわかりません。翌日か数日後にもう一度解いて、2回続けて正解したらリストから外す。リストが短くなっていくのが、そのまま苦手がつぶれていく様子になります。</p>
 <p>最後に、古い回の問題には、その後に基準や制度が改められて今の正解と合わなくなっているものもあり得ます。気になる問題は新しいテキストや厚生労働省の資料で確かめてから覚えてください。</p>
 <p>第41回の試験は2027年2月28日(日)です。</p>
-<h2>出どころ</h2>
+<h2 id="s4">出どころ</h2>
 <p>第40回の合格基準(総合点120点以上/200点)と合格率は、厚生労働省の<a href="https://www.mhlw.go.jp/content/10904750/001677805.pdf">第40回管理栄養士国家試験の結果について(PDF)</a>、第41回の試験日は<a href="https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/kanrieiyoushi/">管理栄養士国家試験</a>のページから取りました。2026年10月17日に開いて確かめました。</p>
 <p>科目ごとの問題数、問い方、図や表の問題の数は、厚生労働省が公表した第36〜40回の問題(たとえば<a href="https://www.mhlw.go.jp/content/10900000/001663681.pdf">第40回午前の問題(PDF)</a>)をアプリに入れたデータから数えたものです。科目は問題冊子の区分に合わせ、問い方は問題文の言葉で数えました。伸びしろの計算は考え方を示すためのたとえで、実際の点の増え方を約束するものではありません。私の入力や数え方に誤りがある可能性はあります。気づいたことがあれば X(@apkderete)で教えてください。</p>
 <p>第40回の問題は、正答と解説つきで1問ずつ置いています。<a href="https://yurustudio.github.io/q/kanri/40/">管理栄養士 第40回の過去問と解説</a> / <a href="https://yurustudio.github.io/exam/kanri/">第41回の日程と合格基準</a></p>
 <p>iPhone の過去問アプリ「ニガテ帳」では、科目ごとの正答率が出て、科目をしぼって解くこともできます。</p>
+<!--/prose-->
+</div>
 </article>
-<aside class="appbox"><p class="ab-t">この試験の過去問を、間違えた問題だけ残して解ける iPhone アプリ</p><p>「ニガテ帳」で、介護福祉士・管理栄養士・理学療法士・社会福祉士・精神保健福祉士の過去問を解けます。間違えた問題は「苦手」として残り、2回続けて正解すると消えます。</p><a class="ab-b" href="https://apps.apple.com/jp/app/id6818535389?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5"><img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44"></a><p class="ab-u"><a href="https://apps.apple.com/jp/app/id6818535389?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5">apps.apple.com/jp/app/id6818535389</a></p><p class="ab-a">Android 版はテスト中です(<a href="/#tester">テスターの募集はこちら</a>)。</p><p class="ab-tm">Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。App Store は Apple Inc. のサービスマークです。</p></aside>
+<aside class="app" aria-label="アプリの案内"><p class="app-h">この記事を書いた人が作っている過去問アプリ</p><div class="app-in"><div class="app-shot"><img src="/img/nigatecho-1-300.webp" alt="ニガテ帳のホーム画面。あと何問わからないかと試験日までの日数が出る" width="300" height="650" loading="lazy" decoding="async"></div><div><p class="app-n"><img src="/img/nigatecho-icon-64.webp" alt="" width="36" height="36" loading="lazy"><span>ニガテ帳<small>管理栄養士</small></span></p><p class="app-lead">この試験の過去問を、間違えた問題だけ残して解ける iPhone アプリ</p><p class="app-more"><span class="app-c" data-exam="2027-02-28">第41回の試験は2027年2月28日<b></b></span><br>間違えた問題は「苦手」として残り、2回続けて正解すると消えます。</p></div><div class="app-btns"><a class="as-b nc-ios" href="https://apps.apple.com/jp/app/id6818535389?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5"><img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44" loading="lazy"></a><a class="app-btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">Android テスト版に参加</a></div></div><div class="app-f"><p class="nc-ios">App Store: <a href="https://apps.apple.com/jp/app/id6818535389?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5">apps.apple.com/jp/app/id6818535389</a></p><p class="nc-and">Android は先に<a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に入ってから参加してください。</p><p>Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。App Store は Apple Inc. のサービスマークです。</p></div></aside><script>(function(){var u=navigator.userAgent||"",r=document.documentElement;if(/iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1))r.classList.add("ua-ios");else if(/Android/.test(u))r.classList.add("ua-and");var c=document.querySelectorAll("[data-exam]");for(var i=0;i<c.length;i++){var d=Math.ceil((new Date(c[i].getAttribute("data-exam")+"T00:00:00+09:00")-Date.now())/864e5),n=c[i].querySelector("b");if(n&&d>0)n.textContent="あと"+d+"日";}})();</script>
+<section class="rel" aria-labelledby="rel-h"><h2 id="rel-h">あわせて読みたい</h2><ul><li><a href="/exam/kanri/kisotsu/"><span>管理栄養士</span><strong>管理栄養士国試、既卒の合格率と勉強の進め方</strong></a></li><li><a href="/blog/kisotsu-pass-rates.html"><span>国家試験</span><strong>国試5つで既卒の合格率を並べてみた</strong></a></li><li><a href="/blog/kanri-subject-counts.html"><span>管理栄養士</span><strong>管理栄養士国試、科目ごとの問題数は5回とも同じ</strong></a></li></ul></section>
+<div class="extra">
 <!--tester-box-->
 <aside class="testerbox" id="tester-box"><style>
 .testerbox{background:var(--card,#fff);border:1px solid var(--line,#e2e2dc);border-radius:16px;padding:18px 16px;margin:24px 0 0;font-size:15px;line-height:1.7;color:var(--ink,#1d1d1b)}
@@ -112,8 +209,14 @@
 </ul>
 </aside>
 <!--/tester-box-->
-<div class='admax' style='margin:48px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
-<div class="xfollow" style="margin:24px auto 8px;padding:8px 12px;max-width:560px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;font-size:14px;line-height:1.5;text-align:center"><style>@media print{.xfollow{display:none!important}}</style><span>新しいアプリやゲームの話は X で → <a href="https://x.com/apkderete" target="_blank" rel="noopener" style="color:inherit;font-weight:700">@apkderete</a></span><a href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener" style="display:inline-block;padding:4px 14px;border-radius:999px;background:#0f1419;color:#fff;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">X でフォロー</a></div>
+<div class='admax' style='margin:48px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#5f6672;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
+<div class="xfollow" style="margin:24px auto 8px;padding:8px 12px;max-width:560px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;font-size:14px;line-height:1.5;text-align:center"><style>@media print{.xfollow{display:none!important}}</style><span>新しいアプリやゲームの話は X で → <a href="https://x.com/apkderete" target="_blank" rel="noopener" style="color:inherit;font-weight:700">@apkderete</a></span><a href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener" style="display:inline-block;padding:4px 14px;border-radius:999px;background:#0f1419;color:#fff;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">X でフォロー</a></div><script>(function(){if(!window.MutationObserver)return;var t=function(){document.querySelectorAll("iframe:not([title])").forEach(function(f){f.title="広告";});};new MutationObserver(t).observe(document.body,{childList:true,subtree:true});})();</script>
+</div>
 </main>
+<footer class="sf"><div class="wrap">
+<nav aria-label="フッター"><a href="/">YURU のアプリ</a><a href="/exam/">国家試験ガイド</a><a href="/blog/">開発日記</a><a href="https://x.com/apkderete">X @apkderete</a></nav>
+<p>誤りに気づいたら <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a> までお知らせください。確認して直します。</p>
+<p>© 2026 YURU</p>
+</div></footer>
 </body>
 </html>

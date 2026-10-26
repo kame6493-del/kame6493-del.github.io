@@ -5,113 +5,179 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>競馬の収支のつけ方(年間・券種ごとの集計) | カチマケ</title>
 <meta name="description" content="馬券の収支は、レースごとに券種・購入額・払戻を1行ずつ残すと、年間の収支も券種ごとの集計もあとから出せます。返還金やWIN5の入れ方、1レースで複数の券種を買った日の書き方、スプレッドシートで券種別・年別に合計する式までまとめました。">
-<meta name="theme-color" content="#18161e">
 <link rel="canonical" href="https://yurustudio.github.io/kachimake/keiba-shushi/">
-<link rel="icon" href="../img/icon.png">
+<meta name="theme-color" content="#16264a">
+<link rel="icon" href="/kachimake/img/icon.png">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="カチマケ">
+<meta property="og:locale" content="ja_JP">
 <meta property="og:title" content="競馬の収支のつけ方(年間・券種ごとの集計)">
 <meta property="og:description" content="レースごと・券種ごとに1行。返還金とWIN5の入れ方、年間と券種別に合計するときの式。">
 <meta property="og:url" content="https://yurustudio.github.io/kachimake/keiba-shushi/">
 <meta property="og:image" content="https://yurustudio.github.io/kachimake/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="article:published_time" content="2026-10-26">
+<meta property="article:modified_time" content="2026-10-26">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "競馬の収支のつけ方(年間・券種ごとの集計)",
-  "inLanguage": "ja",
-  "datePublished": "2026-10-26",
-  "dateModified": "2026-10-26",
-  "author": { "@type": "Organization", "name": "YURU Studio" },
-  "publisher": { "@type": "Organization", "name": "YURU Studio" },
-  "image": "https://yurustudio.github.io/kachimake/img/og.jpg",
-  "mainEntityOfPage": "https://yurustudio.github.io/kachimake/keiba-shushi/"
-}
-</script>
+<meta name="twitter:site" content="@apkderete">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"競馬の収支のつけ方(年間・券種ごとの集計)","description":"馬券の収支は、レースごとに券種・購入額・払戻を1行ずつ残すと、年間の収支も券種ごとの集計もあとから出せます。返還金やWIN5の入れ方、1レースで複数の券種を買った日の書き方、スプレッドシートで券種別・年別に合計する式までまとめました。","inLanguage":"ja","datePublished":"2026-10-26","dateModified":"2026-10-26","image":["https://yurustudio.github.io/kachimake/img/og.jpg"],"author":{"@type":"Person","name":"YURU","url":"https://x.com/apkderete"},"publisher":{"@type":"Organization","name":"YURU","url":"https://yurustudio.github.io/","logo":{"@type":"ImageObject","url":"https://yurustudio.github.io/img/nigatecho-icon.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://yurustudio.github.io/kachimake/keiba-shushi/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"YURU","item":"https://yurustudio.github.io/"},{"@type":"ListItem","position":2,"name":"カチマケ","item":"https://yurustudio.github.io/kachimake/"},{"@type":"ListItem","position":3,"name":"競馬の収支のつけ方","item":"https://yurustudio.github.io/kachimake/keiba-shushi/"}]}]}</script>
 <style>
-  :root {
-    --bg: #18161e; --bg2: #211e29; --panel: #26222f; --line: rgba(240, 200, 110, .28); --line2: rgba(255, 255, 255, .09);
-    --gold: #c99a3e; --gold2: #f0c86e; --text: #f4f1ea; --sub: #d6d1de; --muted: #9a94a6;
-    --sans: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
-    color-scheme: dark;
-  }
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.95 var(--sans); overflow-x: hidden; }
-  a { color: var(--gold2); }
-  img { max-width: 100%; height: auto; display: block; }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
-  .crumb { padding: 22px 0 0; font-size: 14px; color: var(--muted); }
-  .crumb a { color: var(--muted); }
-  h1 { font: 800 clamp(26px, 5vw, 36px)/1.45 var(--sans); margin: 18px 0 10px; }
-  .date { color: var(--muted); font-size: 14px; margin: 0 0 30px; }
-  h2 { font: 800 clamp(21px, 3.6vw, 25px)/1.5 var(--sans); margin: 46px 0 14px; padding-top: 18px; border-top: 1px solid var(--line2); }
-  p { margin: 0 0 18px; color: var(--sub); }
-  .ex { background: var(--panel); border: 1px solid var(--line2); border-radius: 14px; padding: 14px 18px; margin: 0 0 18px; color: var(--sub); font-size: 15.5px; overflow-wrap: anywhere; }
-  .ex code { font-family: ui-monospace, Consolas, monospace; color: var(--text); }
-  .shot { max-width: 260px; margin: 6px auto 22px; border-radius: 26px; padding: 7px; background: #0c0b10; border: 1.5px solid var(--line); }
-  .shot img { border-radius: 20px; }
-  .app { margin: 46px 0 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg2); padding: 20px 20px 22px; }
-  .app p { margin-bottom: 14px; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1b1408; }
-  .care { color: var(--muted); font-size: 14.5px; margin-top: 16px; }
-  footer { border-top: 1px solid var(--line2); padding: 26px 0 42px; color: var(--muted); font-size: 14px; margin-top: 40px; }
-  footer a { color: var(--muted); margin-right: 16px; }
-  @media (max-width: 480px) { body { font-size: 16px; } .btn { width: 100%; } }
+:root{--bg:#fff;--card:#fff;--ink:#1d222b;--sub:#4a5262;--mute:#6b7383;--line:#dfe4ee;--soft:#eef2f9;--accent:#16264a;--accent2:#b8862b;--link:#1d4185;--hd:#16264a;--hd-ink:#f3d58e;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1424;--card:#141d33;--ink:#e8ecf4;--sub:#b4bccd;--mute:#b4bccd;--line:#26314d;--soft:#18223b;--accent:#e6bd63;--accent2:#e6bd63;--link:#f0cd7d;--hd:#0a1020;color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.9 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;letter-spacing:.02em;overflow-wrap:anywhere;word-break:normal;line-break:strict}
+a{color:var(--link);text-underline-offset:.18em;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+img{max-width:100%;height:auto}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+.sh{background:var(--hd);color:var(--hd-ink)}
+.sh-in{max-width:1040px;margin:0 auto;padding:0 16px;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sh-logo{display:flex;align-items:center;gap:10px;color:var(--hd-ink);text-decoration:none;font-weight:800;font-size:17px;letter-spacing:.04em}
+.sh-logo img{width:30px;height:30px;border-radius:8px;display:block}
+.sh nav{display:flex;gap:4px 16px;flex-wrap:wrap;justify-content:flex-end}
+.sh nav a{color:var(--hd-ink);opacity:.92;text-decoration:none;font-size:13.5px;padding:10px 0}
+.crumb{margin:22px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:0 .5em;font-size:13px;line-height:1.7;color:var(--mute)}
+.crumb li+li::before{content:"›";margin-right:.5em;color:var(--mute)}
+.crumb a{color:var(--mute);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.ah{padding:6px 0 4px}
+.ah h1{font-size:clamp(25px,5.4vw,34px);line-height:1.45;font-weight:800;letter-spacing:.01em;margin:14px 0 18px;text-wrap:pretty}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:13.5px;color:var(--mute);margin:0 0 6px}
+.meta time{font-variant-numeric:tabular-nums}
+.rt::before{content:"";display:inline-block;width:.9em;height:.9em;margin-right:.35em;vertical-align:-.1em;border:2px solid currentColor;border-radius:50%}
+.for{margin:18px 0 0;padding:14px 18px;border-radius:12px;background:var(--soft);font-size:15px;line-height:1.75;color:var(--sub)}
+.for b{display:block;font-size:12.5px;letter-spacing:.08em;color:var(--accent);margin-bottom:2px}
+.toc{margin:28px 0 8px;padding:18px 20px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.toc p{margin:0 0 6px;font-weight:800;font-size:14px;letter-spacing:.08em;color:var(--accent)}
+.toc ol{margin:0;padding:0;list-style:none;counter-reset:t}
+.toc li{counter-increment:t;position:relative;padding:5px 0 5px 2em;font-size:15px;line-height:1.6;border-top:1px dashed var(--line)}
+.toc li:first-child{border-top:0}
+.toc li::before{content:counter(t);position:absolute;left:0;top:6px;width:1.45em;height:1.45em;border-radius:50%;background:var(--accent);color:var(--bg);font-size:11.5px;line-height:1.45em;text-align:center;font-weight:700}
+.toc a{color:var(--ink);text-decoration:none}
+.toc a:hover{color:var(--link);text-decoration:underline}
+.prose{margin-top:30px}
+.prose>p,.prose li{color:var(--ink)}
+.prose p{margin:0 0 1.35em}
+.prose h2{font-size:clamp(21px,4.2vw,25px);line-height:1.5;font-weight:800;margin:2.6em 0 .9em;padding:.15em 0 .15em .75em;border-left:5px solid var(--accent);text-wrap:pretty}
+.prose h3{font-size:clamp(18px,3.6vw,20px);line-height:1.55;font-weight:800;margin:2em 0 .7em;padding-bottom:.35em;border-bottom:1px solid var(--line)}
+.prose h2+h3{margin-top:1.2em}
+.prose ul,.prose ol{margin:0 0 1.4em;padding-left:1.5em}
+.prose li{margin:.35em 0}
+.prose li::marker{color:var(--accent)}
+.prose hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+.prose strong,.prose b{font-weight:700;background:linear-gradient(transparent 62%,color-mix(in srgb,var(--accent2) 22%,transparent) 0)}
+.prose blockquote,.prose .ex,.prose .note,.prose .lead,.prose .disc{margin:0 0 1.4em;padding:14px 18px;background:var(--soft);border-left:4px solid var(--accent2);border-radius:0 10px 10px 0;font-size:15.5px;line-height:1.8;color:var(--sub)}
+.prose blockquote p:last-child{margin-bottom:0}
+.prose .ex code,.prose code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em;background:var(--soft);padding:.1em .35em;border-radius:5px;color:var(--ink)}
+.prose .ex code{background:transparent;padding:0}
+.prose pre{margin:0 0 1.4em;padding:14px 16px;background:#1b2130;color:#e6e9f0;border-radius:10px;overflow-x:auto;font-size:13.5px;line-height:1.6}
+.prose pre code{background:none;color:inherit;padding:0;font-size:inherit}
+.prose .src{display:block;margin:-.4em 0 1.4em;font-size:12.5px;line-height:1.7;color:var(--mute)}
+.prose .src a{color:var(--mute)}
+.tbl{margin:0 0 1.5em;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px}
+.tbl table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.6;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.tbl th{background:var(--soft);font-weight:700;white-space:nowrap;color:var(--ink)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td{white-space:nowrap}.tbl td:first-child{white-space:normal;min-width:7.5em}
+.prose figure{margin:1.8em 0}
+.prose figure img,.prose p>img{display:block;margin:0 auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+.prose figcaption{margin-top:8px;font-size:13px;line-height:1.6;color:var(--mute);text-align:center}
+.prose dl{margin:0 0 1.4em}.prose dt{font-weight:700}.prose dd{margin:0 0 .8em 0;color:var(--sub)}
+.app{margin:56px 0 0;border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
+.app-h{margin:0;padding:10px 20px;background:var(--soft);font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.app-in{display:grid;grid-template-columns:132px 1fr;gap:20px;padding:20px}
+.app-shot img{display:block;width:132px;height:auto;border-radius:16px;border:1px solid var(--line)}
+.app-n{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-weight:800;font-size:18px;line-height:1.4}
+.app-n img{width:36px;height:36px;border-radius:9px;border:1px solid var(--line)}
+.app-n small{display:block;font-weight:400;font-size:12.5px;color:var(--mute)}
+.app-lead{margin:0 0 10px;font-size:15.5px;line-height:1.75;font-weight:700;color:var(--ink)}
+.app-more{margin:0 0 14px;font-size:13.5px;line-height:1.75;color:var(--sub)}
+.app-btns{grid-column:2;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:-6px}
+.app-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--accent);color:var(--bg)!important;font-weight:700;font-size:15px;text-decoration:none;line-height:1.3;text-align:center}
+.app-btn.gp{background:#1a1a1a;color:#fff!important}
+.app-btn.ghost{background:transparent;color:var(--link)!important;border:1.5px solid var(--line)}
+.as-b{display:inline-flex;align-items:center;padding:6px 0;line-height:0}
+.as-b img{height:44px;width:auto;display:block}
+.app-u{margin:8px 0 0;font-size:12px;word-break:break-all;color:var(--mute)}
+.app-u a{color:var(--mute)}
+.app-c{margin:6px 0 0;font-size:13px;color:var(--sub)}
+.app-c b{color:var(--accent);margin-left:.4em}
+.app-f{margin:0;padding:12px 20px 16px;border-top:1px solid var(--line);font-size:12px;line-height:1.7;color:var(--mute)}
+.app-f p{margin:0 0 4px}
+.ua-ios .nc-and,.ua-and .nc-ios{display:none!important}
+.rel{margin:48px 0 0}
+.rel h2{font-size:18px;margin:0 0 12px;font-weight:800}
+.rel ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.rel a{display:block;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--ink);background:var(--card)}
+.rel a:hover{border-color:var(--accent)}
+.rel span{display:block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.04em}
+.rel strong{display:block;font-size:15.5px;line-height:1.55;margin-top:2px}
+.extra{margin-top:24px}
+.sf{margin-top:56px;background:var(--soft);border-top:1px solid var(--line);padding:28px 0 40px;font-size:13.5px;line-height:1.8;color:var(--sub)}
+.sf p{margin:0 0 8px}
+.sf nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:12px}
+.sf a{color:var(--sub)}
+@media (max-width:560px){body{font-size:16.5px;line-height:1.85}.app-in{grid-template-columns:96px 1fr;gap:14px;padding:16px}.app-shot img{width:96px;border-radius:12px}.app-btn{width:100%}.app-btns{grid-column:1/-1;margin-top:0}.sh nav a.opt{display:none}.toc{padding:16px}}
+@media print{.sh,.app,.rel,.extra,.sf,.toc{display:none}}
 </style>
 </head>
 <body>
+<header class="sh"><div class="sh-in"><a class="sh-logo" href="/kachimake/"><img src="/kachimake/img/icon-64.webp" alt="" width="30" height="30">カチマケ</a><nav aria-label="サイト"><a href="/kachimake/">カチマケ</a><a href="/" class=opt>ほかのアプリ</a></nav></div></header>
 <main class="wrap">
-  <p class="crumb"><a href="../">カチマケ</a> › 競馬の収支のつけ方</p>
-  <h1>競馬の収支のつけ方(年間・券種ごとの集計)</h1>
-  <p class="date">2026年10月26日</p>
+<article>
+<header class="ah">
+<ol class="crumb"><li><a href="/">YURU</a></li><li><a href="/kachimake/">カチマケ</a></li><li aria-current="page">競馬の収支のつけ方</li></ol>
+<h1>競馬の収支のつけ方(年間・券種ごとの集計)</h1>
+<div class="meta"><time datetime="2026-10-26">2026年10月26日</time><span class="rt">約4分で読めます</span></div>
+<p class="for"><b>こんな人に</b>競馬の収支を、年間や券種ごとにまとめたい人</p>
+</header>
+<nav class="toc" aria-label="目次"><p>目次</p><ol><li><a href="#s1">1行に入れるもの</a></li><li><a href="#s2">返還金とWIN5の入れ方</a></li><li><a href="#s3">年間の収支を出す</a></li><li><a href="#s4">券種ごとに集計する</a></li><li><a href="#s5">スプレッドシートで作るとき</a></li></ol></nav>
+<div class="prose">
+<!--prose-->
+<p>馬券の収支は、週末が終わった時点ではなんとなく覚えていても、ひと月たつと思い出せなくなります。大きな払戻があった日のことはよく覚えているのに、こまかく外れた日の購入額は記憶から抜けやすいからです。年間の収支を正しく出したいなら、その週のうちに1行ずつ残しておくしかありません。</p>
+<p>このページでは、あとから年間の収支と券種ごとの集計が出せる残し方をまとめます。予想や買い方の話は出てきません。記録のつけ方だけの話です。</p>
 
-  <p>馬券の収支は、週末が終わった時点ではなんとなく覚えていても、ひと月たつと思い出せなくなります。大きな払戻があった日のことはよく覚えているのに、こまかく外れた日の購入額は記憶から抜けやすいからです。年間の収支を正しく出したいなら、その週のうちに1行ずつ残しておくしかありません。</p>
-  <p>このページでは、あとから年間の収支と券種ごとの集計が出せる残し方をまとめます。予想や買い方の話は出てきません。記録のつけ方だけの話です。</p>
+<h2 id="s1">1行に入れるもの</h2>
+<p>1行は「1レースの1券種」にすると、あとで券種ごとに集計できます。入れるのは次の6つです。</p>
+<p class="ex">日付 / 競馬場 / レース(例: 11R) / 券種 / 購入額 / 払戻</p>
+<p>同じレースで3連複と単勝を買ったなら、2行に分けます。1行にまとめてしまうと、どちらの券種で払戻があったのかが残らず、券種ごとの集計ができなくなります。</p>
+<p>外れたレースも必ず入れます。払戻 0円の行がきちんと並んでいることが、収支表のいちばん大事なところです。当たったレースだけが残っている表は、見返すたびに実際より良い数字を見せてしまいます。</p>
 
-  <h2>1行に入れるもの</h2>
-  <p>1行は「1レースの1券種」にすると、あとで券種ごとに集計できます。入れるのは次の6つです。</p>
-  <p class="ex">日付 / 競馬場 / レース(例: 11R) / 券種 / 購入額 / 払戻</p>
-  <p>同じレースで3連複と単勝を買ったなら、2行に分けます。1行にまとめてしまうと、どちらの券種で払戻があったのかが残らず、券種ごとの集計ができなくなります。</p>
-  <p>外れたレースも必ず入れます。払戻 0円の行がきちんと並んでいることが、収支表のいちばん大事なところです。当たったレースだけが残っている表は、見返すたびに実際より良い数字を見せてしまいます。</p>
+<h2 id="s2">返還金とWIN5の入れ方</h2>
+<p>出走取消や競走除外で馬券の代金が戻ってきたときは、その分を購入額から引いておきます。払戻に入れてしまうと、払戻が実際より多く見え、回収率も高く出ます。</p>
+<p class="ex">例: 3連複を 3,000円買い、うち 600円分が取消で返還 → 購入額は 2,400円で記録</p>
+<p>WIN5 は5レースにまたがる馬券なので、レース欄には「WIN5」と書き、券種も WIN5 として別にしておくと集計で混ざりません。JRA の発表では、WIN5 は払い戻しに回る割合がほかの券種より低く決められています。券種ごとの払戻率は<a href="../kaishuritsu/">回収率の出し方</a>にまとめました。</p>
+<p>ネット投票を使っているなら、購入の履歴を週末ごとに見て写しておくのが確実です。履歴の画面がいつまで見られるかはサービスによって違うので、まとめて写そうとすると古い分が見られなくなっていることがあります。</p>
 
-  <h2>返還金とWIN5の入れ方</h2>
-  <p>出走取消や競走除外で馬券の代金が戻ってきたときは、その分を購入額から引いておきます。払戻に入れてしまうと、払戻が実際より多く見え、回収率も高く出ます。</p>
-  <p class="ex">例: 3連複を 3,000円買い、うち 600円分が取消で返還 → 購入額は 2,400円で記録</p>
-  <p>WIN5 は5レースにまたがる馬券なので、レース欄には「WIN5」と書き、券種も WIN5 として別にしておくと集計で混ざりません。JRA の発表では、WIN5 は払い戻しに回る割合がほかの券種より低く決められています。券種ごとの払戻率は<a href="../kaishuritsu/">回収率の出し方</a>にまとめました。</p>
-  <p>ネット投票を使っているなら、購入の履歴を週末ごとに見て写しておくのが確実です。履歴の画面がいつまで見られるかはサービスによって違うので、まとめて写そうとすると古い分が見られなくなっていることがあります。</p>
+<h2 id="s3">年間の収支を出す</h2>
+<p>年間の収支は、その年の払戻の合計から購入額の合計を引いた数字です。月ごとの収支を足しても同じになりますが、途中で書き方を変えた月があるとずれるので、1行ずつの記録から合計するほうが確実です。</p>
+<p>年間で見ると、1回の大きな払戻がどれくらい年の数字を動かしているかも分かります。その1回を除いた残りの収支も一度出してみると、ふだんの買い方の結果がよりはっきり見えます。</p>
 
-  <h2>年間の収支を出す</h2>
-  <p>年間の収支は、その年の払戻の合計から購入額の合計を引いた数字です。月ごとの収支を足しても同じになりますが、途中で書き方を変えた月があるとずれるので、1行ずつの記録から合計するほうが確実です。</p>
-  <p>年間で見ると、1回の大きな払戻がどれくらい年の数字を動かしているかも分かります。その1回を除いた残りの収支も一度出してみると、ふだんの買い方の結果がよりはっきり見えます。</p>
+<h2 id="s4">券種ごとに集計する</h2>
+<p>券種ごとに、購入額の合計、払戻の合計、収支を並べます。どの券種にいちばん多く使っているかは、収支の大きさより先に見ておきたいところです。使った額が多い券種ほど、年の数字への影響も大きくなります。</p>
+<p>回収率を券種ごとに出すときも、1レースずつの率を平均せず、券種ごとの払戻の合計を購入額の合計で割ります。理由は<a href="../kaishuritsu/">回収率の出し方</a>に書いています。</p>
 
-  <h2>券種ごとに集計する</h2>
-  <p>券種ごとに、購入額の合計、払戻の合計、収支を並べます。どの券種にいちばん多く使っているかは、収支の大きさより先に見ておきたいところです。使った額が多い券種ほど、年の数字への影響も大きくなります。</p>
-  <p>回収率を券種ごとに出すときも、1レースずつの率を平均せず、券種ごとの払戻の合計を購入額の合計で割ります。理由は<a href="../kaishuritsu/">回収率の出し方</a>に書いています。</p>
+<h2 id="s5">スプレッドシートで作るとき</h2>
+<p>A列から日付・競馬場・レース・券種・購入額・払戻の順に並べたとして、よく使う式を置いておきます。範囲は 2行目から1000行目にしています。</p>
+<p class="ex"><code>その年の購入額: =SUMIFS(E2:E1000, A2:A1000, "&gt;="&amp;DATE(2026,1,1), A2:A1000, "&lt;"&amp;DATE(2027,1,1))</code><br><code>その年の払戻: =SUMIFS(F2:F1000, A2:A1000, "&gt;="&amp;DATE(2026,1,1), A2:A1000, "&lt;"&amp;DATE(2027,1,1))</code><br><code>3連複の収支: =SUMIFS(F2:F1000, D2:D1000, "3連複") - SUMIFS(E2:E1000, D2:D1000, "3連複")</code><br><code>3連複の回収率(%): =SUMIFS(F2:F1000, D2:D1000, "3連複") / SUMIFS(E2:E1000, D2:D1000, "3連複") * 100</code></p>
+<p>券種の名前は、毎回同じ書き方にしてください。「3連複」と「三連複」が混ざると、式では別の券種として数えられます。入力のときに選ぶだけにしておくと、このずれは起きません。</p>
+<p>収支は、使ったお金の行き先を確かめるための数字です。年の始めに年間の上限を決めておき、月ごとに今どこにいるかを確かめるようにすると、記録がそのまま使いすぎに気づく道具になります。</p>
+<!--/prose-->
+</div>
+</article>
+<aside class="app" aria-label="アプリの案内"><p class="app-h">記録をつけるアプリ</p><div class="app-in"><div class="app-shot"><img src="/kachimake/img/9_bettype-300.webp" alt="カチマケの分析画面。券種ごとの収支の順位と曜日ごとの収支" width="300" height="533" loading="lazy" decoding="async"></div><div><p class="app-n"><img src="/kachimake/img/icon-64.webp" alt="" width="36" height="36" loading="lazy"><span>カチマケ<small>パチンコ・スロット・競馬の収支</small></span></p><p class="app-lead"><!--appdesc-->カチマケは、競馬・競輪・ボート・オートの記録で券種を選んで残せる収支アプリです。</p><p class="app-more">購入額と払戻をボタンで入れると、その場で収支が出ます。ホームには今月と今年の収支が並び、分析の画面では今月・3か月・今年・全期間を切り替えて、券種ごと・場所ごとの収支を順に並べて見られます(券種ごとの比較と長い期間の分析は完全版の機能です。回収率は選んだ期間全体の数字で出ます)。記録はスマホの中だけに保存します。<!--/appdesc--></p></div><div class="app-btns"><a class="app-btn" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play でカチマケを見る</a></div></div><div class="app-f"><p><!--care-->Android 版です。18歳以上の方向けの収支記録アプリで、予想や買い方の情報は載っていません。賭け事そのものも提供しません。公営競技の投票は20歳未満の方は法律で禁止されています。<br>https://play.google.com/store/apps/details?id=jp.kachimake.app<!--/care--></p></div></aside>
+<section class="rel" aria-labelledby="rel-h"><h2 id="rel-h">あわせて読みたい</h2><ul><li><a href="/kachimake/kaishuritsu/"><span>回収率</span><strong>回収率の出し方(パチスロ・競馬)</strong></a></li><li><a href="/kachimake/nenkan-shushi/"><span>年間収支</span><strong>パチンコ・スロット・競馬の年間収支と確定申告(国税庁のページの整理)</strong></a></li><li><a href="/kachimake/shushihyo/"><span>収支の記録</span><strong>パチンコ・パチスロの収支表のつけ方</strong></a></li></ul></section>
+<div class="extra">
 
-  <h2>スプレッドシートで作るとき</h2>
-  <p>A列から日付・競馬場・レース・券種・購入額・払戻の順に並べたとして、よく使う式を置いておきます。範囲は 2行目から1000行目にしています。</p>
-  <p class="ex"><code>その年の購入額: =SUMIFS(E2:E1000, A2:A1000, "&gt;="&amp;DATE(2026,1,1), A2:A1000, "&lt;"&amp;DATE(2027,1,1))</code><br><code>その年の払戻: =SUMIFS(F2:F1000, A2:A1000, "&gt;="&amp;DATE(2026,1,1), A2:A1000, "&lt;"&amp;DATE(2027,1,1))</code><br><code>3連複の収支: =SUMIFS(F2:F1000, D2:D1000, "3連複") - SUMIFS(E2:E1000, D2:D1000, "3連複")</code><br><code>3連複の回収率(%): =SUMIFS(F2:F1000, D2:D1000, "3連複") / SUMIFS(E2:E1000, D2:D1000, "3連複") * 100</code></p>
-  <p>券種の名前は、毎回同じ書き方にしてください。「3連複」と「三連複」が混ざると、式では別の券種として数えられます。入力のときに選ぶだけにしておくと、このずれは起きません。</p>
-  <p>収支は、使ったお金の行き先を確かめるための数字です。年の始めに年間の上限を決めておき、月ごとに今どこにいるかを確かめるようにすると、記録がそのまま使いすぎに気づく道具になります。</p>
-
-  <div class="app">
-    <p>カチマケは、競馬・競輪・ボート・オートの記録で券種を選んで残せる収支アプリです。購入額と払戻をボタンで入れると、その場で収支が出ます。ホームには今月と今年の収支が並び、分析の画面では今月・3か月・今年・全期間を切り替えて、券種ごと・場所ごとの収支を順に並べて見られます(券種ごとの比較と長い期間の分析は完全版の機能です。回収率は選んだ期間全体の数字で出ます)。記録はスマホの中だけに保存します。</p>
-    <div class="shot"><img src="../img/9_bettype.jpg" alt="カチマケの分析画面。券種ごとの収支の順位と曜日ごとの収支" width="540" height="960" loading="lazy"></div>
-    <a class="btn" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play でカチマケを見る</a>
-    <p class="care">Android 版です。18歳以上の方向けの収支記録アプリで、予想や買い方の情報は載っていません。賭け事そのものも提供しません。公営競技の投票は20歳未満の方は法律で禁止されています。<br>https://play.google.com/store/apps/details?id=jp.kachimake.app</p>
-  </div>
+</div>
 </main>
-<footer>
-  <div class="wrap">
-    <a href="../">カチマケのトップ</a>
-    <a href="../kaishuritsu/">回収率の出し方</a>
-    <a href="../nenkan-shushi/">年間収支と確定申告</a>
-    <a href="../shushihyo/">収支表のつけ方</a>
-    <a href="../koyaku/">小役カウンターの使い方</a>
-    <a href="/">ほかのアプリ</a>
-  </div>
-</footer>
+<footer class="sf"><div class="wrap">
+<nav aria-label="フッター"><a href="/kachimake/">カチマケのトップ</a><a href="https://kame6493-del.github.io/kachimake-site/privacy.html">プライバシーポリシー</a><a href="/">YURU のアプリ</a><a href="/exam/">国家試験ガイド</a><a href="/blog/">開発日記</a><a href="https://x.com/apkderete">X @apkderete</a></nav>
+<p>誤りに気づいたら <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a> までお知らせください。確認して直します。</p>
+<p>© 2026 YURU</p>
+</div></footer>
 </body>
 </html>

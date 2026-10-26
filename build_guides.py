@@ -6,6 +6,7 @@ import os
 import re
 
 import build_exam as B
+import article_kit as K
 
 e, BASE, ROOT = B.e, B.BASE, B.ROOT
 
@@ -415,6 +416,7 @@ def main():
     urls = []
     for fn in PAGES:
         url, html = fn()
+        html = K.from_guide(url, html)  # 2026-10-26 記事の共通のひな形に載せかえ
         d = os.path.join(ROOT, *url.replace(BASE + "/", "").strip("/").split("/"))
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:

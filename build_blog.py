@@ -125,17 +125,70 @@ PAGE = '''<!doctype html>
 '''
 
 
+# 記事ごとの「こんな人に」とパンくずの短い名前(2026-10-26 共通のひな形 article_kit に載せかえ)
+META = {
+    'closed-test-12': ('Google Play のクローズドテストで、テスター12人を集めないといけない個人開発の人', 'テスター12人の集め方'),
+    'promo-video-python': ('アプリの宣伝動画を、動画編集なしで作りたい個人開発の人', '宣伝動画を Python で作る'),
+    'kokushi-answer-numbers': ('国家試験で、正解の番号にかたよりがあるのか気になっている受験生', '正解の番号を数えた'),
+    'kaigo-subject-counts': ('介護福祉士国家試験で、科目ごとにどれだけ時間をかけるか決めたい人', '介護福祉士 科目ごとの問題数'),
+    'kanri-subject-counts': ('管理栄養士国家試験で、科目ごとにどれだけ時間をかけるか決めたい人', '管理栄養士 科目ごとの問題数'),
+    'shakai-subject-counts': ('社会福祉士国家試験で、科目ごとの問題数を先に知っておきたい人', '社会福祉士 科目ごとの問題数'),
+    'kisotsu-pass-rates': ('既卒で国家試験を受ける人、新卒との合格率の差を知りたい人', '国試5つの既卒の合格率'),
+    'seishin-subject-counts': ('精神保健福祉士国家試験で、科目ごとの問題数を先に知っておきたい人', '精神保健福祉士 科目ごとの問題数'),
+    'kaigo-39-kakomon': ('第39回の介護福祉士国家試験に向けて、過去問の解き方を決めたい人', '介護福祉士 第39回の過去問の回し方'),
+    'rinsho-gazou-mondai': ('臨床検査技師国家試験の、心電図や顕微鏡写真の問題が苦手な人', '臨床検査技師 画像問題の勉強'),
+    'kanri-nigate-kamoku': ('管理栄養士国家試験で、苦手な科目からどう手をつけるか迷っている人', '管理栄養士 苦手科目のつぶし方'),
+    'pt-kakomon-nankaibun': ('理学療法士国家試験の過去問を、何回分解けばいいか迷っている人', '理学療法士 過去問は何回分'),
+}
+ADS = ("<div class='admax' style='margin:48px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>\n"
+       '<div class="xfollow" style="margin:24px auto 8px;padding:8px 12px;max-width:560px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;font-size:14px;line-height:1.5;text-align:center"><style>@media print{.xfollow{display:none!important}}</style><span>新しいアプリやゲームの話は X で → <a href="https://x.com/apkderete" target="_blank" rel="noopener" style="color:inherit;font-weight:700">@apkderete</a></span><a href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener" style="display:inline-block;padding:4px 14px;border-radius:999px;background:#0f1419;color:#fff;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">X でフォロー</a></div>')
+EXAM_KEY = {'kaigo': 'kaigo', 'kanri': 'kanri', 'shakai': 'shakai', 'seishin': 'seishin', 'pt': 'pt', 'rinsho': 'rinsho'}
+
+
 def build():
+    import article_kit as K
+    K.ensure_icons()
     items = []
     for src, slug, date in POSTS:
         text = (SRC / src).read_text(encoding='utf-8')
         m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
-        title = re.search(r'title:\s*"(.*)"', m.group(1)).group(1)
+        fm = m.group(1)
+        title = re.search(r'title:\s*"(.*)"', fm).group(1)
         body_md = text[m.end():]
-        first = next(p for p in body_md.split('\n\n') if p.strip() and not p.startswith('#'))
-        desc = re.sub(r'\s+', ' ', first)[:110]
+        dm = re.search(r'^description:\s*(.+)$', fm, re.M)
+        if dm:
+            desc = dm.group(1).strip().strip('"')
+        else:
+            first = next(p for p in body_md.split('\n\n') if p.strip() and not p.startswith('#'))
+            desc = re.sub(r'\s+', ' ', first)[:110]
         body = markdown.markdown(body_md, extensions=['tables', 'fenced_code'])
-        (OUT / f'{slug}.html').write_text(PAGE.format(title=html.escape(title), desc=html.escape(desc), slug=slug, date=date, body=body, banner=banner(slug), app=app_box(slug)), encoding='utf-8', newline=chr(10))
+        body = body.replace('src="img/', 'src="/blog/img/')
+        key = slug.split('-')[0]
+        nig = bool(banner(slug))
+        theme = 'nigatecho' if nig else 'yuru'
+        im = re.search(r'src="(/blog/img/[^"]+\.png)"', body)
+        if im:
+            from PIL import Image
+            w, h = Image.open(HERE / im.group(1).lstrip('/')).size
+            og = (K.KAME + im.group(1), w, h, 'summary_large_image')
+        elif nig:
+            og = (K.KAME + '/img/nigatecho-card.jpg', 480, 853, 'summary')
+        else:
+            og = (K.KAME + '/img/kotsubin-icon.png', None, None, 'summary')
+        aud, short = META[slug]
+        if nig:
+            app = K.nigatecho_box(EXAM_KEY.get(key))
+        else:
+            app = ''
+        page = K.render(dict(
+            path=f'/blog/{slug}.html', canonical=f'https://kame6493-del.github.io/blog/{slug}.html', theme=theme,
+            title=title, seo_title=f'{title}｜YURU 開発日記', desc=desc,
+            og_image=og[0], og_w=og[1], og_h=og[2], twitter_card=og[3],
+            published=date, modified=date, audience=aud,
+            crumbs=[('YURU', '/'), ('開発日記', '/blog/'), (short, None)],
+            body=body, app=app, after=ADS, extra_head=banner(slug),
+        ))
+        (OUT / f'{slug}.html').write_text(page, encoding='utf-8', newline=chr(10))
         items.append((slug, title, date))
     import inject_tester_box  # 全記事に同じ Android テスター募集の箱を入れる
     return items

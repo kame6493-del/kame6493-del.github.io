@@ -6,48 +6,139 @@
 <title>クローズドテストの「12人」、3日でなんとか集まった話｜YURU 開発日記</title>
 <meta name="description" content=" パチンコと競馬の収支をつけるアプリ「カチマケ」を作っています。本業は社内SEで、アプリは夜と週末にちまちま作っているだけの人間です。">
 <link rel="canonical" href="https://kame6493-del.github.io/blog/closed-test-12.html">
+<meta name="theme-color" content="#1d3f5e">
+<link rel="icon" href="/img/nigatecho-icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="YURU">
+<meta property="og:locale" content="ja_JP">
 <meta property="og:title" content="クローズドテストの「12人」、3日でなんとか集まった話">
 <meta property="og:description" content=" パチンコと競馬の収支をつけるアプリ「カチマケ」を作っています。本業は社内SEで、アプリは夜と週末にちまちま作っているだけの人間です。">
-<meta property="og:type" content="article">
+<meta property="og:url" content="https://kame6493-del.github.io/blog/closed-test-12.html">
+<meta property="og:image" content="https://kame6493-del.github.io/img/kotsubin-icon.png">
+<meta property="article:published_time" content="2026-10-03">
+<meta property="article:modified_time" content="2026-10-03">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@apkderete">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"クローズドテストの「12人」、3日でなんとか集まった話","description":" パチンコと競馬の収支をつけるアプリ「カチマケ」を作っています。本業は社内SEで、アプリは夜と週末にちまちま作っているだけの人間です。","inLanguage":"ja","datePublished":"2026-10-03","dateModified":"2026-10-03","image":["https://kame6493-del.github.io/img/kotsubin-icon.png"],"author":{"@type":"Person","name":"YURU","url":"https://x.com/apkderete"},"publisher":{"@type":"Organization","name":"YURU","url":"https://kame6493-del.github.io/","logo":{"@type":"ImageObject","url":"https://kame6493-del.github.io/img/nigatecho-icon.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://kame6493-del.github.io/blog/closed-test-12.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"YURU","item":"https://kame6493-del.github.io/"},{"@type":"ListItem","position":2,"name":"開発日記","item":"https://kame6493-del.github.io/blog/"},{"@type":"ListItem","position":3,"name":"テスター12人の集め方","item":"https://kame6493-del.github.io/blog/closed-test-12.html"}]}]}</script>
 <style>
-  :root { --bg: #f4f4f1; --card: #fff; --ink: #1d1d1b; --sub: #6b6b66; --line: #e2e2dc; --link: #1b3a8a; color-scheme: light; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #121211; --card: #1d1d1b; --ink: #f1f1ec; --sub: #a3a39c; --line: #33332f; --link: #8fb0ff; color-scheme: dark; } }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.85 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
-  article { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; }
-  h1 { font-size: 23px; line-height: 1.45; margin: 0 0 6px; }
-  .date { color: var(--sub); font-size: 13px; margin: 0 0 20px; }
-  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
-  a { color: var(--link); }
-  table { border-collapse: collapse; width: 100%; font-size: 14px; display: block; overflow-x: auto; }
-  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; white-space: nowrap; }
-  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
-  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
-  hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
-  nav { margin: 0 0 16px; font-size: 14px; }
-  img { max-width: 100%; height: auto; border-radius: 10px; }
-  .appbox { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 20px 0 0; font-size: 15px; line-height: 1.7; }
-  .appbox p { margin: 0 0 8px; }
-  .ab-t { font-weight: 700; }
-  .ab-b { display: inline-flex; padding: 11px; margin: -3px 0 -11px -11px; line-height: 0; }
-  .ab-b img { height: 44px; width: auto; border-radius: 0; }
-  .ab-u { font-size: 12.5px; word-break: break-all; } .ab-u a { color: var(--sub); }
-  .ab-a { font-size: 13px; color: var(--sub); }
-  .ab-tm { font-size: 11px; color: var(--sub); margin: 10px 0 0 !important; }
+:root{--bg:#fff;--card:#fff;--ink:#1d222b;--sub:#4a5262;--mute:#6b7383;--line:#dde5ee;--soft:#eef4f9;--accent:#24527a;--accent2:#3a78ad;--link:#1f5a92;--hd:#1d3f5e;--hd-ink:#ffffff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#121619;--card:#191e23;--ink:#e9edf1;--sub:#b0b8c2;--mute:#b0b8c2;--line:#2c353f;--soft:#1d252d;--accent:#8db7e0;--accent2:#8db7e0;--link:#9cc4ec;--hd:#13293d;color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.9 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;letter-spacing:.02em;overflow-wrap:anywhere;word-break:normal;line-break:strict}
+a{color:var(--link);text-underline-offset:.18em;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+img{max-width:100%;height:auto}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+.sh{background:var(--hd);color:var(--hd-ink)}
+.sh-in{max-width:1040px;margin:0 auto;padding:0 16px;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sh-logo{display:flex;align-items:center;gap:10px;color:var(--hd-ink);text-decoration:none;font-weight:800;font-size:17px;letter-spacing:.04em}
+.sh-logo img{width:30px;height:30px;border-radius:8px;display:block}
+.sh nav{display:flex;gap:4px 16px;flex-wrap:wrap;justify-content:flex-end}
+.sh nav a{color:var(--hd-ink);opacity:.92;text-decoration:none;font-size:13.5px;padding:10px 0}
+.crumb{margin:22px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:0 .5em;font-size:13px;line-height:1.7;color:var(--mute)}
+.crumb li+li::before{content:"›";margin-right:.5em;color:var(--mute)}
+.crumb a{color:var(--mute);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.ah{padding:6px 0 4px}
+.ah h1{font-size:clamp(25px,5.4vw,34px);line-height:1.45;font-weight:800;letter-spacing:.01em;margin:14px 0 18px;text-wrap:pretty}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:13.5px;color:var(--mute);margin:0 0 6px}
+.meta time{font-variant-numeric:tabular-nums}
+.rt::before{content:"";display:inline-block;width:.9em;height:.9em;margin-right:.35em;vertical-align:-.1em;border:2px solid currentColor;border-radius:50%}
+.for{margin:18px 0 0;padding:14px 18px;border-radius:12px;background:var(--soft);font-size:15px;line-height:1.75;color:var(--sub)}
+.for b{display:block;font-size:12.5px;letter-spacing:.08em;color:var(--accent);margin-bottom:2px}
+.toc{margin:28px 0 8px;padding:18px 20px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.toc p{margin:0 0 6px;font-weight:800;font-size:14px;letter-spacing:.08em;color:var(--accent)}
+.toc ol{margin:0;padding:0;list-style:none;counter-reset:t}
+.toc li{counter-increment:t;position:relative;padding:5px 0 5px 2em;font-size:15px;line-height:1.6;border-top:1px dashed var(--line)}
+.toc li:first-child{border-top:0}
+.toc li::before{content:counter(t);position:absolute;left:0;top:6px;width:1.45em;height:1.45em;border-radius:50%;background:var(--accent);color:var(--bg);font-size:11.5px;line-height:1.45em;text-align:center;font-weight:700}
+.toc a{color:var(--ink);text-decoration:none}
+.toc a:hover{color:var(--link);text-decoration:underline}
+.prose{margin-top:30px}
+.prose>p,.prose li{color:var(--ink)}
+.prose p{margin:0 0 1.35em}
+.prose h2{font-size:clamp(21px,4.2vw,25px);line-height:1.5;font-weight:800;margin:2.6em 0 .9em;padding:.15em 0 .15em .75em;border-left:5px solid var(--accent);text-wrap:pretty}
+.prose h3{font-size:clamp(18px,3.6vw,20px);line-height:1.55;font-weight:800;margin:2em 0 .7em;padding-bottom:.35em;border-bottom:1px solid var(--line)}
+.prose h2+h3{margin-top:1.2em}
+.prose ul,.prose ol{margin:0 0 1.4em;padding-left:1.5em}
+.prose li{margin:.35em 0}
+.prose li::marker{color:var(--accent)}
+.prose hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+.prose strong,.prose b{font-weight:700;background:linear-gradient(transparent 62%,color-mix(in srgb,var(--accent2) 22%,transparent) 0)}
+.prose blockquote,.prose .ex,.prose .note,.prose .lead,.prose .disc{margin:0 0 1.4em;padding:14px 18px;background:var(--soft);border-left:4px solid var(--accent2);border-radius:0 10px 10px 0;font-size:15.5px;line-height:1.8;color:var(--sub)}
+.prose blockquote p:last-child{margin-bottom:0}
+.prose .ex code,.prose code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em;background:var(--soft);padding:.1em .35em;border-radius:5px;color:var(--ink)}
+.prose .ex code{background:transparent;padding:0}
+.prose pre{margin:0 0 1.4em;padding:14px 16px;background:#1b2130;color:#e6e9f0;border-radius:10px;overflow-x:auto;font-size:13.5px;line-height:1.6}
+.prose pre code{background:none;color:inherit;padding:0;font-size:inherit}
+.prose .src{display:block;margin:-.4em 0 1.4em;font-size:12.5px;line-height:1.7;color:var(--mute)}
+.prose .src a{color:var(--mute)}
+.tbl{margin:0 0 1.5em;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px}
+.tbl table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.6;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.tbl th{background:var(--soft);font-weight:700;white-space:nowrap;color:var(--ink)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td{white-space:nowrap}.tbl td:first-child{white-space:normal;min-width:7.5em}
+.prose figure{margin:1.8em 0}
+.prose figure img,.prose p>img{display:block;margin:0 auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+.prose figcaption{margin-top:8px;font-size:13px;line-height:1.6;color:var(--mute);text-align:center}
+.prose dl{margin:0 0 1.4em}.prose dt{font-weight:700}.prose dd{margin:0 0 .8em 0;color:var(--sub)}
+.app{margin:56px 0 0;border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
+.app-h{margin:0;padding:10px 20px;background:var(--soft);font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.app-in{display:grid;grid-template-columns:132px 1fr;gap:20px;padding:20px}
+.app-shot img{display:block;width:132px;height:auto;border-radius:16px;border:1px solid var(--line)}
+.app-n{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-weight:800;font-size:18px;line-height:1.4}
+.app-n img{width:36px;height:36px;border-radius:9px;border:1px solid var(--line)}
+.app-n small{display:block;font-weight:400;font-size:12.5px;color:var(--mute)}
+.app-lead{margin:0 0 10px;font-size:15.5px;line-height:1.75;font-weight:700;color:var(--ink)}
+.app-more{margin:0 0 14px;font-size:13.5px;line-height:1.75;color:var(--sub)}
+.app-btns{grid-column:2;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:-6px}
+.app-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--accent);color:var(--bg)!important;font-weight:700;font-size:15px;text-decoration:none;line-height:1.3;text-align:center}
+.app-btn.gp{background:#1a1a1a;color:#fff!important}
+.app-btn.ghost{background:transparent;color:var(--link)!important;border:1.5px solid var(--line)}
+.as-b{display:inline-flex;align-items:center;padding:6px 0;line-height:0}
+.as-b img{height:44px;width:auto;display:block}
+.app-u{margin:8px 0 0;font-size:12px;word-break:break-all;color:var(--mute)}
+.app-u a{color:var(--mute)}
+.app-c{margin:6px 0 0;font-size:13px;color:var(--sub)}
+.app-c b{color:var(--accent);margin-left:.4em}
+.app-f{margin:0;padding:12px 20px 16px;border-top:1px solid var(--line);font-size:12px;line-height:1.7;color:var(--mute)}
+.app-f p{margin:0 0 4px}
+.ua-ios .nc-and,.ua-and .nc-ios{display:none!important}
+.rel{margin:48px 0 0}
+.rel h2{font-size:18px;margin:0 0 12px;font-weight:800}
+.rel ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.rel a{display:block;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--ink);background:var(--card)}
+.rel a:hover{border-color:var(--accent)}
+.rel span{display:block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.04em}
+.rel strong{display:block;font-size:15.5px;line-height:1.55;margin-top:2px}
+.extra{margin-top:24px}
+.sf{margin-top:56px;background:var(--soft);border-top:1px solid var(--line);padding:28px 0 40px;font-size:13.5px;line-height:1.8;color:var(--sub)}
+.sf p{margin:0 0 8px}
+.sf nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:12px}
+.sf a{color:var(--sub)}
+@media (max-width:560px){body{font-size:16.5px;line-height:1.85}.app-in{grid-template-columns:96px 1fr;gap:14px;padding:16px}.app-shot img{width:96px;border-radius:12px}.app-btn{width:100%}.app-btns{grid-column:1/-1;margin-top:0}.sh nav a.opt{display:none}.toc{padding:16px}}
+@media print{.sh,.app,.rel,.extra,.sf,.toc{display:none}}
 </style>
 </head>
 <body>
-<main>
-<nav><a href="../">← アプリ一覧へ</a></nav>
+<header class="sh"><div class="sh-in"><a class="sh-logo" href="/"><img src="/img/nigatecho-icon-64.webp" alt="" width="30" height="30">YURU</a><nav aria-label="サイト"><a href="/blog/">記事</a><a href="/exam/" class=opt>試験別ガイド</a><a href="/#apps" class=opt>アプリ</a></nav></div></header>
+<main class="wrap">
 <article>
+<header class="ah">
+<ol class="crumb"><li><a href="/">YURU</a></li><li><a href="/blog/">開発日記</a></li><li aria-current="page">テスター12人の集め方</li></ol>
 <h1>クローズドテストの「12人」、3日でなんとか集まった話</h1>
-<p class="date">2026-10-03 ・ <a href="https://x.com/apkderete">@apkderete</a></p>
+<div class="meta"><time datetime="2026-10-03">2026年10月3日</time><span class="rt">約5分で読めます</span></div>
+<p class="for"><b>こんな人に</b>Google Play のクローズドテストで、テスター12人を集めないといけない個人開発の人</p>
+</header>
+
+<div class="prose">
+<!--prose-->
 <p>パチンコと競馬の収支をつけるアプリ「カチマケ」を作っています。本業は社内SEで、アプリは夜と週末にちまちま作っているだけの人間です。</p>
 <p>アプリ自体はできたのに、Google Play に出そうとしたところで止まりました。新しく作った個人アカウントは、「12人以上のテスターが14日間続けて参加したクローズドテスト」を済ませないと本番に出せないんですね。これを作り終わってから知りました。12人って、誰に頼めばいいのか全然わからない。</p>
 <p>結果だけ先に書くと、3日で12人そろいました。ただ、最初の2日はかなり遠回りしていて、3日目に場所を変えたら半日で片づいた、というのが正直なところです。同じところで止まっている人の役に立てばと思って、その3日間を書いておきます。</p>
-<h2>1日目と2日目は X でがんばっていた</h2>
+<h2 id="s1">1日目と2日目は X でがんばっていた</h2>
 <p>最初は X でどうにかしようとしていました。「#相互テスト」や「クローズドテスト テスター」で最新順に検索すると、同じように困っている個人開発者が毎日何人も見つかります。そこに片っぱしから「相互でお願いできますか」と声をかけていきました。</p>
 <p>最初は声をかけるだけでした。これは返事こそもらえても、本当に入ってくれるかは半々くらい。途中から、相手の Google グループに入って、テスト参加のページで「テスターになる」まで押してから、「入りました、よければこちらも」と送るようにしました。こうすると、最初の2人は数時間で「こちらも入りました」と返してくれました。先に手を動かしたのが文面から伝わるんだと思います。</p>
 <p>それでも2日かけて、自分以外で5〜6人。12人まではまだ半分です。</p>
@@ -61,7 +152,7 @@
 </ul>
 <p>これは募集ページに「うまく参加できないとき」として書き足しました。それ以降は同じ質問が減っています。</p>
 <p>ついでに、宣伝の投稿は本当に見られません。アプリの紹介をリンク付きで投稿しても、1本あたり10〜20回しか表示されませんでした。ずんだもんに紹介してもらう動画を TikTok にも出してみたものの、パチンコの話だったのが良くなかったのか、再生は0回のまま。一方で、固定にしていた相互テストの募集だけは300回近く見られていました。テスター集めは「宣伝」じゃなくて「同じ立場の人との交換」なんだな、とここで腹をくくりました。</p>
-<h2>3日目、Discord に移ったら半日で終わった</h2>
+<h2 id="s2">3日目、Discord に移ったら半日で終わった</h2>
 <p>2日目の夜には、X の検索で見つかる人にはほぼ声をかけ終わっていました。どうしようかと思っていたら、X で「Androidクローズドテスト攻略組」という Discord のコミュニティを紹介している投稿を見つけました。クローズドテストの12人集めのためだけにある場所で、1,700人以上が入っています。</p>
 <p>入るまでにも少し手間取っています。久しぶりに開いた Discord のアカウントでメールでの本人確認を求められて、その確認メールがなかなか見つからない。なんとか片づけて、入れたのは夕方でした。</p>
 <p>入ってからやったのは、ほぼこれだけです。</p>
@@ -73,7 +164,7 @@
 <p>ひとつ引っかかったのが、最初の募集が自動で弾かれたことです。X のときの癖で、テスト参加のページ(play.google.com/apps/testing/...)のリンクを載せていたら、「ウェブで参加ではなく、共通の Google グループを使ってください」と止められました。ここでは、共通のグループを自分のアプリのテスターに登録して、Play ストアのリンクだけを載せるのが決まりなんですね。Play Console でグループを足すと審査に回りますが、自分の場合は2時間もかからずに通りました。</p>
 <p>あとは待つだけでした。夕方に募集を出して、その日の夜までに5人がカチマケを入れてくれています。X で2日かけた人数を、半日で超えました。中には「競馬やるので使わせてもらいます」と言ってくれた人もいて、テスターというより最初のユーザーができた感じで、正直かなりうれしかったです。</p>
 <p>その日の夜に Play Console を開いたら、「12人以上のテスターにオプトインしてもらう」のところにチェックが付いていました。</p>
-<h2>やってみて思ったこと</h2>
+<h2 id="s3">やってみて思ったこと</h2>
 <p>いちばん大きかったのは、「どこで頼むか」でした。X で検索して一人ずつ声をかけるのも無駄ではなかったんですが、同じ目的の人が集まっている場所があるなら、最初からそこに行けばよかったです。</p>
 <p>あと、相互テストは約束です。入れてもらったアプリは、こちらも14日間スマホに残しておく必要があります。自分の場合は十数本になりそうなので、スマホの容量は空けておいたほうがよさそうです。</p>
 <p>ここから14日間、誰も抜けずに続けば本番に出せます。申請までいけたら、また続きを書きます。</p>
@@ -83,7 +174,12 @@
 <li>カチマケ: https://kame6493-del.github.io/kachimake-site/</li>
 <li>作っている人の X: https://x.com/apkderete</li>
 </ul>
+<!--/prose-->
+</div>
 </article>
+
+<section class="rel" aria-labelledby="rel-h"><h2 id="rel-h">あわせて読みたい</h2><ul><li><a href="/blog/android-testers-6apps.html"><span>お知らせ</span><strong>Android のテスターを探しています</strong></a></li><li><a href="/blog/promo-video-python.html"><span>開発日記</span><strong>動画編集ができないので、宣伝動画を Python で作ることにした</strong></a></li></ul></section>
+<div class="extra">
 <!--tester-box-->
 <aside class="testerbox" id="tester-box"><style>
 .testerbox{background:var(--card,#fff);border:1px solid var(--line,#e2e2dc);border-radius:16px;padding:18px 16px;margin:24px 0 0;font-size:15px;line-height:1.7;color:var(--ink,#1d1d1b)}
@@ -128,8 +224,14 @@
 </ul>
 </aside>
 <!--/tester-box-->
-<div class='admax' style='margin:48px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#8a8f98;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
-<div class="xfollow" style="margin:24px auto 8px;padding:8px 12px;max-width:560px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;font-size:14px;line-height:1.5;text-align:center"><style>@media print{.xfollow{display:none!important}}</style><span>新しいアプリやゲームの話は X で → <a href="https://x.com/apkderete" target="_blank" rel="noopener" style="color:inherit;font-weight:700">@apkderete</a></span><a href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener" style="display:inline-block;padding:4px 14px;border-radius:999px;background:#0f1419;color:#fff;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">X でフォロー</a></div>
+<div class='admax' style='margin:48px auto 8px;text-align:center;min-height:250px'><p style='font-size:11px;color:#5f6672;margin:0 0 4px'>広告</p><script src='https://adm.shinobi.jp/o/72f5aae4c08445e3e0200af63f4ad85c'></script></div>
+<div class="xfollow" style="margin:24px auto 8px;padding:8px 12px;max-width:560px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;font-size:14px;line-height:1.5;text-align:center"><style>@media print{.xfollow{display:none!important}}</style><span>新しいアプリやゲームの話は X で → <a href="https://x.com/apkderete" target="_blank" rel="noopener" style="color:inherit;font-weight:700">@apkderete</a></span><a href="https://x.com/intent/follow?screen_name=apkderete" target="_blank" rel="noopener" style="display:inline-block;padding:4px 14px;border-radius:999px;background:#0f1419;color:#fff;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">X でフォロー</a></div><script>(function(){if(!window.MutationObserver)return;var t=function(){document.querySelectorAll("iframe:not([title])").forEach(function(f){f.title="広告";});};new MutationObserver(t).observe(document.body,{childList:true,subtree:true});})();</script>
+</div>
 </main>
+<footer class="sf"><div class="wrap">
+<nav aria-label="フッター"><a href="/">YURU のアプリ</a><a href="/exam/">国家試験ガイド</a><a href="/blog/">開発日記</a><a href="https://x.com/apkderete">X @apkderete</a></nav>
+<p>誤りに気づいたら <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a> までお知らせください。確認して直します。</p>
+<p>© 2026 YURU</p>
+</div></footer>
 </body>
 </html>
