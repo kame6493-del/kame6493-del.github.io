@@ -537,14 +537,20 @@ EXAMS = [
 ]
 
 # 受験生の質問に答える小ページ(build_guides.py が書き出す)。試験ページと一覧の両方から張る
-GUIDES = {"kanri": [("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方")],
+GUIDES = {"kanri": [("/exam/kanri/shutsugan/", "第41回の出願(11月2日〜12月4日)と受験資格・実務経験の年数"),
+                    ("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方")],
           "shakai": [("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
-                     ("/exam/shakai/kisotsu/", "既卒の合格率(第36〜38回)と、もう一度受ける人の進め方")],
+                     ("/exam/shakai/kisotsu/", "既卒の合格率(第36〜38回)と、もう一度受ける人の進め方"),
+                     ("/exam/shakai/tojitsu/", "第39回の受験票と当日の持ち物・時間割"),
+                     ("/exam/seishin/kyotsu-menjo/", "精神保健福祉士の登録者が受けるときの共通科目の免除")],
           "kaigo": [("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番"),
-                    ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第36〜38回")],
+                    ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第36〜38回"),
+                    ("/exam/kaigo/part/", "パート合格のしくみ。A・B・Cの基準点と免除の期間"),
+                    ("/exam/kaigo/tojitsu/", "第39回の受験票と当日の持ち物・時間割")],
           "pt": [("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")],
           "rinsho": [("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")],
-          "seishin": [("/exam/seishin/kisotsu/", "既卒の合格率(第26〜28回)と、もう一度受ける人の進め方")]}
+          "seishin": [("/exam/seishin/kisotsu/", "既卒の合格率(第26〜28回)と、もう一度受ける人の進め方"),
+                      ("/exam/seishin/kyotsu-menjo/", "社会福祉士の登録者が受けるときの共通科目の免除(48問になる)")]}
 
 
 ORDER_HUB = ["kaigo", "shakai", "seishin", "kanri", "pt", "rinsho"]

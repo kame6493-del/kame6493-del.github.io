@@ -171,6 +171,11 @@ REGISTRY = [
     dict(path="/blog/kanri-subject-counts.html", theme="nigatecho", label="管理栄養士", title="管理栄養士国試、科目ごとの問題数は5回とも同じ", tags={"kanri", "kamoku"}),
     dict(path="/blog/shakai-subject-counts.html", theme="nigatecho", label="社会福祉士", title="社会福祉士国試、19科目の問題数は6問か9問", tags={"shakai", "kamoku"}),
     dict(path="/blog/seishin-subject-counts.html", theme="nigatecho", label="精神保健福祉士", title="精神保健福祉士国試、18科目の問題数は6問か9問", tags={"seishin", "kamoku"}),
+    dict(path="/exam/kaigo/part/", theme="nigatecho", label="介護福祉士", title="介護福祉士国試のパート合格のしくみ。A・B・Cの科目と基準点、免除が続く期間", tags={"kaigo", "kamoku"}),
+    dict(path="/exam/kaigo/tojitsu/", theme="nigatecho", label="介護福祉士", title="第39回介護福祉士国試の受験票と当日の持ち物・時間割", tags={"kaigo", "tojitsu"}),
+    dict(path="/exam/seishin/kyotsu-menjo/", theme="nigatecho", label="精神保健福祉士・社会福祉士", title="社会福祉士・精神保健福祉士の共通科目の免除。何問になり、合格点はどう変わるか", tags={"seishin", "shakai", "kamoku"}),
+    dict(path="/exam/kanri/shutsugan/", theme="nigatecho", label="管理栄養士", title="第41回管理栄養士国試の出願は12月4日まで。受験資格(実務経験の年数)と出す書類", tags={"kanri", "kisotsu"}),
+    dict(path="/exam/shakai/tojitsu/", theme="nigatecho", label="社会福祉士", title="第39回社会福祉士国試の受験票と当日の持ち物・時間割", tags={"shakai", "tojitsu"}),
     dict(path="/blog/kokushi-answer-numbers.html", theme="nigatecho", label="国家試験", title="国家試験の「正解の番号」を数えてみた", tags={"kaigo", "kanri", "rinsho", "pt"}),
     # 開発日記
     dict(path="/blog/closed-test-12.html", theme="yuru", label="開発日記", title="クローズドテストの「12人」、3日でなんとか集まった話", tags={"dev", "tester"}),
