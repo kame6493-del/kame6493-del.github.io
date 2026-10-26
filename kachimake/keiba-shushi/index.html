@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>競馬の収支のつけ方(年間・券種ごとの集計) | カチマケ</title>
+<meta name="description" content="馬券の収支は、レースごとに券種・購入額・払戻を1行ずつ残すと、年間の収支も券種ごとの集計もあとから出せます。返還金やWIN5の入れ方、1レースで複数の券種を買った日の書き方、スプレッドシートで券種別・年別に合計する式までまとめました。">
+<meta name="theme-color" content="#18161e">
+<link rel="canonical" href="https://yurustudio.github.io/kachimake/keiba-shushi/">
+<link rel="icon" href="../img/icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="カチマケ">
+<meta property="og:title" content="競馬の収支のつけ方(年間・券種ごとの集計)">
+<meta property="og:description" content="レースごと・券種ごとに1行。返還金とWIN5の入れ方、年間と券種別に合計するときの式。">
+<meta property="og:url" content="https://yurustudio.github.io/kachimake/keiba-shushi/">
+<meta property="og:image" content="https://yurustudio.github.io/kachimake/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "競馬の収支のつけ方(年間・券種ごとの集計)",
+  "inLanguage": "ja",
+  "datePublished": "2026-10-26",
+  "dateModified": "2026-10-26",
+  "author": { "@type": "Organization", "name": "YURU Studio" },
+  "publisher": { "@type": "Organization", "name": "YURU Studio" },
+  "image": "https://yurustudio.github.io/kachimake/img/og.jpg",
+  "mainEntityOfPage": "https://yurustudio.github.io/kachimake/keiba-shushi/"
+}
+</script>
+<style>
+  :root {
+    --bg: #18161e; --bg2: #211e29; --panel: #26222f; --line: rgba(240, 200, 110, .28); --line2: rgba(255, 255, 255, .09);
+    --gold: #c99a3e; --gold2: #f0c86e; --text: #f4f1ea; --sub: #d6d1de; --muted: #9a94a6;
+    --sans: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.95 var(--sans); overflow-x: hidden; }
+  a { color: var(--gold2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .crumb { padding: 22px 0 0; font-size: 14px; color: var(--muted); }
+  .crumb a { color: var(--muted); }
+  h1 { font: 800 clamp(26px, 5vw, 36px)/1.45 var(--sans); margin: 18px 0 10px; }
+  .date { color: var(--muted); font-size: 14px; margin: 0 0 30px; }
+  h2 { font: 800 clamp(21px, 3.6vw, 25px)/1.5 var(--sans); margin: 46px 0 14px; padding-top: 18px; border-top: 1px solid var(--line2); }
+  p { margin: 0 0 18px; color: var(--sub); }
+  .ex { background: var(--panel); border: 1px solid var(--line2); border-radius: 14px; padding: 14px 18px; margin: 0 0 18px; color: var(--sub); font-size: 15.5px; overflow-wrap: anywhere; }
+  .ex code { font-family: ui-monospace, Consolas, monospace; color: var(--text); }
+  .shot { max-width: 260px; margin: 6px auto 22px; border-radius: 26px; padding: 7px; background: #0c0b10; border: 1.5px solid var(--line); }
+  .shot img { border-radius: 20px; }
+  .app { margin: 46px 0 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg2); padding: 20px 20px 22px; }
+  .app p { margin-bottom: 14px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1b1408; }
+  .care { color: var(--muted); font-size: 14.5px; margin-top: 16px; }
+  footer { border-top: 1px solid var(--line2); padding: 26px 0 42px; color: var(--muted); font-size: 14px; margin-top: 40px; }
+  footer a { color: var(--muted); margin-right: 16px; }
+  @media (max-width: 480px) { body { font-size: 16px; } .btn { width: 100%; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="crumb"><a href="../">カチマケ</a> › 競馬の収支のつけ方</p>
+  <h1>競馬の収支のつけ方(年間・券種ごとの集計)</h1>
+  <p class="date">2026年10月26日</p>
+
+  <p>馬券の収支は、週末が終わった時点ではなんとなく覚えていても、ひと月たつと思い出せなくなります。大きな払戻があった日のことはよく覚えているのに、こまかく外れた日の購入額は記憶から抜けやすいからです。年間の収支を正しく出したいなら、その週のうちに1行ずつ残しておくしかありません。</p>
+  <p>このページでは、あとから年間の収支と券種ごとの集計が出せる残し方をまとめます。予想や買い方の話は出てきません。記録のつけ方だけの話です。</p>
+
+  <h2>1行に入れるもの</h2>
+  <p>1行は「1レースの1券種」にすると、あとで券種ごとに集計できます。入れるのは次の6つです。</p>
+  <p class="ex">日付 / 競馬場 / レース(例: 11R) / 券種 / 購入額 / 払戻</p>
+  <p>同じレースで3連複と単勝を買ったなら、2行に分けます。1行にまとめてしまうと、どちらの券種で払戻があったのかが残らず、券種ごとの集計ができなくなります。</p>
+  <p>外れたレースも必ず入れます。払戻 0円の行がきちんと並んでいることが、収支表のいちばん大事なところです。当たったレースだけが残っている表は、見返すたびに実際より良い数字を見せてしまいます。</p>
+
+  <h2>返還金とWIN5の入れ方</h2>
+  <p>出走取消や競走除外で馬券の代金が戻ってきたときは、その分を購入額から引いておきます。払戻に入れてしまうと、払戻が実際より多く見え、回収率も高く出ます。</p>
+  <p class="ex">例: 3連複を 3,000円買い、うち 600円分が取消で返還 → 購入額は 2,400円で記録</p>
+  <p>WIN5 は5レースにまたがる馬券なので、レース欄には「WIN5」と書き、券種も WIN5 として別にしておくと集計で混ざりません。JRA の発表では、WIN5 は払い戻しに回る割合がほかの券種より低く決められています。券種ごとの払戻率は<a href="../kaishuritsu/">回収率の出し方</a>にまとめました。</p>
+  <p>ネット投票を使っているなら、購入の履歴を週末ごとに見て写しておくのが確実です。履歴の画面がいつまで見られるかはサービスによって違うので、まとめて写そうとすると古い分が見られなくなっていることがあります。</p>
+
+  <h2>年間の収支を出す</h2>
+  <p>年間の収支は、その年の払戻の合計から購入額の合計を引いた数字です。月ごとの収支を足しても同じになりますが、途中で書き方を変えた月があるとずれるので、1行ずつの記録から合計するほうが確実です。</p>
+  <p>年間で見ると、1回の大きな払戻がどれくらい年の数字を動かしているかも分かります。その1回を除いた残りの収支も一度出してみると、ふだんの買い方の結果がよりはっきり見えます。</p>
+
+  <h2>券種ごとに集計する</h2>
+  <p>券種ごとに、購入額の合計、払戻の合計、収支を並べます。どの券種にいちばん多く使っているかは、収支の大きさより先に見ておきたいところです。使った額が多い券種ほど、年の数字への影響も大きくなります。</p>
+  <p>回収率を券種ごとに出すときも、1レースずつの率を平均せず、券種ごとの払戻の合計を購入額の合計で割ります。理由は<a href="../kaishuritsu/">回収率の出し方</a>に書いています。</p>
+
+  <h2>スプレッドシートで作るとき</h2>
+  <p>A列から日付・競馬場・レース・券種・購入額・払戻の順に並べたとして、よく使う式を置いておきます。範囲は 2行目から1000行目にしています。</p>
+  <p class="ex"><code>その年の購入額: =SUMIFS(E2:E1000, A2:A1000, "&gt;="&amp;DATE(2026,1,1), A2:A1000, "&lt;"&amp;DATE(2027,1,1))</code><br><code>その年の払戻: =SUMIFS(F2:F1000, A2:A1000, "&gt;="&amp;DATE(2026,1,1), A2:A1000, "&lt;"&amp;DATE(2027,1,1))</code><br><code>3連複の収支: =SUMIFS(F2:F1000, D2:D1000, "3連複") - SUMIFS(E2:E1000, D2:D1000, "3連複")</code><br><code>3連複の回収率(%): =SUMIFS(F2:F1000, D2:D1000, "3連複") / SUMIFS(E2:E1000, D2:D1000, "3連複") * 100</code></p>
+  <p>券種の名前は、毎回同じ書き方にしてください。「3連複」と「三連複」が混ざると、式では別の券種として数えられます。入力のときに選ぶだけにしておくと、このずれは起きません。</p>
+  <p>収支は、使ったお金の行き先を確かめるための数字です。年の始めに年間の上限を決めておき、月ごとに今どこにいるかを確かめるようにすると、記録がそのまま使いすぎに気づく道具になります。</p>
+
+  <div class="app">
+    <p>カチマケは、競馬・競輪・ボート・オートの記録で券種を選んで残せる収支アプリです。購入額と払戻をボタンで入れると、その場で収支が出ます。ホームには今月と今年の収支が並び、分析の画面では今月・3か月・今年・全期間を切り替えて、券種ごと・場所ごとの収支を順に並べて見られます(券種ごとの比較と長い期間の分析は完全版の機能です。回収率は選んだ期間全体の数字で出ます)。記録はスマホの中だけに保存します。</p>
+    <div class="shot"><img src="../img/9_bettype.jpg" alt="カチマケの分析画面。券種ごとの収支の順位と曜日ごとの収支" width="540" height="960" loading="lazy"></div>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play でカチマケを見る</a>
+    <p class="care">Android 版です。18歳以上の方向けの収支記録アプリで、予想や買い方の情報は載っていません。賭け事そのものも提供しません。公営競技の投票は20歳未満の方は法律で禁止されています。<br>https://play.google.com/store/apps/details?id=jp.kachimake.app</p>
+  </div>
+</main>
+<footer>
+  <div class="wrap">
+    <a href="../">カチマケのトップ</a>
+    <a href="../kaishuritsu/">回収率の出し方</a>
+    <a href="../nenkan-shushi/">年間収支と確定申告</a>
+    <a href="../shushihyo/">収支表のつけ方</a>
+    <a href="../koyaku/">小役カウンターの使い方</a>
+    <a href="/">ほかのアプリ</a>
+  </div>
+</footer>
+</body>
+</html>

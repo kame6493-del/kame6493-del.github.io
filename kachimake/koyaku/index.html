@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>スロットの小役カウンターの使い方と、小役確率の見方 | カチマケ</title>
+<meta name="description" content="小役カウンターで数えた回数は、総回転数で割ると 1/x の確率になります。1,000回転と5,000回転で数字の信用度がどれくらい違うのか、設定ごとの確率表とどう見比べるのか、数え方でずれやすいところを、計算の例つきでまとめました。">
+<meta name="theme-color" content="#18161e">
+<link rel="canonical" href="https://yurustudio.github.io/kachimake/koyaku/">
+<link rel="icon" href="../img/icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="カチマケ">
+<meta property="og:title" content="スロットの小役カウンターの使い方と、小役確率の見方">
+<meta property="og:description" content="数えた回数 ÷ 総回転数で 1/x。回転数が少ないうちは数字がどれくらい揺れるのか、設定ごとの確率表との見比べ方。">
+<meta property="og:url" content="https://yurustudio.github.io/kachimake/koyaku/">
+<meta property="og:image" content="https://yurustudio.github.io/kachimake/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "スロットの小役カウンターの使い方と、小役確率の見方",
+  "inLanguage": "ja",
+  "datePublished": "2026-10-26",
+  "dateModified": "2026-10-26",
+  "author": { "@type": "Organization", "name": "YURU Studio" },
+  "publisher": { "@type": "Organization", "name": "YURU Studio" },
+  "image": "https://yurustudio.github.io/kachimake/img/og.jpg",
+  "mainEntityOfPage": "https://yurustudio.github.io/kachimake/koyaku/"
+}
+</script>
+<style>
+  :root {
+    --bg: #18161e; --bg2: #211e29; --panel: #26222f; --line: rgba(240, 200, 110, .28); --line2: rgba(255, 255, 255, .09);
+    --gold: #c99a3e; --gold2: #f0c86e; --text: #f4f1ea; --sub: #d6d1de; --muted: #9a94a6;
+    --sans: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.95 var(--sans); overflow-x: hidden; }
+  a { color: var(--gold2); }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .crumb { padding: 22px 0 0; font-size: 14px; color: var(--muted); }
+  .crumb a { color: var(--muted); }
+  h1 { font: 800 clamp(26px, 5vw, 36px)/1.45 var(--sans); margin: 18px 0 10px; }
+  .date { color: var(--muted); font-size: 14px; margin: 0 0 30px; }
+  h2 { font: 800 clamp(21px, 3.6vw, 25px)/1.5 var(--sans); margin: 46px 0 14px; padding-top: 18px; border-top: 1px solid var(--line2); }
+  p { margin: 0 0 18px; color: var(--sub); }
+  .ex { background: var(--panel); border: 1px solid var(--line2); border-radius: 14px; padding: 14px 18px; margin: 0 0 18px; color: var(--sub); font-size: 15.5px; }
+  .shot { max-width: 260px; margin: 6px auto 22px; border-radius: 26px; padding: 7px; background: #0c0b10; border: 1.5px solid var(--line); }
+  .shot img { border-radius: 20px; }
+  .app { margin: 46px 0 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg2); padding: 20px 20px 22px; }
+  .app p { margin-bottom: 14px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 24px; border-radius: 999px; font: 700 16px/1.2 var(--sans); text-decoration: none; background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1b1408; }
+  .care { color: var(--muted); font-size: 14.5px; margin-top: 16px; }
+  footer { border-top: 1px solid var(--line2); padding: 26px 0 42px; color: var(--muted); font-size: 14px; margin-top: 40px; }
+  footer a { color: var(--muted); margin-right: 16px; }
+  @media (max-width: 480px) { body { font-size: 16px; } .btn { width: 100%; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="crumb"><a href="../">カチマケ</a> › 小役カウンターの使い方</p>
+  <h1>スロットの小役カウンターの使い方と、小役確率の見方</h1>
+  <p class="date">2026年10月26日</p>
+
+  <p>小役カウンターでやっていることは単純で、回した回数と、ベルやチェリーが揃った回数を数えているだけです。数えた回数を総回転数で割れば、その日に実際に出た確率が 1/x の形で出ます。</p>
+  <p class="ex">小役の確率 = 1 / (総回転数 ÷ その小役の回数)<br>例: 3,000回転でベルが 400回 → 3,000 ÷ 400 = 7.5 → 1/7.5</p>
+  <p>難しいのは計算より、その数字をどこまで信じてよいかのほうです。このページでは、数え方でずれやすいところと、回転数によって数字がどれくらい揺れるのかを、架空の確率を使った計算でまとめておきます。実在の機種の数値は出てきません。</p>
+
+  <h2>数える前に決めておくこと</h2>
+  <p>総回転数は、自分が回した分だけを数えるのか、台のデータカウンターに出ている数字を使うのかを先に決めます。途中から座った台で、前の人の回転数まで入れてしまうと、小役の回数は自分の分だけなのに分母だけが大きくなり、確率が実際より低く出ます。小役を数えるなら、総回転数も自分が座ってからの分にそろえるのが基本です。</p>
+  <p>もう一つは、どの小役を数えるかです。全部の小役を数えようとすると押し忘れが増えます。機種の確率表を見て、設定ごとの差がある小役に絞ったほうが、数えた回数の質は上がります。押し忘れは数字を必ず低い方にずらすので、数が少ないより、数え漏れのほうが困ります。</p>
+
+  <h2>回転数が少ないうちは、数字は大きく揺れる</h2>
+  <p>小役の出方はくじ引きと同じで、本当の確率が決まっていても、数えた結果は毎回ばらつきます。どれくらいばらつくかは、回転数でほぼ決まります。</p>
+  <p>たとえば、本当の確率が 1/8.0 の小役があるとします。この小役を数えたときに、よくある範囲(およそ20回に19回はこの中に入る幅)は次のとおりです。</p>
+  <p class="ex">500回転: 1/6.5 〜 1/10.4<br>1,000回転: 1/6.9 〜 1/9.6<br>3,000回転: 1/7.3 〜 1/8.8<br>5,000回転: 1/7.5 〜 1/8.6</p>
+  <p>本当は 1/8.0 でも、1,000回転では 1/7.0 と出ることは珍しくありません。同じ表で、本当の確率が 1/7.2 の小役なら、1,000回転のときのよくある範囲は 1/6.2 〜 1/8.5 です。二つの範囲はほとんど重なっていて、1,000回転の数字だけでは、どちらの確率の台なのかはほぼ分かりません。3,000回転でもまだ重なりが残ります。</p>
+  <p>ボーナスのように確率の分母が大きいものは、もっと揺れます。本当の確率が 1/300 なら、3,000回転で出る回数の平均は10回ですが、4回でも16回でも普通に起こる範囲です。数回の差で判断するのは早すぎる、ということは覚えておいて損はありません。</p>
+
+  <h2>設定ごとの確率表と見比べるとき</h2>
+  <p>機種の雑誌やメーカーの公表値には、設定ごとの小役確率が載っていることがあります。数えた確率をこの表と見比べるときは、一番近い数字の設定を答えにするのではなく、「どの設定でも起こりうる数字か」「どの設定ではかなり起こりにくい数字か」を見るほうが実際に近い読み方です。</p>
+  <p>小役を一つだけで見るより、複数の小役とボーナスを合わせて見たほうが、偏りに引っぱられにくくなります。ただ、合わせて見ても、出てくるのは「この設定である見込みがどれくらいか」という割合で、決めつけられる答えではありません。数千回転を数えても外れることは普通にあります。</p>
+  <p>それから、設定の見込みが高く出たとしても、その日の収支がプラスになるとは限りません。台の性能はとても長い回転数をならしたときの話で、1日の結果はそれより何倍も大きく揺れます。カウンターの数字は、自分が何を見て判断したかを残しておくための記録と考えるのがちょうどいいと思います。</p>
+
+  <h2>数えた結果は収支と一緒に残す</h2>
+  <p>カウンターの数字は、その日の収支と並べて残しておくと、あとで読み返したときに役に立ちます。「この回転数でこの数字を見て続けた」「ここでやめた」という判断と、使った額・戻った額がセットで残っていれば、月末にまとめて振り返れます。収支の残し方は<a href="../shushihyo/">収支表のつけ方</a>、月や期間で見る数字は<a href="../kaishuritsu/">回収率の出し方</a>に書いています。</p>
+
+  <div class="app">
+    <p>カチマケの小役カウンターは、総回転数を +1・+10・+50・+100 のボタンで足し、小役ごとに大きなボタンで数える形です。数えている間はその場で 1/x の確率と出現率が出て、数え間違えたときはマイナスで戻せます。確率表は自分で入れて登録でき、終わったら「記録に反映」で回転数と回数をメモにして、その日の収支の記録に付けられます。数えることと実際の確率は誰でも使えます。設定ごとの見込みを出す計算は完全版の機能で、登録した確率と数えた回数だけから出す推測です。</p>
+    <div class="shot"><img src="../img/8_counter.jpg" alt="カチマケの小役カウンター。総回転数と小役の回数、出現確率が並ぶ(練習用の架空の数値)" width="540" height="960" loading="lazy"></div>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=jp.kachimake.app" target="_blank" rel="noopener">Google Play でカチマケを見る</a>
+    <p class="care">Android 版です。18歳以上の方向けの収支記録アプリで、賭け事そのものは提供しません。設定や結果を保証するものではありません。パチンコ・パチスロは18歳未満の方は法律で禁止されています。<br>https://play.google.com/store/apps/details?id=jp.kachimake.app</p>
+  </div>
+</main>
+<footer>
+  <div class="wrap">
+    <a href="../">カチマケのトップ</a>
+    <a href="../shushihyo/">収支表のつけ方</a>
+    <a href="../kaishuritsu/">回収率の出し方</a>
+    <a href="../keiba-shushi/">競馬の収支のつけ方</a>
+    <a href="../nenkan-shushi/">年間収支と確定申告</a>
+    <a href="/">ほかのアプリ</a>
+  </div>
+</footer>
+</body>
+</html>
