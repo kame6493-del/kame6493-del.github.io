@@ -176,6 +176,8 @@ REGISTRY = [
     dict(path="/exam/seishin/kyotsu-menjo/", theme="nigatecho", label="精神保健福祉士・社会福祉士", title="社会福祉士・精神保健福祉士の共通科目の免除。何問になり、合格点はどう変わるか", tags={"seishin", "shakai", "kamoku"}),
     dict(path="/exam/kanri/shutsugan/", theme="nigatecho", label="管理栄養士", title="第41回管理栄養士国試の出願は12月4日まで。受験資格(実務経験の年数)と出す書類", tags={"kanri", "kisotsu"}),
     dict(path="/exam/shakai/tojitsu/", theme="nigatecho", label="社会福祉士", title="第39回社会福祉士国試の受験票と当日の持ち物・時間割", tags={"shakai", "tojitsu"}),
+    dict(path="/exam/kango/hissu/", theme="nigatecho", label="看護師", title="第116回看護師国家試験の必修問題(50問・40点以上)の合格基準と、一般・状況設定問題の合格点の決まり方", tags={"kango", "kamoku"}),
+    dict(path="/exam/kango/gansho/", theme="nigatecho", label="看護師", title="第116回看護師国家試験の願書の受付(11月6日〜27日)・試験日(2月14日)・合格発表(3月24日)と、出す書類", tags={"kango", "kisotsu"}),
     dict(path="/blog/kokushi-answer-numbers.html", theme="nigatecho", label="国家試験", title="国家試験の「正解の番号」を数えてみた", tags={"kaigo", "kanri", "rinsho", "pt"}),
     # 開発日記
     dict(path="/blog/closed-test-12.html", theme="yuru", label="開発日記", title="クローズドテストの「12人」、3日でなんとか集まった話", tags={"dev", "tester"}),
@@ -189,7 +191,7 @@ def related(path, n=3):
     if not me:
         return []
     pool = [r for r in REGISTRY if r["path"] != path and (r["theme"] == me["theme"] or (me["theme"] == "yuru" and r["theme"] == "yuru"))]
-    main = {"kaigo", "kanri", "shakai", "seishin", "pt", "rinsho", "pachi", "keiba", "slot"}
+    main = {"kaigo", "kango", "kanri", "shakai", "seishin", "pt", "rinsho", "pachi", "keiba", "slot"}
     scored = sorted(pool, key=lambda r: -(3 * len(r["tags"] & me["tags"] & main) + len((r["tags"] & me["tags"]) - main)))
     return scored[:n]
 

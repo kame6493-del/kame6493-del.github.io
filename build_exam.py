@@ -23,6 +23,7 @@ APP_CPP = {
     "seishin": APP_MULTI + "?ppid=a0e511e2-65c3-445e-863c-8035ca37b1d1",
     "kanri": APP_MULTI + "?ppid=21aa2359-6b3a-4735-b88f-b3416c976af5",
     "pt": APP_MULTI + "?ppid=c66bda58-4649-4a61-8f7e-c97e17cb7081",
+    "kango": APP_MULTI + "?ppid=9db0eeba-8fa7-41f9-8ec0-e37bec15280f",
 }
 
 # Android 版はクローズドテスト中。参加ページ(先にテスター用のグループに入ってもらう)
@@ -474,6 +475,85 @@ EXAMS = [
         ],
     },
     {
+        "key": "kango",
+        "name": "看護師",
+        "round": 116,
+        "date_ja": "2027年2月14日",
+        "date_iso": "2027-02-14",
+        "updated": "2026-10-26",
+        "updated_ja": "2026年10月26日",
+        "title": "看護師国家試験2027(第116回・2月14日)の日程と合格基準、過去問の解き方",
+        "h1": "看護師国家試験 過去問の解き方と、第116回(2027年2月14日)までの進め方",
+        "desc": "第116回看護師国家試験は2027年2月14日(日)、願書の受付は2026年11月6日〜11月27日。第115回の合格基準は必修問題40点以上/50点、かつ一般・状況設定問題166点以上/249点で、合格率88.3%。厚生労働省の発表をもとにした日程と合格基準、過去問の解き直し方、過去問アプリ ニガテ帳の案内。",
+        "lead": "第116回看護師国家試験は、2027年2月14日(日)です。願書の受付は2026年11月6日から11月27日まで。合格基準が「必修問題」と「一般問題・状況設定問題」の2本立てになっているのが、ほかの試験とのいちばんの違いです。このページでは、厚生労働省の発表している日程と合格基準を整理して、過去問の使い方をまとめました。",
+        "facts": [
+            ("試験日", "2027年2月14日(日)。試験地は北海道・青森県・宮城県・東京都・新潟県・愛知県・石川県・大阪府・広島県・香川県・福岡県・沖縄県です。",
+             [("看護師国家試験の施行(厚生労働省)", "https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/kangoshi/")]),
+            ("願書の受付", "2026年11月6日(金)から11月27日(金)まで。郵送は書留で、11月27日の消印まで有効です。受験手数料は5,400円(収入印紙)。受験票は2027年1月中旬に発送予定です。",
+             [("同上", "https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/kangoshi/")]),
+            ("合格発表", "2027年3月24日(水)午後2時に、厚生労働省のホームページに受験地と受験番号が載ります。",
+             [("同上", "https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/kangoshi/")]),
+            ("出題数", "240問(午前120問・午後120問)。必修問題50問と一般問題130問は1問1点、状況設定問題60問は1問2点です。",
+             [("第115回看護師国家試験の問題および正答(厚生労働省)", "https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp260424-03_04_05.html")]),
+            ("合格基準(第115回)", "必修問題40点以上/50点、かつ一般問題・状況設定問題166点以上/249点。両方を満たす必要があります(採点除外の問題があると、満点は回ごとに変わります)。",
+             [("第115回看護師国家試験の合格発表(厚生労働省)", "https://www.mhlw.go.jp/general/sikaku/successlist/2026/siken03_04_05/about.html")]),
+            ("第115回の結果", "受験者59,614人、合格者52,666人、合格率88.3%。新卒は54,036人中50,862人(94.1%)。差し引くと、新卒以外は5,578人中1,804人(約32.3%)です。",
+             [("同上", "https://www.mhlw.go.jp/general/sikaku/successlist/2026/siken03_04_05/about.html")]),
+        ],
+        "history": {
+            "caption": "合格基準と合格率の移り変わり",
+            "head": ["回", "必修問題", "一般・状況設定", "合格率"],
+            "rows": [
+                ["第111回", "40点/50点", "167点/250点", "91.3%"],
+                ["第112回", "40点/50点", "152点/249点", "90.8%"],
+                ["第113回", "40点/49点", "158点/250点", "87.8%"],
+                ["第114回", "40点/50点", "148点/250点", "90.1%"],
+                ["第115回", "40点/50点", "166点/249点", "88.3%"],
+            ],
+            "note": "各回の合格発表から。必修問題の一部が採点から除外された人は、別の基準になった回があります(第111回・第113回)。",
+            "src": [("第111回 合格発表", "https://www.mhlw.go.jp/general/sikaku/successlist/2022/siken03_04_05/about.html"),
+                    ("第112回", "https://www.mhlw.go.jp/general/sikaku/successlist/2023/siken03_04_05/about.html"),
+                    ("第113回", "https://www.mhlw.go.jp/general/sikaku/successlist/2024/siken03_04_05/about.html"),
+                    ("第114回", "https://www.mhlw.go.jp/general/sikaku/successlist/2025/siken03_04_05/about.html"),
+                    ("第115回", "https://www.mhlw.go.jp/general/sikaku/successlist/2026/siken03_04_05/about.html")],
+        },
+        "groups_note": "",
+        "howto": [
+            ("最初に、いちばん新しい第115回を通しで解く",
+             "最初の1回は、第115回の240問を午前と午後に分けて通しで解いてみるのがおすすめです。本番は午前・午後とも120問を2時間40分で解きます。答え合わせのときは、必修問題の点と、一般問題・状況設定問題の点を分けて出しておきます。"),
+            ("必修問題は、8割を毎回超えられるかで見る",
+             "必修問題は5回とも、50点中40点(採点除外があった回は49点中40点)が基準でした。一般・状況設定の点がどれだけ高くても、必修が1点足りなければ不合格です。必修の点は、解くたびに40点と並べて、届かない回があればそこから手をつけます。"),
+            ("間違えた問題と、迷って当たった問題を残しておく",
+             "×だった問題に加えて、勘で当たった問題にも印をつけます。状況設定問題は同じ事例に3問ずつつながっているので、1問落としたら、同じ事例の残りの2問も一緒に見直すと、読み違えた所が分かりやすくなります。"),
+            ("日を空けて、2回続けて正解するまで解き直す",
+             "解説を読んだ直後に解き直すと、ほぼ正解します。翌日や数日後にもう一度解いて、2回続けて正解できたらリストから外す、という決まりにしておくと、覚えたかどうかで迷わずに済みます。"),
+            ("合格率の高さに安心しすぎない",
+             "第115回の合格率は88.3%ですが、新卒以外に限ると約32%でした。実習や卒業研究で時間が取りにくい時期は、苦手リストの解き直しだけでも毎日続けておくと、直前に慌てずに済みます。"),
+        ],
+        "plan": [
+            ("10月〜11月", "第115回を通しで1回。必修と一般・状況設定の点を分けて記録し、苦手リストを作り始める。11月6日から27日の間に願書を出す。"),
+            ("12月", "第114回・第113回へ。必修は毎回40点を超えるまで解き直す。"),
+            ("1月", "残りの回を解き終える。状況設定問題で落としている領域を重点的に。受験票が1月29日までに届かなければ問い合わせる。"),
+            ("2月", "新しい問題は増やさず、苦手リストと第115回の解き直しに絞る。直前の週末にもう一度、通しで解く。"),
+        ],
+        "app": {
+            "status": "live",
+            "store": APP_CPP["kango"],
+            "range": "第111回〜第115回の1,200問",
+            "free": "第115回の240問",
+            "price": "¥980",
+            "extra": "必修問題は8割の基準と、一般・状況設定は合格点と、別々に並べて予想点を出します。図のある問題も画像で収録しています。",
+        },
+        "faq": [
+            ("第116回看護師国家試験はいつですか?",
+             "2027年2月14日(日)です。願書の受付は2026年11月6日から11月27日まで、合格発表は2027年3月24日(水)午後2時です。(厚生労働省の施行の発表より)"),
+            ("合格基準は何点ですか?",
+             "第115回は、必修問題が40点以上(50点満点)、一般問題・状況設定問題が166点以上(249点満点)で、両方を満たすと合格でした。必修問題と一般問題は1問1点、状況設定問題は1問2点です。"),
+            ("ニガテ帳で看護師の過去問は解けますか?",
+             "解けます(iPhone)。アプリの中で看護師を選ぶと、第115回の240問を、完全版では第111回〜第115回の1,200問を解けます。必修問題だけにしぼって解くこともできます。"),
+        ],
+    },
+    {
         "key": "rinsho",
         "name": "臨床検査技師",
         "round": 73,
@@ -547,13 +627,15 @@ GUIDES = {"kanri": [("/exam/kanri/shutsugan/", "第41回の出願(11月2日〜12
                     ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第36〜38回"),
                     ("/exam/kaigo/part/", "パート合格のしくみ。A・B・Cの基準点と免除の期間"),
                     ("/exam/kaigo/tojitsu/", "第39回の受験票と当日の持ち物・時間割")],
+          "kango": [("/exam/kango/hissu/", "必修問題(50問・40点以上)の基準と、一般・状況設定の合格点の決まり方"),
+                    ("/exam/kango/gansho/", "第116回の願書の受付(11月6日〜27日)・試験日・合格発表と、出す書類")],
           "pt": [("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")],
           "rinsho": [("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")],
           "seishin": [("/exam/seishin/kisotsu/", "既卒の合格率(第26〜28回)と、もう一度受ける人の進め方"),
                       ("/exam/seishin/kyotsu-menjo/", "社会福祉士の登録者が受けるときの共通科目の免除(48問になる)")]}
 
 
-ORDER_HUB = ["kaigo", "shakai", "seishin", "kanri", "pt", "rinsho"]
+ORDER_HUB = ["kaigo", "kango", "shakai", "seishin", "kanri", "pt", "rinsho"]
 
 # ---------------------------------------------------------------------------
 
@@ -761,7 +843,7 @@ def exam_page(x):
     }
     jsonld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebPage", "@id": url, "url": url, "name": x["title"], "description": x["desc"],
-         "inLanguage": "ja", "dateModified": UPDATED,
+         "inLanguage": "ja", "dateModified": x.get("updated", UPDATED),
          "isPartOf": {"@type": "WebSite", "name": "YURU", "url": BASE + "/"},
          "breadcrumb": {"@type": "BreadcrumbList", "itemListElement": [
              {"@type": "ListItem", "position": 1, "name": "YURU", "item": BASE + "/"},
@@ -774,7 +856,7 @@ def exam_page(x):
     out.append(f'<p class="crumb"><a href="/">YURU</a> › <a href="/exam/">国家試験の過去問ガイド</a> › {x["name"]}</p>')
     out.append(f"<h1>{e(x['h1'])}</h1>")
     out.append(f'<p class="lead">{e(x["lead"])}</p>')
-    out.append(f'<p class="upd">{UPDATED_JA}時点の公式発表をもとにしています。最新の情報は、出典のページで確かめてください。</p>')
+    out.append(f'<p class="upd">{x.get("updated_ja", UPDATED_JA)}時点の公式発表をもとにしています。最新の情報は、出典のページで確かめてください。</p>')
 
     # 試験の基本
     out.append(f'<section id="facts"><h2>第{x["round"]}回{x["name"]}国家試験の日程と合格基準</h2><dl class="facts">')
@@ -853,8 +935,8 @@ def exam_page(x):
 
 def hub_page():
     url = f"{BASE}/exam/"
-    title = "国家試験の過去問ガイド(介護福祉士・社会福祉士・精神保健福祉士・管理栄養士・理学療法士・臨床検査技師)"
-    desc = "介護福祉士・社会福祉士・精神保健福祉士・管理栄養士・理学療法士・臨床検査技師の国家試験について、次の試験日と合格基準を公式発表から整理し、過去問の解き方をまとめたページの一覧です。"
+    title = "国家試験の過去問ガイド(介護福祉士・看護師・社会福祉士・精神保健福祉士・管理栄養士・理学療法士・臨床検査技師)"
+    desc = "介護福祉士・看護師・社会福祉士・精神保健福祉士・管理栄養士・理学療法士・臨床検査技師の国家試験について、次の試験日と合格基準を公式発表から整理し、過去問の解き方をまとめたページの一覧です。"
     jsonld = {"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "@id": url, "url": url, "name": title, "description": desc,
          "inLanguage": "ja", "dateModified": UPDATED,
@@ -868,6 +950,7 @@ def hub_page():
     out.append('<ul class="cards">')
     blurbs = {
         "kaigo": "125問。第38回の合格点は64点、合格率70.1%。11の科目群すべてで得点が必要。パート合格あり。",
+        "kango": "240問。第115回は必修問題40点以上/50点、かつ一般・状況設定166点以上/249点、合格率88.3%。願書は11月6日〜27日。",
         "shakai": "129問。第38回の合格点は50点、合格率60.7%。6つの科目群すべてで得点が必要。",
         "seishin": "132問。第28回の合格点は62点、合格率78.2%。9つの科目群すべてで得点が必要。",
         "kanri": "200問。合格基準は総合点120点以上。第40回の合格率47.6%。出願は11月2日〜12月4日。",
@@ -879,7 +962,7 @@ def hub_page():
         out.append(f'<li><h2><a href="/exam/{k}/">{y["name"]}国家試験</a></h2>'
                    f'<p>第{y["round"]}回 {y["date_ja"]}。{e(blurbs[k])}</p>'
                    + (f'<p><a href="/exam/{k}/goukakuten/">合格点の推移</a> ・ <a href="/exam/{k}/schedule/">日程と残り日数</a>'
-                      + (' ・ <a href="/exam/kaigo/kamoku/">11の科目群</a>' if k == "kaigo" else "") + '</p>' if k != "seishin" else "")
+                      + (' ・ <a href="/exam/kaigo/kamoku/">11の科目群</a>' if k == "kaigo" else "") + '</p>' if k not in ("seishin", "kango") else "")
                    + ('<p>' + ' ・ '.join(f'<a href="{u}">{e(t)}</a>' for u, t in GUIDES.get(k, [])) + '</p>' if GUIDES.get(k) else "") + '</li>')
     out.append("</ul>")
     out.append("""<section><h2>過去問を数えた記事</h2>
@@ -892,8 +975,8 @@ def hub_page():
 <li><a href="/blog/kanri-subject-counts.html">管理栄養士の科目ごとの問題数</a></li>
 </ul></section>""")
     out.append("""<section><h2>ニガテ帳について</h2>
-<p>間違えた問題が残り、日を空けて2回続けて正解すると消える、国家試験の過去問アプリです。どの試験も直近1回分はすぐに解けて、それより前の回は完全版で解けます。広告はなく、アカウント登録も要りません。iPhone では「ニガテ帳」で管理栄養士・介護福祉士・社会福祉士・精神保健福祉士・理学療法士を、「ニガテ帳 臨床検査技師」で臨床検査技師を公開中です。Android 版はテスト中です。</p>
-<div class="btns"><span class="nc-ios" style="display:inline-flex;flex-direction:column;font-size:13px">ニガテ帳(5試験)<a class="as-b" href="https://apps.apple.com/jp/app/id6818535389">""" + AS_BADGE + """</a></span><span class="nc-ios" style="display:inline-flex;flex-direction:column;font-size:13px">臨床検査技師<a class="as-b" href="https://apps.apple.com/jp/app/id6818536142">""" + AS_BADGE + """</a></span><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳 Android テスト版</a><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師 Android テスト版</a></div>
+<p>間違えた問題が残り、日を空けて2回続けて正解すると消える、国家試験の過去問アプリです。どの試験も直近1回分はすぐに解けて、それより前の回は完全版で解けます。広告はなく、アカウント登録も要りません。iPhone では「ニガテ帳」で看護師・管理栄養士・介護福祉士・社会福祉士・精神保健福祉士・理学療法士を、「ニガテ帳 臨床検査技師」で臨床検査技師を公開中です。Android 版はテスト中です。</p>
+<div class="btns"><span class="nc-ios" style="display:inline-flex;flex-direction:column;font-size:13px">ニガテ帳(6試験)<a class="as-b" href="https://apps.apple.com/jp/app/id6818535389">""" + AS_BADGE + """</a></span><span class="nc-ios" style="display:inline-flex;flex-direction:column;font-size:13px">臨床検査技師<a class="as-b" href="https://apps.apple.com/jp/app/id6818536142">""" + AS_BADGE + """</a></span><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.kanrieiyoushi">ニガテ帳 Android テスト版</a><a class="btn ghost nc-and" href="https://play.google.com/apps/testing/jp.nigatecho.rinshokensa">臨床検査技師 Android テスト版</a></div>
 <p class="note nc-and">Android は先に<a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に入ってから参加してください。</p>
 </section>
 <section><h2>このページについて</h2><p class="disc">個人(YURU)の制作物で、厚生労働省および社会福祉振興・試験センターとは関係ありません。受験の手続きは、必ず公式の案内で確かめてください。</p></section>""")

@@ -439,6 +439,7 @@ SUBS = {  # key -> [(slug, 短い名前)]
     k: [("goukakuten", "合格点・合格率の推移"), ("schedule", "日程と残り日数の使い方")] for k in B.ORDER_HUB
 }
 SUBS["kaigo"].append(("kamoku", "11の科目群と0点の決まり"))
+SUBS.pop("kango", None)  # 看護師は合格点・日程の小ページをまだ作っていない
 
 
 def page_head(x, slug, short, title, desc):
