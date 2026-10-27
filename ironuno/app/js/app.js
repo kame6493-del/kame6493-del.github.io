@@ -220,10 +220,10 @@ SCREENS.face = () => {
   const v = Math.round(X.face.rx / P.w * 100);
   scr.innerHTML = `${stepsBar(2)}<section class="lab">
     <h1 class="h1">顔を、だ円に合わせる。</h1>
-    <p class="lead">鼻のあたりをタップ。大きさはつまみで合わせます</p>
+    <p class="lead">鼻のあたりをタップするか、指でなぞって動かします。大きさはつまみで</p>
     <div class="photo"><canvas id="fc" width="${P.w}" height="${P.h}" aria-label="写真。鼻のあたりをタップ"></canvas></div>
     <label class="slider"><b>顔の大きさ</b><input type="range" id="fs" min="8" max="45" value="${v}" style="--v:${(v - 8) / 37 * 100}%"><small><span>小さく</span><span>大きく</span></small></label>
-    <button class="btn btn-navy" id="fOk" ${X.face.set ? '' : 'disabled'}>布で比べる${ICON.arr}</button>
+    <button class="btn btn-navy face-go" id="fOk">布で比べる${ICON.arr}</button>
   </section>`;
   const cv = $('#fc'); const ctx = cv.getContext('2d');
   const draw = () => {
@@ -244,8 +244,15 @@ SCREENS.face = () => {
     }
   };
   draw();
-  cv.onclick = e => { const [x, y] = toPhoto(cv, e); X.face.cx = x; X.face.cy = y; X.face.set = true; X.head = null; $('#fOk').disabled = false; draw(); };
-  $('#fs').oninput = e => { X.face.rx = P.w * e.target.value / 100; X.face.ry = X.face.rx * 1.32; X.head = null; e.target.style.setProperty('--v', (e.target.value - 8) / 37 * 100 + '%'); draw(); };
+  // 前はタップ(click)した時だけボタンが押せるようになっていた。だ円を指でなぞるとページがスクロールするだけで click が起きず、
+  // 小さい画面ではボタンが画面の外で灰色のまま、押しても何も起きなかった(10/28 テスターの報告)。
+  // 今は最初のだ円の位置のままでも進めて、タップでもなぞっても中心が動く。
+  let dragId = null;
+  const moveTo = e => { const [x, y] = toPhoto(cv, e); X.face.cx = x; X.face.cy = y; X.face.set = true; X.head = null; draw(); };
+  cv.onpointerdown = e => { dragId = e.pointerId; try { cv.setPointerCapture(e.pointerId); } catch (_) { } moveTo(e); e.preventDefault(); };
+  cv.onpointermove = e => { if (e.pointerId === dragId) moveTo(e); };
+  cv.onpointerup = cv.onpointercancel = e => { if (e.pointerId === dragId) dragId = null; };
+  $('#fs').oninput = e => { X.face.rx = P.w * e.target.value / 100; X.face.ry = X.face.rx * 1.32; X.face.set = true; X.head = null; e.target.style.setProperty('--v', (e.target.value - 8) / 37 * 100 + '%'); draw(); };
   onBack(() => go('white'));
   $('#fOk').onclick = () => {
     const f = X.face; X.skin = cheekColor(P.fixed.data, P.w, P.h, f).lab; X.head = cropHead(P.cv, f);

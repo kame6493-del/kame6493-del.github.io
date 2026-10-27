@@ -66,6 +66,15 @@ img { display: block; max-width: 100%; }
 .photo canvas, .photo img { display: block; width: 100%; height: auto; }
 .photo canvas { touch-action: manipulation; cursor: crosshair; max-height: 56vh; object-fit: contain; background: #CFD3D8; }
 .hint { color: var(--muted); font-size: 13px; text-align: center; margin: 10px 0 0; line-height: 1.6; }
+/* 顔の位置: だ円は指でなぞって動かす(ページのスクロールは写真の外で)。小さい画面でも写真とボタンが一緒に見えるよう、写真を少し低くし、ボタンは下に留める */
+.photo #fc { touch-action: none; max-height: max(200px, min(56vh, calc(100vh - 330px))); }
+.face-go { position: sticky; bottom: 12px; z-index: 2; box-shadow: 0 6px 18px rgba(21,34,50,.22); }
+@media (max-height: 720px) {
+  #app[data-screen="face"] .h1 { margin: 8px 0 4px; }
+  #app[data-screen="face"] .lead { font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+  #app[data-screen="face"] .slider { margin: 10px 4px 12px; }
+  #app[data-screen="face"] .lab { padding-bottom: 16px; }
+}
 
 /* 撮り方 */
 .howto-pic { margin: 6px calc(-1 * var(--pad)) 0; position: relative; }
