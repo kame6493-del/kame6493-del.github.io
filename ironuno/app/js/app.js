@@ -2,7 +2,7 @@
 // 診断中は一本道(撮り方 → 白で補正 → 顔の位置 → 布で比べる ×12 → 質問 ×5 → 結果 → 結果カード)。
 // 診断のあとは下の3タブ(ホーム・色の本棚・記録)。設定はホームの右上。
 // 写真はこの端末の中だけで扱う。送信も保存もしない。記録に残すのは結果の数字だけ。
-import { samplePatch, whiteGains, applyGains, applyGainsPixel, paperWarnings, cheekColor, rgbToHex, inkOn } from './color.js';
+import { samplePatch, whiteGains, applyGains, applyGainsPixel, paperWarnings, cheekColor, rgbToHex, inkOn, plainName } from './color.js';
 import { SEASONS, ORDER, FREE_COUNT, FAMILY_TEXT } from './seasons.js';
 import { ROUNDS, makeRounds, drapeColor, QUESTIONS, judge, CLARITY_TEXT } from './judge.js';
 import { openStore } from './storage.js';
@@ -93,7 +93,7 @@ SCREENS.home = () => {
     ${last ? `<button class="lastcard" id="lastRes" style="--acc:${SEASONS[last.top].key}">
         <span class="lc-k">前回の結果</span><i class="lc-line"></i>${ICON.arr}
         <b class="serif">${SEASONS[last.top].name}</b><small>2番目 ${SEASONS[last.second].name}</small>
-        <span class="lc-dots">${SEASONS[last.top].best.slice(0, FREE_COUNT).map(c => `<i style="background:${c.hex}"></i>`).join('')}</span>
+        <span class="lc-dots">${SEASONS[last.top].best.slice(0, FREE_COUNT).map(c => `<i style="background:${c.hex}" title="${esc(c.name)} ${c.hex}"></i>`).join('')}</span>
         <img src="img/fabric_${last.top}.jpg" alt="">
       </button>` : `<ol class="home-flow" aria-label="診断の流れ"><li><b>1</b>白い紙と一緒に撮る</li><li><b>2</b>布を当てて12回見比べる</li><li><b>3</b>5つの質問に答える</li></ol>`}
     ${Buy.owned ? '' : `<button class="home-buy" id="homeBuy"><img src="img/po_all.jpg" alt="" aria-hidden="true"><span><b>色の本棚を全部ひらく</b><small>${Buy.isApp() ? '買い切り・月額なし' : 'アプリ版で買い切り'}</small></span>${priceTag('homePrice')}</button>`}
@@ -193,7 +193,7 @@ SCREENS.white = () => {
     const shot = rgbToHex(w.patch.mean), fixed = rgbToHex(applyGainsPixel(w.patch.mean, w.wb.gains));
     box.innerHTML = `<div class="split" id="split" style="--cut:50%"><canvas id="sb" width="${P.w}" height="${P.h}"></canvas><canvas class="after" id="sa" width="${P.w}" height="${P.h}"></canvas>
         <i class="knob"></i><span class="tag l">補正前</span><span class="tag r">補正後</span><input type="range" min="0" max="100" value="50" id="cut" aria-label="補正前と補正後の境目"></div>
-      <div class="wb"><i class="dot" style="background:${shot}" title="${shot}"></i><span>写った白</span><span aria-hidden="true">→</span><i class="dot" style="background:${fixed}" title="${fixed}"></i><span>合わせた白</span>
+      <div class="wb"><i class="dot" style="background:${shot}" title="${shot}"></i><span>写った白<small class="hx-t">${shot}</small></span><span aria-hidden="true">→</span><i class="dot" style="background:${fixed}" title="${fixed}"></i><span>合わせた白<small class="hx-t">${fixed}</small></span>
         ${w.warns.length ? `<ul class="warns">${w.warns.map(k => `<li data-w="${k}">${PAPER_TEXT[k]}</li>`).join('')}</ul>` : `<span class="sep"></span><span class="ok good">${ICON.ok}光の具合は問題なさそうです</span>`}</div>`;
     $('#sb').getContext('2d').putImageData(P.orig, 0, 0); $('#sa').getContext('2d').putImageData(P.fixed, 0, 0);
     const sp = $('#split'); const setCut = v => sp.style.setProperty('--cut', v + '%');
@@ -263,7 +263,7 @@ SCREENS.drape = () => {
   <div class="track" aria-hidden="true"><i style="width:${(X.step) / ROUNDS * 100}%"></i></div>
   <section class="lab neutral">
     <h1 class="h1">顔色が明るく見えるのは?</h1>
-    <div class="pair">${['left', 'right'].map(side => `<button class="drape" data-side="${side}" data-season="${p[side]}" data-hex="${drapeColor(p[side], p.family)}" aria-label="${side === 'left' ? '左' : '右'}を選ぶ"><canvas width="420" height="780"></canvas><span>${side === 'left' ? '左' : '右'}</span></button>`).join('')}</div>
+    <div class="pair">${['left', 'right'].map(side => `<button class="drape" data-side="${side}" data-season="${p[side]}" data-hex="${drapeColor(p[side], p.family)}" aria-label="${side === 'left' ? '左' : '右'}を選ぶ"><canvas width="420" height="780"></canvas><span>${side === 'left' ? '左' : '右'}<small class="dhx">${plainName(drapeColor(p[side], p.family))} ${drapeColor(p[side], p.family)}</small></span></button>`).join('')}</div>
     <p class="hint">くま・影・赤みが目立たず、輪郭がすっきり見える方を。</p>
     <p class="hint fam">${FAMILY_TEXT[p.family]}</p>
     <div class="row2"><button class="btn btn-gray" id="tie">どちらとも言えない</button><button class="btn btn-gray" id="undo" ${X.step ? '' : 'disabled'}>ひとつ戻る</button></div>
@@ -301,9 +301,17 @@ function finish() {
 }
 
 // ---- 08 結果
-const softName = n => n.length >= 5 ? esc(n.slice(0, Math.ceil(n.length / 2))) + '<wbr>' + esc(n.slice(Math.ceil(n.length / 2))) : esc(n);
-function swatchRow(list, cls = '') {
-  return `<ul class="sw ${cls}">${list.map(c => `<li><button class="chip" data-hex="${c.hex}" data-name="${esc(c.name)}" style="--c:${c.hex}" aria-label="${esc(c.name)}"><i></i></button><span>${softName(c.name)}</span></li>`).join('')}</ul>`;
+const softName = (n, min = 5) => n.length >= min ? esc(n.slice(0, Math.ceil(n.length / 2))) + '<wbr>' + esc(n.slice(Math.ceil(n.length / 2))) : esc(n);
+// 色の見分けが弱い人のために、色見本には名前とカラーコード(#RRGGBB)を必ず添える。コードは押すとコピーできる。
+// 似合う色(○)と顔から離したい色(△)は、色だけでなく印でも分かるようにする。
+const MARK = { good: '○', avoid: '△' };
+const KIND_LABEL = { good: '似合う色', avoid: '顔から離したい色' };
+function chipBtn(c, kind = 'good', cls = '') {
+  return `<button class="chip ${cls}" data-hex="${c.hex}" data-name="${esc(c.name)}" data-kind="${kind}" style="--c:${c.hex}" aria-label="${esc(c.name)}(${plainName(c.hex)}・${c.hex}・${KIND_LABEL[kind]})"><i></i>${kind === 'avoid' ? `<em class="mk-b" aria-hidden="true">${MARK.avoid}</em>` : ''}</button>`;
+}
+const hexBtn = hex => `<button class="hx" data-copy="${hex}" aria-label="${hex} をコピー">${hex}</button>`;
+function swatchRow(list, cls = '', kind = 'good') {
+  return `<ul class="sw ${cls}" data-kind="${kind}">${list.map(c => `<li>${chipBtn(c, kind)}<span>${kind === 'avoid' ? `<b class="mk">${MARK.avoid}</b>` : ''}${softName(c.name, cls === 'dots' ? 4 : 5)}</span>${hexBtn(c.hex)}</li>`).join('')}</ul>`;
 }
 SCREENS.result = () => {
   const r = X.result; if (!r) return go('home');
@@ -361,8 +369,8 @@ function peekBlock(season) {
     <p class="sub">${T.name}のメイク・服・髪色を、各段の最初の色だけ先に見られます。</p>
     ${PEEK.map(([k, title, img, get, rest]) => { const [open, hid] = get(T); return `<div class="pk-row" data-k="${k}">
       <img class="pk-ic" src="img/${img}.jpg" alt="" aria-hidden="true">
-      <div class="pk-body"><h3>${title}<small>${ICON.lock}あと${rest(T)}色</small></h3>
-        <div class="pk-chips">${open.map(c => `<button class="chip pk-open" data-hex="${c.hex}" data-name="${esc(c.name)}" style="--c:${c.hex}" aria-label="${esc(c.name)}"><i></i></button>`).join('')}<span class="pk-names">${open.map(c => esc(c.name)).join('・')}</span>
+      <div class="pk-body"><h3><span><b class="mk">${k === 'avoid' ? MARK.avoid : MARK.good}</b>${title}</span><small>${ICON.lock}あと${rest(T)}色</small></h3>
+        <div class="pk-chips">${open.map(c => chipBtn(c, k === 'avoid' ? 'avoid' : 'good', 'pk-open')).join('')}<span class="pk-names">${open.map(c => `<span><b>${esc(c.name)}</b>${hexBtn(c.hex)}</span>`).join('')}</span>
         <span class="veil pk-hid" aria-hidden="true">${hid.map(c => `<i style="background:${c.hex}"></i>`).join('')}</span></div></div></div>`; }).join('')}
     <button class="btn btn-pearl peek-more" id="openAll">続きを見る${ICON.arr}</button>
   </section>`;
@@ -430,28 +438,31 @@ SCREENS.shelf = () => {
   const freeHere = !own && last && last.top === s;
   const palette = own ? T.best : freeHere ? T.best.slice(0, FREE_COUNT) : [];
   const makeupCols = v => `<div class="cols3">${Object.entries(v).map(([sk, list]) => `<div><h4>${SUB[sk]}</h4>${swatchRow(list, 'dots')}</div>`).join('')}</div>`;
-  const body = (k, v) => k === 'best' ? swatchRow(v, 'dots') : k === 'makeup' ? makeupCols(v) : Array.isArray(v) ? swatchRow(v, 'named') : Object.entries(v).map(([sk, list]) => `<h4>${SUB[sk]}</h4>${swatchRow(list, 'named')}`).join('');
+  const kindOf = k => k === 'avoid' ? 'avoid' : 'good';
+  const body = (k, v) => k === 'best' ? swatchRow(v, 'dots') : k === 'makeup' ? makeupCols(v) : Array.isArray(v) ? swatchRow(v, 'named', kindOf(k)) : Object.entries(v).map(([sk, list]) => `<h4>${SUB[sk]}</h4>${swatchRow(list, 'named')}`).join('');
+  const mk = k => `<b class="mk" aria-hidden="true">${MARK[kindOf(k)]}</b>`;
   scr.innerHTML = `<section class="shelf">
     <div class="sh-art" aria-hidden="true"><img src="img/card_${s}.jpg" alt=""></div>
     <header class="sh-head"><p class="latin dark">Color library</p><h1 class="serif">色の本棚</h1>
       <p class="lead-l">${last ? `あなたの季節は <b>${SEASONS[last.top].name}</b>。<br>4つの季節の96色を集める見本帳です。` : 'まだ診断していません。<br>4つの季節の96色を集める見本帳です。'}</p></header>
     ${(() => { const got = own ? 96 : (last ? FREE_COUNT : 0); return `<div class="dex" id="dex"><span>集めた色</span><b><em id="dexGot">${got}</em> / 96</b><i><s style="width:${got / 96 * 100}%"></s></i></div>`; })()}
+    <p class="mk-legend"><span><b class="mk">${MARK.good}</b>似合う色</span><span><b class="mk">${MARK.avoid}</b>顔から離したい色</span><span>#からの6けたは カラーコード</span></p>
     <div class="seg" role="tablist">${ORDER.map(x => { const lk = !own && !(last && last.top === x); return `<button role="tab" data-s="${x}" aria-selected="${x === s}" ${lk ? 'data-locked="1"' : ''}>${lk ? ICON.lock : ''}${SEASONS[x].name}</button>`; }).join('')}</div>
     ${SHELF.map(([k, title, get, desc]) => {
       const v = get(s);
       if (k === 'best') {
         // 図鑑のように24枠を番号つきで並べる。ひらいていない枠は色をぼかして鍵
-        return `<section class="book" data-k="best"><h2 class="serif">${title}<small>${palette.length} / ${T.best.length}</small></h2>
+        return `<section class="book" data-k="best"><h2 class="serif">${mk(k)}${title}<small>${palette.length} / ${T.best.length}</small></h2>
           ${!palette.length ? `<div class="lockbook" id="lockbook"><img src="img/locked_book.jpg" alt="" aria-hidden="true"><p>${T.name}の${T.best.length}色は、まだ閉じています</p></div>` : ''}
           <ol class="dexgrid">${T.best.map((c, i) => i < palette.length
-            ? `<li class="got"><button class="chip" data-hex="${c.hex}" data-name="${esc(c.name)}" style="--c:${c.hex}" aria-label="${esc(c.name)}"><i></i></button><span>${softName(c.name)}</span></li>`
+            ? `<li class="got">${chipBtn(c)}<span>${softName(c.name)}</span>${hexBtn(c.hex)}</li>`
             : `<li class="lk"><i class="lkc" style="--c:${c.hex}" aria-hidden="true"></i>${ICON.lock}<span>No.${String(i + 1).padStart(2, '0')}</span></li>`).join('')}</ol>
           ${palette.length < T.best.length ? `<button class="btn btn-navy sm unlock-inline unlock" data-k="best">${ICON.lock}全部ひらく</button>` : ''}</section>`;
       }
-      return `<section class="book ${own ? 'open' : 'locked'}" data-k="${k}"><h2 class="serif">${own ? '' : ICON.lock}${title}</h2><p class="desc">${desc}</p>
+      return `<section class="book ${own ? 'open' : 'locked'}" data-k="${k}"><h2 class="serif">${own ? '' : ICON.lock}${mk(k)}${title}</h2><p class="desc">${desc}</p>
         ${own ? body(k, v) : `<div class="lockwrap"><div class="veil" aria-hidden="true">${body(k, v)}</div><button class="btn btn-navy sm unlock" data-k="${k}">${ICON.lock}全部ひらく</button></div>`}</section>`;
     }).join('')}
-    <p class="fine">色をタップすると、大きく見られます。色は画面によって少しずつ違って見えるので、お店では実物を顔の近くに当てて確かめてください。</p>
+    <p class="fine">色をタップすると、大きく見られます。色の下のコード(#から始まる6けた)を押すと、コピーできます。色は画面によって少しずつ違って見えるので、お店では実物を顔の近くに当てて確かめてください。</p>
   </section>`;
   scr.querySelectorAll('.seg button').forEach(b => b.onclick = () => { X.shelf = b.dataset.s; go('shelf'); });
   scr.querySelectorAll('.unlock').forEach(b => b.onclick = () => paywall('shelf'));
@@ -461,10 +472,23 @@ SCREENS.shelf = () => {
 function bindChips() {
   scr.querySelectorAll('.chip').forEach(b => b.onclick = () => {
     if (b.closest('.veil')) return;
-    const hex = b.dataset.hex;
-    openSheet(`<div class="big" style="background:${hex};color:${inkOn(hex)}"><button class="x" id="shClose" aria-label="閉じる">×</button><b class="serif">${b.dataset.name}</b><small>${hex}</small></div>`, 'bigcolor');
+    const hex = b.dataset.hex; const kind = b.dataset.kind === 'avoid' ? 'avoid' : 'good';
+    openSheet(`<div class="big" style="background:${hex};color:${inkOn(hex)}"><button class="x" id="shClose" aria-label="閉じる">×</button>
+      <span class="big-mk" data-kind="${kind}">${MARK[kind]} ${KIND_LABEL[kind]}</span><b class="serif">${b.dataset.name}</b><span class="big-plain">${plainName(hex)}</span>
+      <button class="big-copy" id="bigCopy" data-copy="${hex}">${hex}<small>コピー</small></button></div>`, 'bigcolor');
     $('#shClose').onclick = () => closeSheet();
+    $('#bigCopy').onclick = () => copyHex(hex);
   });
+  scr.querySelectorAll('.hx').forEach(b => b.onclick = e => { e.stopPropagation(); if (!b.closest('.veil')) copyHex(b.dataset.copy); });
+}
+// カラーコードを写す。クリップボードが使えない時は、選んだ文字をコピーする古い方法で
+async function copyHex(hex) {
+  let done = false;
+  try { await navigator.clipboard.writeText(hex); done = true; } catch (e) {
+    try { const ta = document.createElement('textarea'); ta.value = hex; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;top:0'; document.body.appendChild(ta); ta.select(); done = document.execCommand('copy'); ta.remove(); } catch (e2) { done = false; }
+  }
+  window.__iro.copied = done ? hex : null;
+  toast(done ? `${hex} をコピーしました` : `カラーコード ${hex}`);
 }
 
 // ---- 12 記録
@@ -491,13 +515,13 @@ function recList(list, sm) {
 function fmt(t) { const d = new Date(t); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`; }
 
 // ---- 12b 友だちと比べる(友だちの季節は、共有された文のリンクか、本人が選んで入れる。写真は使わない)
-const chipsOf = list => `<ul class="sw named">${list.map(c => `<li><button class="chip" data-hex="${c.hex}" data-name="${esc(c.name)}" style="--c:${c.hex}" aria-label="${esc(c.name)}"><i></i></button><span>${softName(c.name)}</span></li>`).join('')}</ul>`;
+const chipsOf = list => swatchRow(list, 'named');
 function friendCard(f, me, open) {
   const F = SEASONS[f.top]; const c = me ? compare(me.top, f.top) : null;
   const body = c ? `<p class="desc">${KIND_TEXT[c.kind]}</p><h4>二人とも似合う色</h4>${chipsOf(c.both)}<h4>おそろいで着るなら</h4>${chipsOf(c.wear)}<h4>${esc(f.name)}さんに贈るなら</h4>${chipsOf(c.gift)}`
     : `<p class="desc">自分の色を比べると、二人とも似合う色が出ます。</p><h4>${esc(f.name)}さんの得意な色</h4>${chipsOf(F.best.slice(0, 4))}`;
   return `<section class="book fr ${open ? 'open' : 'locked'}" data-id="${f.id}">
-    <div class="fr-h"><span class="fr-dots"><i style="background:${me ? SEASONS[me.top].key : '#CDD2D7'}"></i><i style="background:${F.key}"></i></span>
+    <div class="fr-h"><span class="fr-dots" title="${me ? 'あなた ' + SEASONS[me.top].name + '・' : ''}${esc(f.name)} ${F.name}"><i style="background:${me ? SEASONS[me.top].key : '#CDD2D7'}"></i><i style="background:${F.key}"></i></span>
       <h2 class="serif">${esc(f.name)}<small>${F.name}${f.second ? ` ・ 2番目 ${SEASONS[f.second].name}` : ''}</small></h2>
       <button class="fr-del" data-id="${f.id}" aria-label="${esc(f.name)}を消す">×</button></div>
     ${open ? body : `<div class="lockwrap"><div class="veil" aria-hidden="true">${body}</div><button class="btn btn-navy sm unlock" data-k="friends">${ICON.lock}全部ひらく</button></div>`}

@@ -107,7 +107,7 @@
 .book .desc.more { margin-top: 16px; }
 .book h4 { font-size: 13px; font-weight: 500; color: var(--ink); margin: 14px 0 10px; }
 .sw.dots { grid-template-columns: repeat(6, 1fr); gap: 12px 10px; }
-.sw.dots li span { display: none; }
+.sw.dots li span { display: block; }
 .sw.dots .chip { max-width: 64px; }
 .sw.named { grid-template-columns: repeat(4, 1fr); }
 .sw.named .chip { max-width: 58px; }
@@ -210,3 +210,19 @@
 .legal { margin: 14px 0 0; font-size: 13px; text-align: center; }
 .legal a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .pw .legal a { color: rgba(255,255,255,.7); }
+/* 色の名前とカラーコード(色の見分けが弱い人のため。2026-10-27) */
+.chip { position: relative; }
+.hx { display: block; border: 0; background: none; padding: 2px 0 3px; margin: -3px 0 0; font: 500 9.5px/1.2 "SF Mono", Menlo, Consolas, "Roboto Mono", monospace; letter-spacing: -.03em; color: var(--sub); white-space: nowrap; cursor: copy; -webkit-tap-highlight-color: transparent; }
+.hx:active { color: var(--ink); text-decoration: underline; }
+.mk { font-weight: 700; font-family: var(--sans); margin-right: 3px; }
+h2 .mk, h3 .mk { margin-right: 6px; }
+.chip .mk-b { position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; color: var(--ink); font: 700 11px/18px var(--sans); font-style: normal; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.mk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: -6px 0 14px; font-size: 12px; color: var(--sub); }
+.big-mk { font-size: 14px; padding: 4px 12px; border-radius: 999px; border: 1px solid currentColor; opacity: .85; }
+.big-plain { font-size: 15px; opacity: .85; }
+.big-copy { margin-top: 6px; display: inline-flex; align-items: baseline; gap: 10px; border: 1px solid currentColor; border-radius: 999px; padding: 8px 18px; background: rgba(255,255,255,.14); color: inherit; font: 600 18px/1.2 "SF Mono", Menlo, Consolas, "Roboto Mono", monospace; letter-spacing: .06em; }
+.big-copy small { font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: 0; opacity: .8; }
+.hx-t { display: block; font: 500 10.5px/1.2 "SF Mono", Menlo, Consolas, monospace; color: var(--muted); }
+.drape .dhx { display: block; margin-top: 2px; font-size: 10.5px; color: var(--sub); letter-spacing: -.02em; }
+.cols3 .sw li { font-size: 9.5px; letter-spacing: -.06em; }
+h2 .mk, h3 .mk { font-size: .8em; }

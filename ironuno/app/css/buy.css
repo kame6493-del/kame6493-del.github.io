@@ -80,7 +80,14 @@
 .pw-price { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin: 0 0 10px; }
 .pw-price span { font-size: 13px; color: rgba(255,255,255,.75); letter-spacing: .1em; }
 .pw-price .pt { font-style: normal; font-size: 34px; font-weight: 500; font-family: var(--serif); color: #fff; font-variant-numeric: tabular-nums; }
-@media (max-width: 370px) { .pk-names { display: none; } .tiles small { display: none; } }
+@media (max-width: 370px) { .tiles small { display: none; } }
 .lockbook { position: relative; margin: -4px 0 14px; border-radius: 14px; overflow: hidden; background: #F3F5F6; }
 .lockbook img { width: 100%; aspect-ratio: 3 / 1.6; object-fit: cover; object-position: 50% 55%; }
 .lockbook p { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 18px 14px 10px; font-size: 13px; color: var(--ink); background: linear-gradient(180deg, rgba(243,245,246,0), rgba(243,245,246,.95) 55%); }
+/* 続きの見本: 名前とカラーコードを縦に(2026-10-27) */
+.pk-names { display: flex; gap: 10px; white-space: normal; max-width: none; flex: none; }
+.pk-names > span { display: flex; flex-direction: column; line-height: 1.25; }
+.pk-names b { font-weight: 500; font-size: 11.5px; white-space: nowrap; }
+.pk-names .hx { color: rgba(255,255,255,.72); margin: 0; padding: 1px 0 0; text-align: left; }
+.peek .chip .mk-b { color: var(--navy); }
+.dexgrid .hx { font-size: 9px; }

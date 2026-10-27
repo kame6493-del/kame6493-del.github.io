@@ -19,6 +19,28 @@ export function luminance(rgb) {
 // 地の色に合う文字の色(白か墨)
 export function inkOn(hex) { return luminance(hexToRgb(hex)) > 0.42 ? '#17161C' : '#FFFFFF'; }
 
+// 色の見分けが弱い人のための、ふつうの言葉の色名(例「くすんだ青」「明るいピンク」)。
+// 色相は HSL、あざやかさと明るさは Lab で決める。見本の名前(コーラルなど)と並べて出す。
+export function plainName(hex) {
+  const rgb = hexToRgb(hex); const [L, a, b] = rgbToLab(rgb); const C = Math.hypot(a, b);
+  const gray = L > 93 ? '白' : L > 72 ? '明るい灰色' : L > 45 ? '灰色' : L > 22 ? '暗い灰色' : '黒';
+  if (C < 7) return gray;
+  // 色みが少しだけある灰色(ブルーグレーなど)
+  if ((L >= 35 ? C < 14 : C < 9) && L <= 80) return (b < -3 ? '青みの' : a > 5 ? '赤みの' : a < -4 ? '緑みの' : b > 3 ? '黄みの' : '') + gray;
+  const [r, g, bl] = rgb.map(v => v / 255); const mx = Math.max(r, g, bl), mn = Math.min(r, g, bl), d = mx - mn;
+  let h = d === 0 ? 0 : mx === r ? ((g - bl) / d) % 6 : mx === g ? (bl - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360;
+  let base = h < 12 || h >= 330 ? '赤' : h < 34 ? 'だいだい色' : h < 66 ? '黄色' : h < 100 ? '黄緑' : h < 160 ? '緑' : h < 192 ? '青緑' : h < 250 ? '青' : h < 272 ? '青紫' : h < 300 ? '紫' : '赤紫';
+  if (base === '赤' && h >= 330 && h < 345) base = '赤紫';
+  // 明るい赤・赤紫はピンク。くすんだだいだい色は茶色・ベージュ、くすんだ黄色は黄土色
+  if ((base === '赤' || base === '赤紫') && L > 62 && C < 75) base = 'ピンク';
+  else if ((base === 'だいだい色' || (base === '黄色' && h < 42)) && L >= 76 && C < 37) return (L > 85 ? '明るい' : '') + 'ベージュ';
+  else if ((base === 'だいだい色' || (base === '黄色' && h < 42)) && L >= 62 && L < 76 && C < 45) return '明るい茶色';
+  else if (base === 'だいだい色' && L < 66 && (C < 50 || L < 45)) base = '茶色';
+  else if (base === '黄色' && L < 66 && C < 65) base = '黄土色';
+  const mod = L > 88 ? (C < 22 ? 'ごく薄い' : '明るい') : L > 75 && C < 30 ? 'うすい' : L < 34 ? '暗い' : C > 62 ? 'あざやかな' : C < 26 ? 'くすんだ' : L > 70 ? '明るい' : L < 45 && base !== '茶色' ? 'こい' : '';
+  return mod + base;
+}
+
 // sRGB → Lab(D65)
 export function rgbToLab(rgb) {
   const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
