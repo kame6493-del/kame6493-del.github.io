@@ -36,6 +36,8 @@ const ICON = {
   share: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 15V3.5M7.5 8L12 3.5 16.5 8M5 12.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   home: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M3.5 11L12 4l8.5 7v9h-6v-6h-5v6h-6z" fill="currentColor"/></svg>',
   book: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  side: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><ellipse cx="15.5" cy="11" rx="5" ry="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="2.5" y="7" width="7" height="9" rx=".8" fill="#fff" stroke="currentColor" stroke-width="1.6"/><path d="M3 20.5h18" stroke="currentColor" stroke-width="1.2" stroke-dasharray="1.6 1.8"/></svg>',
+  cam: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
   rec: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
 };
 const STEP_NAMES = ['撮る', '白で補正', '顔の位置', '布で比べる', '質問'];
@@ -55,9 +57,15 @@ function go(name, opts = {}) {
   X.screen = name; closeSheet(true);
   appEl.dataset.mode = MODE[name] || 'light'; appEl.dataset.screen = name;
   document.querySelector('meta[name=theme-color]').setAttribute('content', MODE[name] === 'dark' ? '#152232' : '#FFFFFF');
+  barStyle(MODE[name] === 'dark');
   SCREENS[name](opts);
   drawTabs();
   if (!opts.keepScroll) scr.scrollTop = 0;
+}
+// アプリ版: 上の時計・電波のマークの色を画面の地に合わせる(濃紺の画面は白い文字、白い画面は黒い文字)
+function barStyle(dark) {
+  try { const C = window.Capacitor; const SB = C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.SystemBars;
+    if (SB && SB.setStyle) { const p = SB.setStyle({ style: dark ? 'DARK' : 'LIGHT' }); if (p && p.catch) p.catch(() => {}); } } catch (e) { }
 }
 function drawTabs() {
   const cur = TABBED[X.screen];
@@ -113,13 +121,16 @@ function fromRecord(r) { return { top: r.top, second: r.second, shares: r.shares
 // ---- 02 撮り方
 SCREENS.prep = () => {
   scr.innerHTML = `${stepsBar(0)}<section class="lab">
-    <h1 class="h1">白い紙を、顔のそばに。</h1>
-    <div class="howto-pic"><img src="img/howto.jpg" alt="白い紙を顔の横に持って撮る見本"></div>
-    <ul class="tips">
-      <li><img src="img/tip_light.png" alt="">窓ぎわなど、顔に均一な光を</li>
-      <li><img src="img/tip_paper.png" alt="">紙に影がかからないように</li>
-      <li><img src="img/tip_hair.png" alt="">髪は顔にかからないように・メイクは薄めで</li>
-    </ul>
+    <h1 class="h1 kp">白い紙を、<wbr>顔の横に並べて撮る。</h1>
+    <p class="lead paper-why kp">紙の白を目印に、<wbr>部屋の明かりの色を合わせます</p>
+    <div class="howto-pic"><img src="img/howto.jpg" alt="白い紙を顔の横、ほおの高さに並べて持って撮る見本">
+      <span class="pin pin-paper" aria-hidden="true">白い紙</span><span class="pin pin-cheek" aria-hidden="true"><i>←</i>ほおの横に</span></div>
+    <ol class="paper-steps" aria-label="白い紙の使い方">
+      <li><img src="img/tip_paper.png" alt=""><span><b>何を</b>コピー用紙など、無地の白い紙。はがきより大きめ</span></li>
+      <li><i class="ps-ic">${ICON.side}</i><span><b>どこに</b>顔の横、ほおの高さに並べる。顔にくっつけなくて大丈夫</span></li>
+      <li><i class="ps-ic">${ICON.cam}</i><span><b>どう撮る</b>紙をカメラに向けて平らに持ち、顔と紙を一緒に1枚に写す</span></li>
+    </ol>
+    <p class="hint paper-tips">窓ぎわの明るい所で。紙に影を作らず、髪は顔にかけない。<br>撮ったあと、写真の中の紙をタップします。</p>
     <div class="stack">
       <label class="btn btn-navy file">カメラで撮る${ICON.arr}<input type="file" accept="image/*" capture="user" id="cam"></label>
       <label class="btn btn-line file">写真から選ぶ${ICON.arr}<input type="file" accept="image/*" id="pick"></label>
