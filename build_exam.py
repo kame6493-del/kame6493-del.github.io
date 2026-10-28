@@ -621,17 +621,18 @@ GUIDES = {"kanri": [("/exam/kanri/shutsugan/", "第41回の出願(11月2日〜12
                     ("/exam/kanri/kisotsu/", "既卒の合格率と、働きながらの勉強の進め方")],
           "shakai": [("/exam/shakai/hajimekata/", "社会人から始めるとき、最初の2週間にやること"),
                      ("/exam/shakai/kisotsu/", "既卒の合格率(第36〜38回)と、もう一度受ける人の進め方"),
-                     ("/exam/shakai/tojitsu/", "第39回の受験票と当日の持ち物・時間割"),
+                     ("/exam/shakai/tojitsu/", "第39回 試験まであと何日・受験票・当日の時間割と持ち物"),
                      ("/exam/seishin/kyotsu-menjo/", "精神保健福祉士の登録者が受けるときの共通科目の免除")],
           "kaigo": [("/exam/kaigo/dokugaku/", "独学か講座か。実務経験ルートの条件と、勉強の順番"),
                     ("/exam/kaigo/shokuba/", "受験資格(職場)ごとの合格率。第36〜38回"),
                     ("/exam/kaigo/part/", "パート合格のしくみ。A・B・Cの基準点と免除の期間"),
-                    ("/exam/kaigo/tojitsu/", "第39回の受験票と当日の持ち物・時間割")],
+                    ("/exam/kaigo/tojitsu/", "第39回 試験まであと何日・受験票・A・B・Cパートの時間割と持ち物")],
           "kango": [("/exam/kango/hissu/", "必修問題(50問・40点以上)の基準と、一般・状況設定の合格点の決まり方"),
-                    ("/exam/kango/gansho/", "第116回の願書の受付(11月6日〜27日)・試験日・合格発表と、出す書類")],
+                    ("/exam/kango/gansho/", "第116回 願書の提出期間(11月6日〜27日)・写真の決まり・出す書類・あと何日")],
           "pt": [("/exam/pt/kisotsu/", "新卒以外の合格率(第57〜61回)と、もう一度受ける人の進め方")],
           "rinsho": [("/exam/rinsho/kisotsu/", "新卒以外の合格率(第68〜72回)と、もう一度受ける人の進め方")],
-          "seishin": [("/exam/seishin/kisotsu/", "既卒の合格率(第26〜28回)と、もう一度受ける人の進め方"),
+          "seishin": [("/exam/seishin/tojitsu/", "第29回 試験まであと何日・受験票・2日間の時間割と持ち物"),
+                      ("/exam/seishin/kisotsu/", "既卒の合格率(第26〜28回)と、もう一度受ける人の進め方"),
                       ("/exam/seishin/kyotsu-menjo/", "社会福祉士の登録者が受けるときの共通科目の免除(48問になる)")]}
 
 
