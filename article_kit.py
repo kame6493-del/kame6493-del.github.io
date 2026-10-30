@@ -459,9 +459,8 @@ def nigatecho_box(key=None, note=""):
         more = "介護福祉士・管理栄養士・理学療法士・社会福祉士・精神保健福祉士の過去問を解けます。"
     more = (more + ("<br>" if more else "") + "間違えた問題は「苦手」として残り、2回続けて正解すると消えます。")
     btns = (f'<a class="as-b nc-ios" href="{ios}"><img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44" loading="lazy"></a>'
-            f'<a class="app-btn ghost nc-and" href="{play}">Android テスト版に参加</a>')
+            + (f'<a class="app-btn ghost nc-and" href="{play}">Google Play で入手</a>' if play else ""))
     foot = (f'<p class="nc-ios">App Store: <a href="{ios}">{e(ios.split("?")[0].replace("https://", ""))}</a></p>'
-            f'<p class="nc-and">Android は先に<a href="{B.TESTER_GROUP}">テスター用のグループ</a>に入ってから参加してください。</p>'
             + (f"<p>{note}</p>" if note else "") +
             '<p>Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。App Store は Apple Inc. のサービスマークです。</p>')
     return app_box(head="この記事を書いた人が作っている過去問アプリ", name=name, sub=sub, icon="/img/nigatecho-icon-64.webp",

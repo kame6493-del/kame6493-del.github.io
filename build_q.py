@@ -80,7 +80,7 @@ def app_cta(name, state, key=""):
     return (f'<div class="q-cta"><p><b>{e(B.IOS_LEAD)}</b><br>{e(txt)}'
             "間違えた問題は「苦手」として残り、2回続けて正解すると消えます。全問に解説つき、広告なし。</p>"
             f'<div class="btns">{B.store_btns(key)}</div>{B.as_url(ios)}'
-            f'<p class="q-meta nc-and" style="margin-top:8px">Android は先に<a href="{B.TESTER_GROUP}">テスター用のグループ</a>に入ってから参加してください。</p></div>')
+            '</div>')
 
 
 def ans_text(q):

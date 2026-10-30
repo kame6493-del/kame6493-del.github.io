@@ -117,7 +117,7 @@ const Store = {
 const Full = {
   PID: 'jp.rakugakiundoukai.app.full', ENT: 'full',
   RC_KEYS: { android: 'goog_AkAbslCFlJUVfYzPYBVuZHIIJch', ios: 'appl_iugBYTchEgxZYmoYPaooSPtiOlZ' }, // RevenueCat の公開キー(秘密の鍵ではない)。scripts/rc_setup.py の結果
-  PLAY_URL: 'https://yurustudio.github.io/blog/android-testers-6apps.html',
+  PLAY_URL: 'https://yurustudio.github.io/#undoukai',
   KEY: CFG.STORE_KEY + '_full', FX_KEY: CFG.STORE_KEY + '_fx',
   owned: false, pkg: null, price: '', busy: false, ready: null, prev: null,
   platform() { const C = window.Capacitor; try { if (C && C.isNativePlatform && C.isNativePlatform() && C.getPlatform) return C.getPlatform(); } catch (e) { } return 'web'; },

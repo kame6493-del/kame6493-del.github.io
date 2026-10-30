@@ -53,7 +53,7 @@ def app_box(slug):
                 '間違えた問題は「苦手」として残り、2回続けて正解すると消えます。</p>'
                 f'<a class="ab-b" href="{RINSHO_URL}"><img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44"></a>'
                 f'<p class="ab-u"><a href="{RINSHO_URL}">apps.apple.com/jp/app/id6818536142</a></p>'
-                '<p class="ab-a">Android 版はテスト中です(<a href="/#tester">テスターの募集はこちら</a>)。</p>'
+                '<p class="ab-a">Android 版は準備中です。</p>'
                 '<p class="ab-tm">Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。App Store は Apple Inc. のサービスマークです。</p>'
                 '</aside>' + chr(10))
     url = APP_URL.get(slug.split('-')[0], 'https://apps.apple.com/jp/app/id6818535389')
@@ -64,7 +64,7 @@ def app_box(slug):
             '間違えた問題は「苦手」として残り、2回続けて正解すると消えます。</p>'
             f'<a class="ab-b" href="{url}"><img src="/img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44"></a>'
             f'<p class="ab-u"><a href="{url}">apps.apple.com/jp/app/id6818535389</a></p>'
-            '<p class="ab-a">Android 版はテスト中です(<a href="/#tester">テスターの募集はこちら</a>)。</p>'
+            '<p class="ab-a">Android 版は <a href="https://play.google.com/store/apps/details?id=jp.nigatecho.kanrieiyoushi">Google Play</a> で公開中です(まとめ版)。</p>'
             '<p class="ab-tm">Apple、Apple のロゴは、米国およびその他の国や地域で登録された Apple Inc. の商標です。App Store は Apple Inc. のサービスマークです。</p>'
             '</aside>' + chr(10))
 

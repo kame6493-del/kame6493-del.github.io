@@ -37,8 +37,8 @@ ul.k-list li a{text-decoration:none;font-weight:700}
 CTA = ('<div class="k-cta"><p><b>古文単語アプリ「こぶんめくり」</b><br>'
        '601語を重要度順に、本文の中の一文で意味を当てて覚える単語帳です。試験日から1日の語数を逆算し、'
        '覚えた語は1日後・3日後・1週間後にもう一度出ます。間違えた語だけが一覧に残り、2回続けて正解すると消えます。敬語42語・助動詞28語のセットもあります。</p>'
-       '<div class="btns"><a class="btn ghost" href="https://play.google.com/apps/testing/jp.kobunmekuri.app">Android テスト版に参加</a></div>'
-       '<p class="note" style="margin-top:8px">いまは Android 版のテスト中で、参加ページで「テスターになる」を押すと使えます。</p></div>')
+       '<div class="btns"><a class="btn ghost" href="https://play.google.com/store/apps/details?id=jp.kobunmekuri.app">Google Play で入手</a></div>'
+       '<p class="note" style="margin-top:8px">Android 版を Google Play で配信しています。</p></div>')
 NOTE = ('<p class="note">例文は、著作権の切れた古典の本文(ウィキソース所収の翻刻)から引き、字体を新字体に改めました。'
         '意味・解説・現代語訳は「こぶんめくり」で書いたものです。誤りに気づいたらお知らせください。</p>')
 
