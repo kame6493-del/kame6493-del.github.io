@@ -69,6 +69,8 @@ h1, h2, h3, p { margin: 0; }
 .top nav a { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--sp-1); color: var(--on-dark-sub); text-decoration: none; font-size: var(--fs-2); font-weight: 700; }
 .top nav a:hover { color: var(--on-dark); }
 .top nav .pc { display: none; }
+.logo, .top nav a { white-space: nowrap; }
+@media (max-width: 559px) { .logo { font-size: var(--fs-3); } .top nav { gap: 0; } .top nav a { padding: 0 6px; } }
 
 /* ===== 最初の画面 ===== */
 .hero { background: radial-gradient(900px 480px at 85% 10%, var(--navy-2) 0%, rgba(26,50,99,0) 70%), var(--navy); color: var(--on-dark); padding: var(--sp-3) 0 var(--sp-5); overflow: hidden; }
@@ -176,6 +178,14 @@ footer h2 { font-size: var(--fs-2); font-weight: 900; color: var(--ink); margin-
 footer ul { list-style: none; padding: 0; margin: 0; }
 footer li a { display: inline-flex; align-items: center; min-height: 44px; color: var(--sub); }
 footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mute); }
+/* ===== 自己紹介 ===== */
+.about { padding: var(--sp-6) 0; background: var(--bg); }
+.about .box { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3); align-items: start; max-width: 760px; padding: var(--sp-4); border-radius: var(--r-3); background: var(--surface); border: 1px solid var(--line); }
+.about .mark { width: 72px; height: 72px; border-radius: var(--r-pill); background: var(--navy); color: var(--on-dark); display: grid; place-items: center; font-size: var(--fs-5); font-weight: 900; box-shadow: var(--sh-1); }
+.about h2 { font-size: var(--fs-5); font-weight: 900; line-height: 1.4; }
+.about p { font-size: var(--fs-3); color: var(--sub); line-height: 1.9; margin-top: var(--sp-2); max-width: 34em; }
+.about .xbtn { margin-top: var(--sp-3); }
+@media (max-width: 559px) { .about .box { grid-template-columns: 1fr; padding: var(--sp-3); } }
 .xbtn { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--sp-3); border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark) !important; text-decoration: none; font-weight: 700; }
 
 /* ===== タブレット・PC ===== */
@@ -221,7 +231,7 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
       <a href="#game">ゲーム</a>
       <a href="#life">道具</a>
       <a href="#testing" class="pc">もうすぐ配信</a>
-      <a href="blog/" class="pc">開発日記</a>
+      <a href="#about">自己紹介</a>
       <a href="https://x.com/apkderete">X</a>
     </nav>
   </div>
@@ -270,7 +280,7 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
           <a href="https://play.google.com/store/apps/details?id=jp.nigatecho.kanrieiyoushi"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
         </div>
         <div class="links"><a href="/q/kaigo/38/">過去問と解説をウェブで見る</a><a href="exam/">試験の日程と合格基準</a></div>
-        <p class="note"><a href="exam/kango/">看護師国家試験(第116回)</a> ・ <a href="blog/kisotsu-pass-rates.html">既卒の合格率を試験ごとに</a></p>
+        <p class="note"><a href="exam/kango/">看護師国家試験(第116回)</a></p>
       </div>
       <div class="shots" role="group" aria-label="ニガテ帳の画面">
         <figure class="phone" style="margin:0"><img src="img/shots/ng-1.webp" alt="ホーム。苦手ノートに残っている問題の数と、試験日までの日数" width="540" height="1170" loading="lazy" decoding="async"></figure>
@@ -500,6 +510,21 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
     </div>
   </div>
 </section>
+
+<section class="about" id="about" aria-labelledby="about-h">
+  <div class="wrap">
+    <div class="box">
+      <div class="mark" aria-hidden="true">Y</div>
+      <div>
+        <h2 id="about-h">自己紹介</h2>
+        <p>YURU Studio のアプリを作っています。ふだんは社内SEとして働いているエンジニアです。仕事の合間や空いた時間に、1人でスマホアプリとゲームを作っています。</p>
+        <p>作っているのは、国家試験の過去問「ニガテ帳」、野球の監督ゲーム「DIAMOND NINE」、古文単語の「こぶんめくり」、収支ノートの「カチマケ」、ブラウザで遊べる「らくがき運動会」「ハルの冒険」などです。</p>
+        <p>新しいアプリの話は X で書いています。</p>
+        <a class="xbtn" href="https://x.com/apkderete">X で @apkderete を見る</a>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer>
@@ -514,7 +539,6 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
         <h2>読みもの</h2>
         <ul>
           <li><a href="exam/">国家試験の過去問ガイド(試験日と合格基準)</a></li>
-          <li><a href="blog/">開発日記</a></li>
         </ul>
       </div>
       <div>
