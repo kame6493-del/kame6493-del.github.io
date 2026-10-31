@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iPhone の「盗難デバイスの保護」をオンにする手順と、先に要る設定</title>
+<meta name="description" content="iOS 17.3 以降の「盗難デバイスの保護」がオンかの確かめ方と、使うために先にオンにしておく2ファクタ認証・「探す」、画面ロックのパスコード。Apple サポートで確かめた手順です。">
+<link rel="canonical" href="https://yurustudio.github.io/tojimari/guide/iphone-tonan/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="YURU"><meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="iPhone の「盗難デバイスの保護」をオンにする手順と、先に要る設定"><meta property="og:description" content="iOS 17.3 以降の「盗難デバイスの保護」がオンかの確かめ方と、使うために先にオンにしておく2ファクタ認証・「探す」、画面ロックのパスコード。Apple サポートで確かめた手順です。"><meta property="og:url" content="https://yurustudio.github.io/tojimari/guide/iphone-tonan/">
+<meta property="og:image" content="https://yurustudio.github.io/tojimari/img/start.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/tojimari/img/icon.png">
+<style>
+:root{--bg:#eef5f6;--ink:#0c2a33;--sub:#3d5a63;--line:#cfe0e3;--card:#fff;--mint:#0f9f7f;--deep:#022a3d;--warn:#b8432c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;line-height:1.85;font-size:17px}
+a{color:#0b6f8a}header.top{background:linear-gradient(160deg,#012233,#06485f);color:#fff;padding:14px 16px}
+header.top a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;max-width:760px;margin:0 auto}header.top img{border-radius:10px}
+header.top b{letter-spacing:.12em;font-size:18px}header.top small{opacity:.8;font-size:13px}
+main{max-width:760px;margin:0 auto;padding:22px 16px 48px}h1{font-size:25px;line-height:1.5;margin:6px 0 12px}
+h2{font-size:20px;margin:34px 0 10px;padding-top:6px;border-top:2px solid var(--line)}p.lead{color:var(--sub)}
+.crumb{font-size:13px;color:var(--sub)}.crumb a{color:var(--sub)}
+.stat{background:#fff;border-left:4px solid var(--warn);padding:12px 14px;border-radius:6px;font-size:15px;margin:18px 0}
+.stat small{display:block;color:var(--sub);font-size:12px;margin-top:4px}
+.ck{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 12px;margin:16px 0}
+.ck h3{margin:0 0 4px;font-size:19px}.ck .svc{font-size:13px;color:var(--mint);font-weight:700;letter-spacing:.06em}
+.ck ol{margin:10px 0;padding-left:1.4em}.ck li{margin:3px 0}.ck .done{background:#e6f6f1;border-radius:8px;padding:6px 10px;font-size:15px}
+.ck .why{color:var(--warn);font-size:15px;margin:8px 0 0}.ck .note{color:var(--sub);font-size:14px;margin:6px 0 0}
+.ck .src{font-size:12.5px;color:var(--sub);margin:10px 0 0;word-break:break-all}
+.box{background:var(--deep);color:#e8f6f4;border-radius:16px;padding:20px 18px;margin:34px 0 10px}
+.box h2{border:0;margin:0 0 8px;color:#fff;padding:0}.box p{margin:8px 0}.box a{color:#7ff0cf}
+.box .btn{display:inline-block;background:#5ff0c4;color:#022a3d;font-weight:700;text-decoration:none;border-radius:999px;padding:10px 20px;margin:6px 8px 0 0}
+.box .btn.line{background:transparent;color:#7ff0cf;border:1px solid #7ff0cf}
+.box ol{padding-left:1.3em;margin:8px 0}.shots{display:flex;gap:10px;margin:16px 0;overflow:hidden}.shots img{width:32%;height:auto;border-radius:12px;border:1px solid var(--line)}
+.guides{list-style:none;padding:0}.guides li{margin:8px 0}.guides a{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.guides small{display:block;color:var(--sub);font-size:13px}.fine{font-size:13px;color:var(--sub)}
+footer{max-width:760px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:var(--sub)}
+</style></head>
+<body><header class="top"><a href="/tojimari/"><img src="/tojimari/img/icon.png" alt="" width="36" height="36"><span><b>トジマリ</b><br><small>スマホとお金の戸締まり</small></span></a></header>
+<main><p class="crumb"><a href="/tojimari/">トジマリ</a> › 設定の手順</p>
+<h1>iPhone の「盗難デバイスの保護」をオンにする</h1>
+<p class="lead">「盗難デバイスの保護」は、iPhone を盗まれてパスコードまで知られてしまった時に、大事な設定を変えられないようにするための iPhone の機能です(iOS 17.3 以降)。</p><p class="lead">Apple サポートによると、使うには2ファクタ認証と「探す」などがオンになっている必要があります。先に盗難デバイスの保護を見て、オンにできなかった時は下の3つを確かめてください。</p>
+
+<p class="fine">手順を確かめた日: 2026-10-31。各項目の下に、もとの公式ページの URL を載せています。</p>
+<section class="ck" id="iphone_stolen_device"><div class="svc">iPhone 本体・目安1分</div><h3>1. 盗難デバイスの保護</h3>
+<ol><li>「設定」を開く</li><li>「Face IDとパスコード」を押す</li><li>パスコードを入れる</li><li>「盗難デバイスの保護」を押す</li><li>オンになっているか見る</li></ol>
+<p class="done">済んだ目印: 「盗難デバイスの保護」がオンなら済み</p>
+<p class="why">オフのままだと: オフだと、盗まれて番号を知られた時、大事な設定を変えられるおそれがあります。</p>
+<p class="note">iOS 17.3 以降の機能です。2ファクタ認証・「探す」・「利用頻度の高い場所」がオンでないと使えません。最初からオンのこともあります。</p>
+<p class="src">手順の出典: Apple サポート「iPhoneの「盗難デバイスの保護」について」<a href="https://support.apple.com/ja-jp/120340" rel="nofollow noopener">https://support.apple.com/ja-jp/120340</a>(確かめた日 2026-10-31)</p></section><h2>先にオンにしておく設定</h2><section class="ck" id="apple_2fa"><div class="svc">Apple アカウント・目安1分</div><h3>2. 2ファクタ認証</h3>
+<ol><li>「設定」を開く</li><li>自分の名前を押す</li><li>「サインインとセキュリティ」を押す</li><li>「2ファクタ認証」を見る</li></ol>
+<p class="done">済んだ目印: 「2ファクタ認証」がオンなら済み</p>
+<p class="why">オフのままだと: オフだと、パスワードが漏れた時にサインインされるおそれがあります。</p>
+<p class="note">ほとんどのアカウントは最初からオンです。</p>
+<p class="src">手順の出典: Apple サポート「Apple Accountの2ファクタ認証」<a href="https://support.apple.com/ja-jp/102660" rel="nofollow noopener">https://support.apple.com/ja-jp/102660</a>(確かめた日 2026-10-31)</p></section><section class="ck" id="iphone_findmy"><div class="svc">iPhone 本体・目安1分</div><h3>3. 「探す」をオンに</h3>
+<ol><li>「設定」を開く</li><li>自分の名前を押す</li><li>「探す」を押す</li><li>「iPhoneを探す」を押す</li><li>「iPhoneを探す」をオンにする</li></ol>
+<p class="done">済んだ目印: 「iPhoneを探す」がオンなら済み</p>
+<p class="why">オフのままだと: オフだと、なくした時に場所を調べられないおそれがあります。</p>
+<p class="note">同じ画面の「“探す”ネットワーク」もオンにすると、電波が無い時も探しやすくなります。</p>
+<p class="src">手順の出典: Apple サポート「iPhone、iPad、Macで「探す」を有効にする方法」<a href="https://support.apple.com/ja-jp/102648" rel="nofollow noopener">https://support.apple.com/ja-jp/102648</a>(確かめた日 2026-10-31)</p></section><section class="ck" id="iphone_passcode"><div class="svc">iPhone 本体・目安1分</div><h3>4. 画面ロックのパスコード</h3>
+<ol><li>「設定」を開く</li><li>「Face IDとパスコード」を押す</li><li>パスコードを入れる</li><li>「パスコードをオフにする」の表示を見る</li></ol>
+<p class="done">済んだ目印: 「パスコードをオフにする」と出ていれば済み</p>
+<p class="why">オフのままだと: ロックが無いと、なくした時に中を勝手に使われるおそれがあります。</p>
+<p class="note">ホームボタンのある機種は「Touch IDとパスコード」です。「パスコードをオンにする」と出ていたら、まだ設定されていません。</p>
+<p class="src">手順の出典: Apple サポート「iPhoneでパスコードを設定する」<a href="https://support.apple.com/ja-jp/guide/iphone/iph14a867ae/ios" rel="nofollow noopener">https://support.apple.com/ja-jp/guide/iphone/iph14a867ae/ios</a>(確かめた日 2026-10-31)<br>注意の文の出典: Google アカウント ヘルプ <a href="https://support.google.com/accounts/answer/46526?hl=ja" rel="nofollow noopener">https://support.google.com/accounts/answer/46526?hl=ja</a>(確かめた日 2026-10-31)</p></section>
+<div class="box" id="tojimari"><h2>この点検を、アプリで順番に</h2>
+<p>トジマリは、スマホとお金まわりの設定を、ひとつずつ自分で確かめていくための Android アプリです。使っているサービスに印を付けると、このページと同じ公式ヘルプの手順が大きな字で1つずつ出て、済んだ所に印が付きます。親のスマホの分も分けて点検できます。</p>
+<p>アプリは何も調べません。パスワードや暗証番号を入れる所もありません。点検の記録はスマホの中だけに残ります。</p>
+<p><a class="btn line" href="/tojimari/">トジマリの紹介</a></p><h2 style="font-size:17px;margin-top:18px">Android 版のテスターを募集しています</h2>
+<p>Google Play で一般公開するには、12人に14日間入れておいてもらうテストが要ります。いまテスト版の審査を待っているところで、通ったら下の参加ページから入れます(開けない時は数日おいてから試してください)。</p>
+<ol><li><a href="https://groups.google.com/g/nigatecho-testers">テスター用のグループ</a>に参加する</li><li>参加ページで「テスターになる」を押す</li><li>同じページの「Google Play でダウンロード」から入れる</li></ol>
+<p><a class="btn" href="https://play.google.com/apps/testing/jp.tojimari.app">トジマリのテストに参加する</a></p></div>
+<h2>ほかの設定の手順</h2><ul class="guides"><li><a href="/tojimari/guide/paypay/">PayPay の乗っ取り・不正利用に備える設定5つ<small>5項目</small></a></li><li><a href="/tojimari/guide/line/">LINE の乗っ取りを防ぐ設定6つ<small>6項目</small></a></li><li><a href="/tojimari/guide/oya/">親のスマホで、一緒に確かめたい設定<small>10項目</small></a></li><li><a href="/tojimari/guide/google-2sv/">Google アカウントの2段階認証と、あわせて見たい設定<small>6項目</small></a></li></ul></main>
+<footer><p>このページの手順は、各社の公式ヘルプを開いて読み、書かれている順番と画面の言葉のまま写しました。画面は機種や版で変わることがあります。各社の名前は説明のために書いているだけで、トジマリは各社と関係のない、個人の開発者が作ったアプリです。</p>
+<p>お問い合わせ: <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a> / <a href="/">YURU Studio のアプリ一覧</a> / <a href="/tojimari/privacy.html">トジマリのプライバシーポリシー</a></p></footer>
+</body></html>
