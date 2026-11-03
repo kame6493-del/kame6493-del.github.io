@@ -182,6 +182,8 @@ REGISTRY = [
     dict(path="/exam/kaigo/3kagetsu/", theme="nigatecho", label="介護福祉士", title="第39回介護福祉士国家試験まで3か月。科目ごとの問題数と、0点を作らない勉強の順番", tags={"kaigo", "kamoku"}),
     dict(path="/exam/shakai/3kagetsu/", theme="nigatecho", label="社会福祉士", title="第39回社会福祉士国家試験まで3か月。6つの科目群の問題数と、勉強の順番", tags={"shakai", "kamoku"}),
     dict(path="/exam/kango/3kagetsu/", theme="nigatecho", label="看護師", title="第116回看護師国家試験まで3か月。必修40点と合格点から考える勉強の順番", tags={"kango", "kamoku"}),
+    dict(path="/exam/kango/goukakuritsu/", theme="nigatecho", label="看護師", title="看護師国家試験の合格率の推移(第111回〜第115回)。新卒者と新卒以外の数字", tags={"kango", "kisotsu"}),
+    dict(path="/exam/kaigo/touroku/", theme="nigatecho", label="介護福祉士", title="第39回介護福祉士国家試験の合格発表と、合格したあとの登録の手続き", tags={"kaigo", "tojitsu"}),
     dict(path="/blog/kokushi-answer-numbers.html", theme="nigatecho", label="国家試験", title="国家試験の「正解の番号」を数えてみた", tags={"kaigo", "kanri", "rinsho", "pt"}),
     # 開発日記
     dict(path="/blog/closed-test-12.html", theme="yuru", label="開発日記", title="クローズドテストの「12人」、3日でなんとか集まった話", tags={"dev", "tester"}),
