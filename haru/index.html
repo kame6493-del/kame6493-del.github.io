@@ -35,6 +35,34 @@
 <script src="ex1024.js?v=20261025p"></script>
 <script src="ex1025.js?v=20261025y"></script>
 <script src="ex1025b.js?v=20261025x"></script>
-<a href="https://play.google.com/store/apps/details?id=jp.harunobouken.app" style="position:fixed;left:50%;bottom:calc(2px + env(safe-area-inset-bottom));transform:translateX(-50%);font:11px sans-serif;color:#fff;opacity:.65;text-decoration:underline;z-index:5;white-space:nowrap">Google Play で配信中(Android)</a>
+<style>
+  /* Google Play への道(11/3)。あそんでいる間は出さない。ワールド1を抜けた後の おみせ でだけ目立たせる */
+  #haru-play { position: fixed; right: calc(10px + env(safe-area-inset-right)); bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 5; display: none;
+    align-items: center; gap: 6px; padding: 6px 12px 6px 10px; border-radius: 999px; background: rgba(20, 30, 60, .62); color: #fff; text-decoration: none;
+    font: 700 12px/1.2 'M PLUS Rounded 1c', sans-serif; white-space: nowrap; box-shadow: 0 1px 4px rgba(0, 0, 0, .25); -webkit-tap-highlight-color: transparent; }
+  #haru-play svg { width: 13px; height: 13px; flex: none; }
+  #haru-play.big { padding: 10px 18px 10px 14px; font-size: 15px; background: #1f8f4e; border: 2px solid #fff; box-shadow: 0 3px 10px rgba(0, 0, 0, .35); }
+  #haru-play.big svg { width: 17px; height: 17px; }
+</style>
+<a id="haru-play" href="https://play.google.com/store/apps/details?id=jp.harunobouken.app&amp;referrer=utm_source%3Dweb%26utm_medium%3Dharuweb" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M5 3.5v17a1 1 0 0 0 1.5.86l14-8.5a1 1 0 0 0 0-1.72l-14-8.5A1 1 0 0 0 5 3.5z"/></svg><span>Google Play で続きを遊ぶ</span></a>
+<script>
+(() => {
+  const a = document.getElementById('haru-play'); if (!a) return;
+  const ua = navigator.userAgent || '';
+  // アプリの中・iPhone/iPad では出さない(iOS 版はまだ出ていない)
+  if (window.Capacitor || /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) { a.remove(); return; }
+  const BASE = 'https://play.google.com/store/apps/details?id=jp.harunobouken.app&referrer=utm_source%3Dweb%26utm_medium%3Dharuweb';
+  const SHOW = { shop: 'big', title: 'small', clear: 'small', gameover: 'small', ending: 'small' };
+  const span = a.querySelector('span'); let last = '';
+  setInterval(() => {
+    const G = window.__game; const sc = G ? G.scene : '';
+    const m = SHOW[sc] || ''; const en = typeof isEN === 'function' && isEN();
+    const key = sc + '|' + m + '|' + en; if (key === last) return; last = key;
+    a.style.display = m ? 'inline-flex' : 'none'; a.className = m === 'big' ? 'big' : '';
+    span.textContent = en ? 'Continue on Google Play' : 'Google Play で続きを遊ぶ';
+    a.href = BASE + '%26utm_content%3D' + (sc || 'none');
+  }, 400);
+})();
+</script>
 </body>
 </html>
