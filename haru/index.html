@@ -4,15 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#5ec4ff">
-<title>ハルの冒険</title>
-<meta name="description" content="ほしのかけらを集める横スクロールアクション。ブラウザでそのまま遊べる体験版(ワールド1)。">
-<meta property="og:title" content="ハルの冒険(体験版)">
-<meta property="og:description" content="ほしのかけらを集める横スクロールアクション。ブラウザでそのまま遊べます。">
-<meta property="og:image" content="https://kame6493-del.github.io/haru/ogp.jpg?v=20261025">
-<meta property="og:url" content="https://kame6493-del.github.io/haru/">
+<title>ハルの冒険|ブラウザで遊べる横スクロールアクションゲーム</title>
+<meta name="description" content="走って跳んで、敵をふみつけ、剣でたたかう横スクロールの2Dアクションゲーム。ハテナブロックをたたき、もこりゅうに乗って進む冒険です。ワールド1はブラウザでそのまま遊べて、Android 版は8つのワールド・79ステージ・ボス12体。">
+<link rel="canonical" href="https://yurustudio.github.io/haru/">
+<meta property="og:site_name" content="YURU">
+<meta property="og:title" content="ハルの冒険|ブラウザで遊べる横スクロールアクション">
+<meta property="og:description" content="走って跳んで、剣でたたかう2Dアクションゲーム。ワールド1はブラウザでそのまま遊べます。Android 版は79ステージ・ボス12体・敵88種。">
+<meta property="og:image" content="https://yurustudio.github.io/haru/ogp.jpg?v=20261025">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://yurustudio.github.io/haru/">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://kame6493-del.github.io/haru/ogp.jpg?v=20261025">
+<meta name="twitter:site" content="@apkderete">
+<meta name="twitter:title" content="ハルの冒険|ブラウザで遊べる横スクロールアクション">
+<meta name="twitter:description" content="走って跳んで、剣でたたかう2Dアクションゲーム。ワールド1はブラウザでそのまま遊べます。Android 版は79ステージ・ボス12体・敵88種。">
+<meta name="twitter:image" content="https://yurustudio.github.io/haru/ogp.jpg?v=20261025">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "ハルの冒険",
+  "alternateName": "Haru's Adventure: Star Shards",
+  "url": "https://yurustudio.github.io/haru/",
+  "description": "走る、跳ぶ、ふみつける、ハテナブロックをたたく。昔ながらの横アクションをスマホとブラウザで遊べるようにした冒険ゲームです。剣で敵をたおし、もこりゅうに乗って進み、ボスとお話してからたたかいます。8つのワールドとその先のほしのみち、79ステージ、ボス12体、敵88種。",
+  "genre": ["Action", "Platformer"],
+  "gamePlatform": ["Android", "Web browser"],
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Android, Web",
+  "playMode": "SinglePlayer",
+  "inLanguage": ["ja", "en"],
+  "image": "https://yurustudio.github.io/haru/ogp.jpg",
+  "screenshot": [
+    "https://yurustudio.github.io/haru/press/img/haru_screen_01.png",
+    "https://yurustudio.github.io/haru/press/img/haru_screen_05.png"
+  ],
+  "installUrl": "https://play.google.com/store/apps/details?id=jp.harunobouken.app",
+  "sameAs": ["https://play.google.com/store/apps/details?id=jp.harunobouken.app"],
+  "datePublished": "2026-11-02",
+  "author": {"@type": "Organization", "name": "YURU", "url": "https://yurustudio.github.io/"},
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY", "url": "https://play.google.com/store/apps/details?id=jp.harunobouken.app"}
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet">
@@ -61,6 +95,67 @@
     a.style.display = m ? 'inline-flex' : 'none'; a.className = m === 'big' ? 'big' : '';
     span.textContent = en ? 'Continue on Google Play' : 'Google Play で続きを遊ぶ';
     a.href = BASE + '%26utm_content%3D' + (sc || 'none');
+  }, 400);
+})();
+</script>
+<style>
+  /* ゲームの説明(11/3)。タイトル画面でだけ左下に小さく出す。あそんでいる間は出さない */
+  #haru-about-btn { position: fixed; left: calc(10px + env(safe-area-inset-left)); bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 5; display: none;
+    padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(20, 30, 60, .62); color: #fff; font: 700 12px/1.2 'M PLUS Rounded 1c', sans-serif;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .25); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #haru-about { position: fixed; inset: 0; z-index: 20; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+    background: #10142c; color: #f3f4fb; -webkit-user-select: text; user-select: text;
+    font: 400 15px/1.85 "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif; }
+  #haru-about.open { display: block; }
+  #haru-about .in { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
+  #haru-about h1 { font: 800 22px/1.4 'M PLUS Rounded 1c', sans-serif; margin: 8px 0 12px; }
+  #haru-about h2 { font: 800 17px/1.5 'M PLUS Rounded 1c', sans-serif; color: #ffc83d; margin: 24px 0 6px; }
+  #haru-about p, #haru-about ul { margin: 6px 0; }
+  #haru-about ul { padding-left: 1.3em; }
+  #haru-about a { color: #7fd6ff; }
+  #haru-about .close { position: sticky; top: 8px; float: right; padding: 6px 14px; border: 1px solid #3a4275; border-radius: 999px; background: #262c55; color: #fff; font: 700 13px/1.2 'M PLUS Rounded 1c', sans-serif; cursor: pointer; }
+</style>
+<button id="haru-about-btn" type="button">このゲームについて</button>
+<article id="haru-about" lang="ja" aria-label="ハルの冒険について">
+<div class="in">
+<button class="close" type="button">とじる</button>
+<h1>ハルの冒険 走って跳んで剣でたたかう横スクロールアクション</h1>
+<p>ハルが剣を手に、ほしのかけらを集めて旅をする横スクロールのアクションゲームです。夜空を照らしていたほしのランプが割れて、かけらが国じゅうに散らばりました。小さな星のピピといっしょに、光を取りもどしに出かけます。ワールド1はこのページのまま、ブラウザで遊べます。</p>
+<h2>横アクションが好きな人へ</h2>
+<p>走る、跳ぶ、ふみつける、ハテナブロックをたたく。昔ながらの横アクション(横スクロールのジャンプアクション)を、スマホで遊べるようにした冒険ゲームです。仲間のもこりゅうに乗って敵を食べながら進んだり、ボスとお話してからたたかったりする、ストーリーのある2Dアクションです。アクションゲームやジャンプアクション、冒険ゲームが好きな人に向けて作りました。</p>
+<h2>8つのワールドと79ステージ</h2>
+<p>みどりのくにから、こおりとみずのくに、さばくとそらのくに、ジャングルとたきのくに、つきとほしぞらのくに、かげのおうのくにまで、8つのワールドがあります。最後のしろではボスが待っています。腕だめしには、その先のほしのみちへ。ボスは12体、敵は88種で、たおした敵はモンスターずかんで見られます。</p>
+<h2>スマホでも、パソコンのブラウザでも</h2>
+<ul>
+<li>走る、ジャンプ、かべジャンプ、スピンジャンプ、ヒップドロップ</li>
+<li>剣で敵をたおし、とんでくる弾をはじく</li>
+<li>もこりゅうに乗る、ほしのマントで空をすべる、トロッコやぶらんこで進む</li>
+<li>スマホは画面のボタン、パソコンはキーボードで遊べます。ゲームコントローラーもつなげます</li>
+</ul>
+<h2>続きは Android 版で</h2>
+<p>ワールド2から先は、Android のアプリで遊べます。ステージは端末の中にあるので、通信のない所でも遊べるオフラインのゲームです。広告はありません。</p>
+<p><a href="https://play.google.com/store/apps/details?id=jp.harunobouken.app&amp;referrer=utm_source%3Dweb%26utm_medium%3Dharuabout" target="_blank" rel="noopener">Google Play でハルの冒険を見る</a> / <a href="press/">プレス素材(画像・動画)</a> / <a href="../">YURU のほかのアプリ</a></p>
+</div>
+</article>
+<script>
+(() => {
+  const btn = document.getElementById('haru-about-btn'), box = document.getElementById('haru-about');
+  if (!btn || !box) return;
+  if (window.Capacitor) { btn.remove(); box.remove(); return; }
+  const open = v => { box.classList.toggle('open', v); };
+  btn.addEventListener('click', () => open(true));
+  box.querySelector('.close').addEventListener('click', () => open(false));
+  // 説明を開いている間は、キーをゲームに渡さない(Enter・Space でタイトルから始まらないように)
+  const guard = e => { if (!box.classList.contains('open')) return; e.stopImmediatePropagation(); if (e.type === 'keydown' && e.key === 'Escape') open(false); };
+  addEventListener('keydown', guard, true);
+  let last = '';
+  setInterval(() => {
+    const G = window.__game; const sc = G ? G.scene : '';
+    const en = typeof isEN === 'function' && isEN();
+    const key = sc + '|' + en; if (key === last) return; last = key;
+    btn.style.display = sc === 'title' ? 'inline-block' : 'none';
+    btn.textContent = en ? 'About this game' : 'このゲームについて';
+    if (sc && sc !== 'title') open(false);
   }, 400);
 })();
 </script>
