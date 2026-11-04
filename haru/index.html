@@ -103,6 +103,9 @@
   #haru-about-btn { position: fixed; left: calc(10px + env(safe-area-inset-left)); bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 5; display: none;
     padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(20, 30, 60, .62); color: #fff; font: 700 12px/1.2 'M PLUS Rounded 1c', sans-serif;
     box-shadow: 0 1px 4px rgba(0, 0, 0, .25); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #haru-support-btn { position: fixed; left: calc(150px + env(safe-area-inset-left)); bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 5; display: none;
+    padding: 6px 12px; border-radius: 999px; background: rgba(20, 30, 60, .62); color: #fff; font: 700 12px/1.2 'M PLUS Rounded 1c', sans-serif; text-decoration: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .25); -webkit-tap-highlight-color: transparent; }
   #haru-about { position: fixed; inset: 0; z-index: 20; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
     background: #10142c; color: #f3f4fb; -webkit-user-select: text; user-select: text;
     font: 400 15px/1.85 "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif; }
@@ -116,6 +119,7 @@
   #haru-about .close { position: sticky; top: 8px; float: right; padding: 6px 14px; border: 1px solid #3a4275; border-radius: 999px; background: #262c55; color: #fff; font: 700 13px/1.2 'M PLUS Rounded 1c', sans-serif; cursor: pointer; }
 </style>
 <button id="haru-about-btn" type="button">このゲームについて</button>
+<a id="haru-support-btn" href="#support">お問い合わせ</a>
 <article id="haru-about" lang="ja" aria-label="ハルの冒険について">
 <div class="in">
 <button class="close" type="button">とじる</button>
@@ -135,15 +139,29 @@
 <h2>続きは Android 版で</h2>
 <p>ワールド2から先は、Android のアプリで遊べます。ステージは端末の中にあるので、通信のない所でも遊べるオフラインのゲームです。広告はありません。</p>
 <p><a href="https://play.google.com/store/apps/details?id=jp.harunobouken.app&amp;referrer=utm_source%3Dweb%26utm_medium%3Dharuabout" target="_blank" rel="noopener">Google Play でハルの冒険を見る</a> / <a href="press/">プレス素材(画像・動画)</a> / <a href="../">YURU のほかのアプリ</a></p>
+<h2 id="support">サポート・お問い合わせ</h2>
+<p>アプリ版では、ワールド1(れんしゅうのはらっぱと今日の1面をふくむ)はそのまま遊べます。ワールド2から先は完全版(アプリ内課金・買い切り)でひらきます。ブラウザ版はワールド1だけで、購入はできません。</p>
+<p>メール: <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a> / X: <a href="https://x.com/apkderete" target="_blank" rel="noopener">@apkderete</a><br>個人で作っているゲームなので、返事に数日いただくことがあります。不具合のときは、端末名・OSのバージョン・起きたステージを書いていただけると助かります。</p>
+<ul>
+<li>完全版の買い方: タイトル画面の「おみせ」で「完全版を かう」を押します。買い切りで、月ごとの支払いはありません。</li>
+<li>入れ直した・機種を替えた: 同じ Apple ID(Android は同じ Google アカウント)で「おみせ」の「こうにゅうを ふくげん」を押してください。</li>
+<li>セーブ: 進みぐあいは端末の中だけに保存します。アプリを削除すると消えます。</li>
+<li>返金: Apple の reportaproblem.apple.com、または Google Play の注文履歴からお申し込みください。</li>
+</ul>
+<p><a href="support.html">サポートのページ(よくある質問)</a> / <a href="privacy.html">プライバシーポリシー</a></p>
 </div>
 </article>
 <script>
 (() => {
   const btn = document.getElementById('haru-about-btn'), box = document.getElementById('haru-about');
   if (!btn || !box) return;
-  if (window.Capacitor) { btn.remove(); box.remove(); return; }
+  if (window.Capacitor) { btn.remove(); box.remove(); const sb = document.getElementById('haru-support-btn'); if (sb) sb.remove(); return; }
   const open = v => { box.classList.toggle('open', v); };
+  const sbtn = document.getElementById('haru-support-btn');
+  const toSupport = () => { open(true); const h = document.getElementById('support'); if (h) box.scrollTop = h.offsetTop - 12; };
   btn.addEventListener('click', () => open(true));
+  if (sbtn) sbtn.addEventListener('click', e => { e.preventDefault(); toSupport(); });
+  if (location.hash === '#support') setTimeout(toSupport, 0);
   box.querySelector('.close').addEventListener('click', () => open(false));
   // 説明を開いている間は、キーをゲームに渡さない(Enter・Space でタイトルから始まらないように)
   const guard = e => { if (!box.classList.contains('open')) return; e.stopImmediatePropagation(); if (e.type === 'keydown' && e.key === 'Escape') open(false); };
@@ -155,6 +173,7 @@
     const key = sc + '|' + en; if (key === last) return; last = key;
     btn.style.display = sc === 'title' ? 'inline-block' : 'none';
     btn.textContent = en ? 'About this game' : 'このゲームについて';
+    if (sbtn) { sbtn.style.display = sc === 'title' ? 'inline-block' : 'none'; sbtn.textContent = en ? 'Support' : 'お問い合わせ'; }
     if (sc && sc !== 'title') open(false);
   }, 400);
 })();
