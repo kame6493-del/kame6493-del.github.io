@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#5ec4ff">
 <title>ハルの冒険|ブラウザで遊べる横スクロールアクションゲーム</title>
-<meta name="description" content="走って跳んで、敵をふみつけ、剣でたたかう横スクロールの2Dアクションゲーム。ハテナブロックをたたき、もこりゅうに乗って進む冒険です。ワールド1はブラウザでそのまま遊べて、Android 版は8つのワールド・79ステージ・ボス12体。">
+<meta name="description" content="走って跳んで、敵をふみつけ、剣でたたかう横スクロールの2Dアクションゲーム。ハテナブロックをたたき、もこりゅうに乗って進む冒険です。ワールド1はブラウザでそのまま遊べて、アプリ版(iPhone・Android)は8つのワールド・79ステージ・ボス12体。">
 <link rel="canonical" href="https://yurustudio.github.io/haru/">
 <meta property="og:site_name" content="YURU">
 <meta property="og:title" content="ハルの冒険|ブラウザで遊べる横スクロールアクション">
-<meta property="og:description" content="走って跳んで、剣でたたかう2Dアクションゲーム。ワールド1はブラウザでそのまま遊べます。Android 版は79ステージ・ボス12体・敵88種。">
+<meta property="og:description" content="走って跳んで、剣でたたかう2Dアクションゲーム。ワールド1はブラウザでそのまま遊べます。アプリ版(iPhone・Android)は79ステージ・ボス12体・敵88種。">
 <meta property="og:image" content="https://yurustudio.github.io/haru/ogp.jpg?v=20261025">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -19,7 +19,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@apkderete">
 <meta name="twitter:title" content="ハルの冒険|ブラウザで遊べる横スクロールアクション">
-<meta name="twitter:description" content="走って跳んで、剣でたたかう2Dアクションゲーム。ワールド1はブラウザでそのまま遊べます。Android 版は79ステージ・ボス12体・敵88種。">
+<meta name="twitter:description" content="走って跳んで、剣でたたかう2Dアクションゲーム。ワールド1はブラウザでそのまま遊べます。アプリ版(iPhone・Android)は79ステージ・ボス12体・敵88種。">
 <meta name="twitter:image" content="https://yurustudio.github.io/haru/ogp.jpg?v=20261025">
 <script type="application/ld+json">
 {
@@ -30,9 +30,9 @@
   "url": "https://yurustudio.github.io/haru/",
   "description": "走る、跳ぶ、ふみつける、ハテナブロックをたたく。昔ながらの横アクションをスマホとブラウザで遊べるようにした冒険ゲームです。剣で敵をたおし、もこりゅうに乗って進み、ボスとお話してからたたかいます。8つのワールドとその先のほしのみち、79ステージ、ボス12体、敵88種。",
   "genre": ["Action", "Platformer"],
-  "gamePlatform": ["Android", "Web browser"],
+  "gamePlatform": ["iOS", "Android", "Web browser"],
   "applicationCategory": "GameApplication",
-  "operatingSystem": "Android, Web",
+  "operatingSystem": "iOS, Android, Web",
   "playMode": "SinglePlayer",
   "inLanguage": ["ja", "en"],
   "image": "https://yurustudio.github.io/haru/ogp.jpg",
@@ -41,7 +41,7 @@
     "https://yurustudio.github.io/haru/press/img/haru_screen_05.png"
   ],
   "installUrl": "https://play.google.com/store/apps/details?id=jp.harunobouken.app",
-  "sameAs": ["https://play.google.com/store/apps/details?id=jp.harunobouken.app"],
+  "sameAs": ["https://play.google.com/store/apps/details?id=jp.harunobouken.app", "https://apps.apple.com/jp/app/id6823975997"],
   "datePublished": "2026-11-02",
   "author": {"@type": "Organization", "name": "YURU", "url": "https://yurustudio.github.io/"},
   "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY", "url": "https://play.google.com/store/apps/details?id=jp.harunobouken.app"}
@@ -83,9 +83,11 @@
 (() => {
   const a = document.getElementById('haru-play'); if (!a) return;
   const ua = navigator.userAgent || '';
-  // アプリの中・iPhone/iPad では出さない(iOS 版はまだ出ていない)
-  if (window.Capacitor || /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) { a.remove(); return; }
-  const BASE = 'https://play.google.com/store/apps/details?id=jp.harunobouken.app&referrer=utm_source%3Dweb%26utm_medium%3Dharuweb';
+  // アプリの中では出さない。iPhone/iPad は App Store へ(11/4 iOS 版の配信開始)
+  if (window.Capacitor) { a.remove(); return; }
+  const IOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const BASE = IOS ? 'https://apps.apple.com/jp/app/id6823975997?pt=129523583&mt=8&ct=web_haru_'
+    : 'https://play.google.com/store/apps/details?id=jp.harunobouken.app&referrer=utm_source%3Dweb%26utm_medium%3Dharuweb';
   const SHOW = { shop: 'big', title: 'small', clear: 'small', gameover: 'small', ending: 'small' };
   const span = a.querySelector('span'); let last = '';
   setInterval(() => {
@@ -93,8 +95,8 @@
     const m = SHOW[sc] || ''; const en = typeof isEN === 'function' && isEN();
     const key = sc + '|' + m + '|' + en; if (key === last) return; last = key;
     a.style.display = m ? 'inline-flex' : 'none'; a.className = m === 'big' ? 'big' : '';
-    span.textContent = en ? 'Continue on Google Play' : 'Google Play で続きを遊ぶ';
-    a.href = BASE + '%26utm_content%3D' + (sc || 'none');
+    span.textContent = IOS ? (en ? 'Continue on the App Store' : 'App Store で続きを遊ぶ') : (en ? 'Continue on Google Play' : 'Google Play で続きを遊ぶ');
+    a.href = BASE + (IOS ? '' : '%26utm_content%3D') + (sc || 'none');
   }, 400);
 })();
 </script>
@@ -136,9 +138,9 @@
 <li>もこりゅうに乗る、ほしのマントで空をすべる、トロッコやぶらんこで進む</li>
 <li>スマホは画面のボタン、パソコンはキーボードで遊べます。ゲームコントローラーもつなげます</li>
 </ul>
-<h2>続きは Android 版で</h2>
-<p>ワールド2から先は、Android のアプリで遊べます。ステージは端末の中にあるので、通信のない所でも遊べるオフラインのゲームです。広告はありません。</p>
-<p><a href="https://play.google.com/store/apps/details?id=jp.harunobouken.app&amp;referrer=utm_source%3Dweb%26utm_medium%3Dharuabout" target="_blank" rel="noopener">Google Play でハルの冒険を見る</a> / <a href="press/">プレス素材(画像・動画)</a> / <a href="../">YURU のほかのアプリ</a></p>
+<h2>続きは iPhone 版・Android 版で</h2>
+<p>ワールド2から先は、iPhone と Android のアプリで遊べます。ステージは端末の中にあるので、通信のない所でも遊べるオフラインのゲームです。広告はありません。</p>
+<p><a href="https://apps.apple.com/jp/app/id6823975997?pt=129523583&amp;ct=web_haru&amp;mt=8" target="_blank" rel="noopener">App Store でハルの冒険を見る</a> / <a href="https://play.google.com/store/apps/details?id=jp.harunobouken.app&amp;referrer=utm_source%3Dweb%26utm_medium%3Dharuabout" target="_blank" rel="noopener">Google Play でハルの冒険を見る</a> / <a href="press/">プレス素材(画像・動画)</a> / <a href="../">YURU のほかのアプリ</a></p>
 <h2 id="support">サポート・お問い合わせ</h2>
 <p>アプリ版では、ワールド1(れんしゅうのはらっぱと今日の1面をふくむ)はそのまま遊べます。ワールド2から先は完全版(アプリ内課金・買い切り)でひらきます。ブラウザ版はワールド1だけで、購入はできません。</p>
 <p>メール: <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a> / X: <a href="https://x.com/apkderete" target="_blank" rel="noopener">@apkderete</a><br>個人で作っているゲームなので、返事に数日いただくことがあります。不具合のときは、端末名・OSのバージョン・起きたステージを書いていただけると助かります。</p>
