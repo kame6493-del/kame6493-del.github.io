@@ -1,0 +1,7 @@
+効果音の出典(2026-11-06)
+効果音ラボ https://soundeffect-lab.info/  利用規約 https://soundeffect-lab.info/agreement/
+商用利用可・クレジット表記は任意・素材そのものの再配布は不可。
+
+save.mp3   ボタン・システム音「決定ボタンを押す34」(sound/button/mp3/decision34.mp3)
+settle.mp3 アニメ・漫画的な効果音「キラッ1」(sound/anime/mp3/kira1.mp3)
+import.mp3 アニメ・漫画的な効果音「パパッ」(sound/anime/mp3/papa1.mp3)
