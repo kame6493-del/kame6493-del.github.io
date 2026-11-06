@@ -17,6 +17,8 @@ const CFG = {
   STORE_KEY: 'rakugaki_undoukai_v1',
   SIZE: 120,          // レースでの生き物の大きさ(世界の単位。画面の高さ = 760)
   VIEW_TOP: 240, VIEW_H: 760,
+  VIEW_W_MIN: 560,    // 見える横幅(世界の単位)がこれより狭い縦長の画面(スマホ縦)だけ引く。タブレット縦(768x1024)は 570 で変わらない
+  VIEW_W_KEEP: 0.4,   // 引き方: 高さ合わせの横幅と VIEW_W_MIN の間を対数で、元の側を 0.4 残す(412x915: 342→460)。生き物を小さくしすぎない
   COUNTDOWN: 2.4,     // 「よーい」から「ドン」まで
   VS_SIZE: 3,
   PER_BYTES: 380,     // URL に詰める1体の上限(バイト)。3体で約1,550文字
@@ -745,7 +747,10 @@ function renderScene(ctx, W, H, scene, t, cam, opt) {
   }
 }
 function sceneCam(scene, t, W, H, followX) {
+  // ふだんは高さに合わせる。縦長(スマホ縦)だと横が狭くなりすぎてほかの子やゴールが見えないので、その時だけ横幅から引く
   let s = H / CFG.VIEW_H;
+  const vw0 = W / s;
+  if (vw0 < CFG.VIEW_W_MIN) s = W / (CFG.VIEW_W_MIN * Math.pow(vw0 / CFG.VIEW_W_MIN, CFG.VIEW_W_KEEP));
   let fx = followX;
   if (fx == null) { const i = scene.meIndex >= 0 ? scene.meIndex : 0; fx = racerAt(scene, i, t).x; }
   // 接戦のゴール: ゴールの線に寄る
