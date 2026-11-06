@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YURU Studio のアプリ | 国家試験の過去問・野球ゲーム・収支ノート</title>
+<title>YURU Studio のアプリ | 国家試験の過去問・アクションゲーム・お絵かきレース・野球ゲーム</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9843093495011329" crossorigin="anonymous"></script>
-<meta name="description" content="YURU Studio が1人で作っているスマホアプリ。国家試験の過去問 ニガテ帳(App Store・Google Play)、古文単語のこぶんめくり、野球の監督ゲーム DIAMOND NINE、収支ノートのカチマケを配信中。ブラウザで遊べるゲームも。">
+<meta name="description" content="YURU Studio が1人で作っているスマホアプリ。国家試験の過去問 ニガテ帳、横スクロールアクションのハルの冒険、描いた絵が走るらくがき運動会、野球チーム育成の DIAMOND NINE、ITパスポートのパスダンなどを App Store と Google Play で配信中。">
 <meta property="og:title" content="YURU Studio のアプリ">
-<meta property="og:description" content="国家試験の過去問 ニガテ帳、古文単語のこぶんめくり、野球の監督ゲーム DIAMOND NINE、収支ノートのカチマケ。1人で作っているスマホアプリです。">
+<meta property="og:description" content="国家試験の過去問 ニガテ帳、ハルの冒険、らくがき運動会、DIAMOND NINE、パスダン。1人で作っているスマホアプリです。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://yurustudio.github.io/">
 <meta property="og:image" content="https://yurustudio.github.io/img/nigatecho-icon.png">
@@ -112,6 +112,7 @@ h1, h2, h3, p { margin: 0; }
 .facts { list-style: none; padding: 0; margin: var(--sp-2) 0 0; display: flex; flex-wrap: wrap; gap: var(--sp-1); }
 .facts li { font-size: var(--fs-1); font-weight: 700; line-height: 1.5; padding: var(--sp-0) 12px; border-radius: var(--r-pill); background: var(--surface); color: var(--sub); border: 1px solid var(--line); }
 .grp.alt .facts li { background: var(--bg); }
+.grp.alt .facts li.age { background: var(--ink); }
 .facts li.age { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
 .badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
 .badges a { display: inline-flex; min-height: var(--tap); }
@@ -218,6 +219,19 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
   .tv { width: 316px; }
   .cards { grid-template-columns: repeat(3, 1fr); }
 }
+/* ===== 予告編・5つの入口 ===== */
+.video { position: relative; aspect-ratio: 16 / 9; margin-top: var(--sp-2); border-radius: var(--r-2); overflow: hidden; background: var(--navy); box-shadow: var(--sh-1); }
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+@media (max-width: 719px) { .door { min-height: 64px; } }
+@media (min-width: 720px) and (max-width: 1023px) { .doors { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) {
+  .doors { grid-template-columns: repeat(5, 1fr); gap: var(--sp-2); }
+  .door { min-height: 360px; padding: var(--sp-2) var(--sp-2) 0; }
+  .door b { font-size: var(--fs-3); }
+  .door-shot { width: 150px; height: 200px; }
+  .door-shot.wide { width: 100%; height: auto; padding: 6px; border-radius: var(--r-2); align-self: end; margin-bottom: var(--sp-2); }
+  .door-shot.wide img { border-radius: var(--r-1); }
+}
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 </head>
@@ -227,11 +241,10 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
   <div class="wrap">
     <a class="logo" href="./">YURU Studio</a>
     <nav aria-label="サイト内">
-      <a href="#study">勉強</a>
-      <a href="#game">ゲーム</a>
-      <a href="#life">道具</a>
-      <a href="#testing" class="pc">もうすぐ配信</a>
-      <a href="#about">自己紹介</a>
+      <a href="#pick">おすすめ</a>
+      <a href="#released">配信中</a>
+      <a href="#testing">もうすぐ</a>
+      <a href="#about" class="pc">自己紹介</a>
       <a href="https://x.com/apkderete">X</a>
     </nav>
   </div>
@@ -242,36 +255,44 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
   <div class="wrap grid">
     <div>
       <p class="eyebrow">YURU Studio ・ 1人で作っているスマホアプリ</p>
-      <h1 id="hero-h">試験勉強と、ゲームと、<br><em>毎日の記録</em>のアプリ。</h1>
-      <p class="lead">国家試験の過去問「ニガテ帳」、野球の監督ゲーム「DIAMOND NINE」、収支ノート「カチマケ」など。App Store と Google Play で配信しています。</p>
+      <h1 id="hero-h">国家試験の過去問と、<br><em>遊べるゲーム</em>を配信中。</h1>
+      <p class="lead">App Store と Google Play で配信しています。いちばん新しいのは、iPhone 版が出たハルの冒険とらくがき運動会です。</p>
       <ul class="doors">
-        <li><a class="door" href="#study" style="--g:var(--g-study)">
-          <span class="icons"><img src="img/shots/i-nigatecho.webp" alt="" width="44" height="44"><img src="img/shots/i-kobunmekuri.webp" alt="" width="44" height="44"></span>
-          <span><b>国家試験・受験の勉強</b><small>ニガテ帳・こぶんめくり・パスダン</small></span>
+        <li><a class="door" href="#nigatecho" style="--g:#c8323a">
+          <span class="icons"><img src="img/shots/i-nigatecho.webp" alt="" width="44" height="44"></span>
+          <span><b>ニガテ帳</b><small>介護福祉士・看護師など国家試験の過去問</small></span>
           <span class="arrow" aria-hidden="true">↓</span><span class="door-shot" aria-hidden="true"><img src="img/shots/ng-1.webp" alt="" width="540" height="1170" loading="lazy" decoding="async"></span></a></li>
-        <li><a class="door" href="#game" style="--g:var(--g-game)">
-          <span class="icons"><img src="img/shots/i-diamond-nine.webp" alt="" width="44" height="44"><img src="img/shots/i-haru.webp" alt="" width="44" height="44"></span>
-          <span><b>ゲームで遊ぶ</b><small>DIAMOND NINE・ハルの冒険</small></span>
+        <li><a class="door" href="#haru" style="--g:#d2552a">
+          <span class="icons"><img src="img/shots/i-haru.webp" alt="" width="44" height="44"></span>
+          <span><b>ハルの冒険</b><small>走って跳ぶ横スクロールアクション</small></span>
+          <span class="arrow" aria-hidden="true">↓</span><span class="door-shot wide" aria-hidden="true"><img src="img/shots/haru-c.webp" alt="" width="960" height="540" loading="lazy" decoding="async"></span></a></li>
+        <li><a class="door" href="#undoukai" style="--g:#e0457b">
+          <span class="icons"><img src="img/shots/i-undoukai.webp" alt="" width="44" height="44"></span>
+          <span><b>らくがき運動会</b><small>描いた絵が走るお絵かきレース</small></span>
+          <span class="arrow" aria-hidden="true">↓</span><span class="door-shot wide" aria-hidden="true"><img src="img/shots/und-b.webp" alt="" width="960" height="540" loading="lazy" decoding="async"></span></a></li>
+        <li><a class="door" href="#diamond-nine" style="--g:#1747a6">
+          <span class="icons"><img src="img/shots/i-diamond-nine.webp" alt="" width="44" height="44"></span>
+          <span><b>DIAMOND NINE</b><small>野球チーム育成シミュレーション</small></span>
           <span class="arrow" aria-hidden="true">↓</span><span class="door-shot" aria-hidden="true"><img src="img/shots/d9-1.webp" alt="" width="540" height="1169" loading="lazy" decoding="async"></span></a></li>
-        <li><a class="door" href="#life" style="--g:var(--g-life)">
-          <span class="icons"><img src="img/shots/i-kachimake.webp" alt="" width="44" height="44"><img src="img/shots/i-tabedoki.webp" alt="" width="44" height="44"></span>
-          <span><b>毎日の記録と道具</b><small>カチマケ・タベドキ</small></span>
-          <span class="arrow" aria-hidden="true">↓</span><span class="door-shot" aria-hidden="true"><img src="img/shots/km-a.webp" alt="" width="540" height="960" loading="lazy" decoding="async"></span></a></li>
+        <li><a class="door" href="#pasudan" style="--g:#5b3fb8">
+          <span class="icons"><img src="img/shots/i-pasudan.webp" alt="" width="44" height="44"></span>
+          <span><b>パスダン</b><small>ITパスポートの過去問を初心者から</small></span>
+          <span class="arrow" aria-hidden="true">↓</span><span class="door-shot" aria-hidden="true"><img src="img/shots/pd-1.webp" alt="" width="540" height="960" loading="lazy" decoding="async"></span></a></li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- ===== 勉強 ===== -->
-<section class="grp" id="study" aria-labelledby="study-h" style="--g:var(--g-study)">
+<!-- ===== おすすめ(いま推したい5本) ===== -->
+<section class="grp" id="pick" aria-labelledby="pick-h" style="--g:var(--accent)">
   <div class="wrap">
-    <div class="grp-h"><span class="chip" aria-hidden="true">学</span><div><h2 id="study-h">国家試験・受験の勉強</h2><p>過去問と単語を、苦手だけくり返して覚えるアプリ</p></div></div>
+    <div class="grp-h"><span class="chip" aria-hidden="true">推</span><div><h2 id="pick-h">いま配信中のおすすめ</h2><p>App Store・Google Play のボタンから入れられます</p></div></div>
 
     <article class="app" id="nigatecho" style="--c:#c8323a" aria-labelledby="ng-h">
       <div class="head">
-        <div class="name"><img src="img/shots/i-nigatecho.webp" alt="" width="64" height="64"><div><h3 id="ng-h">ニガテ帳</h3><p class="kind">国家試験の過去問(6試験のまとめ版)</p></div></div>
+        <div class="name"><img src="img/shots/i-nigatecho.webp" alt="" width="64" height="64"><div><h3 id="ng-h">ニガテ帳</h3><p class="kind">介護福祉士・看護師など、国家試験の過去問と解説</p></div></div>
         <p class="promise">間違えた問題だけが残って、<em>2回続けて正解すると消える</em>過去問集。</p>
-        <ul class="facts"><li>6つの国家試験</li><li>全問に解説</li><li>iPhone・Android</li></ul>
+        <ul class="facts"><li>6つの国家試験</li><li>全問に解説</li><li>iPhone・Android で配信中</li></ul>
       </div>
       <div class="more"><p class="desc">介護福祉士・看護師・社会福祉士・精神保健福祉士・管理栄養士・理学療法士の国家試験を1本で。本番の予想点と科目ごとの正答率、試験日までの1日の目安も出ます。</p></div>
       <div class="cta">
@@ -289,11 +310,118 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
       </div>
     </article>
 
+    <article class="app rev" id="haru" style="--c:#d2552a" aria-labelledby="haru-h">
+      <div class="head">
+        <div class="name"><img src="img/shots/i-haru.webp" alt="" width="64" height="64"><div><h3 id="haru-h">ハルの冒険</h3><p class="kind">走って跳ぶ横スクロールアクション</p></div></div>
+        <p class="promise">剣とジャンプで、<em>ほしのかけら</em>を集める旅。iPhone 版も出ました。</p>
+        <ul class="facts"><li>iPhone・Android で配信中</li><li>走る・ジャンプ・剣・スピン</li><li>日本語・English</li></ul>
+      </div>
+      <div class="more"><p class="desc">草原やほらあな、ほのおの山、そらの島を進みます。ワールドマップで道を選び、とりでやおばけやしき、ボスのしろへ。ブラウザ版はワールド1を遊べる体験版で、スマホでも PC でも動きます。</p></div>
+      <div class="cta">
+        <div class="badges">
+          <a class="as" href="https://apps.apple.com/jp/app/id6823975997?pt=129523583&amp;ct=web_haru_top&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="151" height="56"></a>
+          <a href="https://play.google.com/store/apps/details?id=jp.harunobouken.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
+        </div>
+        <div class="links"><a class="go" href="/haru/">ブラウザで遊ぶ(体験版)</a></div>
+      </div>
+      <div class="shots" role="group" aria-label="ハルの冒険の画面">
+        <figure class="tv" style="margin:0"><img src="img/shots/haru-c.webp" alt="ステージを進むハル。ブロックと敵" width="960" height="540" loading="lazy" decoding="async"></figure>
+        <figure class="tv" style="margin:0"><img src="img/shots/haru-a.webp" alt="ハルの冒険のタイトル画面" width="960" height="540" loading="lazy" decoding="async"></figure>
+      </div>
+    </article>
+
+    <article class="app" id="undoukai" style="--c:#e0457b" aria-labelledby="und-h">
+      <div class="head">
+        <div class="name"><img src="img/shots/i-undoukai.webp" alt="" width="64" height="64"><div><h3 id="und-h">らくがき運動会</h3><p class="kind">描いた絵が走るお絵かきレース</p></div></div>
+        <p class="promise">指で描いた生き物が、<em>そのままかけっこに出る</em>。iPhone 版を配信中です。</p>
+        <ul class="facts"><li>iPhone で配信中</li><li>Android 版はもうすぐ</li><li>日本語・English・한국어</li></ul>
+      </div>
+      <div class="more"><p class="desc">生き物を1匹描くと、その形のとおりに走りだします。どう描けば速いのかは、走らせて確かめてください。CPU のらくがきとのレース、友だちと3人対戦、タイムアタックも。</p></div>
+      <div class="cta">
+        <div class="badges">
+          <a class="as" href="https://apps.apple.com/jp/app/id6824418325?pt=129523583&amp;ct=web_undoukai&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="151" height="56"></a>
+        </div>
+        <div class="links"><a class="go" href="/undoukai/">ブラウザで遊ぶ</a></div>
+        <p class="note">実況・配信・動画投稿は自由です(収益化も可・連絡不要)。<a href="/undoukai/terms.html">利用規約・配信について</a> ・ <a href="/apps/undoukai/privacy.html">プライバシーポリシー</a></p>
+      </div>
+      <div class="shots" role="group" aria-label="らくがき運動会の画面">
+        <figure class="tv" style="margin:0"><img src="img/shots/und-b.webp" alt="描いた生き物がかけっこをする画面" width="960" height="540" loading="lazy" decoding="async"></figure>
+        <figure class="tv" style="margin:0"><img src="img/shots/und-a.webp" alt="らくがき運動会のタイトル画面" width="960" height="540" loading="lazy" decoding="async"></figure>
+      </div>
+    </article>
+
+    <article class="app rev" id="diamond-nine" style="--c:#1747a6" aria-labelledby="d9-h">
+      <div class="head">
+        <div class="name"><img src="img/shots/i-diamond-nine.webp" alt="" width="64" height="64"><div><h3 id="d9-h">DIAMOND NINE</h3><p class="kind">野球チーム育成シミュレーション</p></div></div>
+        <p class="promise">スカウトで選手を集めて、打線を組み、<em>1年を戦い抜く</em>野球の監督ゲーム。</p>
+        <ul class="facts"><li>Android で配信中</li><li>監督モード</li><li>143試合のシーズン</li></ul>
+      </div>
+      <div class="more">
+        <p class="desc">「1年進める」でシーズンをまとめて進めて、順位と成績を見ます。先発・中継ぎ・抑えの役割を決め、今の選手より強い選手が来たら入れ替えます。</p>
+        <div class="video"><iframe src="https://www.youtube-nocookie.com/embed/a96qBg5o2dY" title="DIAMOND NINE の予告編" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+      </div>
+      <div class="cta">
+        <div class="badges">
+          <a href="https://play.google.com/store/apps/details?id=com.diamondninebaseball.game"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
+        </div>
+        <div class="links"><a href="https://youtu.be/a96qBg5o2dY">予告編を YouTube で見る</a></div>
+      </div>
+      <div class="shots" role="group" aria-label="DIAMOND NINE の画面">
+        <figure class="phone" style="margin:0"><img src="img/shots/d9-1.webp" alt="チームの画面。打順と選手の能力" width="540" height="1169" loading="lazy" decoding="async"></figure>
+        <figure class="phone" style="margin:0"><img src="img/shots/d9-2.webp" alt="スカウトの画面" width="540" height="1169" loading="lazy" decoding="async"></figure>
+      </div>
+    </article>
+
+    <article class="app" id="pasudan" style="--c:#5b3fb8" aria-labelledby="pd-h">
+      <div class="head">
+        <div class="name"><img src="img/shots/i-pasudan.webp" alt="" width="64" height="64"><div><h3 id="pd-h">パスダン</h3><p class="kind">ITパスポートの過去問を初心者から</p></div></div>
+        <p class="promise">過去問の4択に正解するとモンスターに攻撃。<em>続けて正解するとコンボ</em>で威力が伸びます。</p>
+        <ul class="facts"><li>Google Play で配信中</li><li>学ぶ道 87単元</li><li>モンスター図鑑</li><li>過去問990問・全問に解説</li></ul>
+      </div>
+      <div class="more"><p class="desc">はじめての人は「学ぶ道」の87単元を順に進めて、用語から覚えられます。過去問は令和8年度から平成30年度秋期までの10回分。まちがえた問題は苦手に残り、2回続けて正解すると消えます。本番と同じ100問・120分の模擬試験もあります。問題は IPA の公開問題で、アプリは IPA とは関係のない個人の制作です。iPhone 版は準備中です。</p></div>
+      <div class="cta">
+        <div class="badges">
+          <a href="https://play.google.com/store/apps/details?id=jp.pasudan.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
+        </div>
+        <div class="links"><a href="/pasudan/">サポート</a></div>
+      </div>
+      <div class="shots" role="group" aria-label="パスダンの画面">
+        <figure class="phone" style="margin:0"><img src="img/shots/pd-1.webp" alt="モンスターとのバトル。答えのあとに解説" width="540" height="960" loading="lazy" decoding="async"></figure>
+        <figure class="phone" style="margin:0"><img src="img/shots/pd-2.webp" alt="成績。予想点の推移とテーマ別の正答率" width="540" height="960" loading="lazy" decoding="async"></figure>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===== ほかの配信中 ===== -->
+<section class="grp alt" id="released" aria-labelledby="rel-h" style="--g:var(--g-life)">
+  <div class="wrap">
+    <div class="grp-h"><span class="chip" aria-hidden="true">他</span><div><h2 id="rel-h">ほかの配信中のアプリ</h2><p>勉強と、毎日の記録のアプリ</p></div></div>
+    <span id="study"></span><span id="game"></span><span id="life"></span>
+
+    <article class="app" id="rinsho" style="--c:#c8323a" aria-labelledby="rs-h">
+      <div class="head">
+        <div class="name"><img src="img/shots/i-rinsho.webp" alt="" width="64" height="64"><div><h3 id="rs-h">ニガテ帳 臨床検査技師</h3><p class="kind">臨床検査技師 国家試験の過去問と解説</p></div></div>
+        <p class="promise">顕微鏡の写真や心電図の問題も、<em>画像のまま</em>解けます。</p>
+        <ul class="facts"><li>iPhone で配信中</li><li>第68〜72回</li><li>全問に解説</li></ul>
+      </div>
+      <div class="more"><p class="desc">間違えた問題は苦手ノートに残り、2回続けて正解すると消えます。年度別・科目別・ランダム10問・模試で解けて、試験日までの日数と1日の目安も出ます。</p></div>
+      <div class="cta">
+        <div class="badges">
+          <a class="as" href="https://apps.apple.com/jp/app/id6818536142?pt=129523583&amp;ct=site_top_rinsho&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="151" height="56"></a>
+        </div>
+      </div>
+      <div class="shots" role="group" aria-label="臨床検査技師の画面">
+        <figure class="phone" style="margin:0"><img src="img/shots/rs-1.webp" alt="ホーム。苦手ノートに残っている問題の数と試験日まで" width="460" height="996" loading="lazy" decoding="async"></figure>
+        <figure class="phone" style="margin:0"><img src="img/shots/rs-2.webp" alt="顕微鏡の写真を見て答える問題" width="460" height="996" loading="lazy" decoding="async"></figure>
+      </div>
+    </article>
+
     <article class="app rev" id="kobunmekuri" style="--c:#1f3a6b" aria-labelledby="kb-h">
       <div class="head">
-        <div class="name"><img src="img/shots/i-kobunmekuri.webp" alt="" width="64" height="64"><div><h3 id="kb-h">こぶんめくり</h3><p class="kind">古文単語・共通テストと大学受験に</p></div></div>
+        <div class="name"><img src="img/shots/i-kobunmekuri.webp" alt="" width="64" height="64"><div><h3 id="kb-h">こぶんめくり</h3><p class="kind">古文単語を例文で覚える大学受験対策</p></div></div>
         <p class="promise">古文単語601語を、<em>古典の本文の一文</em>で覚える。</p>
-        <ul class="facts"><li>古文単語601語</li><li>全部に例文と訳</li><li>Android</li></ul>
+        <ul class="facts"><li>Android で配信中</li><li>古文単語601語</li><li>全部に例文と訳</li></ul>
       </div>
       <div class="more"><p class="desc">4択とカードでめくって覚える単語帳です。全部の語に作品名つきの例文と訳。試験日から1日に覚える語数を出し、苦手は2回続けて正解すると消えます。</p></div>
       <div class="cta">
@@ -310,101 +438,29 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
       </div>
     </article>
 
-    <article class="app" id="pasudan" style="--c:#5b3fb8" aria-labelledby="pd-h">
+    <article class="app" id="tabedoki" style="--c:#2f8f4e" aria-labelledby="td-h">
       <div class="head">
-        <div class="name"><img src="img/shots/i-pasudan.webp" alt="" width="64" height="64"><div><h3 id="pd-h">パスダン</h3><p class="kind">ITパスポートの過去問ダンジョン</p></div></div>
-        <p class="promise">過去問の4択に正解するとモンスターに攻撃。<em>続けて正解するとコンボ</em>で威力が伸びます。</p>
-        <ul class="facts"><li>Google Play で配信中</li><li>過去問990問・全問に解説</li><li>Android</li></ul>
+        <div class="name"><img src="img/shots/i-tabedoki.webp" alt="" width="64" height="64"><div><h3 id="td-h">タベドキ</h3><p class="kind">食べどきと賞味期限のお知らせ</p></div></div>
+        <p class="promise">よく買う食材はワンタップで登録。<em>期限の近い順</em>に並んで、色の札でひと目でわかります。</p>
+        <ul class="facts"><li>Android で配信中</li><li>期限が近い順に表示</li><li>買い物メモつき</li></ul>
       </div>
-      <div class="more"><p class="desc">令和8年度から平成30年度秋期までの10回分。まちがえた問題は苦手に残り、2回続けて正解すると消えます。本番と同じ100問・120分の模擬試験もあります。問題は IPA の公開問題で、アプリは IPA とは関係のない個人の制作です。</p></div>
       <div class="cta">
         <div class="badges">
-          <a href="https://play.google.com/store/apps/details?id=jp.pasudan.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
+          <a href="https://play.google.com/store/apps/details?id=jp.tabedoki.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
         </div>
-        <div class="links"><a href="/pasudan/">サポート</a></div>
+        <div class="links"><a href="/apps/tabedoki/support.html">サポート</a></div>
       </div>
-      <div class="shots" role="group" aria-label="パスダンの画面">
-        <figure class="phone" style="margin:0"><img src="img/shots/c-pasudan.webp" alt="モンスターとのバトル。下の4択で答える" width="360" height="640" loading="lazy" decoding="async"></figure>
-      </div>
-    </article>
-  </div>
-</section>
-
-<!-- ===== ゲーム ===== -->
-<section class="grp alt" id="game" aria-labelledby="game-h" style="--g:var(--g-game)">
-  <div class="wrap">
-    <div class="grp-h"><span class="chip" aria-hidden="true">遊</span><div><h2 id="game-h">ゲームで遊ぶ</h2><p>スマホのアプリと、ブラウザですぐ遊べるゲーム</p></div></div>
-
-    <article class="app" id="released-more" style="--c:#1747a6" aria-labelledby="d9-h">
-      <div class="head">
-        <div class="name"><img src="img/shots/i-diamond-nine.webp" alt="" width="64" height="64"><div><h3 id="d9-h">DIAMOND NINE</h3><p class="kind">野球の監督シミュレーション</p></div></div>
-        <p class="promise">スカウトで選手を集めて、打線を組み、<em>1年を戦い抜く</em>野球の監督ゲーム。</p>
-        <ul class="facts"><li>監督モード</li><li>143試合のシーズン</li><li>Android</li></ul>
-      </div>
-      <div class="more"><p class="desc">「1年進める」でシーズンをまとめて進めて、順位と成績を見ます。先発・中継ぎ・抑えの役割を決め、今の選手より強い選手が来たら入れ替えます。</p></div>
-      <div class="cta">
-        <div class="badges">
-          <a href="https://play.google.com/store/apps/details?id=com.diamondninebaseball.game"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
-        </div>
-      </div>
-      <div class="shots" role="group" aria-label="DIAMOND NINE の画面">
-        <figure class="phone" style="margin:0"><img src="img/shots/d9-1.webp" alt="チームの画面。打順と選手の能力" width="540" height="1169" loading="lazy" decoding="async"></figure>
-        <figure class="phone" style="margin:0"><img src="img/shots/d9-2.webp" alt="スカウトの画面" width="540" height="1169" loading="lazy" decoding="async"></figure>
+      <div class="shots" role="group" aria-label="タベドキの画面">
+        <figure class="phone" style="margin:0"><img src="img/shots/td-1.webp" alt="ホーム。期限の近い順に並んだ食材" width="405" height="720" loading="lazy" decoding="async"></figure>
+        <figure class="phone" style="margin:0"><img src="img/shots/td-2.webp" alt="よく使う食材をタップしてまとめて追加" width="405" height="720" loading="lazy" decoding="async"></figure>
       </div>
     </article>
 
-    <article class="app rev" id="haru" style="--c:#d2552a" aria-labelledby="haru-h">
+    <article class="app rev" id="kachimake" style="--c:#1d6b47" aria-labelledby="km-h">
       <div class="head">
-        <div class="name"><img src="img/shots/i-haru.webp" alt="" width="64" height="64"><div><h3 id="haru-h">ハルの冒険</h3><p class="kind">横スクロールのアクション</p></div></div>
-        <p class="promise">剣とジャンプで、<em>ほしのかけら</em>を集める旅。</p>
-        <ul class="facts"><li>走る・ジャンプ・剣・スピン</li><li>日本語・English</li><li>iPhone・Android で配信中</li></ul>
-      </div>
-      <div class="more"><p class="desc">草原やほらあな、ほのおの山、そらの島を進みます。ワールドマップで道を選び、とりでやおばけやしき、ボスのしろへ。ブラウザ版はワールド1を遊べる体験版で、スマホでも PC でも動きます。</p></div>
-      <div class="cta">
-        <div class="badges">
-          <a class="as" href="https://apps.apple.com/jp/app/id6823975997?pt=129523583&amp;ct=web_haru_top&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="151" height="56"></a>
-          <a href="https://play.google.com/store/apps/details?id=jp.harunobouken.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
-        </div>
-        <div class="links"><a class="go" href="/haru/">ブラウザで遊ぶ(体験版)</a></div>
-      </div>
-      <div class="shots" role="group" aria-label="ハルの冒険の画面">
-        <figure class="tv" style="margin:0"><img src="img/shots/haru-a.webp" alt="ハルの冒険のタイトル画面" width="960" height="540" loading="lazy" decoding="async"></figure>
-        <figure class="tv" style="margin:0"><img src="img/shots/haru-b.webp" alt="ステージを進むハル" width="960" height="540" loading="lazy" decoding="async"></figure>
-      </div>
-    </article>
-
-    <article class="app" id="undoukai" style="--c:#e0457b" aria-labelledby="und-h">
-      <div class="head">
-        <div class="name"><img src="img/shots/i-undoukai.webp" alt="" width="64" height="64"><div><h3 id="und-h">らくがき運動会</h3><p class="kind">描いた絵が走るかけっこ</p></div></div>
-        <p class="promise">指で描いた生き物が、<em>そのままかけっこに出る</em>。</p>
-        <ul class="facts"><li>4つのコース</li><li>日本語・English・한국어</li><li>iPhone で配信中・Android もうすぐ配信</li></ul>
-      </div>
-      <div class="more"><p class="desc">生き物を1匹描くと、その形のとおりに走りだします。どう描けば速いのかは、走らせて確かめてください。CPU のらくがきとのレース、友だちと3人対戦、タイムアタックも。</p></div>
-      <div class="cta">
-        <div class="badges">
-          <a class="as" href="https://apps.apple.com/jp/app/id6824418325?pt=129523583&amp;ct=web_undoukai&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="151" height="56"></a>
-        </div>
-        <div class="links"><a class="go" href="/undoukai/">ブラウザで遊ぶ</a></div>
-        <p class="note">実況・配信・動画投稿は自由です(収益化も可・連絡不要)。<a href="/undoukai/terms.html">利用規約・配信について</a> ・ <a href="/apps/undoukai/privacy.html">プライバシーポリシー</a></p>
-      </div>
-      <div class="shots" role="group" aria-label="らくがき運動会の画面">
-        <figure class="tv" style="margin:0"><img src="img/shots/und-a.webp" alt="らくがき運動会のタイトル画面" width="960" height="540" loading="lazy" decoding="async"></figure>
-        <figure class="tv" style="margin:0"><img src="img/shots/und-b.webp" alt="描いた生き物がかけっこをする画面" width="960" height="540" loading="lazy" decoding="async"></figure>
-      </div>
-    </article>
-  </div>
-</section>
-
-<!-- ===== 道具 ===== -->
-<section class="grp" id="life" aria-labelledby="life-h" style="--g:var(--g-life)">
-  <div class="wrap">
-    <div class="grp-h" id="released"><span class="chip" aria-hidden="true">道</span><div><h2 id="life-h">毎日の記録と道具</h2><p>入れるだけ・押すだけで続く、暮らしのアプリ</p></div></div>
-
-    <article class="app" id="kachimake" style="--c:#1d6b47" aria-labelledby="km-h">
-      <div class="head">
-        <div class="name"><img src="img/shots/i-kachimake.webp" alt="" width="64" height="64"><div><h3 id="km-h">カチマケ</h3><p class="kind">パチンコ・スロット・競馬などの収支ノート</p></div></div>
+        <div class="name"><img src="img/shots/i-kachimake.webp" alt="" width="64" height="64"><div><h3 id="km-h">カチマケ</h3><p class="kind">パチンコ・スロット・競馬の収支を記録する家計簿</p></div></div>
         <p class="promise">使った額と戻った額を入れるだけで、<em>月の収支と回収率</em>がひと目で。</p>
-        <ul class="facts"><li class="age">18歳以上の方向け</li><li>6種目を1つのカレンダーに</li><li>Android</li></ul>
+        <ul class="facts"><li class="age">18歳以上の方向け</li><li>Android で配信中</li><li>6種目を1つのカレンダーに</li></ul>
       </div>
       <div class="more"><p class="desc">パチンコ・スロット・競馬・競輪・ボート・オートを1つのカレンダーに。月の負けの上限を決めておくと、近づいたときにお知らせします。記録はスマホの中だけに残ります。</p></div>
       <div class="cta">
@@ -419,23 +475,6 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
         <figure class="phone" style="margin:0"><img src="img/shots/km-c.webp" alt="小役カウンター" width="540" height="960" loading="lazy" decoding="async"></figure>
       </div>
     </article>
-
-    <article class="app" id="tabedoki" style="--c:#2f8f4e" aria-labelledby="td-h">
-      <div class="head">
-        <div class="name"><img src="img/shots/i-tabedoki.webp" alt="" width="64" height="64"><div><h3 id="td-h">タベドキ</h3><p class="kind">賞味期限と冷蔵庫の管理</p></div></div>
-        <p class="promise">よく買う食材はワンタップで登録。<em>期限の近い順</em>に並んで、色の札でひと目でわかります。</p>
-        <ul class="facts"><li>Google Play で配信中</li><li>期限が近い順に表示</li><li>Android</li></ul>
-      </div>
-      <div class="cta">
-        <div class="badges">
-          <a href="https://play.google.com/store/apps/details?id=jp.tabedoki.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="188" height="56"></a>
-        </div>
-        <div class="links"><a href="/apps/tabedoki/support.html">サポート</a></div>
-      </div>
-      <div class="shots" role="group" aria-label="タベドキの画面">
-        <figure class="phone" style="margin:0"><img src="img/shots/c-tabedoki.webp" alt="期限の近い順に並んだ食材の一覧" width="360" height="640" loading="lazy" decoding="async"></figure>
-      </div>
-    </article>
   </div>
 </section>
 
@@ -443,7 +482,23 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
 <section class="soon" id="testing" aria-labelledby="testing-h">
   <div class="wrap">
     <h2 id="testing-h">もうすぐ配信するアプリ</h2>
-    <p class="sub">Android 版のテストを終えて、Google Play での公開に向けて準備をしています。</p>
+    <p class="sub">ストアでの公開に向けて準備をしています。公開したら、このページにボタンを付けます。</p>
+
+    <h3 class="sh" id="next">次に出す <span>準備中</span></h3>
+    <ul class="cards">
+      <li class="card" id="bokajima"><div class="thumb"><img src="img/shots/bk-home.webp" alt="" width="480" height="1066" loading="lazy" decoding="async"></div><div>
+        <div class="t"><img src="img/shots/i-bokajima.webp" alt="" width="32" height="32" loading="lazy"><h4>ボキャじま</h4></div><p class="k">英単語と文法を島づくりで覚える</p>
+        <p class="d">1回10問・約3分の航海で、英検®3級・準2級の単語・熟語・文法に答えて、手に入れた材料で自分の島を育てます。</p>
+        <span class="st">準備中</span><div class="acts"><a href="/bokajima/">紹介を見る</a></div></div></li>
+      <li class="card" id="undoukai-android"><div class="thumb icon"><img src="img/shots/i-undoukai.webp" alt="" width="96" height="96" loading="lazy"></div><div>
+        <div class="t"><img src="img/shots/i-undoukai.webp" alt="" width="32" height="32" loading="lazy"><h4>らくがき運動会 Android 版</h4></div><p class="k">描いた絵が走るお絵かきレース</p>
+        <p class="d">iPhone 版は配信中です。Android 版も Google Play での公開に向けて準備しています。</p>
+        <span class="st">もうすぐ</span><div class="acts"><a href="/undoukai/">ブラウザで遊ぶ</a></div></div></li>
+      <li class="card" id="tsugimemo"><div class="thumb"><img src="img/shots/c-tsugimemo.webp" alt="" width="360" height="640" loading="lazy" decoding="async"></div><div>
+        <div class="t"><img src="img/shots/i-tsugimemo.webp" alt="" width="32" height="32" loading="lazy"><h4>ツギメモ</h4></div><p class="k">ロック画面に次のやることを表示</p>
+        <p class="d">つぎにやる1行だけを、ロック画面のお知らせに出しておくメモです。</p>
+        <span class="st">もうすぐ</span><div class="acts"><a href="/tsugimemo/">サポート</a></div></div></li>
+    </ul>
 
     <h3 class="sh" id="review">審査中 <span>Google Play</span></h3>
     <ul class="cards">
@@ -463,10 +518,6 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
         <div class="t"><img src="img/shots/i-negairo.webp" alt="" width="32" height="32" loading="lazy"><h4>ネガイロ</h4></div><p class="k">フィルムカメラ風・日付入り</p>
         <p class="d">フィルムや使い捨てカメラの色で撮れるカメラ。仕上がりを見ながら撮れます。</p>
         <div class="acts"><a href="/negairo-site/">サポート</a></div></div></li>
-      <li class="card" id="tsugimemo"><div class="thumb"><img src="img/shots/c-tsugimemo.webp" alt="" width="360" height="640" loading="lazy" decoding="async"></div><div>
-        <div class="t"><img src="img/shots/i-tsugimemo.webp" alt="" width="32" height="32" loading="lazy"><h4>ツギメモ</h4></div><p class="k">ロック画面のメモ・ToDo</p>
-        <p class="d">つぎにやる1行だけを、ロック画面のお知らせに出しておくメモです。</p>
-        <div class="acts"><a href="/tsugimemo/">サポート</a></div></div></li>
       <li class="card" id="tsukau"><div class="thumb"><img src="img/shots/c-tsukau.webp" alt="" width="360" height="640" loading="lazy" decoding="async"></div><div>
         <div class="t"><img src="img/shots/i-tsukau.webp" alt="" width="32" height="32" loading="lazy"><h4>Tsukau</h4></div><p class="k">日本語を学ぶ人向け(英語の画面)</p>
         <p class="d">コンビニや電車、ラーメン屋で実際に言われる日本語と、その返し方を覚えるアプリです。</p>
@@ -552,7 +603,7 @@ footer .copy { margin-top: var(--sp-4); font-size: var(--fs-1); color: var(--mut
       <div>
         <h2 id="about-h">自己紹介</h2>
         <p>YURU Studio のアプリを作っています。ふだんは社内SEとして働いているエンジニアです。仕事の合間や空いた時間に、1人でスマホアプリとゲームを作っています。</p>
-        <p>作っているのは、国家試験の過去問「ニガテ帳」、野球の監督ゲーム「DIAMOND NINE」、古文単語の「こぶんめくり」、収支ノートの「カチマケ」、ブラウザで遊べる「らくがき運動会」「ハルの冒険」などです。</p>
+        <p>作っているのは、国家試験の過去問「ニガテ帳」、横スクロールアクションの「ハルの冒険」、描いた絵が走る「らくがき運動会」、野球の監督ゲーム「DIAMOND NINE」、ITパスポートの「パスダン」などです。</p>
         <p>新しいアプリの話は X で書いています。</p>
         <a class="xbtn" href="https://x.com/apkderete">X で @apkderete を見る</a>
       </div>
