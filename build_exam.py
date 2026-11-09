@@ -7,7 +7,7 @@
 """
 import html
 import json
-import os
+import os, re
 
 BASE = "https://kame6493-del.github.io"
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -844,7 +844,81 @@ def app_block(x):
 """
 
 
+SSSC = {"kaigo": "https://www.sssc.or.jp/kaigo/tetsuzuki.html", "shakai": "https://www.sssc.or.jp/shakai/tetsuzuki.html",
+        "seishin": "https://www.sssc.or.jp/seishin/tetsuzuki.html"}
+MHLW = {"kango": "https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/kangoshi/",
+        "kanri": "https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/kanrieiyoushi/",
+        "pt": "https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/rigakuryouhoushi/",
+        "rinsho": "https://www.mhlw.go.jp/kouseiroudoushou/shikaku_shiken/rinshoukensagishi/"}
+# ページの頭の「知りたいこと」。2026-11-09 に各公式ページで確かめた日付
+HERO = {
+    "kaigo": [("申込", "2026年7月22日〜9月2日(受付は終了)"), ("受験票", "2026年12月11日(金)に発送予定"),
+              ("合格基準", "第38回は125点中64点以上、かつ11の科目群すべてで得点あり"), ("合格発表", "2027年3月23日(火)")],
+    "kango": [("願書の受付", "2026年11月6日(金)〜11月27日(金)"), ("受験票", "2027年1月に届く予定(詳しい日は公式で確認)"),
+              ("合格基準", "第115回は必修40点以上/50点、かつ一般・状況設定166点以上/249点"), ("合格発表", "2027年3月24日(水)午後2時以降")],
+    "shakai": [("申込", "2026年9月3日〜10月2日(受付は終了)"), ("受験票", "2026年12月11日(金)に発送予定"),
+               ("合格基準", "第38回は129点中50点以上、かつ6の科目群すべてで得点あり"), ("合格発表", "2027年3月9日(火)")],
+    "seishin": [("申込", "2026年9月3日〜10月2日(受付は終了)"), ("受験票", "2026年12月11日(金)に発送予定"),
+                ("合格基準", "第28回は132点中62点以上、かつ9の科目群すべてで得点あり"), ("合格発表", "2027年3月9日(火)")],
+    "kanri": [("出願", "2026年11月2日(月)〜12月4日(金)"), ("受験票", "2027年2月10日(水)に送付予定"),
+              ("合格基準", "第40回は200点中120点以上(科目ごとの足切りなし)"), ("合格発表", "2027年3月26日(金)午後2時")],
+    "pt": [("出願", "2026年12月14日(月)〜2027年1月4日(月)"), ("受験票", "2027年1月に交付予定"),
+           ("合格基準", "第61回は総得点167点以上/277点、かつ実地41点以上/117点"), ("合格発表", "2027年3月23日(火)午後2時")],
+    "rinsho": [("出願", "2026年12月14日(月)〜2027年1月4日(月)"), ("受験票", "2027年1月に交付予定"),
+               ("合格基準", "第72回は199点中120点以上"), ("合格発表", "2027年3月23日(火)午後2時")],
+}
+SEO = {  # key: (title、見出しの頭)
+}
+
+
+def tracked(url, ct):
+    sep = "&" if "?" in url else "?"
+    return f"{url}{sep}pt=129523583&ct={ct}&mt=8"
+
+
+def cta_btns(key, pos):
+    ios, play = store_urls(key)
+    ios = tracked(ios, f"web_{key}_{pos}")
+    return (f'<a class="as-b nc-ios" href="{ios}">{AS_BADGE}</a>' +
+            (f'<a class="btn fill nc-and" href="{play}">Google Play で入手</a>' if play else ""))
+
+
+def hero_block(x):
+    k = x["key"]
+    org_url = SSSC.get(k) or MHLW[k]
+    org = "社会福祉振興・試験センター" if k in SSSC else "厚生労働省"
+    rows = "".join(f"<div><dt>{e(a)}</dt><dd>{e(b)}</dd></div>" for a, b in HERO[k])
+    app = "ニガテ帳 臨床検査技師" if k == "rinsho" else "ニガテ帳"
+    return (f'<div class="hero" data-exam="{x["date_iso"]}">'
+            f'<p class="hd-l">第{x["round"]}回{e(x["name"])}国家試験 試験日</p>'
+            f'<p class="hd-d">{e(x["date_ja"])}<span class="hd-n"></span></p>'
+            f'<dl class="hd-f">{rows}</dl>'
+            f'<p class="hd-s">出典: <a href="{org_url}">{org}の公式ページ</a>(2026年11月9日に確認)。最新は必ず公式で確かめてください。</p>'
+            f'<p class="hd-a">{e(app)}: {e(IOS_LEAD)}</p>'
+            f'<div class="nc-btns">{cta_btns(k, "top")}</div>{as_url(store_urls(k)[0])}</div>'
+            '<style>.hero{border:1px solid var(--line);border-radius:14px;background:var(--tint);padding:16px 16px 14px;margin:18px 0 0}'
+            '.hero p{margin:0}.hd-l{font-size:13px;color:var(--sub)}.hd-d{font-size:22px;font-weight:700;line-height:1.5;margin-top:2px!important}'
+            '.hd-n{display:inline-block;margin-left:.6em;padding:1px 12px;border-radius:99px;background:var(--accent);color:var(--bg);font-size:18px}'
+            '.hd-n:empty{display:none}.hd-f{margin:10px 0 0}.hd-f>div{display:grid;grid-template-columns:5.5em 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.7}'
+            '.hd-f dt{font-weight:700;color:var(--sub)}.hd-f dd{margin:0}.hd-s{font-size:12px;color:var(--mute);margin-top:8px!important}.hd-s a{color:var(--mute)}'
+            '.hd-a{margin-top:12px!important;font-size:14px}</style>'
+            '<script>(function(){var h=document.querySelector(".hero"),n=h.querySelector(".hd-n"),d=Math.ceil((new Date(h.getAttribute("data-exam")+"T00:00:00+09:00")-Date.now())/864e5);'
+            'n.textContent=d>1?"あと"+d+"日":d==1?"明日":d==0?"今日":"";})();</script>')
+
+
+def end_cta(x):
+    k = x["key"]
+    app = "ニガテ帳 臨床検査技師" if k == "rinsho" else "ニガテ帳"
+    return (f'<section id="dl"><h2>第{x["round"]}回{e(x["name"])}の過去問を、スマホで解き直す</h2>'
+            f'<p>{e(app)}は、間違えた問題だけが「苦手」に残り、日を空けて2回続けて正解すると消える過去問アプリです。電波のない所でも解けます。</p>'
+            f'<div class="nc-btns">{cta_btns(k, "end")}</div>{as_url(store_urls(k)[0])}</section>')
+
+
 def exam_page(x):
+    x = dict(x)
+    x["title"] = f'第{x["round"]}回 {x["name"]}国家試験 日程 あと何日|{x["date_ja"]}・願書・受験票・合格基準'
+    x["h1"] = f'第{x["round"]}回{x["name"]}国家試験 日程(あと何日)と合格基準、過去問の解き方'
+    x["desc"] = f'第{x["round"]}回{x["name"]}国家試験は{x["date_ja"]}。あと何日かの数え、願書・出願と受験票の日程、合格基準、合格発表日を公式発表をもとにまとめました。過去問アプリ ニガテ帳の案内つき。'
     url = f"{BASE}/exam/{x['key']}/"
     faq_ld = {
         "@type": "FAQPage",
@@ -868,6 +942,7 @@ def exam_page(x):
     out.append(f"<h1>{e(x['h1'])}</h1>")
     out.append(f'<p class="lead">{e(x["lead"])}</p>')
     out.append(f'<p class="upd">{x.get("updated_ja", UPDATED_JA)}時点の公式発表をもとにしています。最新の情報は、出典のページで確かめてください。</p>')
+    out.append(hero_block(x))
 
     # 試験の基本
     out.append(f'<section id="facts"><h2>第{x["round"]}回{x["name"]}国家試験の日程と合格基準</h2><dl class="facts">')
@@ -924,6 +999,7 @@ def exam_page(x):
         out.append(f"<h3>{e(q)}</h3><p>{e(a)}</p>")
     out.append("</section>")
 
+    out.append(end_cta(x))
     # 他の試験
     out.append('<section id="others"><h2>ほかの試験</h2><ul class="others">')
     for k in ORDER_HUB:
