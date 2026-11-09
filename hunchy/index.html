@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hunchy - Imposter and party games on one phone</title>
+<meta name="description" content="Pass one phone around and find out who's bluffing. Imposter, Forehead, Odd Question, Rather or Dare and Most Likely To for 3 to 12 players. No ads, no subscription.">
+<link rel="canonical" href="https://yurustudio.github.io/hunchy/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="YURU">
+<meta property="og:title" content="Hunchy - one phone, big hunches, loud nights"><meta property="og:description" content="Imposter is free, and every other game is free once a day. No ads, no subscription."><meta property="og:url" content="https://yurustudio.github.io/hunchy/">
+<meta property="og:image" content="https://yurustudio.github.io/hunchy/img/feature.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/hunchy/img/icon.png">
+<style>
+:root{--bg:#1B0A4A;--plate:#24106A;--ink:#12043A;--lime:#B8F23A;--pink:#FF4FB8;--yellow:#FFC93C;--cyan:#22D3EE;--text:#fff;--sub:#D9CCFF}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(120% 60% at 50% 0%,#4A12B8 0%,var(--bg) 60%) fixed,var(--bg);color:var(--text);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6}
+.wrap{max-width:960px;margin:0 auto;padding:28px 16px 56px}
+header{display:flex;gap:16px;align-items:center}
+header img{width:84px;height:84px;border-radius:20px;border:3px solid var(--ink);box-shadow:0 6px 0 var(--ink)}
+h1{font-size:40px;line-height:1.05;margin:0}h1 small{display:block;font-size:17px;color:var(--sub);font-weight:700;margin-top:6px}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 8px}
+.btn{display:inline-block;padding:14px 22px;border-radius:999px;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);font-weight:900;font-size:18px;text-decoration:none;color:var(--ink)}
+.btn.play{background:var(--lime)}.btn.soon{background:var(--plate);color:#fff;border-color:rgba(255,255,255,.35);box-shadow:none}
+.shots{display:flex;gap:12px;overflow-x:auto;padding:18px 2px 10px;scroll-snap-type:x mandatory}
+.shots img{flex:0 0 auto;width:220px;height:auto;border-radius:22px;border:3px solid var(--ink);box-shadow:0 6px 0 var(--ink);scroll-snap-align:start}
+h2{font-size:24px;margin:30px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{background:var(--plate);border-radius:18px;padding:14px 16px;border:2px solid rgba(255,255,255,.12)}
+.card b{font-size:18px}.card p{margin:4px 0 0;color:var(--sub)}
+ul{padding-left:20px;margin:6px 0}li{margin:3px 0}
+footer{margin-top:36px;color:var(--sub);font-size:14px}footer a{color:var(--cyan)}
+</style></head><body><div class="wrap">
+<header><img src="img/icon.png" alt="Hunchy app icon"><h1>Hunchy<small>One phone. Big hunches. Loud nights.</small></h1></header>
+<p>Pass one phone around and find out who's bluffing. Party games for game night, family dinners and sleepovers, for 3 to 12 players. No accounts, no Wi-Fi, no ads, no subscription.</p>
+<div class="cta"><a class="btn play" href="play/">Play Imposter in your browser</a><span class="btn soon" id="gp">Coming soon to Google Play</span></div>
+<div class="shots" id="shots"></div>
+<h2>The games</h2>
+<div class="grid">
+<div class="card"><b>Imposter</b><p>Everyone gets the secret word except the imposter. Talk, bluff, vote.</p></div>
+<div class="card"><b>Forehead</b><p>Phone on your forehead. Friends give clues, tilt down when you get it.</p></div>
+<div class="card"><b>Odd Question</b><p>Everyone answers the same question, except one person who got a different one.</p></div>
+<div class="card"><b>Rather or Dare</b><p>Pick a side on 3. The smaller side takes a dare.</p></div>
+<div class="card"><b>Most Likely To</b><p>Point on 3. Awards night at the end.</p></div>
+</div>
+<h2>What's free</h2>
+<ul><li>Imposter: free, every game, no limit.</li><li>Word packs: Basics, Family Night and the seasonal pack.</li><li>The other four games: one full game of each, free every day.</li></ul>
+<p>Everything else is a one-time purchase in the app: one game or pack at a time, or All Access once. No subscription.</p>
+<footer><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a> · YURU Studio · <a href="/">More apps</a></footer>
+</div>
+<script>
+// screenshots are listed here so the page still works if one is missing
+['1','2','3','4','5','6','7'].forEach(function(n){var i=new Image();i.src='img/shot'+n+'.jpg';i.alt='Hunchy screen '+n;i.loading='lazy';i.onerror=function(){i.remove()};document.getElementById('shots').appendChild(i)});
+</script>
+</body></html>
