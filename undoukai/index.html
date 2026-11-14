@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#35b8e8">
 <link rel="icon" href="assets/icon.png">
-<link rel="stylesheet" href="style.css?v=1024a">
+<link rel="stylesheet" href="style.css?v=1114a">
 </head>
 <body>
 <canvas id="stage"></canvas>
@@ -43,7 +43,9 @@
       <div class="joinRow"><input id="roomCodeInput" maxlength="5" placeholder="部屋コード" autocomplete="off" autocapitalize="characters"><button id="roomJoinBtn" class="sub" type="button">部屋に入る</button></div>
       <button id="vsBackBtn" class="sub ghost" type="button">もどる</button>
     </div>
-    <div class="titleFoot" style="flex-wrap:wrap"><button id="soundBtn" class="tiny" type="button">音: ON</button><button id="creditBtn" class="tiny" type="button">クレジット</button><a id="termsLink" class="tiny" href="terms.html" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">利用規約・配信について</a><a class="tiny" href="/#undoukai" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">Android 版はもうすぐ</a></div>
+    <!-- アプリ版の案内(ブラウザ版だけ。promo.js が端末に合わせて出す) -->
+    <div id="appPromo" class="appPromo hidden"><p class="apTitle">アプリ版で遊ぶ</p><p class="storeRow"><a class="storeBtn" data-store="ios" href="https://apps.apple.com/jp/app/id6824418325?pt=129523583&amp;ct=web_rakugaki&amp;mt=8" target="_blank" rel="noopener" data-noi18n><small>iPhone / iPad</small>App Store</a><a class="storeBtn" data-store="android" href="https://play.google.com/store/apps/details?id=jp.rakugakiundoukai.app" target="_blank" rel="noopener" data-noi18n><small>Android</small>Google Play</a></p><button class="apClose" type="button" aria-label="きょうは出さない" title="きょうは出さない">×</button></div>
+    <div class="titleFoot" style="flex-wrap:wrap"><button id="soundBtn" class="tiny" type="button">音: ON</button><button id="creditBtn" class="tiny" type="button">クレジット</button><a id="termsLink" class="tiny" href="terms.html" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">利用規約・配信について</a></div>
     <div id="langRow" class="langRow" role="group" aria-label="Language / 言語 / 언어" data-noi18n><button type="button" class="tiny" data-lang="ja" lang="ja">日本語</button><button type="button" class="tiny" data-lang="en" lang="en">English</button><button type="button" class="tiny" data-lang="ko" lang="ko">한국어</button></div>
     <div id="creditBox" class="credits hidden">
       <p>音楽: 「かわいい運動会」ゆうきわたる /「かけっこ競争」ハヤシユウ(OpenTracks・旧 DOVA-SYNDROME)</p>
@@ -159,6 +161,7 @@
   <div class="resultWrap">
     <img id="resultImg" alt="レースの結果の画像">
     <div class="resultBtns">
+      <p id="appPromoRes" class="appLine hidden"><span>アプリならいつでもすぐ遊べる</span><a class="storeLink" data-store="ios" href="https://apps.apple.com/jp/app/id6824418325?pt=129523583&amp;ct=web_rakugaki&amp;mt=8" target="_blank" rel="noopener" data-noi18n><small>iPhone / iPad</small>App Store</a><a class="storeLink" data-store="android" href="https://play.google.com/store/apps/details?id=jp.rakugakiundoukai.app" target="_blank" rel="noopener" data-noi18n><small>Android</small>Google Play</a><button class="apClose" type="button" aria-label="きょうは出さない" title="きょうは出さない">×</button></p>
       <div id="resBadges" class="badges"></div>
       <button id="retryBtn" class="go big" type="button">もう一回!</button>
       <div class="row2"><button id="againBtn" class="sub" type="button">コースを変える</button><button id="newBtn" class="sub" type="button">もう1匹描く</button></div>
@@ -260,8 +263,8 @@
     </div>
     <div id="fullWebBox" class="hidden">
       <p class="note strong">完全版はアプリ版で使えます</p>
-      <a id="fullPlayLink" class="go blue linkBtn" href="#" target="_blank" rel="noopener">Android 版はもうすぐ配信(お知らせ)</a>
-      <p class="note">iPhone 版は準備中です。ブラウザ版はこのまま遊べます</p>
+      <p class="storeRow"><a class="storeBtn" data-store="ios" href="https://apps.apple.com/jp/app/id6824418325?pt=129523583&amp;ct=web_rakugaki&amp;mt=8" target="_blank" rel="noopener" data-noi18n><small>iPhone / iPad</small>App Store</a><a class="storeBtn" data-store="android" href="https://play.google.com/store/apps/details?id=jp.rakugakiundoukai.app" target="_blank" rel="noopener" data-noi18n><small>Android</small>Google Play</a></p>
+      <p class="note">ブラウザ版はこのまま遊べます</p>
     </div>
     <p id="fullStatus" class="note strong" aria-live="polite"></p>
     <button id="fullBackBtn" class="sub ghost" type="button">もどる</button>
@@ -269,8 +272,9 @@
 </section>
 
 <div id="toast" class="toast hidden"></div>
-<script src="i18n.js?v=1024b"></script>
+<script src="i18n.js?v=1114a"></script>
 <script src="sim.js?v=1024a"></script>
+<script src="promo.js?v=1114a"></script>
 <script src="main.js?v=1107a"></script>
 </body>
 </html>
