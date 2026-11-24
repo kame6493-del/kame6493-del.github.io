@@ -1,0 +1,57 @@
+{
+ "w": 620,
+ "h": 780,
+ "foot": 760,
+ "cx": 310,
+ "frames": {
+  "hibiki": [
+   "h1",
+   "ready",
+   "h2",
+   "hit",
+   "g1",
+   "g2",
+   "g3",
+   "g4",
+   "j1",
+   "j2",
+   "j3",
+   "j4",
+   "h3",
+   "h4",
+   "r1",
+   "r2",
+   "m1",
+   "miss",
+   "m3",
+   "finale"
+  ],
+  "tanuki": [
+   "wait",
+   "ready",
+   "hit",
+   "r1",
+   "r2",
+   "wow",
+   "laugh",
+   "groove"
+  ]
+ },
+ "sheets": {
+  "groove4b.png": {
+   "s0": 0.999,
+   "fit": 1.01,
+   "iou": 0.867
+  },
+  "joy4.png": {
+   "s0": 0.999,
+   "fit": 1.0,
+   "iou": 0.955
+  },
+  "tanuki4b.png": {
+   "s0": 0.999,
+   "fit": 1.01,
+   "iou": 0.937
+  }
+ }
+}
