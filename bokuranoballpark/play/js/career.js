@@ -3,7 +3,8 @@
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1126u';
+import { CareerUI } from './career_ui.js?v=1126r';
+import * as Rank from './ranking.js?v=1126r';
 
 const KEY = 'r4walk.career.v1';
 const OFS = ['LF', 'CF', 'RF'];
@@ -19,7 +20,18 @@ export const STAGES = [
   { key: 'corp', name: '社会人', long: '社会人野球', evK: 1.04, hard: 0.12, need: { rank: 'A', uzr: UZR_NEED[1] }, min: 6 },
   { key: 'pro', name: 'プロ', long: 'プロ野球', evK: 1.08, hard: 0.22, need: null },
 ];
-export const FINAL_GAMES = 5;   // プロで 5 試合守ったら「キャリアの最終評価」を確定して出す(その後も続けられる)
+export const FINAL_GAMES = 5;   // プロで 5 試合守ったら「キャリア完了」(11/26 持ち主「5試合くらいでいいよ」。前は最終評価の後も続けられた)
+// 11/26 守る位置の補正(持ち主「特定のポジションが有利になりすぎないように」)。ランキングに出す「UZR(位置の補正あり)」= (UZR − BASE × 機会) × ADJ
+//   tools/posbal_1126.py で 9 つの位置を各 20 キャリア(プロ 5 試合)ずつ自動の選手で回して決めた(まとめ tools/posbal_sum_1126.py → posbal_1126_summary.json)。
+//   BASE: その位置の機会 1 つあたりの UZR の平均(位置で打球の難しさの見積もりがちがい、外野は平均が大きくマイナスに出る。それを 0 にそろえる)
+//   ADJ : 全位置の平均の振れ幅 ÷ その位置の振れ幅。初めは「全位置の平均の機会 ÷ その位置の機会」(機会あたりの UZR × 全位置の平均の機会数)で均したが、
+//         右翼・二塁・左翼で振れ幅が大きく、上位 1 割の値が 1.3〜3.7 と離れたので、振れ幅でそろえた(上位 1 割 1.4〜2.7)。機会の数の差もこの中に入る
+//   表は docs/アプリ化の引き継ぎ.md の 11/26 ランキングの節
+export const POS_BASE = { P: 0.0197, C: 0.109, '1B': 0.0037, '2B': -0.0122, '3B': 0.0005, SS: -0.0054, LF: -0.0391, CF: -0.057, RF: 0.0552 };
+export const POS_ADJ = { P: 2.358, C: 0.938, '1B': 1.334, '2B': 1.017, '3B': 1.153, SS: 1.423, LF: 0.769, CF: 0.927, RF: 0.547 };
+export const POS_CH = { P: 10.4, C: 15.2, '1B': 14.7, '2B': 12.6, '3B': 15.3, SS: 12.7, LF: 17.2, CF: 13.8, RF: 16.2 };   // 1 試合の平均の機会(機会の数が無い前の記録に使う)
+export const adjUZR = (pos, u, ch) => (u - (POS_BASE[pos] || 0) * (ch ?? POS_CH[pos] ?? 14)) * (POS_ADJ[pos] || 1);
+const HOF_KEY = 'r4walk.career.hof.v1';   // 終えたキャリアの選手カード(殿堂)
 const RANK_N = { S: 5, A: 4, B: 3, C: 2, D: 1 };
 
 // 能力の効き方(t は 0 = 最初の 30、1 = 最高の 99)
@@ -56,8 +68,13 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 function fresh() {
   return { v: 1, stage: 0, pos: 'SS', ab: { arm: AB_MIN, field: AB_MIN, sure: AB_MIN }, xp: { arm: 0, field: 0, sure: 0 },
     stageGames: [0, 0, 0], tot: { games: 0, po: 0, a: 0, e: 0, uzr: 0, wins: 0 }, hist: [], final: null, made: Date.now(),
-    name: '', num: 6, pass: [[], [], []], best: null, byPos: {} };
+    name: '', num: 6, pass: [[], [], []], best: null, byPos: {},
+    stageTot: [zt(), zt(), zt()], done: null };
 }
+// 11/26 段ごとの成績(1 シーズン = その段で守った試合。adj は位置の補正ありの UZR、ch は打球の機会)
+function zt() { return { games: 0, po: 0, a: 0, e: 0, uzr: 0, adj: 0, ch: 0, pos: {} }; }
+// 段の中で一番多く守った位置(ランキングに出す守備位置)
+export const mainPos = (S, fb) => { let b = fb, n = -1; for (const [p, k] of Object.entries((S && S.pos) || {})) if (k > n) { n = k; b = p; } return b; };
 
 // ------------------------------------------------------------ 「普通の野手なら何%でアウトにできたか」(UZR の基準)
 // 平均の野手: 打った 0.30 秒後に動き出し、8.0 m/s で走り、グローブの届く幅 1.3 m。
@@ -112,6 +129,15 @@ export function finalEval(D) {
 export const fpctText = (po, a, e) => { const c = po + a + e; return c ? ((po + a) / c).toFixed(3).replace(/^0/, '') : '-'; };
 export const uzrText = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(1);
 
+// 11/26 終えたキャリアの選手カード(殿堂に残す形)
+function makeCard(D, f) {
+  const S = D.stageTot[2], r2 = (x) => Math.round(x * 100) / 100;
+  let id = ''; try { id = Rank.deviceId().slice(0, 6) + '-'; } catch (e) { /* */ }
+  return { id: id + Date.now().toString(36), name: D.name, num: D.num, pos: mainPos(S, D.pos), posAll: { ...S.pos }, grade: f.grade, title: f.title, score: f.score,
+    pro: { games: S.games, po: S.po, a: S.a, e: S.e, uzr: r2(S.uzr), adj: r2(S.adj), ch: S.ch },
+    tot: { ...D.tot }, ab: { ...D.ab }, best: D.best, seasons: D.stageTot.map((x) => ({ games: x.games, uzr: r2(x.uzr), adj: r2(x.adj) })), t: Date.now() };
+}
+
 // ------------------------------------------------------------ 本体
 class Career {
   constructor() {
@@ -119,7 +145,7 @@ class Career {
     this.active = false;   // キャリアの画面から試合を始めた(タイトルへ戻るまで)
     this.game = null;      // いまの試合の記録(キャリアの試合の間だけ)
     this.cnt = 0;          // tagBase・tagRunner で数えたアウト(onCatch の中のアウトと重ねて数えないため)
-    this.K = { POS_NAME, AB_NAME, STAGES, FINAL_GAMES, EFFECT, xpNeed, finalEval, fpctText, uzrText, AB_MAX, promoInfo };
+    this.K = { POS_NAME, AB_NAME, STAGES, FINAL_GAMES, EFFECT, xpNeed, finalEval, fpctText, uzrText, AB_MAX, promoInfo, POS_ADJ, POS_BASE, adjUZR, mainPos, Rank };
     this.ui = new CareerUI(this);
     this.wait();
   }
@@ -132,6 +158,18 @@ class Career {
         // 11/26 位置ごとの成績(試合・刺殺・補殺・失策・UZR)。前から遊んでいる人の記録は、今の位置の分として引き継ぐ
         if (!j.byPos || typeof j.byPos !== 'object') { D.byPos = {}; const T = D.tot; if (T && T.games) D.byPos[D.pos] = { games: T.games, po: T.po, a: T.a, e: T.e, uzr: T.uzr }; }
         if (!D.best && D.hist.length) D.best = D.hist.reduce((b, h) => ((RANK_N[h.rank] || 0) > (RANK_N[b] || 0) ? h.rank : b), null);
+        // 11/26 段ごとの成績が無い前の記録は、残っている試合の記録(最近 60 試合)から作る
+        if (!Array.isArray(j.stageTot) || j.stageTot.length !== 3) {
+          D.stageTot = [zt(), zt(), zt()];
+          for (const h of D.hist) { const S = D.stageTot[h.stage]; if (!S || (h.stage === 2 && S.games >= FINAL_GAMES)) continue; S.games++; S.po += h.po; S.a += h.a; S.e += h.e; S.uzr += h.uzr; S.adj += adjUZR(h.pos, h.uzr, h.ch); S.pos[h.pos] = (S.pos[h.pos] || 0) + 1; }
+        }
+        // 前の作りでプロ 5 試合を超えて続けていた人は、5 試合で終えた形にする(続きの試合は通算にだけ入っている)
+        //   (殿堂には入れる。ランキングへは送らない: UZR の数え方が 11/26 に変わる前の試合のため)
+        if (D.stage === 2 && D.stageGames[2] >= FINAL_GAMES && !D.done) {
+          const f = D.final || finalEval(D); D.final = f; D.done = makeCard(D, f); D.done.migrated = true;
+          try { const H = JSON.parse(localStorage.getItem(HOF_KEY) || '[]'); if (Array.isArray(H)) { H.push(D.done); localStorage.setItem(HOF_KEY, JSON.stringify(H.slice(-50))); } } catch (e) { /* */ }
+          try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) { /* */ }
+        }
         return D;
       }
     } catch (e) { /* 壊れていたら新しく */ }
@@ -144,6 +182,10 @@ class Career {
   setNum(n) { n = Math.round(+n); if (Number.isFinite(n) && n >= 0 && n <= 99) { this.data.num = n; this.save(); } }
   save() { try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) { /* 残せなくても遊べる */ } }
   reset() { this.data = fresh(); this.save(); }
+  // 11/26 キャリアを終えた後、新しい選手で始め直す(殿堂の記録は残す)
+  newCareer() { this.data = fresh(); this.save(); }
+  hof() { try { const a = JSON.parse(localStorage.getItem(HOF_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  saveHof(a) { try { localStorage.setItem(HOF_KEY, JSON.stringify(a.slice(-50))); } catch (e) { /* 残せなくても遊べる */ } }
   get stage() { return STAGES[this.data.stage]; }
 
   wait() {
@@ -157,6 +199,7 @@ class Career {
   // ------------------------------------------------ キャリアの試合を始める・やめる
   start() {
     const ui = this.appUI(); if (!ui || !window.__app.ready) return false;
+    if (this.data.done) return false;   // キャリアを終えた選手は試合に出ない(新しい選手で始め直す)
     this.active = true;
     if (!this._saved) this._saved = { mode: ui.sel.mode, pos: ui.sel.pos };
     ui.sel.mode = 'game'; ui.sel.pos = this.data.pos;   // 一時停止の「最初から」(ui.go)でもキャリアの試合になるように
@@ -266,7 +309,9 @@ class Career {
     };
     this.game = { po: 0, a: 0, e: 0, uzr: 0, uzrOld: 0, parts: { rng: 0, dpr: 0, arm: 0, err: 0 }, chances: 0, xp: { arm: 0, field: 0, sure: 0 }, xpPlay: { arm: 0, field: 0, sure: 0 }, ups: { arm: 0, field: 0, sure: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my };
     const st = this.stage, n = this.data.stageGames[this.data.stage] + 1;
-    this.ui.intro(`${st.long} 第${n}戦`, POS_NAME[d.my]);
+    // 11/26 プロの 4 試合目は「優勝のかかった試合」、5 試合目は「最終戦」
+    const tag = this.data.stage === 2 ? (n === FINAL_GAMES - 1 ? '優勝のかかった試合' : n >= FINAL_GAMES ? '最終戦' : '') : '';
+    this.ui.intro(`${st.long} 第${n}戦`, tag ? `${tag} ・ ${POS_NAME[d.my]}` : POS_NAME[d.my], tag ? 3400 : 2200);
   }
   // お手玉: 捕った後、投げられるまで 0.6 秒遅れる(アウトにできなければ失策)
   bobRoll(d, pl) {
@@ -367,7 +412,7 @@ class Career {
     const G = this.game; this.game = null;
     const d = window.__app.defense; if (d) d.throwMod = null;
     if (r.stopped) return false;
-    const D = this.data, st = this.stage, ev = r.ev || {};
+    const D = this.data, st = this.stage, ev = r.ev || {}, st0 = D.stage;
     const rank = ev.n ? ev.rank : 'C';
     const tc = G.po + G.a + G.e;
     // 試合の終わりの経験値: 出た分(3 つとも 2)+ 評価(S 6・A 4・B 3・C 1)+ 無失策(エラー回避 +3)
@@ -385,19 +430,38 @@ class Career {
     const won = r.g && r.g.score && r.g.score.us > r.g.score.them;
     D.stageGames[D.stage]++;
     const T = D.tot; T.games++; T.po += G.po; T.a += G.a; T.e += G.e; T.uzr += G.uzr; if (won) T.wins++;
+    if (!Array.isArray(D.stageTot) || D.stageTot.length !== 3) D.stageTot = [zt(), zt(), zt()];
+    { const S = D.stageTot[st0]; S.games++; S.po += G.po; S.a += G.a; S.e += G.e; S.uzr += G.uzr; S.adj += adjUZR(G.pos, G.uzr, G.chances); S.ch += G.chances; S.pos[G.pos] = (S.pos[G.pos] || 0) + 1; }
     if (!D.byPos) D.byPos = {};
     { const B = D.byPos[G.pos] || (D.byPos[G.pos] = { games: 0, po: 0, a: 0, e: 0, uzr: 0 }); B.games++; B.po += G.po; B.a += G.a; B.e += G.e; B.uzr += G.uzr; }
     const res = { stage: D.stage, game: D.stageGames[D.stage], pos: G.pos, po: G.po, a: G.a, e: G.e, tc, uzr: G.uzr, chances: G.chances, rank, score: ev.n ? ev.score : null,
       ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now(), parts: { ...G.parts }, uzrOld: G.uzrOld };
-    D.hist.push({ stage: res.stage, pos: res.pos, po: res.po, a: res.a, e: res.e, uzr: Math.round(res.uzr * 100) / 100, rank, won, t: res.t });
+    D.hist.push({ stage: res.stage, pos: res.pos, po: res.po, a: res.a, e: res.e, uzr: Math.round(res.uzr * 100) / 100, rank, won, t: res.t, ch: G.chances });
     if (D.hist.length > 60) D.hist.shift();
     if (!promoted && need) res.prog = promoInfo(D);
-    if (promoted) D.stage = Math.min(STAGES.length - 1, D.stage + 1);
-    if (D.stage === 2 && D.stageGames[2] >= FINAL_GAMES) { const f = finalEval(D); res.final = f; res.finalFirst = !D.final; D.final = f; }
+    if (promoted) { this.sendSeason(st0); D.stage = Math.min(STAGES.length - 1, D.stage + 1); }
+    if (st0 === 2) { res.proGame = D.stageGames[2]; res.proLeft = Math.max(0, FINAL_GAMES - D.stageGames[2]); }
+    if (st0 === 2 && D.stageGames[2] >= FINAL_GAMES) { const f = finalEval(D); res.final = f; res.finalFirst = !D.final; D.final = f; res.done = this.complete(f); }
     this.save();
     this.ui.result(res);
     this.cheer(res);
     return true;
+  }
+  // 11/26 プロ 5 試合を終えた: 殿堂に選手カードを残し、ランキングへ送る(送れなくても端末に残る)
+  complete(f) {
+    const D = this.data, S = D.stageTot[2];
+    const card = makeCard(D, f), pos = card.pos;
+    D.done = card;
+    const H = this.hof(); H.push(card); this.saveHof(H);
+    const e = { name: D.name, num: D.num, pos, val: S.adj, games: S.games, t: card.t };
+    this.lastSend = Promise.all([Rank.submit('pro5', e), Rank.submit('pos_' + pos, e), Rank.submit('season_pro', e)]).catch(() => null);
+    return card;
+  }
+  // 高校・社会人を上がった時、その段(1 シーズン)の UZR をランキングへ
+  sendSeason(si) {
+    const D = this.data, S = D.stageTot && D.stageTot[si]; if (!S || !S.games) return;
+    const board = ['season_hs', 'season_corp'][si]; if (!board) return;
+    this.lastSend = Rank.submit(board, { name: D.name, num: D.num, pos: mainPos(S, D.pos), val: S.adj, games: S.games, t: Date.now() }).catch(() => null);
   }
   cheer(res) {
     const s = window.__app && window.__app.sound; if (!s) return;

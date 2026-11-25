@@ -281,3 +281,105 @@ body.hud-off-carPop #carPops{display:none}
 .pcTable tr.pcRowPos td,.pcTable tr.pcRowPos th{background:rgba(255,210,58,.12)}
 .pcTable td,.pcTable th{overflow-wrap:anywhere}
 .pcBestRow{margin-top:6px;font-size:12px;font-weight:700;color:#dbe8ff;text-align:center}
+
+/* 11/26 キャリア完了・殿堂・ランキング・キャリアの説明 */
+#carIntro.big span{font-size:20px;padding:4px 16px;background:linear-gradient(180deg,#ff6a4a,#c81414);color:#fff;box-shadow:0 0 0 2px #ffd23a}
+.cRow3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cRow3 .cBtn{min-height:48px;font-size:15px;padding:0 4px}
+.cRow3 .cBtn small{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:#ffd23a;color:#3a1e00;font-size:12px}
+.cDoneP{display:flex;flex-direction:column;gap:8px}
+.cDoneHead{text-align:center;font-size:22px;font-weight:900;color:var(--c-gold);-webkit-text-stroke:4px var(--c-ink);paint-order:stroke fill}
+.cMini{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:10px;padding:8px 10px;border-radius:16px;border:3px solid #f6c437;background:linear-gradient(180deg,#1b4fb4,#082a72);color:#fff}
+.cMiniArt{position:relative;height:72px;border-radius:10px;background:url("img/career_card_back.webp") center top/cover no-repeat}
+.cMiniArt span{position:absolute;left:56%;top:47%;transform:translate(-50%,-50%);font:900 24px/1 "Arial Black","Segoe UI",sans-serif;color:#253a68;-webkit-text-stroke:1px #e8eef8;paint-order:stroke fill}
+.cMiniTx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cMiniTx b{font-size:19px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cMiniTx small{font-size:12px;font-weight:800;color:#dbe8ff;line-height:1.35}
+.cMiniTx em{font-style:normal;font-size:14px}.cMiniTx em.pos{color:#9cff7a}.cMiniTx em.neg{color:#ff9d9d}
+.cMini .cStamp.sm{width:58px;height:58px}.cMini .cStamp.sm span{font-size:36px}
+.cDoneTitle{position:relative;margin-top:8px;font-size:20px;font-weight:900;color:var(--c-navy2)}
+.cSubHead{margin-top:8px;text-align:center;font-size:15px;font-weight:900;color:var(--c-navy2)}
+.done .cTable th{font-size:clamp(13px,3.8vw,18px);width:58%;padding-left:12px}
+.done .cTable td{font-size:clamp(17px,5vw,22px)}
+.cNote.dk{color:#3b5578}
+.cRankSt{text-align:center;font-size:13px;font-weight:800;color:#ffe58a}
+#carRank{z-index:34}
+.cTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cTabs button,.cChips button{min-height:44px;border-radius:12px;border:2px solid #fff;background:linear-gradient(180deg,#2c6fe0,#0b3a9c);color:#fff;font-family:inherit;font-size:14px;font-weight:900;line-height:1.1;cursor:pointer;padding:0 2px}
+.cTabs button.on,.cChips button.on{background:linear-gradient(180deg,#fff1a0,var(--c-gold) 50%,#e39b00);color:#3a1e00}
+.cChips{display:flex;justify-content:center;flex-wrap:wrap;gap:6px}
+.cChips button{min-width:72px}
+.cChips.pos button{min-width:0;width:38px;height:38px;min-height:38px;border-radius:50%;font-size:16px}
+.cRankP{padding:10px 8px}
+.cRankCap{text-align:center;font-size:16px;font-weight:900;color:var(--c-navy2)}
+.cRankCap small{display:block;font-size:12px;color:#3b5578;margin-top:2px}
+.cRankNote{margin:6px 0;text-align:center;font-size:12px;font-weight:800;color:#3b5578}
+.cRankT{width:100%;border-collapse:collapse;table-layout:fixed;background:linear-gradient(180deg,#123f9e,#0b2a6f);border-radius:12px;overflow:hidden;color:#fff}
+.cRankT th{font-size:11px;font-weight:800;color:#cfe0ff;padding:5px 2px;background:rgba(0,0,0,.2)}
+.cRankT th:nth-child(1){width:13%}.cRankT th:nth-child(3){width:12%}.cRankT th:nth-child(4){width:18%}.cRankT th:nth-child(5){width:15%}
+.cRankT td{padding:7px 3px;font-size:15px;font-weight:900;text-align:center;border-top:1px solid rgba(255,255,255,.18);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cRankT td.n{color:#ffd23a;font-style:italic}
+.cRankT td.pl{text-align:left}
+.cRankT td.pl i{display:inline-block;min-width:24px;margin-right:5px;padding:1px 3px;border-radius:6px;background:#eef3fa;color:#0b2558;font:900 12px/1.3 "Arial Black",sans-serif;text-align:center;font-style:normal}
+.cRankT td.pl em{margin-left:4px;padding:1px 5px;border-radius:6px;background:#ffd23a;color:#3a1e00;font-size:10px;font-style:normal}
+.cRankT td.pos{color:#9cff7a}.cRankT td.neg{color:#ff9d9d}
+.cRankT td.d{font-size:12px;color:#cfe0ff}
+.cRankT tr.own td{background:rgba(255,210,58,.22)}
+.cEmpty{padding:18px 8px;text-align:center;font-size:14px;font-weight:800;color:#3b5578}
+.cHof{display:flex;flex-direction:column;gap:4px}
+.cHofDay{margin:0 4px 6px;text-align:right;font-size:11px;font-weight:800;color:#3b5578}
+@media (min-width:900px) and (min-aspect-ratio:4/3){
+  .carSheet.rk,.carSheet.done{display:flex;max-width:620px}
+}
+#carTut{position:fixed;inset:0;z-index:2147482000;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(0,10,30,.62)}
+#carTut.hide{display:none}
+.tutBox{width:100%;max-width:420px;max-height:calc(100% - 8px);overflow-y:auto;box-sizing:border-box;padding:12px 14px 14px;border-radius:20px;border:3px solid var(--c-gold,#ffd23a);
+  background:linear-gradient(180deg,#123f9e,#0a2b72);color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.tutTop{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:#cfe0ff}
+.tutTop b{font-size:14px;color:#ffe58a}
+.tutNo{min-width:44px;font-weight:800}
+.tutSkip{min-height:36px;padding:0 14px;border-radius:999px;border:2px solid #fff;background:rgba(255,255,255,.12);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.tutBox h2{margin:8px 0 8px;text-align:center;font-size:clamp(22px,6.4vw,28px);font-weight:900;color:#ffd23a;-webkit-text-stroke:4px #071c4d;paint-order:stroke fill}
+.tutPic{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:120px;justify-content:center}
+.tutPic .cLadder{width:100%}
+.tutBox ul{margin:10px 0 4px;padding:0 0 0 1.1em;font-size:15px;line-height:1.55;font-weight:700}
+.tutBox li{margin:3px 0}
+.tutDots{display:flex;justify-content:center;gap:6px;margin:8px 0 4px}
+.tutDots button{width:12px;height:12px;padding:0;border-radius:50%;border:2px solid #fff;background:transparent;cursor:pointer}
+.tutDots button.on{background:#ffd23a;border-color:#ffd23a}
+.tutNav{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:6px}
+.tutNav .cBtn:disabled{opacity:.4}
+.tutNav .cBtn.go{background:linear-gradient(180deg,#8cf06a,#2fae1d 55%,#178a10)}
+.tutCard{display:grid;grid-template-columns:90px auto;align-items:center;gap:12px;padding:8px 14px 8px 8px;border-radius:14px;border:3px solid #f6c437;background:linear-gradient(180deg,#1b4fb4,#082a72)}
+.tutCard .pcArt{min-height:100px}
+.tutCard .pcNum{font-size:30px}
+.tutCard b{display:block;font-size:20px}.tutCard small{color:#ffe58a;font-weight:800}
+.tutField{width:100%}
+.tutField .pcField{width:min(100%,260px)}
+.tutField span.pcPosBtn{display:grid;place-items:center;width:30px;height:30px;font-size:14px}
+.tutField .pcPickNow{display:none}
+.tutPromo{display:flex;align-items:stretch;gap:4px;width:100%}
+.tutPromo>div{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:3px;padding:6px 4px;border-radius:10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.6);text-align:center}
+.tutPromo>div.pro{border-color:#ffd23a}
+.tutPromo b{font-size:16px;color:#ffd23a}
+.tutPromo span{font-size:11.5px;font-weight:800;line-height:1.3}
+.tutPromo>i{flex:0 0 8px;align-self:center;height:14px;background:#ffd23a;clip-path:polygon(0 0,100% 50%,0 100%)}
+.tutAb{width:100%;margin:0;background:rgba(255,255,255,.9)}
+.tutAb .cNext{display:none}
+.tutWords{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+.tutWords div{padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.5)}
+.tutWords b{display:block;color:#ffd23a;font-size:16px}
+.tutWords span{font-size:12px;font-weight:700;line-height:1.35}
+.tutUzr{width:100%;display:flex;flex-direction:column;gap:8px}
+.tutUzr div{display:grid;grid-template-columns:86px 1fr 46px;align-items:center;gap:8px;font-weight:900}
+.tutUzr span{font-size:13px}
+.tutUzr i{display:block;height:18px;width:var(--w);border-radius:999px;background:#8aa4cc}
+.tutUzr .me i{background:linear-gradient(90deg,#9df07a,#2fae1d)}
+.tutUzr b{font-size:18px;text-align:right}.tutUzr .me b{color:#9cff7a}
+.tutPro{display:flex;gap:6px;justify-content:center}
+.tutPro span{display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:64px;border-radius:12px;background:rgba(255,255,255,.14);border:2px solid #fff;font:900 24px/1 "Arial Black",sans-serif}
+.tutPro span small{margin-top:4px;font-size:10px;font-weight:800;line-height:1.15;text-align:center;font-family:system-ui,sans-serif}
+.tutPro span.v{background:linear-gradient(180deg,#ff6a4a,#b01010);border-color:#ffd23a}
+.tutPro span.f{background:linear-gradient(180deg,#fff1a0,#f6c437 50%,#e39b00);color:#3a1e00;border-color:#fff}
+@media (min-width:900px) and (min-aspect-ratio:4/3){ .tutBox{max-width:520px} .tutBox ul{font-size:16px} }
+.carSheet.rk>.cNote{padding:6px 10px;border-radius:12px;background:rgba(4,20,60,.82);color:#dbe8ff}
