@@ -41,7 +41,16 @@ function setLang(l) {
 applyLangDoc();
 
 // 英語の 辞書(キーは 日本語の 文そのまま)
+// 2026-11-08 英語の ストアの 名前(iPhone 以外の アプリでも App Store と 出ていた)
+let STORE_EN = 'the App Store';
+try { const C0 = window.Capacitor; if (C0 && typeof C0.getPlatform === 'function' && C0.getPlatform() === 'android') STORE_EN = 'Google Play'; } catch (e) { /* 無視 */ }
 const EN_DICT = {
+  // 2026-10-31 英語版の 見回りで 見つけた ぬけ
+  "1つの ステージに 5まい。ぜんぶ あつめると 1UP": "5 per stage. Collect all 5 for an extra life",
+  "1UP×3・コイン 50": "3 extra lives + 50 coins",
+  "・カギを はこぶと 1UP×3・コイン50": "· Bring the key out: 3 extra lives + 50 coins",
+  "・ひみつの へやに みどりキノコ": "· A green mushroom waits in the secret room",
+  "・みどりキノコ 2こ・たからこぞう": "· 2 green mushrooms + Treasure Imp",
   "いのちの かけら ": "Life piece ",
   "ここでは つばさが つかえない。しかけを つかおう": "Wings don't work here. Use the gadget!",
   "ここでは つばさ・かべジャンプが つかえない。しかけを つかおう": "Wings and wall jumps don't work here. Use the gadget!",
@@ -58,7 +67,7 @@ const EN_DICT = {
   // きのうの1位の 看板(2026-10-13)
   "きのうの1位": "Yesterday's #1",
   "きのうの1位 まだいません": "Yesterday's #1: nobody yet",
-  "#ハルの今日の1面 で結果を投稿してね": "Post your result with #ハルの今日の1面",
+  "#ハルの今日の1面 で結果を投稿してね": "Post your result with #HaruDaily",
   "今日の1面 ✔": "Daily Stage ✔",
   "Xで シェア": "Share on X",
   "Xで フォロー": "Follow on X",
@@ -100,10 +109,10 @@ const EN_DICT = {
   "テスト版では まだ ふくげんできません": "Restore isn't available in the test version yet",
   "この版では ふくげんできません": "Can't restore in this version",
   "アプリ版で ためしてください": "Please try it in the app",
-  "ストアに つないでいます…": "Connecting to the App Store…",
+  "ストアに つないでいます…": "Connecting to " + STORE_EN + "…",
   "しばらくしてから もういちど ためしてください": "Please try again in a little while",
   "かった きろくを さがしています…": "Looking for your purchase…",
-  "ストアに つなげませんでした": "Couldn't reach the App Store",
+  "ストアに つなげませんでした": "Couldn't reach " + STORE_EN,
   "完全版を かう": "Buy Full Version",
   "完全版に なりました!": "You have the Full Version!",
   "ワールド2から さきが あそべます": "World 2 and beyond are open",
@@ -118,7 +127,7 @@ const EN_DICT = {
   "←→ いどう   スペース・↑ ジャンプ   X けん": "←→ Move   Space/↑ Jump   X Sword",
   "じゅうじキー いどう   A ジャンプ   B けん": "D-pad Move   A Jump   B Sword",
   "コントローラー: じゅうじキー いどう / A ジャンプ / B けん": "Controller: D-pad Move / A Jump / B Sword",
-  "X スピン / Y・RB ダッシュ / LB どうぐ / スタート ポーズ": "X Spin / Y・RB Dash / LB Item / Start Pause",
+  "X スピン / Y・RB ダッシュ / LB どうぐ / スタート ポーズ": "X Spin / Y, RB Dash / LB Item / Start Pause",
   "ほしを3つあつめよう": "Find all 3 stars!",
   "まおう": "Demon King",
   "スライム大王": "King Slime",
@@ -540,6 +549,14 @@ const EN_DICT = {
   "かいきり(1かいだけ)": "One-time purchase",
   "テスト版は ぜんぶ むりょう": "Test version: everything is free",
   "こうにゅうずみ": "Purchased",
+  "ワールド2から さきの ぼうけんは 完全版で": "World 2 and beyond come with the Full Version",
+  "ワールド2〜8と ほしの みち": "Worlds 2-8 and the Star Road",
+  "まちうける ボスたち": "Bosses ahead",
+  "あとで": "Later",
+  "コインの どうぐ": "Coin items",
+  "完全版を みる": "See Full Version",
+  "しはらいの かんりょう まちです": "Waiting for your payment to complete",
+  "しはらいが すむと 完全版に なります": "The Full Version unlocks once the payment goes through",
   "完全版を かう ": "Buy Full Version",
   "こうにゅうを ふくげん": "Restore purchase",
   "つぎのステージで つかう": "For your next stage",
@@ -683,6 +700,10 @@ const EN_DICT = {
   "かげの まち": "Shadow Town",
   "くずれる つりばし": "Crumbling Bridge",
   "のると じゅんに おちる。とまらずに わたろう": "It falls bit by bit as you cross. Keep moving",
+  "おちる ゆか": "Falling Platforms",
+  "うごく ゆか": "Moving Platforms",
+  "ゆかが ちかづいたら のって、つぎの ゆかへ": "Hop on when one comes close, then on to the next",
+  "のると ゆれて おちる。とまらずに ジャンプで つぎへ": "They shake, then fall. Keep jumping to the next one",
   "かげが くる!": "Here comes your shadow!",
   "じぶんの かげが おくれて おいかけてくる": "Your own shadow follows you, a little behind",
   "かんらんしゃの とう": "Ferris Wheel Tower",
@@ -1405,6 +1426,7 @@ const EN_PAT = [
   [/^ファイル (\d+)$/, m => 'File ' + m[1]],
   [/^クリア (\d+) \/ (\d+)$/, m => `Cleared ${m[1]} / ${m[2]}`],
   [/^ワールド2〜8・ほしの みちの (\d+)ステージが あそべる$/, m => `Worlds 2-8 + Star Road: ${m[1]} stages`],
+  [/^(\d+)ステージ$/, m => m[1] + ' stages'],
   [/^完全版を かう (.+)$/, m => 'Buy Full Version ' + m[1]],
   [/^もっている ×(\d+)$/, m => 'You have ×' + m[1]],
   [/^(\d+)コイン$/, m => m[1] + ' coins'],

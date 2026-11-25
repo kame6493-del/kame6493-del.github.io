@@ -987,25 +987,32 @@ const LEVELS = [
   },
   {
     id: 2, name: 'くもの上の空', theme: 'sky', bgm: 'bgm_2', time: 400,
+    // 2026-11-24 テスター「1-2 の 穴に 3回 つづけて おちて あきらめた」: はじめの 穴を やさしく(後半の 穴・ほかの 面は そのまま)
+    // ・はじめの 雲の 穴 4→3マス ・おちる ゆかは ゆれてから おちるまで 0.85→1.5秒(fallShake)・手前に 案内 ・マントの 先の 穴 5→4マス
+    // 2026-11-25 同じ 感想の 2回目の 見直し(1-1・1-3 と くらべて 1-2 だけ 穴が 多く 危ない): 動く ゆかの 手前に 案内・
+    // マントの 先の 穴の 向こうの 足場 8→12マス・おばけを 4→8マス目へ(着地の 前に おばけを ふんで はねて リフトの 穴まで とんで いた)・ハチの いる 穴 7→5マス。動く しかけの 穴(19マス)は 16マス以上の 決まりの まま
+    fallShake: 1.5,
     build(L) {
       const S = sections(L);
       let x = 0;
       x = S.start(x, { top: 9 });
       x = S.run(x, 8, { top: 9, en: [[5, 'goomy']] });
-      x = S.gap(x, 4, { plank: 2, cloud: true, plankY: 8 });
+      x = S.gap(x, 3, { plank: 2, cloud: true, plankY: 8 });
       x = S.power(x, 'A', { top: 9 });
       x = S.run(x, 6, { top: 9, en: [[3, 'bee', { y: 5 }]] });
+      L.hint(x, 'うごく ゆか', 'ゆかが ちかづいたら のって、つぎの ゆかへ');
       x = S.movers(x, 2, { top: 9 });
       x = S.run(x, 10, { top: 8, en: [[6, 'goomy', { v: 'para' }]], items: [[3, 'n']] });
       x = S.spring(x, { top: 8, cloud: true, star: true });
+      L.hint(x, 'おちる ゆか', 'のると ゆれて おちる。とまらずに ジャンプで つぎへ');
       x = S.fallers(x, 4, { top: 9 });
       x = S.run(x, 12, { top: 8, cp: 2, en: [[6, 'bat', { y: 4 }], [9, 'goomy']] });
       x = S.capeBox(x, { top: 8, hint: true });
-      x = S.gap(x, 5, { coins: 5, coinY: 4 });
-      x = S.run(x, 8, { top: 8, en: [[4, 'ghost', { y: 5 }]] });
+      x = S.gap(x, 4, { coins: 4, coinY: 4 });
+      x = S.run(x, 12, { top: 8, en: [[8, 'ghost', { y: 5 }]] });
       x = S.movers(x, 3, { top: 8, kind: 'lift' });
       x = S.blocks(x, 'B?QB', { top: 8, en: [[6, 'slime']] });
-      x = S.gap(x, 7, { star: true, starY: 3, en: [[3, 'bee', { y: 4 }]] });
+      x = S.gap(x, 5, { star: true, starY: 3, en: [[2, 'bee', { y: 4 }]] });
       x = S.run(x, 10, { top: 7, cp: 2, en: [[6, 'shell']] });
       x = S.tramp(x, { top: 7, cloud: true, star: true });
       x = S.gap(x, 3);

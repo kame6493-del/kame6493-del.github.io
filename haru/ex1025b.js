@@ -35,7 +35,7 @@ const BOSS_WIN = {
   ] },
   12: { first: [
     ['maou', '……う…。あたまが いたい…。ここは…?', '...Ugh... My head hurts... Where am I...?'],
-    ['haru', 'まおう! もとに もどったんだね!', 'Night Lord! You\'re back to normal!'],
+    ['haru', 'まおう! もとに もどったんだね!', 'Demon King! You\'re back to normal!'],
     ['maou', 'ハル…か。わたしの せいで、すまなかった…。', 'Haru... I\'m so sorry for all this...'],
     ['haru', 'いいよ。たすけに きて よかった!', 'It\'s okay. I\'m glad I came to help!'],
   ], again: [
@@ -119,7 +119,7 @@ const BOSS_WIN = {
     ['kage', '……ひかりが……あたたかい……。', '...The light... is warm...'],
     ['kage', 'なぜだ。まけたのに、くるしく ない。', 'Why? I lost, yet it doesn\'t hurt.'],
     ['haru', 'もう ひとりで がんばらなくて いいから だよ。', 'Because you don\'t have to try all alone anymore.'],
-    ['kage', '……わたしは まおうに ランプを こわさせた。ほしを けして、ピピも よわらせた。', '...I made the Night Lord break the lamp. I put out the stars and made Pipi weak.'],
+    ['kage', '……わたしは まおうに ランプを こわさせた。ほしを けして、ピピも よわらせた。', '...I made the Demon King break the lamp. I put out the stars and made Pipi weak.'],
     ['kage', 'なのに、なぜ おこらない?', 'So why aren\'t you angry?'],
     ['haru', 'ペラリが おしえて くれたの。ずっと ひとりで、したから ランプを ささえて くれてたって。', 'Perari told me. You held the lamp up from below, all alone.'],
     ['haru', 'かけらを ぜんぶ もどしても、そこに あなたが いないと、ひかりが まぶしすぎちゃう。', 'Even with every shard back, without you at the bottom, the light would be too bright.'],
@@ -142,7 +142,7 @@ if (typeof BOSS_TALK !== 'undefined' && BOSS_TALK[44]) {
     ['kage', '…そうだ。わたしは ランプの そこの「かげの いし」から うまれた。', '...Yes. I was born from the shadow stone at the bottom of the lamp.'],
     ['kage', 'ひかりが つよすぎ ないように、ずっと したから ささえていた。', 'I held it up from below so its light would never be too strong.'],
     ['kage', 'だが、だれも したを みなかった。おまつりの よるも、わたしは ひとりだった。', 'But no one ever looked down. Even on festival nights, I was alone.'],
-    ['haru', 'だから まおうに ランプを こわさせたの?', 'Is that why you made the Night Lord break the lamp?'],
+    ['haru', 'だから まおうに ランプを こわさせたの?', 'Is that why you made the Demon King break the lamp?'],
     ['kage', 'ひかりが なければ、だれも わたしを わすれない。よるは ずっと まっくらで いい!', 'Without light, no one can forget me. Let the night stay dark forever!'],
     ['haru', 'ちがうよ。ほしが きえたら、あなたの ことも だれにも みえなく なっちゃう!', 'That\'s not true. If the stars go out, no one will be able to see you either!'],
     ['kage', 'だまれ! さいごの かけらは わたさぬ!', 'Silence! I will not give you the last shard!'],
