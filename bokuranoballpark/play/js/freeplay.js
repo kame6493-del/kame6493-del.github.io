@@ -4001,7 +4001,7 @@ export class FreePlay {
     const b = this.spawnBall(st, v, 'foul'); b.sim.Cd = 0; b.sim.w.set(0, 0, 0);
     if (H.sound.hit) H.sound.hit('foul', 0.6);
     setTimeout(() => { if (H.sound.crowd) H.sound.crowd('cheer', 0.25); }, 600);
-    this.say('ファウルボールが来る!', this.held ? '手を空けると捕れます(Q でしまう)' : '近くで捕るか、落ちたら拾う');
+    // 11/26 持ち主「飛んで来たら変な文字要らない」: 文字は出さない(打球の音・歓声と、球そのもので分かる)
   }
 
   // 描く前(カメラを決めた後): 持っている物・自分の体の動き・運転・座るのカメラ

@@ -15,6 +15,7 @@
 import * as THREE from 'three';
 import { predict, samplePath, pathDuration } from './ballsim.js';
 import { BallView, ballVisScale } from './ball.js';
+import { STADIUMS } from './stadiums.js';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const D2R = Math.PI / 180;
@@ -58,6 +59,9 @@ class StandCatch {
     this.ring = null;
     this.bv = null;
     this.tix = ls.get('r4walk.sc.tix', { n: 0, day: '', bought: 0 });
+    // 11/26 持ち主「ファールフライの打球取ったらボール袋にしまえるようにして」: 客席で捕った球(試合のファウル・券のファウル/ホームラン・席に飛んでくるファウル)を
+    // ボール袋に入れて、いつ・どの球場で・どんな打球かを端末に覚える(r4walk.ballbag)。持ち物の窓の「ボール袋」で見る
+    this.bag = ls.get('r4walk.ballbag', []);
     this.kinenN = ls.get('r4walk.sc.kinenN', 0);
     this.buildDom();
     // 別のモード(ボールパークで過ごすなど)で観戦の試合が始まったら、スタンドで捕るは終わり
@@ -286,8 +290,8 @@ class StandCatch {
       if (s.voice) s.voice(['foul_fly'], { maxWait: 0.9 });
       if (s.paSay && (this._paT == null || performance.now() - this._paT > 25000)) { this._paT = performance.now(); s.paSay(Math.random() < 0.5 ? 'audio/pa/foul_caution.mp3' : 'audio/pa/foul_caution_2.mp3', 1.2); }
     }
-    this.flash(K.name, 'in');
-    if (this.mode) this.mode.lastKind = K.name;
+    // 11/26 持ち主「飛んで来たら変な文字要らない」: 券の球は文字を出さない(球・音・実況で分かる)。スタンドで捕るの 10 球だけ区画の名前を出す
+    if (this.mode) { this.flash(K.name, 'in'); this.mode.lastKind = K.name; }
   }
   onCatch(q, t) {
     const C = this.cur, d = this.d, a = this.a, s = a.sound, pl = C.pl;
@@ -305,16 +309,16 @@ class StandCatch {
     // 客席の歓声と実況(「スタンドが沸きました!」など crowd_roar。自分が捕ったので野手の「ナイスキャッチ」は使わない)
     if (s.crowd) s.crowd(nice ? 'big' : 'cheer', nice ? 1 : 0.7);
     if (s.voice) s.voice(['crowd_roar'], { cut: !C.plan.fair, allowRepeat: true, maxWait: 1.6, delay: C.plan.fair ? 0.6 : 0.25 });
-    this.flash(nice ? 'ナイスキャッチ!' : 'キャッチ!', 'ok', C.why === 'stand' ? `+${pts}` : '');
-    if (C.why === 'ticket') this.giveKinen(true);
+    if (C.why === 'stand') this.flash(nice ? 'ナイスキャッチ!' : 'キャッチ!', 'ok', `+${pts}`);
+    if (C.why === 'ticket') { this.giveKinen(false); this.bagAdd(C.plan.fair ? 'hr' : 'foul', 'ticket'); }   // 11/26 券の球は大きな文字を出さず、ボール袋へ入れて小さく知らせる
   }
   onMiss() {
     const C = this.cur, s = this.a.sound;
     C.missed = true;
     C.res = { caught: false, nice: false, pts: 0, kind: C.plan.K.name };
     if (s.crowd) s.crowd('sigh', 0.45);
-    this.flash(C.plan.fair ? '届かなかった…' : '落とした…', 'ng');
-    if (C.why === 'ticket' && this.fp) this.fp.say('惜しい…(券は使いました)', null, { must: true, ms: 1800 });
+    if (this.mode) this.flash(C.plan.fair ? '届かなかった…' : '落とした…', 'ng');
+    if (C.why === 'ticket' && this.fp) this.fp.say('惜しい…', null, { must: true, ms: 1400 });
   }
   endBall(lost) {
     const C = this.cur; this.cur = null;
@@ -393,6 +397,32 @@ class StandCatch {
     if (hold) { try { fp.stow(true); fp.hold('kinen'); } catch (e) { /* 持てなくても数は残る */ } fp.say('記念ボールを手に入れた', `これまでに ${this.kinenN} 個`, { must: true, ms: 2600 }); }
   }
 
+  // ---------------------------------------------------------------- ボール袋(11/26)
+  stadiumId() { try { const q = new URLSearchParams(location.search).get('stadium'); if (q && STADIUMS.some((x) => x.id === q)) return q; const s = JSON.parse(localStorage.getItem('r4walk.sel') || '{}'); return STADIUMS.some((x) => x.id === s.stadium) ? s.stadium : 'koshien'; } catch (e) { return 'koshien'; } }
+  // kind: 'foul' | 'hr'、how: 'game'(試合のファウル)| 'ticket'(券)| 'seat'(席に飛んでくるファウル)。quiet: 知らせは呼んだ側(お金の札)に任せる
+  bagAdd(kind, how, quiet) {
+    const g = this.d && this.d.g;
+    this.bag.push({ t: Date.now(), st: this.stadiumId(), kind, how, inn: g ? `${g.inning}回${g.half === 'top' ? '表' : '裏'}` : null });
+    while (this.bag.length > 300) this.bag.shift();
+    ls.set('r4walk.ballbag', this.bag);
+    if (!quiet && this.fp) this.fp.say(`${kind === 'hr' ? 'ホームランボール' : 'ファウルボール'}をボール袋へ`, null, { must: true, ms: 1500 });
+    return this.bag.length;
+  }
+  openBallBag() {
+    const fp = this.fp; if (!fp) return;
+    const nm = (id) => (STADIUMS.find((x) => x.id === id) || {}).name || id;
+    const howT = { game: '試合のファウル', ticket: '券で飛んできた球', seat: '席に飛んできた球' };
+    const hr = this.bag.filter((b) => b.kind === 'hr').length;
+    const rows = [{ head: `${this.bag.length} 球(ホームラン ${hr}・ファウル ${this.bag.length - hr})` }];
+    for (const b of this.bag.slice().reverse().slice(0, 60)) {
+      const d = new Date(b.t), dt = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+      rows.push({ label: `${b.kind === 'hr' ? 'ホームラン' : 'ファウル'} ・ ${nm(b.st)}`, sub: `${dt}${b.inn ? ' ' + b.inn : ''} ・ ${howT[b.how] || ''}`, tag: '', off: true, run: () => {} });
+    }
+    if (!this.bag.length) rows.push({ label: '空です(客席で捕った球が入ります)', tag: '', off: true, run: () => {} });
+    if (this.kinenN > 0) rows.push({ label: `前に捕った記念ボール ${this.kinenN} 個`, tag: '', off: true, run: () => {} });
+    rows.push({ label: 'もどる', tag: '', run: () => { fp.closeSheet(); fp.openBagSimple(); } });
+    fp.sheet('ボール袋', rows);
+  }
   // ---------------------------------------------------------------- ボールが飛んでくる券(ボールパークで過ごす)
   tixDay() { if (this.tix.day !== today()) { this.tix.day = today(); this.tix.bought = 0; ls.set('r4walk.sc.tix', this.tix); } }
   buyTix() {
@@ -435,12 +465,31 @@ class StandCatch {
     // チケット売り場の窓に「ボールが飛んでくる券」の行を足す(入場のチケットを持っている時も売る)
     fp.sheet = function (title, rows, note) {
       if (self._inject) { self._inject = false; const i = rows.findIndex((r) => /やめる/.test(r.label || '')); const add = [self.tixRow()]; if (i >= 0) rows.splice(i, 0, ...add); else rows.push(...add); }
-      if (self._injectBag) { self._injectBag = false; if (self.tix.n > 0 || self.kinenN > 0) { rows = rows.filter((r) => !/^空です/.test(r.label || '')); rows.push({ head: '券' }); if (self.tix.n > 0) rows.push({ label: `ボールが飛んでくる券 ×${self.tix.n}`, acts: [{ t: '使う', main: true, run: () => { fp.closeSheet(); self.useTix(); } }], run: () => { fp.closeSheet(); self.useTix(); } }); if (self.kinenN > 0) rows.push({ label: `捕った記念ボール ${self.kinenN} 個`, tag: '', off: true, run: () => {} }); } }
+      if (self._injectBag) {
+        self._injectBag = false;
+        if (self.tix.n > 0 || self.kinenN > 0 || self.bag.length) {
+          rows = rows.filter((r) => !/^空です/.test(r.label || ''));
+          if (self.tix.n > 0) { rows.push({ head: '券' }); rows.push({ label: `ボールが飛んでくる券 ×${self.tix.n}`, acts: [{ t: '使う', main: true, run: () => { fp.closeSheet(); self.useTix(); } }], run: () => { fp.closeSheet(); self.useTix(); } }); }
+          // 11/26 ボール袋(捕った球)。前の「捕った記念ボール N 個」の行はボール袋の中へ
+          rows.push({ head: 'ボール袋' }, { label: `捕った球 ${self.bag.length + (self.bag.length ? 0 : self.kinenN)} 球`, tag: '›', run: () => self.openBallBag() });
+        }
+      }
       return oSheet.call(this, title, rows, note);
     };
     fp.openTicket = function () {
       if (this.simple && this.ticket) { this.sheet('チケット売り場', [{ label: '入場チケット(持っています)', tag: '', off: true, run: () => {} }, self.tixRow(), { label: 'やめる', tag: '', run: () => this.closeSheet() }], `券は客席で使うと、次の打球が自分の方へ飛んできます(1日 ${TIX.perDay} 枚まで)`); return; }
       self._inject = true; try { return oTicket.call(this); } finally { self._inject = false; }
+    };
+    // 11/26 席・試合のファウルを捕った(freeplay.js の realFoul・席に飛んでくる球): 手に持たせずにボール袋へ入れる。知らせはお金の小さな札に「ボール袋へ」を足すだけ
+    const oEarn = fp.earn;
+    fp.earn = function (n, why) {
+      if (/ファウルボールを捕った/.test(why || '')) {
+        self.bagAdd('foul', /試合/.test(why) ? 'game' : 'seat', true);
+        const r = oEarn.call(this, n, 'ファウルボールを捕った・袋へ');   // 左下のお金の札は 14 字まで(目標の「ファウルボールを捕った」も数えられる形のまま)
+        if (this.held && this.held.id === 'ball') { this.heldRoot.remove(this.held.mesh); this.held = null; }
+        return r;
+      }
+      return oEarn.call(this, n, why);
     };
     if (oBag) fp.openBagSimple = function () { self._injectBag = true; try { return oBag.call(this); } finally { self._injectBag = false; } };
   }

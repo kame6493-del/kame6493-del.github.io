@@ -70,6 +70,10 @@ const AI_SPEED = 7.0;       // ほかの野手(平均。人ごとの最高速は
 const VMAX = { P: 7.0, C: 6.6, '1B': 7.2, '2B': 7.8, SS: 7.9, '3B': 7.4, LF: 7.7, CF: 8.0, RF: 7.7 };   // 高校生の最高速(m/s)。外野は 11/18 に高校生らしく少し遅く(持ち主「高校生らしく遅くしていい」)   // 高校生の最高速(m/s)
 const ACC = 6.5, DEC = 8.0;  // 加速・減速(m/s^2)
 const REACT = 0.25;         // 打った瞬間から動き出すまで(秒)
+// 11/26 守備・走塁の直し(持ち主「外野フライでまだ外野のチャージ甘くて…ベースカバー異常に遅かったり…ファーストとかがベース離れる…ランナーが詰まっているのに全速力で走って」)。
+// ?oldai=1 で前の形(試験の前後比べ用)
+const COVFIX_OFF = typeof location !== 'undefined' && /[?&]oldai=1/.test(location.search);
+const ACC_COV = COVFIX_OFF ? 6.5 : 8.5;   // 塁に入る人の走り出しの加速(m/s²)
 // フェアかファウルか(原点は本塁の後ろの頂点、ファウルラインは 45 度)
 const TAG_R = 1.1;   // 走者に触れられる距離(グラブを伸ばして、m)
 const HOME_RECV = V(0.25, 0, -1.0);   // 本塁で送球を受ける所(本塁の前のフェア側。三塁からの走路から約 0.8 m 外し、ふさがない)
@@ -336,7 +340,7 @@ export class Defense {
     if (!this.ffw && !this.dg && this.ctx.ui && this.ctx.ui.callBanner) {
       const pl = this.play;
       const txt = key === 'out' ? (pl && (pl.outs || 0) >= 2 ? 'ダブルプレー' : 'アウト') : key === 'strike_out' ? '三振' : key === 'safe' ? 'セーフ' : key === 'foul' ? 'ファウル' : null;
-      if (txt) this.ctx.ui.callBanner(txt, key);
+      if (txt && !(this.watching && key === 'foul')) this.ctx.ui.callBanner(txt, key);   // 11/26 ボールパークで過ごす(観戦)は「ファウル」の大きな文字を出さない(持ち主「飛んで来たら変な文字要らない」。球と審判の声で分かる)
     }
     const u = this.ump[base] || this.ump[0];
     // 遠い審判の声も、はっきり聞こえるように聞く人から 12 m より遠くには置かない(向きは審判の方のまま)
@@ -1002,7 +1006,65 @@ export class Defense {
       if (ty === 'fly' && POS[z].of) this.later(1.4, () => { if (this.ball && !pl.thrown) this.say('back_back', { maxWait: 0.8 }); });
     }
     this.planChase(pl);
+    this.flyOwner(pl);
     if (pl.opt.onContact) pl.opt.onContact(pl);
+  }
+  // 11/26 持ち主「外野フライでまだ外野のチャージ甘くて取れなかったり」: 宙の打球(フライ・ライナー・ポップ)は、打った瞬間に、
+  // 落ちる前に走って届く人(外野手を優先。内野と外野の間のポップは前へ突っ込む外野手か、背走する内野手)が捕りに行く。
+  // 前は決まっていた人(内野手)だけが追い、球が本塁から 38 m を越えた所で外野手へ替えていたので、浅いフライが間に落ちていた
+  airMargin(path, from, vmax, react = REACT, rk = 0.8) {
+    const ev = path.events.find((e) => e.type === 'bounce' || e.type === 'roll' || e.type === 'wall' || e.type === 'stop');
+    const tEnd = ev ? ev.t : pathDuration(path);
+    let best = null;
+    for (let tt = 0.2; tt <= tEnd; tt += 0.05) {
+      const q = samplePath(path, tt, V()); if (q.y > 2.4) continue;
+      const m = tt - (react + this.runTime(Math.max(0, Math.hypot(q.x - from.x, q.z - from.z) - (this.D.ai || 1.8) * rk), vmax));
+      if (best == null || m > best.m) best = { m, pt: V(q.x, 0, q.z), tt };
+    }
+    return best;
+  }
+  // 11/26 安打と決まっている外野の打球(観戦・中継の場面の ofHit。外野手は直接は捕らない)を、普通の野手が落ちる前に走って届かない所へ落とす。
+  // 前は外野手の 0.5〜1.9 秒手前に落ちる球が多く、外野手が前へ出ずにワンバウンドを待つので「チャージが甘い」に見えていた。make を何度か作り直して選ぶ
+  hitSafe(make, n = 20) {
+    if (COVFIX_OFF) return make();
+    let best = null, bm = 1e9;
+    for (let i = 0; i < n; i++) {
+      const b = make(); let m = -9;
+      for (const k of Object.keys(POS)) {
+        if (k === this.my || k === 'C' || !this.fig[k]) continue;
+        const r = this.airMargin(b.path, this.fig[k].root.position, VMAX[k] || AI_SPEED, REACT, 1.0); if (r && r.m > m) m = r.m;
+      }
+      if (m < -0.1) return b;
+      if (m < bm) { bm = m; best = b; }
+    }
+    return best;
+  }
+  flyOwner(pl) {
+    if (COVFIX_OFF || !this.ball || !pl.fly || pl.foul || pl.iff && false) return;
+    const fk = pl.opt.fielder;
+    if (fk === this.my || !this.fig[fk] || this.fig[fk].noCatchUntil) return;
+    const path = this.ball.path, cand = [];
+    for (const k of Object.keys(POS)) {
+      if (k === this.my || !this.fig[k] || !this.fig[k].root.visible || (k === 'C' && !this.watching && this.my !== 'C')) continue;
+      const b = this.airMargin(path, this.fig[k].root.position, VMAX[k] || AI_SPEED); if (b) cand.push({ k, ...b });
+    }
+    const me = this.airMargin(path, this.ctx.player.pos, this.fullSpeed ? this.fullSpeed() : 8);
+    const cur = cand.find((c) => c.k === fk);
+    const ok = cand.filter((c) => c.m >= 0);
+    if (!ok.length) return;
+    if (cur && cur.m >= 0) pl.flyK = fk;   // 決まっていた人が届く: その人が最後まで追う(38 m を越えても外野手へ替えない)
+    // 外野手が届くなら外野手(前へ突っ込む方が捕りやすい)。同じ組では早く着く人
+    ok.sort((a, b) => ((POS[b.k].of ? 0.6 : 0) + b.m) - ((POS[a.k].of ? 0.6 : 0) + a.m));
+    const best = ok[0];
+    if (me && me.m >= 0.3 && !(cur && cur.m >= 0)) return;   // 自分が楽に届く球は自分に任せる(自動の人は横から取らない)
+    if (best.k === fk || (cur && cur.m >= 0 && POS[fk].of === POS[best.k].of)) return;
+    if (cur && cur.m >= 0 && !POS[fk].of && POS[best.k].of && best.m < 0.4) return;   // 外野手がぎりぎりなら、届く内野手のまま
+    const F = this.fig[best.k];
+    F.role = 'field'; F.noCatchUntil = 0;
+    F.chase = { pt: best.pt, at: pl.t + REACT, path }; F.target = null;
+    pl.looseK = best.k; pl.looseNext = pl.t + REACT; pl.flyK = best.k;
+    const F0 = this.fig[fk]; F0.chase = null; F0.target = F0.role === 'cut' ? null : this.homeOf(fk); if (F0.role === 'field') F0.role = null;
+    pl.opt.fielder0 = fk;
   }
   // 捕りに行く野手: 打った瞬間に、落ちる所・通り道の「間に合う一番早い点」を決めて、そこへまっすぐ
   planChase(pl) {
@@ -1102,6 +1164,13 @@ export class Defense {
       for (let i = 0; i < path.n; i++) { const y = path.pts[i * 4 + 1]; if (y > 2.3) continue; m = Math.min(m, Math.hypot(path.pts[i * 4] - f1.glove.x, path.pts[i * 4 + 2] - f1.glove.z)); }
       if (m <= 1.0) { F.target = f1.p.clone(); F.target.snap = true; F.chase = null; F.role = 'base1'; return; }
       pl.first1 = null;   // それた: 離れて捕る(タッチか、セーフ)
+    }
+    // 11/26 持ち主「まだファーストとかがベース離れることある」: 一塁への送球で、ベースを踏んで伸びる所(グラブの所から 1.2 m 以内)を通るなら、
+    // まだベースに着いていない受け手もベースへ入って踏んで捕る(前は球の通り道の手前へ出て、ベースから離れて捕っていた)
+    if (!COVFIX_OFF && pl.thrown && pl.thrown.base === 1 && pl.thrown.fromK && this.fig[pl.thrown.fromK]) {
+      const S1 = this.firstSpot(this.fig[pl.thrown.fromK].root.position);
+      let m = 1e9; for (let i = 0; i < path.n; i++) { if (path.pts[i * 4 + 1] > 2.3) continue; m = Math.min(m, Math.hypot(path.pts[i * 4] - S1.glove.x, path.pts[i * 4 + 2] - S1.glove.z)); }
+      if (m <= 1.2 && this.runTime(Math.hypot(fp.x - S1.p.x, fp.z - S1.p.z), VMAX[rk] || AI_SPEED) < this.arriveT(path, S1.glove) + 0.15) { F.target = S1.p.clone(); F.target.snap = true; F.chase = null; F.role = 'base1'; return; }
     }
     let pt = null;
     for (let i = 0; i < path.n; i += 2) {
@@ -1221,7 +1290,7 @@ export class Defense {
     }
     // 打球を捕りに行く野手
     const fk = pl.opt.fielder;
-    if (fk !== this.my && this.ball && !pl.thrown && this.fig[fk] && !(pl.throughK && !POS[fk].of)) {   // 11/20 内野を抜けた後は、元の内野手は追わない(前は throughBall で止めても次のこまでまた追い始め、一塁手が外野まで追っていた)
+    if (fk !== this.my && this.ball && !pl.thrown && this.fig[fk] && !(pl.throughK && !POS[fk].of) && !(pl.flyK && pl.flyK !== fk)) {   // 11/26 宙の打球を別の人(flyOwner)が捕りに行く時は追わない   // 11/20 内野を抜けた後は、元の内野手は追わない(前は throughBall で止めても次のこまでまた追い始め、一塁手が外野まで追っていた)
       const F = this.fig[fk];
       if (!F.chase || F.chase.path !== this.ball.path) F.chase = { pt: this.interceptFor(F.root.position, this.ball, pl.t, VMAX[fk] || AI_SPEED, this.minCatchT(F)), at: F.chase ? pl.t : pl.t + REACT, path: this.ball.path };
       if (pl.t >= F.chase.at) F.target = F.chase.pt;
@@ -1238,18 +1307,21 @@ export class Defense {
     }
     // 内野を抜けた打球(内野手の間・頭の上): 抜けた時のボールの動きから、外野手の捕りに行く人を決め直す
     if (!pl.throughK && pl.batted && this.ball && this.ball.path === pl.batted.path && !pl.thrown && !pl.holder && !pl.endT && !pl.foulCalled
-      && !POS[pl.opt.fielder].of && this.ballPos && Math.hypot(this.ballPos.x, this.ballPos.z) > 38) this.throughBall(pl);
+      && !POS[pl.opt.fielder].of && this.ballPos && Math.hypot(this.ballPos.x, this.ballPos.z) > 38 && !(pl.flyK && !pl.flyDropped && this.ballPos.y > 0.3)) this.throughBall(pl);
     if (!pl.holder && this.ball && pl.phase === 'live' && !pl.endT && pl.t >= (pl.lbNext || 0)) { pl.lbNext = pl.t + 0.2; this.ensureChaser(pl); }
     if (pl.phase === 'live' && !pl.endT && pl.t >= (pl.fcNext || 0)) { pl.fcNext = pl.t + 0.1; this.firstCover(pl); }   // 11/22 一塁のベースカバー(誰が入るか)を決め直す
     if (pl.phase === 'live' && !pl.endT && pl.batted && !pl.fly && pl.t >= (pl.ofcNext || 0)) { pl.ofcNext = pl.t + 0.2; this.ofCover(pl); this.ofSupport(pl); }
     if (pl.phase === 'live' && !pl.endT && pl.batted && pl.fly && (pl.flyDropped || pl.fieldedBy) && pl.t >= (pl.ofcNext || 0)) { pl.ofcNext = pl.t + 0.2; this.ofCover(pl); }
     // 11/20 内野手が追っていた球が外野へ出たら、その内野手は追うのをやめる(一塁手は一塁へ戻る)。外野の球は外野手が拾う
-    if (pl.looseK && this.ball && !pl.holder && this.ballPos && POS[pl.looseK] && !POS[pl.looseK].of && !this.inInfield(this.ballPos) && Math.hypot(this.ballPos.x, this.ballPos.z) > 40 && !(pl.thrown && pl.thrown.eta != null && pl.t < pl.thrown.eta + 0.15)) {
+    if (pl.looseK && this.ball && !pl.holder && this.ballPos && POS[pl.looseK] && !POS[pl.looseK].of && !this.inInfield(this.ballPos) && Math.hypot(this.ballPos.x, this.ballPos.z) > 40 && !(pl.thrown && pl.thrown.eta != null && pl.t < pl.thrown.eta + 0.15) && !(pl.flyK === pl.looseK && !pl.flyDropped && this.ballPos.y > 0.3)) {
       const F = this.fig[pl.looseK];
       if (F) { F.chase = null; F.role = pl.looseK === '1B' ? 'base1' : null; F.target = pl.looseK === '1B' ? BASEP[1].clone().add(V(-0.6, 0, -0.4)) : this.homeOf(pl.looseK); }
       pl.looseK = null; pl.lbNext = 0;
     }
-    if (pl.looseK && this.ball && !pl.holder && pl.t >= (pl.looseNext || 0)) {
+    if (pl.looseK && pl.looseK === pl.flyK && pl.looseK !== pl.opt.fielder && this.ball && !pl.holder && !pl.flyDropped && !pl.thrown && this.ballPos && this.ballPos.y > 0.3) {
+      // 11/26 宙の打球を捕りに行く人(flyOwner)は、決めた所(落ちる前に一番余裕を持って着ける所)へまっすぐ
+      const F = this.fig[pl.looseK]; if (F && F.chase && pl.t >= F.chase.at) F.target = F.chase.pt;
+    } else if (pl.looseK && this.ball && !pl.holder && pl.t >= (pl.looseNext || 0)) {
       pl.looseNext = pl.t + 0.2;
       const F = this.fig[pl.looseK];
       if (F) { const tg = this.interceptFor(F.root.position, this.ball, pl.t, VMAX[pl.looseK] || AI_SPEED, 0, 0, !LOOSE_OFF && (F.spd || 0) > 2 ? 0.05 : REACT); F.target = tg; F.chase = { pt: tg, at: pl.t, path: this.ball.path }; F.role = 'field'; }   // 11/25 もう走っている人は反応の間(0.25 秒)を足さない
@@ -1464,6 +1536,7 @@ export class Defense {
       const sticky = r.decT != null && pl.t - r.decT < 0.8 && r.decKey === bkey;
       if (d.act === 'go') {
         const to = Math.min(4, d.to || r.from + 1);
+        if (to > r.from && this.jammed(pl, r, all)) continue;   // 11/26 次の塁がふさがっていて前の走者が進まない: 行かない
         if (r.returning || !r.run || r.done || r.to !== to || r.half) {
           if (r.half && to === r.from + 1 && !r.returning && r.run && !r.done && !pl.flyDropped && pl.fly && !pl.fieldedBy) continue;
           if (sticky && !r.half && !r.frozen && !r.returning && to <= (r.to || 0)) continue;   // 先の塁へ伸ばすのは止めない。手前へ戻すのと向きを変えるのだけ待つ
@@ -1518,6 +1591,15 @@ export class Defense {
     const rs = [this.batterRunner, ...this.runners].filter((r) => r && !r.out && !r.scored);
     const pos = (r) => r.from * L + r.dist;
     rs.sort((a, b) => pos(b) - pos(a));
+    // 11/26 持ち主「ランナーが詰まっているのに全速力で走ってアウトになってしまう」: 次の塁に前の走者がいて、その走者が進まない(止まる・戻る)なら、
+    // フォースでない後ろの走者は飛び出さずに元の塁へ戻る(前は 1.8 m まで近づいてから戻り、塁間で挟まれてアウトになっていた)
+    if (!COVFIX_OFF && pl.phase === 'live' && !pl.hr) {
+      for (const t of rs) {
+        if (!(t.run && !t.done && !t.returning) || t.dist < 0.3 || !this.jammed(pl, t, rs)) continue;
+        t.returning = true; t.run = false; t.half = false; t.to = t.from;
+        if (pl.runLog) this.logRun(pl, t, '戻る', '次の塁に前の走者がいて進まない: 飛び出さない');
+      }
+    }
     for (let i = 1; i < rs.length; i++) {
       const lead = rs[i - 1], t = rs[i];
       const gap = pos(lead) - pos(t);
@@ -1538,6 +1620,18 @@ export class Defense {
     }
   }
 
+  // 11/26 この走者の次の塁に前の走者がいて、進まない(フォースでもない)か
+  jammed(pl, t, rs) {
+    if (COVFIX_OFF || (t.isBatter && t.from < 1) || this.forcedNow(t)) return false;
+    const nb = t.from + 1; if (nb >= 4) return false;
+    rs = rs || [this.batterRunner, ...this.runners].filter((r) => r && !r.out && !r.scored);
+    const lead = rs.find((q) => q !== t && !q.out && !q.scored && q.from === nb && q.dist < 2.0);
+    if (!lead) return false;
+    const going = lead.run && !lead.done && !lead.returning && (lead.to || 0) > nb;
+    if (going || this.forcedNow(lead)) return false;
+    if (pl.t < pl.contactT + 0.5 && lead.startAt != null && lead.startAt > pl.t) return false;   // 前の走者がこれから走り出す
+    return true;
+  }
   // 駆け抜けた打者走者の一塁からの離れ(1.2 秒まで駆け抜け、その後 2.6 m/s で戻る)
   overrunOff(r) {
     if (r.throughT == null) return 0;
@@ -2134,7 +2228,7 @@ export class Defense {
       if (pl.thrown && pl.thrown.to && pl.thrown.to !== k && pl.thrown.eta != null && pl.t < pl.thrown.eta + 0.2 && !pl.overChase && (this.recvReady(pl) || (pl.firstLeadK && pl.thrown.to === pl.firstLeadK))) continue;   // 受け手が塁にいる時は受け手に任せる(11/22 走って一塁に入る人へのトスも、途中の人は捕らない)
       const fp = F.root.position;
       const dh = Math.hypot(p.x - fp.x, p.z - fp.z), hb = p.y - fp.y;
-      let Rr = k === pl.looseK ? 2.0 : pl.thrown || pl.loosePick ? 1.6 : (k === pl.opt.fielder ? this.D.ai : 0.0);
+      let Rr = k === pl.looseK ? (k === pl.flyK && !pl.thrown ? this.D.ai : 2.0) : pl.thrown || pl.loosePick ? 1.6 : (k === pl.opt.fielder ? this.D.ai : 0.0);
       if (this.stretch1(pl, k)) Rr = 1.15;   // 11/21 一塁でベースを踏んで伸びて捕る人: 球が伸ばしたグラブ(体の前 1.05 m)に来た時に捕る(前は 1.6 m 手前で捕っていた)
       if (F.noCatchUntil && !pl.thrown && this.ball && !this.ball.path.events.some((e) => e.type !== 'stop' && e.t < tt - 0.25)) Rr = 0;
       if (Rr > 0 && dh < Rr && hb > -0.45 && hb < 2.5) { this.onCatch(pl, k, p, tt); return true; }   // 11/20 下は -0.1 → -0.45: マウンドの高さ(約 0.25 m)に立ったままの投手が、マウンドの裾で止まった球の上に立って拾えずにいた
@@ -2685,7 +2779,8 @@ export class Defense {
         const tb = r.isBatter ? 1 : r.to % 4;
         const eta = this.runnerETA(r, tb);
         const tt = Math.hypot(BASEP[tb].x - fp.x, BASEP[tb].z - fp.z) / 28 + 0.6;
-        if (tt < eta + 0.2 && this.canCover(tb, k, Math.hypot(BASEP[tb].x - fp.x, BASEP[tb].z - fp.z) / 30 + (POS[k].of ? 1.0 : 0.35))) opts.push(tb);
+        // 11/26 塁に入る人が間に合うかは、投げるまでの構え(内野 0.6〜0.85 秒)と送球の時間で見る(前は 0.35 秒で見ていて、二塁のカバーが少し遅いだけで併殺を狙わず一塁へ投げていた)
+        if (tt < eta + 0.2 && this.canCover(tb, k, Math.hypot(BASEP[tb].x - fp.x, BASEP[tb].z - fp.z) / 30 + (POS[k].of ? 1.0 : COVFIX_OFF ? 0.35 : 0.65))) opts.push(tb);
       }
       const order = [0, 3, 2, 1];
       target = order.find((b) => opts.includes(b));
@@ -2799,7 +2894,7 @@ export class Defense {
     for (const r of [this.batterRunner, ...this.runners]) if (r && !r.out) { r.run = true; r.done = false; r.to = 4; r.half = false; r.returning = false; r.trot = true; r.startAt = pl.t; }
     this.say(['hr_carry', 'hr'], { cut: true }); this.ctx.sound.crowdEvent('hr', 1);
     const n = [this.batterRunner, ...this.runners].filter((r) => r && !r.out).length;
-    if (!this.ffw && this.ctx.ui && this.ctx.ui.homeRun) this.ctx.ui.homeRun(false, ['ソロ', 'ツーラン', 'スリーラン', '満塁'][Math.max(0, Math.min(3, n - 1))]);   // 真ん中の題字(1.7 秒)
+    if (!this.ffw && !this.watching && this.ctx.ui && this.ctx.ui.homeRun) this.ctx.ui.homeRun(false, ['ソロ', 'ツーラン', 'スリーラン', '満塁'][Math.max(0, Math.min(3, n - 1))]);   // 真ん中の題字(1.7 秒)
     // 11/18 持ち主「ホームランが出たらパッと切り替わるように」: 走者が回り終えるのを待たず、1.5 秒見せたら次の打者へ(得点は applyResult が塁の人数で数える)
     this.later(1.5, () => { if (this.play === pl && pl.endT == null) this.finishPlay(pl, 'ホームラン'); });
   }
@@ -3630,7 +3725,7 @@ export class Defense {
     this.hush('最後のアウトなるか', '', { ms: 1200 });
     this.startPlay({ fielder: zone === this.my ? zone : zone, L: 0.35, by: 'bat', type, hit: !!bip.hit, sitT: 0.6 });
     const pl = this.play; pl.watch = true;
-    if (of && bip.hit && type === 'liner') { pl.batted = this.makeBall('liner', this.homeOf(zone).setY(0).lerp(V(0, 0, -40), 0.25), 0.4, pl.p0); pl.fly = false; pl.ofHit = true; this.fig[zone].noCatchUntil = 99; }
+    if (of && bip.hit && type === 'liner') { pl.batted = this.hitSafe(() => this.makeBall('liner', this.homeOf(zone).setY(0).lerp(V(0, 0, -40), 0.25).add(COVFIX_OFF ? V() : V((this.rng() - 0.5) * 12, 0, (this.rng() - 0.5) * 6)), 0.4, pl.p0)); pl.fly = false; pl.ofHit = true; this.fig[zone].noCatchUntil = 99; }
   }
   stealRole() {
     const plan = R.coverPlan({ type: 'steal', zone: 'C', bases: this.g.bases, outs: this.g.outs, hand: this.g.hand });
@@ -3683,7 +3778,7 @@ export class Defense {
     pl.cov = role;
     if (of && bip.hit) {
       // 外野の安打: 外野手の手前に落とし、外野手は捕らずに拾う
-      pl.batted = this.makeBall(opt.type, this.homeOf(zone).setY(0).lerp(V(0, 0, -40), 0.22), 0.3, pl.p0);
+      pl.batted = this.hitSafe(() => this.makeBall(opt.type, this.homeOf(zone).setY(0).lerp(V(0, 0, -40), 0.22).add(COVFIX_OFF ? V() : V((this.rng() - 0.5) * 10, 0, (this.rng() - 0.5) * 6)), 0.3, pl.p0));
       pl.fly = false; pl.ofHit = true;
       this.fig[zone].noCatchUntil = 99;
     } else if (of) {
@@ -3703,7 +3798,7 @@ export class Defense {
       pl.sendHome = true;
       if (of && bip.hit) {
         const h = this.homeOf(zone).setY(0), side = V(-h.z, 0, h.x).normalize().multiplyScalar((this.rng() < 0.5 ? -1 : 1) * (6 + this.rng() * 3));
-        pl.batted = this.makeBall('liner', h.clone().add(side).lerp(V(0, 0, -40), 0.12), 0.4, pl.p0);
+        pl.batted = this.hitSafe(() => this.makeBall('liner', h.clone().add(side).lerp(V(0, 0, -40), 0.12), 0.4, pl.p0), 1);
       }
     }
   }
@@ -3906,7 +4001,9 @@ export class Defense {
       }
       // 打つ前(投球の間)は守備位置で構える。動き出すのは打ってから(反応の遅れのあと)
       F.react = F.react ?? (0.2 + ((k.charCodeAt(0) * 7 + (k.charCodeAt(1) || 0) * 13) % 25) / 100);
-      const hold = pl && !pl.steal && pl.t < pl.contactT + (k === pl.opt.fielder ? 0.2 : F.react);
+      // 11/26 持ち主「取った後ベースカバー異常に遅かったりで併殺にならなかったり」: 塁に入る人(base0〜3)は打った瞬間(0.1 秒)に塁へ走り出す(前は人ごとの 0.2〜0.44 秒)
+      const covRun = !COVFIX_OFF && /^base/.test(F.role || '') && pl && pl.batted && (pl.batted.type === 'grounder' || pl.batted.type === 'bunt');
+      const hold = pl && !pl.steal && pl.t < pl.contactT + (k === pl.opt.fielder ? 0.2 : covRun ? 0.1 : F.react);
       if (F.target && !hold) {
         const p = F.root.position;
         // 15. 本塁の後ろへ回る人(投手のバックアップ)は、本塁と走路の上を通らずに、横へ回り込む
@@ -3925,7 +4022,7 @@ export class Defense {
           // 11/25 外野で転がる球を拾いに行く外野手は、拾う所で止まりきらずに走りながら拾う(4.5 m/s までしか緩めない)
           const scoop = !LOOSE_OFF && pl && POS[k].of && F.role === 'field' && (pl.looseK === k || pl.opt.fielder === k) && !pl.holder && !pl.thrown && this.ball && this.ballPos && this.ballPos.y < 0.6;
           const vStop = fullOF ? vmax : Math.max(scoop ? 4.5 : 0, Math.sqrt(2 * DEC * Math.max(0, d + viaD - 0.1)));
-          F.spd = Math.min(vmax, (F.spd || 0) + (fullOF ? 14 : ACC) * dt, Math.max(2.0, vStop));
+          F.spd = Math.min(vmax, (F.spd || 0) + (fullOF ? 14 : covRun ? ACC_COV : ACC) * dt, Math.max(2.0, vStop));   // 11/26 塁に入る人は走り出しを速く(ACC_COV)
           const s = Math.min(d, F.spd * dt);
           p.x += dx / d * s; p.z += dz / d * s; p.y = this.gy(p);
           // フライで頭を越える打球を追う最初の数歩は、打球の方を向いたまま後ろへ下がる
@@ -3981,7 +4078,7 @@ export class Defense {
       } else if (r.out) { r.outT = (r.outT || 0) + dt; r.fig.set('stand'); if (r.outT > 1.0) r.fig.root.visible = false; }
       else {
         // リードの間は投手(打った後は打球)の方を向いて構える。第二リードは横歩き
-        const lk = pl && pl.t < pl.contactT ? V(0, 0, -18.4) : (this.ballPos || V(0, 0, -18.4));
+        const lk = !pl || pl.t < pl.contactT || pl.endT != null ? V(0, 0, -18.4) : (this.ballPos || V(0, 0, -18.4));   // 11/26 プレーの間(早送り・次の打席の前)は前の球の所でなく投手の方
         r.fig.setYawToward(lk.x, lk.z);
         r.fig.set('ready');
       }

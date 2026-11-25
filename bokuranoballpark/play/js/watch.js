@@ -296,8 +296,10 @@ export class Watch {
       // 外野の安打: 外野手の前・間に落とす(defense.js の coverScene と同じ作り)
       const type = bip.thru ? 'grounder' : rng() < 0.65 ? 'liner' : 'grounder';
       d.startPlay({ fielder: bip.zone, L: 0.3, by: 'bat', type, hit: true, sitT: 0 });
-      const pl = d.play, h = d.homeOf(bip.zone).setY(0), side = new this.THREE.Vector3(-h.z, 0, h.x).normalize().multiplyScalar((rng() * 2 - 1) * 9);
-      pl.batted = d.makeBall(type, h.lerp(new this.THREE.Vector3(0, 0, -40), 0.12 + rng() * 0.2).add(side), 0.4, pl.p0);
+      const pl = d.play, h0 = d.homeOf(bip.zone).setY(0);
+      // 11/26 外野手が落ちる前に走って届かない所へ(defense.js の hitSafe。前は外野手の手前に落ちてワンバウンドを待つ形が多かった)
+      let tries = 0; const mk = () => { const w = tries++ < 6 ? 1 : 1.5, h = h0.clone(), side = new this.THREE.Vector3(-h.z, 0, h.x).normalize().multiplyScalar((rng() * 2 - 1) * 9 * w); return d.makeBall(type, h.lerp(new this.THREE.Vector3(0, 0, -40), 0.12 + rng() * 0.2 * w).add(side), 0.4, pl.p0); };   // 届く所しか無ければ、間・前へ広げて探す
+      pl.batted = d.hitSafe ? d.hitSafe(mk) : mk();
       pl.fly = false; pl.ofHit = true;
       d.fig[bip.zone].noCatchUntil = 99;
       return;

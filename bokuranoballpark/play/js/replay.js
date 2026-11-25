@@ -7,6 +7,18 @@ import * as THREE from 'three';
 
 const FPS = 20, MAXT = 15;
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+// 11/26 持ち主「リプレイを見た後とか … 打者の向きとか 走者の向きとか ピッチャーの向きとかなんかおかしい向きになっている」:
+// 覚えた向き(四元数)を当てると、three.js は回り(Euler XYZ)を作り直す。後ろ半分(90 度より大きい向き)では
+// (x, y, z) = (π, π − 向き, π) の形になり、その後で選手の向きを rotation.y = … で決めると、x と z の π が残って
+// 見た目の向きが π − 決めた向き(左右の鏡)になっていた(逆向きで走る・逆向きで構える)。同じ回りの (x − π, π − y, z − π) に直して、
+// x・z を 0 に近い形へ戻す。
+const PI = Math.PI, wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+const OLD = typeof location !== 'undefined' && /[?&]oldreplay=1/.test(location.search);   // 試験で直す前の形を見る
+export function tidyEuler(o) {
+  if (OLD) return;
+  const r = o.rotation;
+  if (Math.abs(r.x) > PI / 2 && Math.abs(r.z) > PI / 2) r.set(wrap(r.x - Math.sign(r.x) * PI), wrap(PI - r.y), wrap(r.z - Math.sign(r.z) * PI));
+}
 const VIEWS = [
   ['fp', '自分の目'], ['behind', '後ろから'], ['side', '横から'], ['high', '上から'], ['tv', 'バックネット裏'], ['ball', '球を追う'], ['free', '自由'],
 ];
@@ -71,6 +83,7 @@ export class Replay {
       q0.set(F0.Q[k] * s, F0.Q[k + 1] * s, F0.Q[k + 2] * s, F0.Q[k + 3] * s).normalize();
       q1.set(F1.Q[k] * s, F1.Q[k + 1] * s, F1.Q[k + 2] * s, F1.Q[k + 3] * s).normalize();
       o.quaternion.copy(q0).slerp(q1, u);
+      tidyEuler(o);
       o.visible = !!(u < 0.5 ? F0.Vis[i] : F1.Vis[i]);
     }
     for (let j = 0; j < nB; j++) {
