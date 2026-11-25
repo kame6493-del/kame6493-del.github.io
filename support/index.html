@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>不具合の報告・要望の窓口 | YURU Studio</title>
+<meta name="description" content="YURU Studio のアプリとゲームの不具合の報告、こうしてほしいという要望の窓口です。Discord・X の DM・メールで受け付けています。アプリごとのよくある質問も。">
+<meta property="og:site_name" content="YURU Studio">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="不具合の報告・要望の窓口 | YURU Studio">
+<meta property="og:description" content="ビートぽん!・ぼくらのボールパーク・DIAMOND NINE ほか、YURU Studio のアプリの不具合と要望はこちらへ。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yurustudio.github.io/support/">
+<meta property="og:image" content="https://yurustudio.github.io/img/top/og-top.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@apkderete">
+<link rel="canonical" href="https://yurustudio.github.io/support/">
+<link rel="icon" href="../img/top/bp-icon.webp">
+<style>
+:root{--ink:#141a2b;--sub:#4b5568;--line:#d9dfec;--bg:#eef2fa;--card:#fff;--dc:#5865f2;--dc2:#4752c4;--x:#0f1419;--accent:#ff2f92}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;color:var(--ink);background:var(--bg);line-height:1.75;font-size:16px}
+a{color:#2a4fd6}
+img{display:block;max-width:100%;height:auto}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+.bar{background:#160b2e;color:#fff}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:44px}
+.bar a{color:#fff;text-decoration:none;font-size:13px;opacity:.9}
+.bar .logo{font-size:15px;font-weight:800;letter-spacing:.04em;opacity:1}
+.hero{background:linear-gradient(135deg,#1d1450 0%,#3a2a9e 55%,#5865f2 100%);color:#fff;padding:30px 0 34px}
+.hero h1{margin:0 0 8px;font-size:26px;line-height:1.3;font-weight:900}
+.hero p{margin:0;font-size:15px;opacity:.95}
+main{padding:18px 0 40px}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 20px;margin:16px 0}
+h2{margin:0 0 10px;font-size:19px;line-height:1.4}
+h3{margin:16px 0 4px;font-size:16px}
+p{margin:6px 0}
+.ways{display:grid;gap:12px}
+@media (min-width:640px){.ways{grid-template-columns:1fr 1fr}}
+.way{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.way .t{font-weight:800;font-size:16px}
+.way .d{font-size:14px;color:var(--sub)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:12px;padding:10px 16px;font-weight:800;font-size:15.5px;text-decoration:none;color:#fff;margin-top:auto}
+.btn svg{width:20px;height:20px;flex:none}
+.btn.dc{background:var(--dc)}
+.btn.dc:hover{background:var(--dc2)}
+.btn.dc[aria-disabled="true"]{background:#9aa1c9;cursor:default;pointer-events:none}
+.btn.x{background:var(--x)}
+.soon{display:inline-block;font-size:12px;font-weight:800;background:#ffe9a8;color:#5a4300;border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:2px}
+.mail{font-size:14px;color:var(--sub);margin-top:12px}
+ol.tpl{margin:8px 0 0;padding-left:1.4em}
+ol.tpl li{margin:2px 0}
+pre{white-space:pre-wrap;background:#f4f6fc;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:14.5px;margin:10px 0 8px}
+.copy{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer}
+.note{font-size:13.5px;color:var(--sub)}
+.warn{font-size:14px;background:#fff1f6;border-left:4px solid var(--accent);border-radius:8px;padding:8px 12px;margin-top:12px}
+details{border-top:1px solid var(--line);padding:4px 0}
+details:first-of-type{border-top:0}
+summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;padding:10px 0;font-weight:800;font-size:16px}
+summary::-webkit-details-marker{display:none}
+summary img{width:40px;height:40px;border-radius:10px;flex:none}
+summary::after{content:"+";margin-left:auto;font-size:22px;color:var(--sub);font-weight:400}
+details[open] summary::after{content:"−"}
+.faq{padding:0 0 10px 52px}
+@media (max-width:420px){.faq{padding-left:4px}}
+.faq h3{font-size:15px;margin:12px 0 2px}
+.faq p,.faq ol{font-size:14.5px;margin:2px 0}
+.faq ol{padding-left:1.3em}
+.more{font-size:14px;margin-top:8px}
+ul.ch{margin:6px 0 0;padding-left:1.2em;font-size:15px}
+footer{text-align:center;font-size:13px;color:var(--sub);padding:10px 0 30px}
+footer a{color:var(--sub)}
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap"><a class="logo" href="../">YURU Studio</a><a href="../">アプリ一覧へ</a></div></header>
+
+<div class="hero"><div class="wrap">
+  <h1>不具合の報告・要望の窓口</h1>
+  <p>遊んでいて「おかしいな」と思った所や、「こうなったらいいな」があれば教えてください。1人で作っているので、返事に数日かかることがあります。いただいた声は全部読んで、直す順番を決めるのに使っています。</p>
+</div></div>
+
+<main class="wrap">
+
+<section aria-labelledby="h-ways">
+  <h2 id="h-ways">送り先</h2>
+  <div class="ways">
+    <div class="way">
+      <div class="t">Discord<span class="soon">準備中</span></div>
+      <div class="d">アプリごとに部屋を分けて、不具合と要望を受け付けます。ほかの人の報告も見られるので、同じ症状が出ている人がいるか確かめられます。</div>
+      <!-- DISCORD_INVITE: サーバーができたら href を招待リンクにし、aria-disabled と「準備中」を外す -->
+      <a class="btn dc" id="discord-invite" href="#" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18 18 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.8 19.8 0 0 0 6 3l1.3-2a12.7 12.7 0 0 1-2-1l.5-.4a14 14 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2a19.7 19.7 0 0 0 6-3c.5-5.2-.9-9.7-3.6-13.7ZM8 15.4c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.6 8 10.6s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>Discord はもうすぐ開きます</a>
+    </div>
+    <div class="way">
+      <div class="t">X の DM</div>
+      <div class="d">Discord を使っていない人はこちらへ。@apkderete に DM を送ってください。開いていない時は、投稿への返信でも大丈夫です。</div>
+      <a class="btn x" href="https://x.com/apkderete" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@apkderete を開く</a>
+    </div>
+  </div>
+  <p class="mail">メールでも受け付けています: <a href="mailto:kame6493@gmail.com">kame6493@gmail.com</a>。購入の復元や返金の相談は、注文番号が入るのでメールが安心です。</p>
+</section>
+
+<section aria-labelledby="h-tpl">
+  <h2 id="h-tpl">不具合を送る時に書いてほしいこと</h2>
+  <p>全部そろわなくても大丈夫です。分かる所だけ書いてください。</p>
+  <ol class="tpl">
+    <li>アプリの名前</li>
+    <li>機種(例: iPhone 13、Pixel 7、パソコンの Chrome)</li>
+    <li>OS の版(例: iOS 18.1、Android 15)</li>
+    <li>アプリの版(アプリの設定の画面か、ストアの頁に出ています)</li>
+    <li>何をしたら(どの画面で、何を押したか)</li>
+    <li>どうなったか(止まった・音が出ない・表示がずれた など)</li>
+    <li>画面の写真か動画(あるととても助かります)</li>
+  </ol>
+  <pre id="tpl-text">アプリ:
+機種:
+OS の版:
+アプリの版:
+何をしたら:
+どうなった:
+(画面の写真をつける)</pre>
+  <button class="copy" type="button" id="copy-btn">この型を写す</button>
+  <p class="warn">パスワード・カードの番号・ストアの支払い情報は送らないでください。こちらから聞くこともありません。</p>
+</section>
+
+<section aria-labelledby="h-ideas">
+  <h2 id="h-ideas">要望・アイデア</h2>
+  <p>「この曲を入れてほしい」「この球場で守りたい」「ここが分かりにくい」など、小さなことでも歓迎です。すぐに全部は入れられませんが、多かった声から順に取り入れています。入った時は Discord と X でお知らせします。</p>
+</section>
+
+<section aria-labelledby="h-faq">
+  <h2 id="h-faq">アプリごとのよくある質問</h2>
+  <p class="note">送る前に、ここで直るかもしれません。</p>
+
+  <details id="beatpon">
+    <summary><img src="../img/top/bp-icon.webp" alt="" width="40" height="40" loading="lazy">ビートぽん!</summary>
+    <div class="faq">
+      <h3>音が出ない</h3>
+      <ol>
+        <li>端末のマナーモード(iPhone は横のスイッチ)を切り、音量を上げる。</li>
+        <li>ホームの「設定」を開いて「音が出ない時はここを押す」を押す。「ポン」と聞こえたら直っています。</li>
+        <li>まだ鳴らない時は、アプリを一度終わらせて開き直す。ブラウザ版はタブを閉じて開き直してください。</li>
+      </ol>
+      <h3>タイミングがずれる気がする</h3>
+      <p>Bluetooth のイヤホンでは音が少し遅れて届きます。ホームの「設定」の「音のずれ」で合わせると、判定が音に合います。</p>
+      <h3>入れ直したら曲セットが消えた</h3>
+      <p>買った時と同じストアのアカウントのまま、「設定」の「購入を戻す」を押してください。</p>
+      <p class="more"><a href="../beatpon/support.html">ビートぽん! のサポート</a></p>
+    </div>
+  </details>
+
+  <details id="bokura">
+    <summary><img src="../img/shots/i-bokura.webp" alt="" width="40" height="40" loading="lazy">ぼくらのボールパーク</summary>
+    <div class="faq">
+      <h3>動きが重い・カクカクする</h3>
+      <p>遊んでいる間に右上の「II」で止めて、「画質」を「自動」にしてください。自動は動きの速さを見ながら、重い時に画質を下げます。それでも重い時は「軽量」にして、「観客」を切るとさらに軽くなります。</p>
+      <h3>入れ直したら球場が閉じていた</h3>
+      <p>買った時と同じストアのアカウントのまま、鍵のついた球場を押して出る画面の「購入を復元」を押してください。</p>
+      <p class="more"><a href="../bokuranoballpark/support.html">ぼくらのボールパークのサポート</a></p>
+    </div>
+  </details>
+
+  <details id="d9">
+    <summary><img src="../img/shots/i-diamond-nine.webp" alt="" width="40" height="40" loading="lazy">DIAMOND NINE</summary>
+    <div class="faq">
+      <h3>機種を替える時のセーブ</h3>
+      <p>元の端末の設定で「書き出す」を選び、保存したファイルを新しい端末の「読み込む」で開きます。削除や入れ直しの前に書き出してください。</p>
+      <h3>買ったポイントが増えない</h3>
+      <p>電波が弱いと、受け取りが次に開いた時まで遅れることがあります。アプリを閉じて開き直してください。</p>
+      <p class="more"><a href="../apps/diamond-nine/support.html">DIAMOND NINE のサポート</a></p>
+    </div>
+  </details>
+
+  <details id="nigatecho">
+    <summary><img src="../img/shots/i-nigatecho.webp" alt="" width="40" height="40" loading="lazy">ニガテ帳(資格の過去問)</summary>
+    <div class="faq">
+      <h3>問題や解説のまちがいを見つけた</h3>
+      <p>試験の名前・回・問題の番号と、どこがおかしいかを送ってください。確かめて、次の版で直します。</p>
+      <p class="more"><a href="../apps/kaigonigate/support.html">ニガテ帳のサポート</a> · <a href="../exam/">試験の日程と合格基準</a></p>
+    </div>
+  </details>
+
+  <details id="pasudan">
+    <summary><img src="../img/shots/i-pasudan.webp" alt="" width="40" height="40" loading="lazy">パスダン</summary>
+    <div class="faq">
+      <h3>遊び方が分からない</h3>
+      <p>バトル・ダンジョン・苦手の復習の流れを、サポートの頁にまとめています。</p>
+      <p class="more"><a href="../pasudan/">パスダンのサポート</a></p>
+    </div>
+  </details>
+
+  <details id="haru">
+    <summary><img src="../img/shots/i-haru.webp" alt="" width="40" height="40" loading="lazy">ハルの冒険</summary>
+    <div class="faq">
+      <h3>動かない・止まる</h3>
+      <p>アプリを一度終わらせて開き直してください。ステージは端末の中にあるので、電波がなくても遊べます。直らない時は、止まったステージを書いて送ってください。</p>
+      <h3>入れ直したら完全版が消えた</h3>
+      <p>タイトルの「おみせ」から「こうにゅうを ふくげん」を押してください。</p>
+      <p class="more"><a href="../haru/support.html">ハルの冒険のサポート</a></p>
+    </div>
+  </details>
+
+  <details id="undoukai">
+    <summary><img src="../img/shots/i-undoukai.webp" alt="" width="40" height="40" loading="lazy">らくがき運動会</summary>
+    <div class="faq">
+      <h3>みんなに出した絵を消したい</h3>
+      <p>絵の名前と出した日を送ってください。確かめてサーバーから消します。困った絵や名前を見つけた時も同じように教えてください。</p>
+      <h3>動かない・止まる</h3>
+      <p>アプリを開き直してください。「みんなのらくがき」「ランキング」「3人で対戦する」は電波が要ります。1人で走るのは電波なしでも遊べます。</p>
+      <p class="more"><a href="../apps/undoukai/support.html">らくがき運動会のサポート</a></p>
+    </div>
+  </details>
+
+  <p class="note" style="margin-top:12px">ここにないアプリのことも、同じ窓口で受け付けています。各アプリのサポートの頁は<a href="../#others">アプリ一覧</a>から開けます。</p>
+</section>
+
+<section aria-labelledby="h-dc">
+  <h2 id="h-dc">Discord の中身(準備中)</h2>
+  <ul class="ch">
+    <li>はじめに・お知らせ・ルール</li>
+    <li>アプリごとの部屋(不具合・要望・質問を札で分けて書けます。直ったら「直った」の札がつきます)</li>
+    <li>雑談・スクショ自慢</li>
+    <li>Android のテスター募集(相互テスト)</li>
+  </ul>
+</section>
+
+</main>
+
+<footer><a href="../">YURU Studio のアプリ一覧</a> · <a href="../privacy/">サイトのプライバシーポリシー</a> · © YURU Studio</footer>
+
+<script>
+(function(){
+  var b=document.getElementById('copy-btn'),t=document.getElementById('tpl-text');
+  if(!b||!t)return;
+  b.addEventListener('click',function(){
+    var s=t.textContent;
+    function done(){b.textContent='写しました';setTimeout(function(){b.textContent='この型を写す';},1800);}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(done,function(){});}
+    else{var a=document.createElement('textarea');a.value=s;document.body.appendChild(a);a.select();try{document.execCommand('copy');done();}catch(e){}document.body.removeChild(a);}
+  });
+  if(location.hash){var d=document.querySelector('details'+location.hash);if(d)d.open=true;}
+})();
+</script>
+</body>
+</html>
