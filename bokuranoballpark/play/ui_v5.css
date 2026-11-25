@@ -1,0 +1,286 @@
+/* ================================================================ UI v5(11/18 夜、ChatGPT の見本 Downloads\球場UI_v5_chatgpt_2026-11-18\gpt\v5_mock_*.png と部品 img/ui5_*.png)
+   説明は docs\UI v5 の素材.md。ui.css → ui_v3.css → ui_v4.css の後に読み、見た目を上書きする(v4 の部品は残っている)。
+   夏空の青の地に、緑・青・オレンジの大ボタン、黄色く光る選択、紺の段の板。大きな板(緑)は置かず、部品を空の絵の上に直に並べる。
+   地に生成り・ベージュの無地は使わない(明るい板は ui5_panel の空色)。字はすべてコード */
+:root{
+  --v5-blue:#0152ae; --v5-blue2:#005cd7; --v5-navy:#0b3a66; --v5-navy2:#02485e; --v5-ink:#06264a; --v5-ink2:#0b2f55;
+  --v5-green:#07851e; --v5-yellow:#fdc803; --v5-yellow2:#fae957; --v5-orange:#ed6001; --v5-light:#d1eefd;
+  --v5-head:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+}
+
+/* ---------------------------------------------------------------- 板は置かない(空の絵の上に部品を直に並べる) */
+.screen .sheet{background:none;border:0;box-shadow:none;border-radius:0;padding:0 0 12px;max-width:400px}
+.screen .sheet::before,.screen .sheet::after{display:none}
+#credits .sheet,#panel .sheet{background:rgba(2,40,90,.55);border-radius:22px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.screen .bgArt{filter:saturate(1.08)}
+
+/* 大きな字: 白に紺の縁取り */
+.screen .go,#title .mode,.screen .head h2,.screen .btn,.screen .resHead,.evalTotal .ev-head{font-family:var(--v5-head);font-weight:900;letter-spacing:.04em;
+  color:#fff;-webkit-text-stroke:5px var(--v5-ink);paint-order:stroke fill;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+
+/* ---------------------------------------------------------------- 見出しの帯と戻る */
+.screen .head{position:relative;flex-wrap:nowrap;justify-content:center;gap:8px;margin:0 0 10px;padding-top:52px}
+.screen .head .back{position:absolute;left:0;top:0;min-width:96px;min-height:44px;height:46px;padding:0 14px 0 50px;border:0;border-radius:0;
+  background:url("img/ui5_back.png") left center/auto 100% no-repeat;color:#fff;font-family:var(--v5-head);font-weight:900;font-size:17px;
+  -webkit-text-stroke:3px var(--v5-ink);paint-order:stroke fill;text-shadow:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.screen .head .back::before{display:none}
+.screen .head h2{flex:0 1 auto;margin:0 auto;min-width:260px;max-width:100%;padding:10px 64px 12px;font-size:clamp(24px,7vw,30px);text-align:center;
+  border:0;border-image:url("img/ui5_banner.png") 0 60 fill / 0 60px stretch;background:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+#panel .head{padding-top:0}
+
+/* ---------------------------------------------------------------- 大ボタン(進む: 緑、強調は黄の縁) */
+.screen .go{min-height:68px;margin-top:12px;padding:0 34px;border:0;border-image:url("img/ui5_btn_on.png") 0 66 fill / 0 34px stretch;background:none;
+  font-size:clamp(24px,7vw,30px);filter:drop-shadow(0 0 8px rgba(253,200,3,.55)) drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+.screen .go:active{border-image-source:url("img/ui5_btn_press.png");transform:translateY(3px);filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+.screen .go::before{width:1.25em;height:1.25em;border-radius:0;background:url("img/ui5_icon_ball.png") center/contain no-repeat}
+#setGo.knock::before{background-image:url("img/ui5_icon_glove.png")}
+#posNext::before{display:none}
+#pzResume::before{display:block;width:1.1em;height:1.1em;clip-path:none;background:url("img/ui5_icon_play.png") center/contain no-repeat;filter:none}
+#resAgain::before{display:block;background-image:url("img/ui5_icon_redo.png")}
+
+/* 中ボタン: 最初から・守る所を変える(青)、タイトルへ(オレンジ) */
+.screen .btn{min-height:56px;padding:0 26px;border:0;border-image:url("img/ui5_btn.png") 0 60 fill / 0 28px stretch;background:none;font-size:20px;
+  -webkit-text-stroke:4px var(--v5-ink);filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+#pzRestart,#resPos{border-image-source:url("img/ui5_btn_blue.png")}
+#pzTitle,#resClose{border-image-source:url("img/ui5_btn_orange.png")}
+.screen .btn:active{transform:translateY(2px);filter:brightness(.88)}
+#pzRestart::before{background-image:url("img/ui5_icon_redo.png")}
+#pzTitle::before,#resClose::before{background-image:url("img/ui5_icon_home.png")}
+#resPos::before{background-image:url("img/ui5_icon_diamond.png")}
+.screen .row2{grid-template-columns:1fr;gap:8px}
+
+/* ---------------------------------------------------------------- 設定の段(紺の枠・名前は上、札は下) */
+.screen .opt{display:flex;flex-wrap:wrap;align-items:center;gap:6px 6px;margin-top:10px;padding:8px 12px 10px;border:0;border-radius:0;background:none;
+  border-image:url("img/ui5_row.png") 28 fill / 14px stretch}
+.screen .opt>.lab{flex:0 0 100%;width:auto;max-width:none;font-family:var(--v5-head);font-weight:900;font-size:17px;color:#fff;
+  -webkit-text-stroke:3px var(--v5-ink);paint-order:stroke fill}
+.screen .opt>.seg,.screen .opt>.grid{flex:1 1 100%}
+.li{width:26px;height:26px}
+.li-count{background-image:url("img/ui5_icon_bat.png")}
+.li-ball{background-image:url("img/ui5_icon_ball.png")}
+.li-diff{background-image:url("img/ui5_icon_trophy.png")}
+.li-stadium{background-image:url("img/ui5_icon_stadium.png")}
+.li-time{background-image:url("img/ui5_icon_sun.png")}
+.li-view{background-image:url("img/ui5_icon_camera.png")}
+.li-cheer{background-image:url("img/ui5_icon_cheer.png")}
+
+/* 選択の札(紺)と選んだ札(黄の縁) */
+.screen .seg>button,.screen .grid>button{min-height:44px;padding:0 6px;border:0;border-radius:0;background:none;color:#fff;
+  border-image:url("img/ui5_chip.png") 0 45 fill / 0 22px stretch;font-family:var(--v5-head);font-weight:900;font-size:16px;
+  -webkit-text-stroke:3px var(--v5-ink);paint-order:stroke fill;text-shadow:none;filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+.screen .seg>button.on{border-image-source:url("img/ui5_chip_on.png");border-image-slice:0 48 fill;background:none;box-shadow:none;
+  filter:drop-shadow(0 0 7px rgba(253,200,3,.85)) drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+#optBd .seg>button{font-size:15px}
+.screen .best{border:0;background:rgba(2,40,90,.6);color:#fff}
+.screen .best b{color:var(--v5-yellow)}
+
+/* 試合の設定: 段は真ん中で巻き、プレイボールはいつも見える所(下に固定) */
+#setScreen .sheet{display:flex;flex-direction:column;max-height:100%;overflow-y:auto;overscroll-behavior:contain}
+#setScreen .sheet>.go{position:sticky;bottom:0;z-index:2;margin-top:12px;flex:0 0 auto}
+
+/* 球場の段: 白っぽい空色の板に絵と名前 */
+#optStadium .stPickBtn{border:0;border-radius:12px;background:linear-gradient(180deg,#f3fbff,var(--v5-light));color:var(--v5-ink2);min-height:72px;padding:6px 12px 6px 6px}
+#optStadium .stPickBtn img{width:116px;height:64px;border-radius:8px}
+#optStadium .stPickBtn .stPickName{color:var(--v5-ink2);font-size:17px}
+#optStadium .stPickBtn b{color:var(--v5-blue);font-size:22px}
+
+/* ---------------------------------------------------------------- タイトル */
+#title .titleBox{max-width:400px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:100%;padding:28px 0 24px}
+#title .logoImg{width:min(100%,360px)}
+#title .bar{width:330px;max-width:100%;height:18px;border-radius:999px;background:var(--v5-navy);border:2px solid #fff;overflow:hidden}
+#title .bar i{background:linear-gradient(180deg,#b6f43a,#28bd00)}
+#title .loadtxt{color:#fff;font-weight:900;-webkit-text-stroke:3px var(--v5-ink);paint-order:stroke fill}
+#title .modes,#title .modes[data-n="3"]{display:flex;flex-direction:column;gap:14px;width:330px;max-width:100%;margin-top:auto}
+#title .mode,#title .mode.big,#title .modes[data-n="3"] .mode,#title .modes[data-n="3"] .mode.big{min-height:68px;height:68px;font-size:clamp(24px,7vw,30px);flex-direction:row;gap:12px;
+  padding:0 30px;border:0;border-radius:0;background:none;border-image:url("img/ui5_btn.png") 0 60 fill / 0 34px stretch;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+#title .mode[data-mode="game"]{border-image-source:url("img/ui5_btn_on.png");border-image-slice:0 66 fill;filter:drop-shadow(0 0 8px rgba(253,200,3,.55)) drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+#title .mode[data-mode="knock"]{border-image-source:url("img/ui5_btn_blue.png")}
+#title .mode[data-mode="walk"]{border-image-source:url("img/ui5_btn_orange.png")}
+#title .mode:active{transform:translateY(3px);filter:brightness(.9)}
+#title .mode .ic,#title .mode.big .ic,#title .modes[data-n="3"] .mode .ic,#title .modes[data-n="3"] .mode.big .ic{width:42px;height:42px;border-radius:0}
+#title .mode .ic-glove{background-image:url("img/ui5_icon_glove.png")}
+#title .mode .ic-ball{background-image:url("img/ui5_icon_ball.png")}
+#title .mode .ic-walk{background-image:url("img/ui5_icon_walk.png")}
+#title .mode .ic-bat{background-image:url("img/ui5_icon_bat.png")}
+#title .mode .ic-mound{background-image:url("img/ui5_icon_mound.png")}
+
+/* ---------------------------------------------------------------- 守る所 */
+#posScreen .posbtn{background:url("img/ui5_pos.png") center/contain no-repeat;border:0;font-family:var(--v5-head);font-weight:900;
+  -webkit-text-stroke:3px var(--v5-ink);paint-order:stroke fill;filter:drop-shadow(0 3px 0 rgba(0,0,0,.4))}
+#posScreen .posbtn.on{background:url("img/ui5_pos.png") center/contain no-repeat;border-radius:50%;
+  box-shadow:0 0 0 4px var(--v5-yellow),0 0 18px rgba(253,200,3,.95);filter:none}
+#posScreen .posdesc{color:#fff;border-bottom:0;padding:8px 12px;border-radius:12px;background:rgba(2,40,90,.6)}
+
+/* ---------------------------------------------------------------- 一時停止: 大ボタン 3 つ + 明るい板の段 */
+#panel .sheet{max-width:440px;max-height:100%;overflow-y:auto}
+#panel .head h2{min-width:240px}
+#panel .opt{border-image:url("img/ui5_panel.png") 30 fill / 14px stretch}
+#panel .opt>.lab{color:var(--v5-ink2);-webkit-text-stroke:0}
+#panel .vol span{color:var(--v5-ink2)}
+#panel .vol input{accent-color:#28bd00}
+#panel .link{color:#fff;border-color:rgba(255,255,255,.7)}
+#panel #fps{color:#fff}
+
+/* ---------------------------------------------------------------- 結果と守備評価(1 画面に収める) */
+#result .sheet.res{max-width:440px;max-height:100%;overflow-y:auto;display:flex;flex-direction:column}
+#result .resHead{-webkit-text-stroke:6px #7a1408}
+#result .line{background:rgba(2,40,90,.85);border:2px solid #fff;border-radius:10px;color:#fff}
+#result .line td.t{color:var(--v5-yellow)}
+#result .tile{background:rgba(2,40,90,.75);border:2px solid rgba(255,255,255,.7)}
+#result .tile b{color:var(--v5-yellow)}
+.evalTotal{border:0;border-radius:0;background:none;border-image:url("img/ui5_panel.png") 30 fill / 14px stretch;color:var(--v5-ink2)}
+.evalTotal *{color:inherit}
+.evalTotal .ev-head{background:linear-gradient(180deg,var(--v5-green),#025b2e);color:#fff;-webkit-text-stroke:3px var(--v5-ink)}
+.evalTotal .ev-score b{color:var(--v5-ink2)}
+.evalTotal .ev-bar{border-color:rgba(11,47,85,.4);background:#fff}
+.evalTotal .ev-bar i{background:linear-gradient(180deg,#b6f43a,#28bd00)}
+.evalTotal .ev-scene{background:#fff;color:var(--v5-ink2)}
+.evalTotal .ev-scene span{background:var(--v5-blue) !important;color:#fff}
+#result .go{margin-top:10px}
+
+/* ---------------------------------------------------------------- 読み込み(選んだ球場の絵・名前・進み具合) */
+#loadScreen{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:#0b3a66 center/cover no-repeat}
+#loadScreen.hide{display:none}
+#loadScreen .lsName{min-width:280px;padding:12px 64px 14px;font-family:var(--v5-head);font-weight:900;font-size:clamp(26px,7vw,40px);color:#fff;text-align:center;white-space:nowrap;
+  -webkit-text-stroke:5px var(--v5-ink);paint-order:stroke fill;border-image:url("img/ui5_banner.png") 0 60 fill / 0 60px stretch;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+#loadScreen .lsBar{width:min(70vw,640px);height:24px;border-radius:999px;background:var(--v5-navy);border:3px solid #fff;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+#loadScreen .lsBar i{display:block;height:100%;width:0;background:linear-gradient(180deg,#b6f43a,#28bd00);transition:width .2s}
+#loadScreen .lsTxt{display:flex;align-items:center;gap:8px;font-family:var(--v5-head);font-weight:900;font-size:20px;color:#fff;-webkit-text-stroke:4px var(--v5-ink);paint-order:stroke fill}
+#loadScreen .lsTxt::before{content:"";width:28px;height:28px;background:url("img/ui5_icon_ball.png") center/contain no-repeat;animation:lsSpin 1s linear infinite}
+@keyframes lsSpin{to{transform:rotate(360deg)}}
+
+/* ---------------------------------------------------------------- 遊んでいる間(色を合わせる程度) */
+#board,#runMap{background:linear-gradient(180deg,rgba(1,82,174,.92),rgba(11,58,102,.92));border-color:#fff}
+#sit{background:linear-gradient(180deg,#0b4f9a,#0b3a66);border-color:#fff}
+#pauseBtn,#viewBtn{border-color:#fff}
+
+/* ---------------------------------------------------------------- 横持ち(高さ 460 以下) */
+@media (max-height:460px){
+  .screen{padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left))}
+  .screen .sheet{max-width:780px}
+  .screen .head{padding-top:0;min-height:46px;align-items:center}
+  .screen .head h2{font-size:22px;padding:6px 50px 8px;min-width:220px;border-image-width:0 46px}
+  .screen .go{min-height:56px;font-size:24px;border-image-width:0 28px}
+  .screen .btn{min-height:50px;font-size:18px}
+  .screen .opt{margin-top:6px;padding:5px 10px 7px}
+  .screen .opt>.lab{font-size:15px}
+  .screen .seg>button,.screen .grid>button{min-height:44px;font-size:15px}
+  #setScreen .sheet{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;align-content:start}
+  #setScreen .head,#setScreen .best{grid-column:1 / -1}
+  #setScreen .sheet>.go{grid-column:1 / -1;max-width:360px;justify-self:end;width:100%}
+  #title .titleBox{max-width:820px;display:grid;grid-template-columns:52% 1fr;column-gap:20px;align-items:center;padding:0;height:auto}
+  #title .logoWrap{grid-row:1 / span 3}
+  #title .logoImg{width:min(100%,380px)}
+  #title .modes,#title .modes[data-n="3"]{width:300px;gap:12px;margin:0}
+  #title .mode,#title .mode.big,#title .modes[data-n="3"] .mode,#title .modes[data-n="3"] .mode.big{min-height:60px;height:60px;font-size:24px}
+  #panel .sheet{max-width:820px;display:grid;grid-template-columns:1fr 1fr;column-gap:12px;align-content:start}
+  #panel .head,#panel .link{grid-column:1 / -1}
+  #panel .go{grid-column:1}
+  #panel .row2{grid-column:1}
+  #result .sheet.res{max-width:840px;display:grid;grid-template-columns:1fr 1fr;column-gap:12px;align-content:start}
+  #result .resHead,#result #resBody{grid-column:1 / -1}
+  #result .go{grid-column:1}
+  #result .row2{grid-column:2;grid-template-columns:1fr 1fr;margin-top:10px}
+}
+/* PC(幅 900 以上・高さ 560 以上): 紺で組み、中身の幅は 1200 まで */
+@media (min-width:900px) and (min-height:560px){
+  .screen .sheet{max-width:640px}
+  #title .titleBox{max-width:1100px;padding:3vh 0 5vh}
+  #title .logoImg{width:min(48vw,620px)}
+  #title .modes,#title .modes[data-n="3"]{flex-direction:row;width:auto;gap:24px;margin-top:auto}
+  #title .mode,#title .mode.big,#title .modes[data-n="3"] .mode,#title .modes[data-n="3"] .mode.big{width:300px;min-height:76px;height:76px;font-size:30px}
+  #setScreen .sheet{max-width:860px;display:grid;grid-template-columns:1fr 1fr;column-gap:14px;align-content:start}
+  #setScreen .head,#setScreen .best{grid-column:1 / -1}
+  #setScreen .sheet>.go{grid-column:2;margin-top:12px}
+  #panel .sheet{max-width:860px}
+  #result .sheet.res{max-width:960px}
+  #result .row2{grid-template-columns:1fr 1fr}
+}
+
+/* ---------------------------------------------------------------- 直し(撮って見た後) */
+/* 結果: 見出しと中身は巻けるが、ボタンはいつも見える所に(下が切れない) */
+#result .sheet.res{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto minmax(0,1fr) auto auto;max-height:100%;overflow:hidden;column-gap:8px}
+#result .resHead,#result #resBody,#result .go{grid-column:1 / -1}
+#result #resBody{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:4px}
+#result .row2{grid-column:1 / -1;grid-template-columns:1fr 1fr;margin-top:8px}
+#result .go{min-height:60px}
+#result .btn{min-height:52px;font-size:17px}
+@media (max-height:460px){
+  #result .sheet.res{grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto minmax(0,1fr) auto}
+  #result .go{grid-column:1;min-height:52px;margin-top:8px}
+  #result .row2{grid-column:2 / span 2;margin-top:8px}
+}
+@media (min-width:900px) and (min-height:560px){
+  #result .sheet.res{grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto minmax(0,1fr) auto}
+  #result .go{grid-column:1}
+  #result .row2{grid-column:2 / span 2;margin-top:12px}
+}
+/* 横持ち・PC: 戻るは見出しと同じ段(上に切れない)。プレイボールは段の並びの最後のます */
+@media (max-height:460px), (min-width:900px) and (min-height:560px){
+  .screen .head{padding-top:0;min-height:52px;align-items:center}
+  .screen .head .back{top:50%;transform:translateY(-50%)}
+  .screen .head h2{margin:0 110px}
+  #setScreen .sheet>.go{position:static;grid-column:auto;align-self:center;justify-self:stretch;max-width:none;margin-top:10px}
+}
+/* 横持ちの球場を選ぶ: 左にカード(幅 360)、右に見本(絵の高さ 150)。全部 1 画面に */
+@media (max-height:460px){
+  #stadiumScreen .stBody{grid-template-columns:360px minmax(0,1fr);gap:12px}
+  #stadiumScreen .stBig{aspect-ratio:auto;height:150px}
+  #stadiumScreen .stPick{padding-bottom:6px}
+  #stadiumScreen .stGo{margin-top:6px}
+}
+/* 横持ち: 段は名前を左に置いて 1 行に(ノックの設定の 7 段とノック開始が 1 画面に入るように) */
+@media (max-height:460px){
+  #setScreen .opt{flex-wrap:nowrap;padding:5px 10px}
+  #setScreen .opt>.lab{flex:0 0 auto;width:4.4em;font-size:15px}
+  #setScreen .opt>.seg{flex:1 1 auto}
+  #setScreen .seg>button{font-size:14px}
+  #optStadium .stPickBtn{min-height:48px;padding:3px 10px 3px 4px}
+  #optStadium .stPickBtn img{width:76px;height:42px}
+}
+#result .row2 .btn{white-space:nowrap;font-size:clamp(14px,4vw,17px);padding:0 18px;-webkit-text-stroke:3px var(--v5-ink)}
+/* 試合の始まり・合間の大きな点数板(#digest)も「1回表」と 1 行に、色は紺に */
+.dgBoard .sb-inn{white-space:nowrap}
+.dgBoard .sb-inn small{display:inline;font-size:1em;color:inherit;font-weight:inherit;margin-left:1px}
+#digest .dgBoard{background:linear-gradient(180deg,rgba(1,82,174,.95),rgba(11,58,102,.95));border-color:#fff}
+/* タイトルの 3 つの色(上の 3 つ並びの指定より強く): 守備の試合 緑・ノック 青・球場を歩く オレンジ */
+#title .modes .mode[data-mode="game"]{border-image-source:url("img/ui5_btn_on.png");border-image-slice:0 66 fill}
+#title .modes .mode[data-mode="knock"]{border-image-source:url("img/ui5_btn_blue.png");border-image-slice:0 60 fill}
+#title .modes .mode[data-mode="walk"]{border-image-source:url("img/ui5_btn_orange.png");border-image-slice:0 60 fill}
+
+/* ---------------------------------------------------------------- 直し 2(見本と並べて見た後) */
+/* 戻る: 矢印の部分だけ左に置き、字は矢印の右に離して(絵の真ん中の帯を伸ばす) */
+.screen .head .back{min-width:112px;padding:0 16px 0 0;background:none;border:0;justify-content:flex-end;
+  border-image:url("img/ui5_back.png") 0 30 0 104 fill / 0 16px 0 54px stretch}
+.screen .head .back{padding-left:58px}
+/* 計測の字は ?debug の時だけ */
+#fps{display:none !important}
+body.debug #fps{display:inline !important}
+/* 見出しの帯の両脇の絵(見本どおり)。設定は球、球場を選ぶは球場、一時停止は止める印 */
+.screen .head h2{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+#setScreen .head h2::before,#setScreen .head h2::after,#posScreen .head h2::before,#posScreen .head h2::after{content:"";width:1.1em;height:1.1em;flex:none;background:url("img/ui5_icon_ball.png") center/contain no-repeat}
+#stadiumScreen .head h2::before{content:"";width:1.4em;height:1.2em;flex:none;background:url("img/ui5_icon_stadium.png") center/contain no-repeat}
+#panel .head h2::before{content:"";width:1.1em;height:1.1em;flex:none;background:url("img/ui5_icon_pause.png") center/contain no-repeat}
+.li-sound{background-image:url("img/ui5_icon_sound.png")}
+.li-mic{background-image:url("img/ui5_icon_mic.png")}
+.li-eye{background-image:url("img/ui5_icon_eye.png")}
+/* 結果: スコアボードのチーム名と、評価の板の小さな字を読める大きさに */
+#result .line th{font-size:14px;white-space:nowrap;color:#fff;font-family:var(--v5-head);font-weight:900}
+#result .line tr.away th:first-child,#result .line tr.me th:first-child{text-align:left;padding-left:6px}
+#result .line th small{font-size:12px;margin-left:2px;opacity:.85}
+#result .line td{font-size:15px}
+.evalTotal .ev-sub{font-size:14px}
+.evalTotal .ev-sub small{font-size:12px;opacity:.85}
+.evalTotal .ev-cmp,.evalTotal .ev-word,.evalTotal .ev-scene{font-size:12.5px}
+
+/* 11/18 夜 観戦して歩く(js/watch.js)のボタン: 青の枠 */
+#title .modes .mode[data-mode="watch"]{border-image-source:url("img/ui5_btn_blue.png");border-image-slice:0 60 fill}
+/* 観戦を足してタイトルのボタンが 4 つ: PC の横一列は少し細く・字を小さく(「守備の試合」が 2 行に割れないように) */
+@media (min-width:900px) and (min-height:560px){
+  #title .modes[data-n="4"]{gap:18px}
+  #title .modes[data-n="4"] .mode,#title .modes[data-n="4"] .mode.big{width:250px;font-size:25px;white-space:nowrap}
+}
+/* 11/21 テスターの声「ショートやファーストを押すと下の説明が二行になりレイアウトがずれる」: 説明の欄を 2 行分の高さに固定し、どの位置を押しても「次へ」と図が動かないように */
+#posScreen .posdesc{box-sizing:border-box;height:calc(2.9em + 16px);line-height:1.45;display:flex;align-items:center;justify-content:center;overflow:hidden}
+@media (max-height:460px){ #posScreen .posdesc{height:calc(4.35em + 16px);justify-content:flex-start;text-align:left} }

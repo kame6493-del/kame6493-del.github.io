@@ -1,0 +1,378 @@
+/* ================================================================ v4: 「ぼくらのボールパーク」のメニュー(11/18 まで「一歩目の夏」)
+   ChatGPT の画面の見本(Downloads/球場UI_v4_chatgpt_2026-11-17/ippome_mock1〜3.png)どおりに組む。
+   部品の絵(img/ui4_*.png)は同じチャットで ChatGPT が作った物を切り出した。ボタンの中の字はコードで載せる。
+   ui.css・ui_v3.css の後に読む。遊んでいる間の部品(点数板・送球のボタン)はここでは触らない */
+:root{
+  --v4-deep:#0d3a24; --v4-g:#145a34; --v4-g2:#1d7a43; --v4-hi:#3fae4f; --v4-lime:#d8f23a; --v4-gold:#f5c542;
+  --v4-cream:#efe6c8; --v4-line:rgba(226,236,200,.55); --v4-soil:#7a4a2c; --v4-brick:#a9533a; --v4-orange:#f08a24; --v4-sky:#2f8fe0;
+  --v4-head:"Dela Gothic One","Hiragino Sans","Yu Gothic UI",sans-serif;
+  --v4-body:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+}
+
+/* ---------------------------------------------------------------- 板(画面いっぱいの深い緑・右上の斜めの線・下のレンガ) */
+.screen .sheet{max-width:480px;border:3px solid rgba(16,40,24,.9);border-radius:26px;padding:16px 16px 40px;
+  background:
+    linear-gradient(115deg,transparent 0 70%,rgba(120,200,90,.16) 70% 74%,transparent 74% 77%,rgba(120,200,90,.16) 77% 81%,transparent 81%) top right/100% 160px no-repeat,
+    repeating-linear-gradient(135deg,rgba(255,255,255,0) 0 38px,rgba(255,255,255,.025) 38px 76px),
+    linear-gradient(180deg,#14532f 0%,#0f4527 55%,#0c3a21 100%);
+  box-shadow:0 0 0 2px rgba(240,230,190,.18) inset,0 16px 40px rgba(0,0,0,.45);font-family:var(--v4-body)}
+.screen .sheet::before{display:none}
+.screen .sheet::after{content:"";position:absolute;left:0;right:0;bottom:0;height:24px;border-radius:0 0 22px 22px;pointer-events:none;
+  background:url("img/ui4_brick.png") left bottom/auto 100% repeat-x,
+    repeating-linear-gradient(90deg,rgba(0,0,0,.3) 0 2px,transparent 2px 30px),
+    linear-gradient(180deg,rgba(0,0,0,.3) 0 2px,transparent 2px 11px,rgba(0,0,0,.28) 11px 13px,transparent 13px),
+    var(--v4-brick)}
+
+/* 見出し: 「戻る」は上の段、見出しは斜めの帯 */
+.screen .head{flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.screen .back{min-height:44px;min-width:92px;padding:0 16px 0 12px;border-radius:999px;border:2px solid var(--v4-line);
+  background:rgba(8,40,22,.55);color:#fff;font-family:var(--v4-body);font-weight:800;font-size:16px;box-shadow:none;display:inline-flex;align-items:center;gap:6px}
+.screen .back::before{content:"";width:9px;height:9px;border-left:3px solid #fff;border-bottom:3px solid #fff;transform:rotate(45deg);margin-left:4px}
+.screen .back:active{transform:translateY(2px);background:rgba(8,40,22,.8)}
+.screen .head h2{flex:1 0 100%;max-width:100%;margin:0;padding:12px 30px 16px;text-align:center;white-space:nowrap;overflow:visible;
+  font-family:var(--v4-head);font-weight:400;font-size:clamp(26px,8vw,38px);letter-spacing:.04em;color:#fff;font-style:normal;
+  -webkit-text-stroke:0;text-shadow:0 3px 0 rgba(0,0,0,.45);
+  background:url("img/ui4_banner.png") center/100% 100% no-repeat;transform:none}
+#panel .head{justify-content:center}
+#panel .head #fps{position:absolute;right:16px;top:10px;font-size:11px;opacity:.6}
+
+/* ---------------------------------------------------------------- 大きなボタン(プレイボール・次へ・続ける・もう一度) */
+.screen .go{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:76px;margin-top:16px;
+  border:0;border-radius:999px;font-family:var(--v4-head);font-weight:400;font-size:clamp(26px,7.4vw,36px);letter-spacing:.06em;color:#fff;
+  -webkit-text-stroke:0;text-shadow:0 3px 0 #0b3a1f,0 0 2px #0b3a1f;
+  background:url("img/ui4_go.png") center/100% 100% no-repeat;box-shadow:none;transition:transform .08s,filter .08s}
+.screen .go::before{content:"";width:1.2em;height:1.2em;flex:none;background:url("img/ui4_icon_ball.png") center/contain no-repeat}
+.screen .go:active{transform:translateY(3px) scale(.985);filter:brightness(.9)}
+#posNext::before,#pzResume::before,#resAgain::before{display:none}
+#pzResume::before{display:block;width:.8em;height:.9em;background:#fff;clip-path:polygon(0 0,100% 50%,0 100%);filter:drop-shadow(0 2px 0 #0b3a1f)}
+
+/* 中くらいのボタン(最初から・タイトルへ・守る所を変える) */
+.screen .btn{min-height:52px;border-radius:14px;border:2px solid var(--v4-line);color:#fff;font-family:var(--v4-body);font-weight:900;font-size:17px;
+  background:linear-gradient(180deg,#1d6b3d,#124a2a);box-shadow:0 3px 0 rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;gap:8px}
+.screen .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35);filter:brightness(.9)}
+.btn .bi,.go .bi{width:1.15em;height:1.15em;flex:none;background:center/contain no-repeat}
+
+/* ---------------------------------------------------------------- 設定の段: 左に絵と名前、右に札 */
+.screen .opt{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 8px 8px 10px;border-radius:14px;
+  border:2px solid var(--v4-line);background:rgba(6,32,18,.45);overflow:visible}
+.screen .opt>.lab{flex:0 0 30%;min-width:0;margin:0;padding:0;display:flex;align-items:center;gap:6px;background:none;
+  font-family:var(--v4-body);font-weight:900;font-size:17px;letter-spacing:.02em;color:#fff;white-space:nowrap}
+.screen .opt>.seg,.screen .opt>.grid{flex:1;min-width:0}
+.screen .opt.volBox{flex-direction:column;align-items:stretch}
+.li{display:inline-block;width:26px;height:26px;flex:none;background:center/contain no-repeat}
+.li-count{background-image:url("img/ui4_icon_bat.png")}
+.li-ball{background-image:url("img/ui4_icon_ball.png")}
+.li-diff{background-image:url("img/ui4_icon_trophy.png")}
+.li-stadium{background-image:url("img/ui4_icon_stadium.png")}
+.li-time{background-image:url("img/ui4_icon_sun.png")}
+.li-view{background-image:url("img/ui4_icon_camera.png")}
+
+/* 選択の札: ふつう・押した・選んだ(光る) */
+.screen .seg{gap:6px}
+.screen .seg>button,.screen .grid>button{min-height:46px;padding:0 4px;border-radius:12px;border:2px solid rgba(226,236,200,.6);color:#fff;
+  font-family:var(--v4-body);font-weight:900;font-size:16px;letter-spacing:0;text-shadow:0 1px 0 rgba(0,0,0,.4);
+  background:linear-gradient(180deg,#1a6238,#0f4426);box-shadow:0 3px 0 rgba(0,0,0,.35);transition:transform .06s}
+.screen .seg>button:active,.screen .grid>button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35);filter:brightness(.88)}
+.screen .seg>button.on{color:#fff;border-color:var(--v4-lime);
+  background:linear-gradient(180deg,#46b552,#23863a);
+  box-shadow:0 0 0 2px rgba(216,242,58,.55),0 0 14px rgba(216,242,58,.75),0 3px 0 rgba(0,0,0,.35)}
+.screen .best{margin-top:12px;padding:8px 12px;border-radius:999px;border:2px solid var(--v4-line);background:rgba(6,32,18,.5);
+  color:#fff;font-weight:900;font-size:16px}
+.screen .best:empty{display:none}
+.screen .best b{font-family:var(--v4-head);font-weight:400;color:var(--v4-gold);font-size:1.3em}
+
+/* ---------------------------------------------------------------- タイトル */
+#title .titleBox{max-width:460px;filter:none;gap:0}
+#title .logoWrap{display:block;width:100%;padding:0;margin:0 0 6px;background:none;clip-path:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));text-align:center}
+#title .logo{margin:0;padding:0;background:none;clip-path:none;-webkit-text-stroke:0;text-shadow:none;line-height:0}
+#title .logoImg{display:block;width:min(100%,430px);height:auto;margin:0 auto}
+#title .textLogo .logo{line-height:1.1;font-family:var(--v4-head);font-weight:400;font-size:clamp(46px,14vw,76px);color:#fff;font-style:italic;
+  text-shadow:0 4px 0 #0d3a24,0 0 3px #0d3a24}
+#title .logoSub{display:inline-block;margin-top:-4px;padding:5px 22px 7px;font-family:var(--v4-body);font-weight:900;font-size:clamp(16px,4.6vw,20px);letter-spacing:.12em;color:#fff;
+  background:linear-gradient(180deg,#165c34,#0d3a24);border:2px solid rgba(239,230,200,.8);border-radius:6px;transform:skewX(-10deg);box-shadow:0 4px 10px rgba(0,0,0,.35)}
+#title .bar{margin-top:14px}
+#title .modes{grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+#title .mode{grid-column:auto;min-height:60px;flex-direction:row;justify-content:center;gap:8px;padding:0 10px;border-radius:14px;
+  border:2px solid var(--v4-line);color:#fff;font-family:var(--v4-body);font-weight:900;font-size:18px;-webkit-text-stroke:0;
+  background:linear-gradient(180deg,#1a6238,#0f4426);box-shadow:0 4px 0 rgba(0,0,0,.4)}
+#title .mode.big{grid-column:1 / -1;min-height:96px;border-radius:22px;font-family:var(--v4-head);font-weight:400;font-size:clamp(30px,9vw,40px);
+  text-shadow:0 3px 0 #0b3a1f,0 0 2px #0b3a1f;border:0;
+  background:url("img/ui4_go.png") center/100% 100% no-repeat}
+#title .mode.wide{grid-column:auto}
+#title .mode:active{transform:translateY(3px);filter:brightness(.9)}
+#title .mode .ic{width:36px;height:36px;border-radius:0;background-color:transparent}
+#title .mode.big .ic{width:62px;height:62px}
+#title .mode .ic-glove{background-image:url("img/ui4_icon_glove.png")}
+#title .mode .ic-ball{background-image:url("img/ui4_icon_ball.png")}
+#title .mode .ic-bat{background-image:url("img/ui4_icon_bat.png")}
+#title .mode .ic-mound{background-image:url("img/ui4_icon_mound.png")}
+#title .mode .ic-walk{background-image:url("img/ui4_icon_walk.png")}
+
+/* ---------------------------------------------------------------- 守る所: 球場の図と丸いボタン */
+#posScreen .field{margin-top:4px}
+#posScreen .field svg{opacity:0}
+#posScreen .field{background:url("img/ui4_field.png") center 62%/96% auto no-repeat}
+#posScreen .posbtn{min-width:64px;min-height:64px;width:64px;height:64px;padding:0;border-radius:50%;
+  font-family:var(--v4-head);font-weight:400;font-size:28px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.5);
+  border:3px solid var(--v4-cream);background:radial-gradient(circle at 50% 35%,#1d6b3d,#0d3a24 75%);box-shadow:0 4px 0 rgba(0,0,0,.45)}
+#posScreen .posbtn.on{color:#fff;border-color:#fff7c0;background:radial-gradient(circle at 50% 35%,#4fc45c,#1f7d37 75%);
+  box-shadow:0 0 0 4px var(--v4-lime),0 0 22px rgba(216,242,58,.95),0 4px 0 rgba(0,0,0,.45);transform:translate(-50%,-50%) scale(1.1)}
+#posScreen .posbtn:active{filter:brightness(.88)}
+#posScreen .posdesc{margin-top:8px;padding:8px 0;border-bottom:2px solid var(--v4-line);color:#fff;font-weight:900;font-size:16px}
+
+/* ---------------------------------------------------------------- 一時停止 */
+#panel .sheet{max-width:480px}
+#panel .row2 .btn{min-height:54px}
+#panel .vol{gap:10px;margin:6px 0}
+#panel .vol span{width:3.2em;background:none;color:#fff;font-weight:900;font-size:16px;text-align:left;padding:0}
+#panel .vol input{accent-color:var(--v4-lime);height:36px}
+#panel .seg.wrap>button{flex:1 1 22%;min-height:52px}
+#panel .link{color:#fff;text-decoration:none;border:2px solid var(--v4-line);border-radius:999px;padding:0 22px;min-height:44px;font-weight:800;margin-top:12px}
+
+/* ---------------------------------------------------------------- 結果と守備評価 */
+.screen .resHead{display:block;width:100%;margin:0 0 8px;padding:6px 52px 10px;text-align:center;white-space:nowrap;
+  font-family:var(--v4-head);font-weight:400;font-size:clamp(30px,9vw,44px);font-style:italic;color:#ffd84a;letter-spacing:.02em;
+  text-shadow:0 3px 0 #7a2a10,0 0 2px #7a2a10,0 0 16px rgba(255,180,40,.6);
+  background:url("img/ui4_laurel.png") center/auto 100% no-repeat}
+.screen .resSub{color:#fff;opacity:.9}
+.screen .line{background:rgba(6,32,18,.7);border:2px solid var(--v4-line);border-radius:10px}
+.screen .tile{background:rgba(6,32,18,.55);border:2px solid var(--v4-line);border-radius:12px}
+.screen .tile span{background:none;color:#fff;position:static;font-size:13px;padding:0}
+.screen .tile b{color:var(--v4-gold)}
+.screen .tiles{grid-template-columns:repeat(3,1fr)}
+.screen .tile{min-height:0;padding:6px 8px;text-align:center;display:flex;flex-direction:column-reverse;justify-content:center}
+.evalTotal{border:2px solid var(--v4-line);background:rgba(6,32,18,.6);border-radius:14px}
+.evalTotal .ev-head{display:inline-block;font-size:20px;color:#fff;padding:2px 18px 4px 10px;background:linear-gradient(180deg,#1b6a3c,#0f4527);
+  clip-path:polygon(0 0,100% 0,92% 100%,0 100%)}
+.evalTotal .ev-rank{width:96px;height:96px;border:0;font-size:0;background:center/contain no-repeat !important}
+.evalTotal .ev-rank.r-S{background-image:url("img/ui4_stamp_S.png") !important}
+.evalTotal .ev-rank.r-A{background-image:url("img/ui4_stamp_A.png") !important}
+.evalTotal .ev-rank.r-B{background-image:url("img/ui4_stamp_B.png") !important}
+.evalTotal .ev-rank.r-C{background-image:url("img/ui4_stamp_C.png") !important}
+.evalTotal .ev-rank.r-D{background-image:url("img/ui4_stamp_D.png") !important}
+.evalTotal .ev-score b{color:var(--v4-gold)}
+.evalTotal .ev-bar{height:12px;border:1px solid rgba(255,255,255,.35)}
+.evalTotal .ev-bar i{background:linear-gradient(90deg,#9ee03a,var(--v4-lime))}
+.evalTotal .ev-scene{background:var(--v4-cream);color:#13301f;border-radius:8px;padding:4px 8px;font-weight:800}
+.evalTotal .ev-scene span{background:#13301f !important;border-radius:4px}
+
+/* ---------------------------------------------------------------- 横持ち・低い画面(見本3の上段: ロゴは左・ボタンは右、設定は1列の詰めた段) */
+@media (max-height:460px){
+  .screen{padding:8px max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left))}
+  .screen .sheet{max-width:720px;padding:8px 14px 24px;border-radius:20px}
+  .screen .sheet::after{height:14px;border-radius:0 0 16px 16px}
+  .screen .head{flex-wrap:nowrap;margin-bottom:4px;position:relative;justify-content:center}
+  .screen .head .back{position:absolute;left:0;top:0;min-width:80px;min-height:44px;font-size:14px}
+  .screen .head h2{flex:0 1 auto;font-size:24px;padding:4px 30px 7px;margin:0 90px}
+  .screen .go{min-height:52px;font-size:24px;margin-top:8px;max-width:440px;margin-left:auto;margin-right:auto}
+  .screen .opt{margin-top:4px;padding:3px 6px 3px 10px;border-radius:12px}
+  .screen .opt>.lab{flex-basis:22%;font-size:15px}
+  .li{width:22px;height:22px}
+  .screen .seg>button{min-height:44px;font-size:15px;border-radius:999px}
+  .screen .best{margin-top:6px;padding:4px 10px;font-size:14px}
+  #title .titleBox{max-width:820px;display:grid;grid-template-columns:52% 1fr;column-gap:16px;align-items:center}
+  #title .logoWrap{grid-row:1 / span 3;align-self:center}
+  #title .logoSub{font-size:15px}
+  #title .bar,#title .loadtxt{grid-column:2}
+  #title .modes{grid-column:2;margin-top:0;gap:8px}
+  #title .mode{min-height:52px;font-size:16px;gap:6px}
+  #title .mode.big{min-height:72px;font-size:28px}
+  #title .mode .ic{width:28px;height:28px}
+  #title .mode.big .ic{width:48px;height:48px}
+  #posScreen .sheet{display:grid;grid-template-columns:58% 1fr;column-gap:14px;align-items:center}
+  #posScreen .head{grid-column:1 / -1}
+  #posScreen .field{grid-row:2 / span 2;width:auto;height:min(250px,calc(100vh - 150px));justify-self:center}
+  #posScreen .posbtn{width:48px;height:48px;min-width:48px;min-height:48px;font-size:21px}
+  #panel .sheet{display:grid;grid-template-columns:1fr 1fr;column-gap:10px;align-content:start;max-width:780px}
+  #panel .head,#panel .go,#panel .row2,#panel .link{grid-column:1 / -1}
+  .screen .sheet.res{max-width:820px}
+  .screen .resHead{font-size:26px;padding:0 40px 2px;margin-bottom:2px}
+  .evalTotal .ev-rank{width:66px;height:66px}
+  .screen .tiles{grid-template-columns:repeat(6,1fr)}
+}
+/* PC(見本3の下段: ロゴは上の真ん中に大きく、ボタンは下に横一列。結果は横に広く) */
+@media (min-width:900px) and (min-height:560px){
+  #title .titleBox{max-width:1080px;height:100%;justify-content:space-between;padding:2vh 0 3vh}
+  #title .logoImg{width:min(52vw,640px)}
+  #title .logoSub{font-size:22px}
+  #title .modes{grid-template-columns:1.7fr 1fr 1fr 1fr 1fr;gap:14px;margin-top:auto}
+  #title .mode{grid-column:auto;min-height:118px;flex-direction:column;gap:6px;font-size:22px}
+  #title .mode.big{grid-column:auto;min-height:150px;font-size:36px}
+  #title .mode .ic{width:46px;height:46px}
+  #title .mode.big .ic{width:64px;height:64px}
+  .screen .sheet{max-width:540px}
+  .screen .sheet.res{max-width:900px}
+  .res .tiles{grid-template-columns:repeat(6,1fr)}
+  .res .row2{grid-template-columns:1fr 1fr}
+}
+
+/* ================================================================ 絵の部品(ChatGPT の部品の絵 ui4_*.png)を枠に使う
+   丸い端が伸びないよう border-image で端だけ切り分ける。光は絵の光(まだら)を捨て、drop-shadow で付け直した */
+.screen .go,#title .mode.big{border-style:solid;border-color:transparent;border-width:0 38px;padding:0;
+  border-image:url("img/ui4_go.png") 0 53 fill / 0 38px stretch;background:none;box-shadow:none;
+  filter:drop-shadow(0 0 8px rgba(245,197,66,.55)) drop-shadow(0 5px 0 rgba(0,0,0,.35))}
+.screen .go:active,#title .mode.big:active{border-image-source:url("img/ui4_go_press.png");filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));transform:translateY(3px)}
+@media (hover:hover){ .screen .go:hover,#title .mode.big:hover{border-image-source:url("img/ui4_go_on.png");filter:drop-shadow(0 0 14px rgba(216,242,58,.8)) drop-shadow(0 5px 0 rgba(0,0,0,.35))} }
+#title .mode.big{border-width:0 46px;border-image-width:0 46px}
+.screen .btn,#title .mode:not(.big){border-style:solid;border-color:transparent;border-width:12px;padding:0 4px;
+  border-image:url("img/ui4_btn.png") 30 fill / 12px stretch;background:none;box-shadow:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+.screen .btn:active,#title .mode:not(.big):active{border-image-source:url("img/ui4_btn_press.png");filter:none;transform:translateY(2px)}
+.screen .seg>button,.screen .grid>button{border-style:solid;border-color:transparent;border-width:0 17px;padding:0;border-radius:0;
+  border-image:url("img/ui4_chip.png") 0 30 fill / 0 17px stretch;background:none;box-shadow:none;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35))}
+.screen .seg>button.on{border-image-source:url("img/ui4_chip_on.png");background:none;box-shadow:none;
+  filter:drop-shadow(0 0 6px rgba(216,242,58,.9)) drop-shadow(0 2px 0 rgba(0,0,0,.35))}
+.screen .seg>button:active,.screen .grid>button:active{filter:brightness(.82);transform:translateY(2px)}
+.screen .opt{border:solid transparent;border-width:10px;padding:0 0 0 4px;border-radius:0;background:none;
+  border-image:url("img/ui4_row.png") 22 fill / 10px stretch}
+.screen .opt:has(.vol){flex-direction:column;align-items:stretch}
+.screen .opt:has(.vol)>.lab{flex-basis:auto}
+.screen .head h2{border:solid transparent;border-width:0 64px;padding:10px 0 13px;background:none;clip-path:none;box-shadow:none;
+  border-image:url("img/ui4_banner.png") 0 112 fill / 0 64px stretch;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
+.screen .back{border:solid transparent;border-width:0 20px;padding:0 4px;border-radius:0;background:none;min-width:96px;
+  border-image:url("img/ui4_back.png") 0 50 fill / 0 20px stretch}
+.screen .back::before{margin-left:0}
+#posScreen .posbtn{border:0;background:url("img/ui4_pos.png") center/contain no-repeat;box-shadow:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.45))}
+#posScreen .posbtn.on{border:0;background:url("img/ui4_pos_on.png") center/contain no-repeat;box-shadow:none;
+  filter:drop-shadow(0 0 10px rgba(216,242,58,.95)) drop-shadow(0 3px 0 rgba(0,0,0,.45))}
+@media (max-height:460px){
+  .screen .go{border-width:0 27px;border-image-width:0 27px}
+  #title .mode.big{border-width:0 34px;border-image-width:0 34px}
+  .screen .head h2{border-width:0 46px;border-image-width:0 46px;padding:5px 0 8px}
+  .screen .opt{border-width:7px;border-image-width:7px}
+}
+/* 球場の図(ChatGPT の絵)と、ボタンの中の絵 */
+#posScreen .field{aspect-ratio:625/446;background:url("img/ui4_field.png") center/100% 100% no-repeat;margin:10px auto 0;max-width:440px}
+#setGo::before{background-image:url("img/ui4_icon_ball.png")}
+#setGo.knock::before{background-image:url("img/ui4_icon_glove.png")}
+#resAgain::before{display:block;background-image:url("img/ui4_icon_redo.png")}
+.screen .btn::before{content:"";width:1.4em;height:1.4em;flex:none;background:center/contain no-repeat}
+#pzRestart::before{background-image:url("img/ui4_icon_redo.png")}
+#pzTitle::before,#resClose::before{background-image:url("img/ui4_icon_home.png")}
+#resPos::before{background-image:url("img/ui4_icon_swap.png")}
+.screen .go::before{width:1.3em;height:1.3em;border-radius:8px}
+#title .mode .ic{border-radius:8px}
+@media (max-height:460px){
+  #posScreen .field{height:min(250px,calc(100vh - 120px));width:auto;margin:0}
+}
+/* 枠の絵は border-image-width で描き、border の幅は 0 にして字の場所を広く取る(端の丸みは絵のまま) */
+.screen .go,#title .mode.big{border-width:0;padding:0 34px}
+.screen .btn,#title .mode:not(.big){border-width:0;padding:0 10px}
+.screen .seg>button,.screen .grid>button{border-width:0;padding:0 6px;white-space:nowrap;font-size:15px;min-width:0}
+.screen .opt{border-width:0;padding:8px 10px 8px 12px}
+.screen .head h2{border-width:0;padding:10px 64px 13px}
+.screen .back{border-width:0;padding:0 14px}
+.screen .opt>.lab{flex:0 0 auto;width:5.6em}
+#optBd .seg>button{font-size:14px;padding:0 3px}
+#panel .seg>button{flex:1 1 0}
+#panel .seg.wrap>button{flex:1 1 22%}
+@media (max-height:460px){
+  .screen .go,#title .mode.big{padding:0 26px}
+  .screen .head h2{padding:5px 48px 8px}
+  .screen .opt{padding:4px 8px 4px 10px}
+  .screen .opt>.lab{width:5.2em}
+}
+/* モードは MENU_MODES(ui.js)の分だけ出す。今は 守備の試合・ノック・球場を歩く の 3 つ */
+#title .mode.hide{display:none !important}
+@media (min-width:900px) and (min-height:560px){
+  #title .modes[data-n="3"]{grid-template-columns:1.6fr 1fr 1fr;max-width:900px;margin-left:auto;margin-right:auto;width:100%}
+}
+/* PC: 見出しは「戻る」と同じ段に(高さ 720 に収める)。一時停止は 2 列 */
+@media (min-width:900px) and (min-height:560px){
+  .screen .head{flex-wrap:nowrap;position:relative;justify-content:center}
+  .screen .head .back{position:absolute;left:0;top:50%;transform:translateY(-50%)}
+  .screen .head h2{flex:0 1 auto;margin:0 104px;font-size:32px}
+  #panel .sheet{max-width:820px;display:grid;grid-template-columns:1fr 1fr;column-gap:12px;align-content:start;align-items:start}
+  #panel .head,#panel .go,#panel .row2,#panel .link{grid-column:1 / -1}
+}
+@media (max-height:460px){ #panel .sheet{align-items:start} }
+/* 見本4(モード 3 つ): 横持ちは右に縦 1 列、PC は下に横一列で絵は字の左 */
+@media (max-height:460px){
+  #title .modes[data-n="3"]{grid-template-columns:1fr}
+  #title .modes[data-n="3"] .mode{min-height:50px;font-size:19px}
+  #title .modes[data-n="3"] .mode.big{min-height:66px;font-size:28px}
+}
+@media (min-width:900px) and (min-height:560px){
+  #title .modes[data-n="3"] .mode{flex-direction:row;min-height:96px;gap:12px;font-size:26px}
+  #title .modes[data-n="3"] .mode.big{min-height:112px;font-size:36px}
+  #title .modes[data-n="3"] .mode .ic{width:52px;height:52px}
+  #title .modes[data-n="3"] .mode.big .ic{width:66px;height:66px}
+}
+/* 大きな字: 太い筆の字体(Dela Gothic)は画数の多い字(備・試・設)がつぶれるので、太い普通の字体に濃い緑の縁取り(見本の字の見え方) */
+.screen .go,#title .mode.big,.screen .head h2,.screen .resHead,.evalTotal .ev-head{font-family:var(--v4-body);font-weight:900;letter-spacing:.04em;
+  -webkit-text-stroke:5px #0b3a1f;paint-order:stroke fill;text-shadow:0 3px 0 rgba(0,0,0,.45)}
+.screen .resHead{-webkit-text-stroke:6px #6a2208;font-style:normal}
+.evalTotal .ev-head{-webkit-text-stroke:3px #0b3a1f}
+/* 一時停止の段は名前を短めの幅に(縦で「ナイター」が切れないように) */
+#panel .opt>.lab{width:4.4em}
+#panel .seg>button{font-size:14px;padding:0 4px}
+/* 応援の段(高校野球/プロ野球風)。選ぶと window.__crowd.setStyle() を呼び、r4walk.cheer に残る */
+.li-cheer{background-image:url("img/ui4_icon_cheer.png")}
+#panel .seg>button{min-width:0;flex:1 1 0;overflow:hidden;text-overflow:clip;letter-spacing:-.02em}
+#panel .opt>.lab{width:auto;max-width:5em}
+@media (min-width:900px) and (min-height:560px){
+  #setScreen .opt{margin-top:6px;padding-top:5px;padding-bottom:5px}
+  #setScreen .seg>button{min-height:44px}
+  #setScreen .go{min-height:68px;margin-top:10px}
+}/* 時間帯・画質の札は main.js が .btn を付けている(setTime が探す)。中ボタンの絵の場所は出さない */
+.screen .seg>button.btn::before{display:none}
+.screen .seg>button.btn{justify-content:center}
+@media (min-width:900px) and (min-height:560px){ .screen .head h2{padding:8px 84px 11px} }
+/* ================================================================ 走者の図(点数板のすぐ下)と本塁打の題字(11/17 持ち主) */
+#runMap{position:fixed;z-index:9;pointer-events:none;width:150px;padding:4px 6px 2px;border-radius:12px;
+  background:linear-gradient(180deg,rgba(23,74,49,.92),rgba(15,51,34,.92));border:3px solid var(--v4-cream);box-shadow:0 4px 10px rgba(0,0,0,.35)}
+#runMap svg{display:block;width:100%;height:auto}
+#runMap .mfan{fill:#2f8a43}
+#runMap .mdirt{fill:#a8673d}
+#runMap .mgrass{fill:#3aa152}
+#runMap .mline{stroke:#fff;stroke-width:1.2;opacity:.85;fill:none}
+#runMap .mpath{stroke:rgba(255,255,255,.75);stroke-width:1.2;fill:none}
+#runMap .mb{fill:#f4f1e6;stroke:rgba(0,0,0,.35);stroke-width:.8}
+#runMap .mb.on{fill:var(--v4-gold)}
+#runMap .mhome{fill:#f4f1e6}
+#runMap .mr circle{stroke-width:2.2}
+#runMap[data-atk="away"] .mr circle{fill:#b8323f;stroke:#fff}
+#runMap[data-atk="home"] .mr circle{fill:#fff;stroke:#1f3557}
+#runMap .mr.bat circle{r:6}
+#runMap .mr .x{stroke:#ff3b2f;stroke-width:3;stroke-linecap:round;opacity:0}
+#runMap .mr.out circle{opacity:.45}
+#runMap .mr.out .x{opacity:1}
+#runMap .mr.gone{display:none}
+#runMap .mball{fill:#fff;stroke:#0b3a1f;stroke-width:1;transition:opacity .2s}
+@media (max-width:600px){ #runMap{width:120px;padding:3px 4px 1px;border-width:2px} }
+@media (max-height:460px){ #runMap{width:112px} }
+
+#hrBanner{position:fixed;left:50%;top:30vh;z-index:14;pointer-events:none;text-align:center;white-space:nowrap;
+  transform:translate(-50%,-50%) scale(.6) rotate(-6deg);opacity:0;transition:transform .25s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+#hrBanner.show{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-6deg)}
+#hrBanner b,#hrBanner small{display:block;font-family:var(--v4-body);font-weight:900;font-style:italic;letter-spacing:.02em;color:#fff;
+  -webkit-text-stroke:8px #0d3a24;paint-order:stroke fill;text-shadow:0 5px 0 rgba(0,0,0,.4)}
+#hrBanner b{font-size:clamp(46px,12vw,96px);line-height:1.05;
+  background:linear-gradient(176deg,transparent 0 78%,var(--v4-orange) 78% 90%,transparent 90%) center bottom/100% 100% no-repeat;padding:0 .2em .12em}
+#hrBanner small{font-size:clamp(26px,6.5vw,52px);color:#ffd84a;-webkit-text-stroke:6px #6a2208}
+body.photo #hrBanner,body.photo #runMap{display:none}@media (max-height:460px){ #hrBanner{top:56vh} }
+@media (max-height:460px){ #hrBanner{top:47vh} #hrBanner b{font-size:64px} }
+
+/* 左上の点数板: 攻撃中のチームの行(ui.js の teamsHTML が .atk を付ける)。行の背景を明るく・縁を光らせる・攻撃中の印を大きく。守っている側は落ち着いた色のまま(11/17 持ち主) */
+.sb-teams .tm{transition:background-color .15s,box-shadow .15s,opacity .15s}
+.sb-teams .tm:not(.atk){opacity:.72}
+.sb-teams .tm.me:not(.atk){box-shadow:inset 0 0 0 1px rgba(255,122,26,.45);background:transparent}
+.sb-teams .tm.atk{background:linear-gradient(90deg,rgba(255,213,74,.34),rgba(255,213,74,.14));box-shadow:inset 0 0 0 2px #ffd54a,0 0 10px rgba(255,213,74,.75);color:#fff;opacity:1}
+.sb-teams .tm.atk b{color:#fff6c8;text-shadow:0 0 8px rgba(255,213,74,.9)}
+.sb-teams .tm.atk .bat{width:16px;font-size:16px;line-height:1;color:#ffd54a;text-shadow:0 0 6px rgba(255,213,74,.95);animation:sbAtk 1.2s ease-in-out infinite}
+@keyframes sbAtk{50%{opacity:.45}}
+
+/* 遊んでいる間の札(置き場所は ui.js の layoutHud が 1 か所で決める。ここは見た目だけ) */
+#sit{background:linear-gradient(180deg,#174a31,#0f3322);border:3px solid var(--v4-cream);transition:opacity .25s,transform .35s}
+#sit .st b{font-family:var(--v4-body);font-weight:900;font-size:19px;letter-spacing:.02em;-webkit-text-stroke:0;color:#fff}
+#sit .st span{font-family:var(--v4-body);font-weight:700}
+#evalPop{font-family:var(--v4-body);font-weight:900}
+#hrBanner{top:max(30vh, calc(var(--hr-min, 0px) + 70px))}
+@media (max-height:460px){ #hrBanner{top:max(47vh, calc(var(--hr-min, 0px) + 50px))} #sit .st b{font-size:17px} }
+@media (max-width:600px){ #sit .st b{font-size:16px} }
+/* 11/18 題字の絵に副題の帯が入っているので、文字の副題は出さない(絵が読めずに文字の題になった時は出す) */
+#title .logoWrap:not(.textLogo) .logoSub{display:none}
+
+/* 11/18 球場の選択は球場を選ぶ画面へ移した(stadium_picker.css)。前の #optStadium .seg の並びの直しは外した */
+/* 11/18 左上の板の回: 「表/裏」が小さくにじむので「7回表」と 1 行に同じ字で(Play の写真で読めなかった) */
+#board .sb-inn{white-space:nowrap}
+#board .sb-inn small{display:inline;font-size:1em;color:inherit;font-weight:inherit;margin-left:1px}

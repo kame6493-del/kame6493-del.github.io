@@ -1,0 +1,77 @@
+/* ================================================================ 球場を選ぶ画面(js/stadium_picker.js)
+   並び(この節)と見た目(下の「見た目」の節)を分けてある。UI v5 の素材が来たら「見た目」の節だけ差し替える。 */
+
+/* ---- 並び ---- */
+#stadiumScreen .stPick{max-width:980px;width:100%;max-height:100%;display:flex;flex-direction:column;padding-bottom:16px;overflow:hidden}
+#stadiumScreen .stBody{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 2px}
+#stadiumScreen .stPreview{display:grid;grid-template-columns:1fr;gap:6px}
+#stadiumScreen .stBig{aspect-ratio:16/9;width:100%;overflow:hidden}
+#stadiumScreen .stBig img{width:100%;height:100%;object-fit:cover;display:block}
+#stadiumScreen .stInfo{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+#stadiumScreen .stDesc{flex:1 0 100%;margin:0}
+#stadiumScreen .stTime{display:flex;gap:6px}
+#stadiumScreen .stTime>button{flex:1 1 0;min-height:40px}
+#stadiumScreen .stGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#stadiumScreen .stCard{min-width:0;text-align:center}
+#stadiumScreen .stImg{display:block;aspect-ratio:16/9;overflow:hidden}
+#stadiumScreen .stImg img{width:100%;height:100%;object-fit:cover;display:block}
+#stadiumScreen .stName{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stadiumScreen .stTags{display:flex;justify-content:center;gap:4px}
+#stadiumScreen .stGo{flex:0 0 auto;margin-top:10px;width:100%}
+/* 横長(PC・スマホ横): 左に並び、右に見本と決定 */
+@media (min-aspect-ratio:4/3){
+  #stadiumScreen .stBody{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start;gap:14px}
+  #stadiumScreen .stGrid{order:1}
+  #stadiumScreen .stPreview{order:2;position:sticky;top:0}
+}
+@media (max-height:460px){
+  #stadiumScreen .stPick{padding:6px 10px 10px}
+  #stadiumScreen .head h2{font-size:18px;padding:4px 60px 6px}
+  #stadiumScreen .stCard{padding:2px 2px 3px;gap:1px}
+  #stadiumScreen .stTime>button{min-height:32px}
+  #stadiumScreen .stGo{min-height:44px;margin-top:6px}
+  #stadiumScreen .stDesc{display:none}
+  #stadiumScreen .stGrid{gap:5px}
+  #stadiumScreen .stTags i{font-size:10px;padding:0 5px}
+}
+#stadiumScreen .stGo{white-space:nowrap;font-size:clamp(18px,5.6vw,28px)}
+
+/* ---- 見た目(UI v5: カードの枠 ui5_card_win の窓の後ろに球場の絵を敷く。選んだ物は ui5_card_on_win) ---- */
+#stadiumScreen .stPick{max-width:1000px}
+#stadiumScreen .stBig{border-radius:16px;border:4px solid #fff;box-shadow:0 0 0 3px var(--v5-yellow,#fdc803),0 6px 16px rgba(0,0,0,.35);background:#0b3a66}
+#stadiumScreen .stInfo{padding:2px 2px 0}
+#stadiumScreen .stBigName{font-family:var(--v5-head,sans-serif);font-weight:900;font-size:22px;color:#fff;-webkit-text-stroke:5px #06264a;paint-order:stroke fill}
+#stadiumScreen .stDesc{font-size:13px;line-height:1.45;color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+#stadiumScreen .stCard{position:relative;padding:0;border:0;border-radius:0;background:none;color:#fff;cursor:pointer;aspect-ratio:338/244;display:block;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+#stadiumScreen .stCard .stImg{position:absolute;left:5.9%;top:7.8%;width:88.2%;height:61.1%;aspect-ratio:auto;border-radius:10px;overflow:hidden}
+#stadiumScreen .stCard::after{content:"";position:absolute;inset:0;background:url("img/ui5_card_win.png") center/100% 100% no-repeat;pointer-events:none}
+#stadiumScreen .stCard.on::after{background-image:url("img/ui5_card_on_win.png")}
+#stadiumScreen .stCard.on{filter:drop-shadow(0 0 8px rgba(253,200,3,.9)) drop-shadow(0 3px 0 rgba(0,0,0,.3));transform:none}
+#stadiumScreen .stCard .stName{position:absolute;left:4%;right:4%;top:71%;height:20%;display:flex;align-items:center;justify-content:center;z-index:1;
+  font-family:var(--v5-head,sans-serif);font-weight:900;font-size:clamp(10px,2.9vw,14px);color:#0b2f55;letter-spacing:-.03em}
+#stadiumScreen .stCard .stTags{position:absolute;right:7%;top:9%;z-index:1;gap:3px}
+#stadiumScreen .stCard .stTags i:not(.stLock):not(.stFree){display:none}
+#stadiumScreen .stCard.locked .stImg::after{content:"";position:absolute;inset:0;background:rgba(8,24,48,.55) url("img/ui5_icon_lock.png") center/34% auto no-repeat}
+#stadiumScreen .stTags i, #stadiumScreen .stBigTags i{font-style:normal;font-size:12px;font-weight:900;padding:2px 9px;border-radius:999px;background:#fff;color:#0b2f55;display:inline-flex;align-items:center;gap:4px}
+#stadiumScreen .stTags .stFree, #stadiumScreen .stBigTags .stFree{background:#07851e;color:#fff}
+#stadiumScreen .stTags .stLock, #stadiumScreen .stBigTags .stLock{background:#ed6001;color:#fff;padding:2px 7px}
+#stadiumScreen .stLock svg{width:13px;height:13px;display:block}
+#stadiumScreen .stTime>button{min-height:44px}
+#stadiumScreen .stGo{min-height:68px}
+#stadiumScreen .stGo::before{background-image:url("img/ui5_icon_check.png")}
+#stadiumScreen .stGo.locked{filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+#stadiumScreen .stGo.locked::before{background-image:url("img/ui5_icon_lock.png")}
+@media (max-height:460px){
+  #stadiumScreen .stCard .stName{font-size:11px}
+  #stadiumScreen .stTime>button{min-height:44px}
+  #stadiumScreen .stGo{min-height:52px}
+  #stadiumScreen .stCard .stImg{height:61.1%}
+}
+
+/* ---- 試合の設定の「球場」の行(押すと球場を選ぶ画面へ) ---- */
+#optStadium .stPickBtn{flex:1 1 auto;display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 10px 4px 4px;border-radius:12px;border:0;background:linear-gradient(180deg,#f3fbff,#d1eefd);color:#0b2f55;cursor:pointer;min-width:0}
+#optStadium .stPickBtn img{width:72px;height:40px;object-fit:cover;border-radius:8px;flex:0 0 auto}
+#optStadium .stPickBtn .stPickName{flex:1 1 auto;min-width:0;text-align:left;font-weight:900;font-size:clamp(12px,3.4vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#optStadium .stPickBtn b{flex:0 0 auto;font-size:13px;color:#ffe04a}
+@media (max-height:460px){ #optStadium .stPickBtn{min-height:48px} #optStadium .stPickBtn img{width:76px;height:42px} }
+#stadiumScreen .stInfo{background:rgba(2,40,90,.62);border-radius:12px;padding:6px 10px}   /* 明るい青空の上でも説明の字が読めるように */

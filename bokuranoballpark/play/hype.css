@@ -1,0 +1,109 @@
+/* 11/21 ド派手(js/hype.js)。ui_v5.css・mobile.css の後に読む。絵は ChatGPT(_chatgpt_hade_1121\):
+   夜のナイターの背景(花火・カクテル光線・満員の席)・金と炎のロゴ。動きは transform と opacity だけ(スマホで重くしない) */
+
+/* ---------------------------------------------------------------- 背景: メニューの画面はすべて夜のナイター */
+.bgArt{background:url("img/hade_bg_wide.webp?v=1121h") center 30%/cover no-repeat,#0a1030}
+@media (max-aspect-ratio:3/4){ .bgArt{background:url("img/hade_bg_tall.webp?v=1121h") center top/cover no-repeat,#0a1030} }
+.bgArt::before{background:linear-gradient(180deg,rgba(4,8,30,0),rgba(4,8,30,0) 55%,rgba(4,8,30,.35))}
+#title .bgArt{animation:hyBgIn 1.2s ease-out both}
+@keyframes hyBgIn{from{transform:scale(1.12);filter:brightness(.4)}to{transform:scale(1);filter:brightness(1)}}
+
+/* ---------------------------------------------------------------- タイトルの飾りの層(背景の上・ロゴとボタンの下) */
+#title .titleBox{position:relative;z-index:2}
+.hyT{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.hyT .hyFw{position:absolute;inset:0;width:100%;height:100%}
+.hyT .hyRays{position:absolute;left:var(--cx,50%);top:var(--cy,30%);width:190vmax;height:190vmax;margin:-95vmax 0 0 -95vmax;opacity:.42;
+  background:repeating-conic-gradient(from 0deg,rgba(255,214,90,.55) 0deg 7deg,rgba(255,214,90,0) 7deg 22deg);
+  -webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 18%,transparent 48%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 18%,transparent 48%);
+  animation:hySpin 26s linear infinite;will-change:transform}
+.hyT .hyGlow{position:absolute;left:var(--cx,50%);top:var(--cy,30%);width:120vmin;height:70vmin;margin:-35vmin 0 0 -60vmin;
+  background:radial-gradient(closest-side,rgba(255,190,60,.55),rgba(255,120,30,.18) 55%,transparent);animation:hyPulse 2.4s ease-in-out infinite;will-change:opacity,transform}
+@keyframes hySpin{to{transform:rotate(360deg)}}
+@keyframes hyPulse{0%,100%{opacity:.65;transform:scale(.95)}50%{opacity:1;transform:scale(1.05)}}
+
+/* 紙吹雪(タイトルは降り続ける・遊んでいる間は 1 回) */
+.hyConf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.hyConf i{position:absolute;top:-6vh;width:9px;height:14px;background:var(--c);border-radius:2px;opacity:.95;
+  animation:hyFall var(--d) linear var(--w) infinite;transform:translate3d(0,0,0) scale(var(--s));will-change:transform}
+.hyConf i.rb{width:6px;height:22px;border-radius:3px}
+@keyframes hyFall{0%{transform:translate3d(0,0,0) rotate(0) rotateY(0) scale(var(--s))}100%{transform:translate3d(var(--dx),112vh,0) rotate(var(--r)) rotateY(720deg) scale(var(--s))}}
+
+/* ---------------------------------------------------------------- ロゴ: 弾んで出て、ゆっくり揺れ、光の筋が流れる */
+#title .logoImg{width:min(100%,410px)}
+@media (min-width:900px) and (min-height:560px){ #title .logoImg{width:min(52vw,680px)} }
+#title.hyIn .logoWrap{animation:hyLogoIn .95s cubic-bezier(.2,1.5,.35,1) .15s both,hyBob 3.4s ease-in-out 1.2s infinite}
+@keyframes hyLogoIn{0%{transform:scale(.15) rotate(-10deg);opacity:0}55%{transform:scale(1.14) rotate(2deg);opacity:1}78%{transform:scale(.95) rotate(-1deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes hyBob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.025)}}
+#title .logoWrap{filter:drop-shadow(0 8px 18px rgba(0,0,0,.55))}
+#title .logo.hyShine{position:relative;display:block}
+#title .logo.hyShine::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 0 40%,rgba(255,255,255,.85) 48%,rgba(255,246,200,.95) 50%,rgba(255,255,255,.85) 52%,transparent 60% 100%) 0 0/300% 100% no-repeat;
+  -webkit-mask:var(--hy-logo) center/contain no-repeat;mask:var(--hy-logo) center/contain no-repeat;mix-blend-mode:overlay;
+  animation:hySweep 3.6s ease-in-out 1.3s infinite}
+@keyframes hySweep{0%{background-position:120% 0}45%,100%{background-position:-20% 0}}
+
+/* ---------------------------------------------------------------- ボタン: 光の筋が走る・いちばん上は脈打つ */
+#title .mode::after{content:"";position:absolute;inset:7% 3%;border-radius:999px;pointer-events:none;
+  background:linear-gradient(100deg,transparent 0 42%,rgba(255,255,255,.5) 50%,transparent 58% 100%) 0 0/300% 100% no-repeat;animation:hyBtn 3.2s ease-in-out infinite}
+#title .mode:nth-child(2)::after{animation-delay:.35s}#title .mode:nth-child(5)::after{animation-delay:.7s}#title .mode:nth-child(6)::after{animation-delay:1.05s}
+@keyframes hyBtn{0%{background-position:110% 0}40%,100%{background-position:-10% 0}}
+#title.hyIn .mode{animation:hyBtnIn .5s cubic-bezier(.2,1.4,.4,1) both}
+#title.hyIn .mode:nth-child(1){animation:hyBtnIn .5s cubic-bezier(.2,1.4,.4,1) .7s both,hyBeat 1.6s ease-in-out 1.4s infinite}
+#title.hyIn .mode:nth-child(2){animation-delay:.8s}#title.hyIn .mode:nth-child(5){animation-delay:.9s}#title.hyIn .mode:nth-child(6){animation-delay:1s}
+@keyframes hyBtnIn{from{transform:translateY(30px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+@keyframes hyBeat{0%,100%{filter:drop-shadow(0 0 6px rgba(253,200,3,.5)) drop-shadow(0 4px 0 rgba(0,0,0,.3))}50%{filter:brightness(1.15) drop-shadow(0 0 18px rgba(255,214,60,.95)) drop-shadow(0 4px 0 rgba(0,0,0,.3))}}   /* 大きさは変えない(押す所が動かないように) */
+#title .loadtxt{text-shadow:0 0 10px rgba(255,200,60,.8)}
+
+/* ---------------------------------------------------------------- 画面の切り替え: 押した所から光の輪が広がる */
+.hyWipe{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden}
+.hyWipe .ring{position:absolute;left:var(--x);top:var(--y);width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0,#fff6c8 30%,#ffc23a 55%,rgba(255,225,120,.9) 70%,rgba(255,235,160,0) 72%);animation:hyRing .55s cubic-bezier(.3,.7,.4,1) forwards}
+.hyWipe.blue .ring{background:radial-gradient(circle,#fff 0,#d8f2ff 30%,#4cc3ff 55%,rgba(30,90,255,.9) 70%,rgba(30,90,255,0) 72%)}
+.hyWipe .streak{position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at var(--x) var(--y),rgba(255,255,255,.75) 0 3deg,transparent 3deg 15deg);
+  opacity:0;animation:hyStreak .5s ease-out forwards}
+@keyframes hyRing{0%{transform:scale(1);opacity:1}70%{transform:scale(300);opacity:1}100%{transform:scale(320);opacity:0}}
+@keyframes hyStreak{0%{opacity:0;transform:scale(.6)}30%{opacity:.9}100%{opacity:0;transform:scale(1.4)}}
+.hyWipe b{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);white-space:nowrap;font-family:var(--v5-head,sans-serif);font-weight:900;font-style:italic;
+  font-size:clamp(40px,11vw,104px);color:#fff;-webkit-text-stroke:8px #5a4300;paint-order:stroke fill;text-shadow:0 0 30px rgba(255,190,40,.9);
+  animation:hyWord 1.05s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes hyWord{0%{transform:translate(-50%,-50%) scale(2.4);opacity:0}25%{transform:translate(-50%,-50%) scale(1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.08);opacity:0}}
+
+/* ---------------------------------------------------------------- 遊んでいる間(押せない・題字より下の層) */
+#hyGame{position:fixed;inset:0;z-index:13;pointer-events:none;overflow:hidden}
+body.photo #hyGame{display:none}
+#hyGame .hyFw{position:absolute;inset:0;width:100%;height:100%}
+#hyGame .hyFlash{position:absolute;inset:0;opacity:0;background:radial-gradient(circle at 50% 40%,rgba(255,250,220,.95),rgba(255,238,180,.45) 45%,rgba(255,245,210,0) 80%)}
+#hyGame .hyFlash[data-tone="soft"]{background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.4),rgba(255,255,255,0) 70%)}
+#hyGame .hyFlash.on{animation:hyFlash .55s ease-out}
+@keyframes hyFlash{0%{opacity:1}100%{opacity:0}}
+#hyGame .hyEdge{position:absolute;inset:0;opacity:0;--ec:255,220,110;box-shadow:inset 0 0 60px 18px rgba(var(--ec),.85),inset 0 0 160px 40px rgba(var(--ec),.35)}
+#hyGame .hyEdge[data-tone="orange"]{--ec:255,220,110}#hyGame .hyEdge[data-tone="green"]{--ec:90,255,120}#hyGame .hyEdge[data-tone="blue"]{--ec:70,170,255}#hyGame .hyEdge[data-tone="red"]{--ec:255,220,110}
+#hyGame .hyEdge.on{animation:hyEdge 1.3s ease-out}
+@keyframes hyEdge{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+#hyGame .hyBurst{position:absolute;left:50%;top:32%;width:180vmax;height:180vmax;margin:-90vmax 0 0 -90vmax;opacity:0;
+  background:repeating-conic-gradient(from 0deg,rgba(255,220,100,.6) 0 6deg,rgba(255,220,100,0) 6deg 18deg);
+  -webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.5) 15%,transparent 45%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.5) 15%,transparent 45%)}
+#hyGame .hyBurst.on{animation:hyBurst 2.4s ease-out}
+@keyframes hyBurst{0%{opacity:0;transform:rotate(0) scale(.5)}12%{opacity:1}100%{opacity:0;transform:rotate(70deg) scale(1.15)}}
+#hyGame .hyConf i{animation-iteration-count:1;animation-fill-mode:both}
+#hyGame .hyBig{position:absolute;left:50%;top:34%;text-align:center;white-space:nowrap;opacity:0;transform:translate(-50%,-50%) rotate(-6deg)}
+#hyGame .hyBig b,#hyGame .hyBig small{display:block;font-family:var(--v4-body,sans-serif);font-weight:900;font-style:italic;color:#fff;paint-order:stroke fill}
+#hyGame .hyBig b{font-size:clamp(52px,14vw,120px);line-height:1.05;-webkit-text-stroke:9px #5a4300;text-shadow:0 0 28px rgba(255,190,40,.95),0 6px 0 rgba(0,0,0,.35)}
+#hyGame .hyBig[data-tone="red"] b{-webkit-text-stroke-color:#8a0a14;text-shadow:0 0 28px rgba(255,70,60,.95),0 6px 0 rgba(0,0,0,.35)}
+#hyGame .hyBig small{font-size:clamp(24px,6vw,48px);color:#ffd84a;-webkit-text-stroke:6px #3a1a05}
+#hyGame .hyBig.on{animation:hyBig 1.5s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes hyBig{0%{opacity:0;transform:translate(-50%,-50%) rotate(-6deg) scale(2.6)}18%{opacity:1;transform:translate(-50%,-50%) rotate(-6deg) scale(1)}82%{opacity:1;transform:translate(-50%,-50%) rotate(-6deg) scale(1.05)}100%{opacity:0;transform:translate(-50%,-50%) rotate(-6deg) scale(1.15)}}
+@media (max-height:460px){ #hyGame .hyBig{top:42%} #hyGame .hyBig b{font-size:64px} }
+
+/* ホームランの題字を金で光らせ、飛び込むように */
+#hrBanner{z-index:15}
+#hrBanner.show{animation:hyHr 1.7s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes hyHr{0%{transform:translate(-50%,-50%) scale(3) rotate(-6deg);opacity:0}16%{transform:translate(-50%,-50%) scale(.92) rotate(-6deg);opacity:1}24%{transform:translate(-50%,-50%) scale(1.06) rotate(-6deg)}32%,100%{transform:translate(-50%,-50%) scale(1) rotate(-6deg);opacity:1}}
+#hrBanner b{color:#fff6cf;-webkit-text-stroke-color:#5a4300;text-shadow:0 0 24px rgba(255,190,40,.95),0 0 60px rgba(255,215,90,.7),0 5px 0 rgba(0,0,0,.4)}
+#hrBanner small{text-shadow:0 0 18px rgba(255,200,60,.9)}
+
+/* 画面のゆれ(ホームランの瞬間だけ 0.45 秒) */
+#view.hyShake{animation:hyShake .45s ease-out}
+@keyframes hyShake{0%,100%{transform:none}20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-5px)}60%{transform:translate(-4px,3px)}80%{transform:translate(3px,-2px)}}
+
+@media (prefers-reduced-motion:reduce){ .hyT .hyRays,.hyT .hyGlow,#title .logoWrap,#title .mode,#title .mode::after{animation:none!important} #view.hyShake{animation:none} }

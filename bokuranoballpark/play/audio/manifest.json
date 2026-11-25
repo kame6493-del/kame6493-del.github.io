@@ -1,0 +1,3020 @@
+{
+ "sfx": {
+  "bat_barrel": [
+   "audio/sfx/bat_barrel_2.mp3",
+   "audio/sfx/bat_solid_1.mp3"
+  ],
+  "bat_solid": [
+   "audio/sfx/bat_solid_1.mp3",
+   "audio/sfx/bat_grounder_3.mp3"
+  ],
+  "bat_jam": [
+   "audio/sfx/bat_end_1.mp3",
+   "audio/sfx/bat_end_2.mp3"
+  ],
+  "bat_end": [
+   "audio/sfx/bat_end_1.mp3",
+   "audio/sfx/bat_end_2.mp3"
+  ],
+  "bat_foul": [
+   "audio/sfx/bat_foul_2.mp3"
+  ],
+  "bat_grounder": [
+   "audio/sfx/bat_grounder_1.mp3",
+   "audio/sfx/bat_grounder_3.mp3"
+  ],
+  "glove": [
+   "audio/sfx/glove_1.mp3",
+   "audio/sfx/glove_2.mp3",
+   "audio/mitt2.mp3"
+  ],
+  "mitt": [
+   "audio/sfx/mitt_1.mp3",
+   "audio/sfx/mitt_2.mp3"
+  ],
+  "throw_catch": [
+   "audio/sfx/throw_catch_1.mp3",
+   "audio/sfx/throw_catch_2.mp3",
+   "audio/sfx/throw_catch_3.mp3"
+  ],
+  "base_step": [
+   "audio/sfx/base_step_1.mp3",
+   "audio/sfx/base_step_2.mp3",
+   "audio/sfx/base_step_3.mp3"
+  ],
+  "slide": [
+   "audio/sfx/slide_1.mp3",
+   "audio/sfx/slide_2.mp3",
+   "audio/sfx/slide_3.mp3"
+  ],
+  "call_allright": [
+   "audio/voice_v3/call/me_sawabaru_1.mp3",
+   "audio/voice_v3/call/me_sawabaru_2.mp3",
+   "audio/voice_v3/call/me_sawabaru_3.mp3"
+  ],
+  "call_allright_mate": [
+   "audio/voice_v3/call/mate_kurono_1.mp3",
+   "audio/voice_v3/call/mate_kurono_2.mp3",
+   "audio/voice_v3/call/mate_kurono_3.mp3",
+   "audio/voice_v3/call/mate_kurono_4.mp3",
+   "audio/voice_v3/call/mate_shirakami_1.mp3",
+   "audio/voice_v3/call/mate_shirakami_2.mp3",
+   "audio/voice_v3/call/mate_shirakami_3.mp3",
+   "audio/voice_v3/call/mate_shirakami_4.mp3"
+  ],
+  "bat_wood": [
+   "audio/sfx/bat_wood_1.mp3"
+  ]
+ },
+ "amb": {
+  "crowd_loop": "audio/amb/crowd_loop.mp3",
+  "band_loop": "audio/amb/band_loop.mp3",
+  "cheer_big": [
+   "audio/amb/cheer_big_1.mp3",
+   "audio/amb/cheer_big_2.mp3",
+   "audio/amb/cheer_big_3.mp3"
+  ],
+  "cheer": [
+   "audio/amb/cheer_1.mp3",
+   "audio/amb/cheer_2.mp3",
+   "audio/cheer.mp3"
+  ],
+  "sigh": [
+   "audio/amb/sigh_1.mp3",
+   "audio/amb/sigh_2.mp3",
+   "audio/amb/sigh_3.mp3",
+   "audio/amb/sigh_4.mp3"
+  ],
+  "applause": [
+   "audio/amb/applause_1.mp3",
+   "audio/amb/applause_2.mp3",
+   "audio/applause.mp3",
+   "audio/amb/applause_3.mp3"
+  ],
+  "band_hit": [
+   "audio/amb/band_hit_3.mp3",
+   "audio/amb/band_hit_4.mp3",
+   "audio/amb/band_hit_5.mp3"
+  ],
+  "pa_chime": [
+   "audio/amb/pa_chime_1.mp3",
+   "audio/amb/pa_chime_2.mp3"
+  ],
+  "oo": [
+   "audio/amb/oo_1.mp3",
+   "audio/amb/oo_2.mp3"
+  ],
+  "stir": [
+   "audio/amb/stir_1.mp3"
+  ],
+  "clap_rhythm": [
+   "audio/amb/clap_rhythm_1.mp3"
+  ],
+  "cheer_rhythm_loop": "audio/amb/cheer_rhythm_loop.mp3",
+  "buzz_loop": "audio/amb/buzz_loop.mp3",
+  "taiko": [
+   "audio/amb/band_hit_3.mp3",
+   "audio/amb/band_hit_4.mp3"
+  ],
+  "trumpet": [
+   "audio/amb/band_hit_1.mp3"
+  ],
+  "score_taiko": [
+   "audio/amb/score_taiko_1.mp3",
+   "audio/amb/score_taiko_2.mp3"
+  ],
+  "stand_drums": [
+   "audio/amb/stand_drums_1.mp3"
+  ],
+  "megaphone": [
+   "audio/amb/megaphone_1.mp3"
+  ],
+  "hs_brass": [
+   "audio/amb/hs_brass_1.mp3",
+   "audio/amb/hs_brass_2.mp3",
+   "audio/amb/hs_brass_3.mp3"
+  ],
+  "chant_hey": [
+   "audio/amb/chant_hey_1.mp3"
+  ],
+  "yell_roll": [
+   "audio/amb/yell_roll_1.mp3",
+   "audio/amb/yell_roll_2.mp3"
+  ],
+  "pro_trumpet": [
+   "audio/amb/pro_trumpet_1.mp3",
+   "audio/amb/pro_trumpet_2.mp3"
+  ],
+  "pro_drums": [
+   "audio/amb/pro_drums_1.mp3"
+  ],
+  "balloon": [
+   "audio/amb/balloon_1.mp3",
+   "audio/amb/balloon_2.mp3"
+  ],
+  "wind_loop": "audio/amb/wind_loop.mp3",
+  "dome_air_loop": "audio/amb/dome_air_loop.mp3",
+  "concourse_loop": "audio/amb/concourse_loop.mp3"
+ },
+ "call": {
+  "strike": [
+   "audio/call/strike_1.mp3"
+  ],
+  "strike_out": [
+   "audio/call/strike_out_1.mp3"
+  ],
+  "ball": [
+   "audio/call/ball_1.mp3",
+   "audio/call/ball_2.mp3"
+  ],
+  "foul": [
+   "audio/call/foul_1.mp3",
+   "audio/call/foul_2.mp3"
+  ],
+  "out": [
+   "audio/call/out_1.mp3",
+   "audio/call/out_2.mp3",
+   "audio/call/out_3.mp3"
+  ],
+  "safe": [
+   "audio/call/safe_1.mp3",
+   "audio/call/safe_2.mp3",
+   "audio/call/safe_3.mp3"
+  ],
+  "play": [
+   "audio/call/play_1.mp3",
+   "audio/call/play_2.mp3"
+  ],
+  "game": [
+   "audio/call/game_1.mp3",
+   "audio/call/game_2.mp3"
+  ],
+  "hbp": [
+   "audio/call/hbp_1.mp3",
+   "audio/call/hbp_2.mp3"
+  ]
+ },
+ "voice": {
+  "hit": [
+   "audio/voice_v3/aida/hit_1.mp3",
+   "audio/voice_v3/aida/hit_2.mp3",
+   "audio/voice_v3/aida/hit_3.mp3",
+   "audio/voice_v3/aida/hit_4.mp3",
+   "audio/voice_v3/aida/hit_5.mp3"
+  ],
+  "pulled": [
+   "audio/voice_v3/aida/pulled_1.mp3",
+   "audio/voice_v3/aida/pulled_2.mp3",
+   "audio/voice_v3/aida/pulled_3.mp3"
+  ],
+  "opposite": [
+   "audio/voice_v3/aida/opposite_1.mp3",
+   "audio/voice_v3/aida/opposite_2.mp3",
+   "audio/voice_v3/aida/opposite_3.mp3"
+  ],
+  "liner": [
+   "audio/voice_v3/aida/liner_1.mp3",
+   "audio/voice_v3/aida/liner_2.mp3",
+   "audio/voice_v3/aida/liner_3.mp3",
+   "audio/voice_v3/aida/liner_4.mp3",
+   "audio/voice_v3/aida/liner_5.mp3",
+   "audio/voice_v3/aida/liner_7.mp3",
+   "audio/voice_v3/aida/liner_8.mp3",
+   "audio/voice_v3/aida/liner_9.mp3",
+   "audio/voice_v3/aida/liner_10.mp3",
+   "audio/voice_v3/aida/liner_11.mp3",
+   "audio/voice_v3/aida/liner_12.mp3"
+  ],
+  "pop": [
+   "audio/voice_v3/aida/pop_1.mp3",
+   "audio/voice_v3/aida/pop_2.mp3",
+   "audio/voice_v3/aida/pop_3.mp3",
+   "audio/voice_v3/aida/pop_4.mp3",
+   "audio/voice_v3/aida/pop_5.mp3",
+   "audio/voice_v3/aida/pop_6.mp3",
+   "audio/voice_v3/aida/pop_7.mp3",
+   "audio/voice_v3/aida/pop_8.mp3",
+   "audio/voice_v3/aida/pop_9.mp3",
+   "audio/voice_v3/aida/pop_10.mp3",
+   "audio/voice_v3/aida/pop_11.mp3",
+   "audio/voice_v3/aida/pop_12.mp3",
+   "audio/voice_v3/aida/pop_13.mp3"
+  ],
+  "grounder_left": [
+   "audio/voice_v3/aida/grounder_left_1.mp3",
+   "audio/voice_v3/aida/grounder_left_2.mp3",
+   "audio/voice_v3/aida/grounder_left_3.mp3",
+   "audio/voice_v3/aida/grounder_left_4.mp3",
+   "audio/voice_v3/aida/grounder_left_5.mp3",
+   "audio/voice_v3/aida/grounder_left_6.mp3",
+   "audio/voice_v3/aida/grounder_left_7.mp3",
+   "audio/voice_v3/aida/grounder_left_8.mp3",
+   "audio/voice_v3/aida/grounder_left_9.mp3",
+   "audio/voice_v3/aida/grounder_left_10.mp3",
+   "audio/voice_v3/aida/grounder_left_11.mp3"
+  ],
+  "grounder_right": [
+   "audio/voice_v3/aida/grounder_right_1.mp3",
+   "audio/voice_v3/aida/grounder_right_2.mp3",
+   "audio/voice_v3/aida/grounder_right_3.mp3",
+   "audio/voice_v3/aida/grounder_right_4.mp3",
+   "audio/voice_v3/aida/grounder_right_5.mp3",
+   "audio/voice_v3/aida/grounder_right_6.mp3",
+   "audio/voice_v3/aida/grounder_right_7.mp3",
+   "audio/voice_v3/aida/grounder_right_8.mp3",
+   "audio/voice_v3/aida/grounder_right_9.mp3",
+   "audio/voice_v3/aida/grounder_right_10.mp3",
+   "audio/voice_v3/aida/grounder_right_11.mp3",
+   "audio/voice_v3/aida/grounder_right_12.mp3"
+  ],
+  "grounder_middle": [
+   "audio/voice_v3/aida/grounder_middle_1.mp3",
+   "audio/voice_v3/aida/grounder_middle_4.mp3",
+   "audio/voice_v3/aida/grounder_middle_5.mp3",
+   "audio/voice_v3/aida/grounder_middle_6.mp3",
+   "audio/voice_v3/aida/grounder_middle_7.mp3",
+   "audio/voice_v3/aida/grounder_middle_8.mp3",
+   "audio/voice_v3/aida/grounder_middle_9.mp3",
+   "audio/voice_v3/aida/grounder_middle_10.mp3",
+   "audio/voice_v3/aida/grounder_middle_11.mp3",
+   "audio/voice_v3/aida/grounder_middle_12.mp3",
+   "audio/voice_v3/aida/grounder_middle_13.mp3",
+   "audio/voice_v3/aida/grounder_middle_14.mp3",
+   "audio/voice_v3/aida/grounder_middle_15.mp3"
+  ],
+  "grounder_short": [
+   "audio/voice_v3/aida/grounder_short_1.mp3",
+   "audio/voice_v3/aida/grounder_short_2.mp3",
+   "audio/voice_v3/aida/grounder_short_3.mp3",
+   "audio/voice_v3/aida/grounder_short_4.mp3",
+   "audio/voice_v3/aida/grounder_short_5.mp3",
+   "audio/voice_v3/aida/grounder_short_6.mp3",
+   "audio/voice_v3/aida/grounder_short_7.mp3",
+   "audio/voice_v3/aida/grounder_short_8.mp3",
+   "audio/voice_v3/aida/grounder_short_9.mp3",
+   "audio/voice_v3/aida/grounder_short_10.mp3",
+   "audio/voice_v3/aida/grounder_short_11.mp3",
+   "audio/voice_v3/aida/grounder_short_12.mp3",
+   "audio/voice_v3/aida/grounder_short_13.mp3"
+  ],
+  "grounder_second": [
+   "audio/voice_v3/aida/grounder_second_1.mp3",
+   "audio/voice_v3/aida/grounder_second_2.mp3",
+   "audio/voice_v3/aida/grounder_second_3.mp3",
+   "audio/voice_v3/aida/grounder_second_4.mp3",
+   "audio/voice_v3/aida/grounder_second_5.mp3",
+   "audio/voice_v3/aida/grounder_second_6.mp3",
+   "audio/voice_v3/aida/grounder_second_7.mp3",
+   "audio/voice_v3/aida/grounder_second_8.mp3",
+   "audio/voice_v3/aida/grounder_second_9.mp3",
+   "audio/voice_v3/aida/grounder_second_10.mp3",
+   "audio/voice_v3/aida/grounder_second_11.mp3",
+   "audio/voice_v3/aida/grounder_second_12.mp3",
+   "audio/voice_v3/aida/grounder_second_13.mp3"
+  ],
+  "grounder_third": [
+   "audio/voice_v3/aida/grounder_third_1.mp3",
+   "audio/voice_v3/aida/grounder_third_2.mp3",
+   "audio/voice_v3/aida/grounder_third_3.mp3",
+   "audio/voice_v3/aida/grounder_third_4.mp3",
+   "audio/voice_v3/aida/grounder_third_5.mp3",
+   "audio/voice_v3/aida/grounder_third_6.mp3",
+   "audio/voice_v3/aida/grounder_third_7.mp3",
+   "audio/voice_v3/aida/grounder_third_8.mp3",
+   "audio/voice_v3/aida/grounder_third_9.mp3",
+   "audio/voice_v3/aida/grounder_third_10.mp3",
+   "audio/voice_v3/aida/grounder_third_11.mp3",
+   "audio/voice_v3/aida/grounder_third_12.mp3",
+   "audio/voice_v3/aida/grounder_third_13.mp3"
+  ],
+  "grounder_first": [
+   "audio/voice_v3/aida/grounder_first_1.mp3",
+   "audio/voice_v3/aida/grounder_first_2.mp3",
+   "audio/voice_v3/aida/grounder_first_3.mp3",
+   "audio/voice_v3/aida/grounder_first_4.mp3",
+   "audio/voice_v3/aida/grounder_first_5.mp3",
+   "audio/voice_v3/aida/grounder_first_6.mp3",
+   "audio/voice_v3/aida/grounder_first_7.mp3",
+   "audio/voice_v3/aida/grounder_first_8.mp3",
+   "audio/voice_v3/aida/grounder_first_9.mp3",
+   "audio/voice_v3/aida/grounder_first_10.mp3",
+   "audio/voice_v3/aida/grounder_first_11.mp3",
+   "audio/voice_v3/aida/grounder_first_12.mp3",
+   "audio/voice_v3/aida/grounder_first_13.mp3"
+  ],
+  "down_line_left": [
+   "audio/voice_v3/aida/down_line_left_1.mp3",
+   "audio/voice_v3/aida/down_line_left_2.mp3",
+   "audio/voice_v3/aida/down_line_left_3.mp3",
+   "audio/voice_v3/aida/down_line_left_4.mp3",
+   "audio/voice_v3/aida/down_line_left_5.mp3",
+   "audio/voice_v3/aida/down_line_left_6.mp3",
+   "audio/voice_v3/aida/down_line_left_7.mp3",
+   "audio/voice_v3/aida/down_line_left_8.mp3"
+  ],
+  "down_line_right": [
+   "audio/voice_v3/aida/down_line_right_1.mp3",
+   "audio/voice_v3/aida/down_line_right_2.mp3",
+   "audio/voice_v3/aida/down_line_right_3.mp3",
+   "audio/voice_v3/aida/down_line_right_4.mp3",
+   "audio/voice_v3/aida/down_line_right_5.mp3",
+   "audio/voice_v3/aida/down_line_right_6.mp3",
+   "audio/voice_v3/aida/down_line_right_7.mp3",
+   "audio/voice_v3/aida/down_line_right_9.mp3"
+  ],
+  "through_q": [
+   "audio/voice_v3/aida/through_q_1.mp3",
+   "audio/voice_v3/aida/through_q_2.mp3",
+   "audio/voice_v3/aida/through_q_3.mp3",
+   "audio/voice_v3/aida/through_q_4.mp3",
+   "audio/voice_v3/aida/through_q_5.mp3",
+   "audio/voice_v3/aida/through_q_6.mp3",
+   "audio/voice_v3/aida/through_q_7.mp3",
+   "audio/voice_v3/aida/through_q_8.mp3",
+   "audio/voice_v3/aida/through_q_9.mp3",
+   "audio/voice_v3/aida/through_q_10.mp3",
+   "audio/voice_v3/aida/through_q_11.mp3"
+  ],
+  "through": [
+   "audio/voice_v3/aida/through_1.mp3",
+   "audio/voice_v3/aida/through_2.mp3",
+   "audio/voice_v3/aida/through_3.mp3",
+   "audio/voice_v3/aida/through_4.mp3",
+   "audio/voice_v3/aida/through_5.mp3",
+   "audio/voice_v3/aida/through_6.mp3",
+   "audio/voice_v3/aida/through_7.mp3",
+   "audio/voice_v3/aida/through_8.mp3",
+   "audio/voice_v3/aida/through_9.mp3",
+   "audio/voice_v3/aida/through_10.mp3"
+  ],
+  "single_left": [
+   "audio/voice_v3/aida/single_left_1.mp3",
+   "audio/voice_v3/aida/single_left_2.mp3",
+   "audio/voice_v3/aida/single_left_3.mp3",
+   "audio/voice_v3/aida/single_left_4.mp3"
+  ],
+  "single_center": [
+   "audio/voice_v3/aida/single_center_1.mp3",
+   "audio/voice_v3/aida/single_center_2.mp3",
+   "audio/voice_v3/aida/single_center_3.mp3",
+   "audio/voice_v3/aida/single_center_4.mp3"
+  ],
+  "single_right": [
+   "audio/voice_v3/aida/single_right_1.mp3",
+   "audio/voice_v3/aida/single_right_2.mp3",
+   "audio/voice_v3/aida/single_right_3.mp3",
+   "audio/voice_v3/aida/single_right_4.mp3"
+  ],
+  "gap_left": [
+   "audio/voice_v3/aida/gap_left_1.mp3",
+   "audio/voice_v3/aida/gap_left_2.mp3",
+   "audio/voice_v3/aida/gap_left_3.mp3",
+   "audio/voice_v3/aida/gap_left_4.mp3",
+   "audio/voice_v3/aida/gap_left_5.mp3",
+   "audio/voice_v3/aida/gap_left_6.mp3",
+   "audio/voice_v3/aida/gap_left_7.mp3",
+   "audio/voice_v3/aida/gap_left_8.mp3",
+   "audio/voice_v3/aida/gap_left_9.mp3",
+   "audio/voice_v3/aida/gap_left_10.mp3"
+  ],
+  "gap_right": [
+   "audio/voice_v3/aida/gap_right_1.mp3",
+   "audio/voice_v3/aida/gap_right_2.mp3",
+   "audio/voice_v3/aida/gap_right_3.mp3",
+   "audio/voice_v3/aida/gap_right_4.mp3",
+   "audio/voice_v3/aida/gap_right_5.mp3",
+   "audio/voice_v3/aida/gap_right_6.mp3",
+   "audio/voice_v3/aida/gap_right_7.mp3",
+   "audio/voice_v3/aida/gap_right_8.mp3",
+   "audio/voice_v3/aida/gap_right_9.mp3",
+   "audio/voice_v3/aida/gap_right_10.mp3"
+  ],
+  "long_hit": [
+   "audio/voice_v3/aida/long_hit_1.mp3",
+   "audio/voice_v3/aida/long_hit_2.mp3",
+   "audio/voice_v3/aida/long_hit_3.mp3",
+   "audio/voice_v3/aida/long_hit_4.mp3"
+  ],
+  "fence": [
+   "audio/voice_v3/aida/fence_1.mp3",
+   "audio/voice_v3/aida/fence_2.mp3",
+   "audio/voice_v3/aida/fence_3.mp3",
+   "audio/voice_v3/aida/fence_4.mp3",
+   "audio/voice_v3/aida/fence_5.mp3",
+   "audio/voice_v3/aida/fence_6.mp3",
+   "audio/voice_v3/aida/fence_7.mp3",
+   "audio/voice_v3/aida/fence_8.mp3"
+  ],
+  "entitled": [
+   "audio/voice_v3/aida/entitled_1.mp3",
+   "audio/voice_v3/aida/entitled_2.mp3",
+   "audio/voice_v3/aida/entitled_3.mp3"
+  ],
+  "fly_left": [
+   "audio/voice_v3/aida/fly_left_1.mp3",
+   "audio/voice_v3/aida/fly_left_2.mp3",
+   "audio/voice_v3/aida/fly_left_3.mp3",
+   "audio/voice_v3/aida/fly_left_4.mp3",
+   "audio/voice_v3/aida/fly_left_5.mp3",
+   "audio/voice_v3/aida/fly_left_6.mp3",
+   "audio/voice_v3/aida/fly_left_7.mp3",
+   "audio/voice_v3/aida/fly_left_8.mp3",
+   "audio/voice_v3/aida/fly_left_9.mp3",
+   "audio/voice_v3/aida/fly_left_10.mp3",
+   "audio/voice_v3/aida/fly_left_11.mp3",
+   "audio/voice_v3/aida/fly_left_12.mp3"
+  ],
+  "fly_center": [
+   "audio/voice_v3/aida/fly_center_1.mp3",
+   "audio/voice_v3/aida/fly_center_2.mp3",
+   "audio/voice_v3/aida/fly_center_3.mp3",
+   "audio/voice_v3/aida/fly_center_4.mp3",
+   "audio/voice_v3/aida/fly_center_5.mp3",
+   "audio/voice_v3/aida/fly_center_6.mp3",
+   "audio/voice_v3/aida/fly_center_7.mp3",
+   "audio/voice_v3/aida/fly_center_8.mp3",
+   "audio/voice_v3/aida/fly_center_9.mp3",
+   "audio/voice_v3/aida/fly_center_10.mp3",
+   "audio/voice_v3/aida/fly_center_11.mp3",
+   "audio/voice_v3/aida/fly_center_12.mp3"
+  ],
+  "fly_right": [
+   "audio/voice_v3/aida/fly_right_1.mp3",
+   "audio/voice_v3/aida/fly_right_2.mp3",
+   "audio/voice_v3/aida/fly_right_3.mp3",
+   "audio/voice_v3/aida/fly_right_4.mp3",
+   "audio/voice_v3/aida/fly_right_5.mp3",
+   "audio/voice_v3/aida/fly_right_6.mp3",
+   "audio/voice_v3/aida/fly_right_7.mp3",
+   "audio/voice_v3/aida/fly_right_8.mp3",
+   "audio/voice_v3/aida/fly_right_9.mp3",
+   "audio/voice_v3/aida/fly_right_10.mp3",
+   "audio/voice_v3/aida/fly_right_11.mp3",
+   "audio/voice_v3/aida/fly_right_12.mp3"
+  ],
+  "going_back": [
+   "audio/voice_v3/aida/going_back_1.mp3",
+   "audio/voice_v3/aida/going_back_2.mp3",
+   "audio/voice_v3/aida/going_back_3.mp3"
+  ],
+  "back_back": [
+   "audio/voice_v3/aida/back_back_1.mp3",
+   "audio/voice_v3/aida/back_back_2.mp3",
+   "audio/voice_v3/aida/back_back_3.mp3",
+   "audio/voice_v3/aida/back_back_4.mp3",
+   "audio/voice_v3/aida/back_back_5.mp3",
+   "audio/voice_v3/aida/back_back_6.mp3",
+   "audio/voice_v3/aida/back_back_7.mp3",
+   "audio/voice_v3/aida/back_back_8.mp3",
+   "audio/voice_v3/aida/back_back_9.mp3"
+  ],
+  "hr_carry": [
+   "audio/voice_v3/aida/hr_carry_1.mp3",
+   "audio/voice_v3/aida/hr_carry_2.mp3",
+   "audio/voice_v3/aida/hr_carry_3.mp3",
+   "audio/voice_v3/aida/hr_carry_4.mp3",
+   "audio/voice_v3/aida/hr_carry_5.mp3",
+   "audio/voice_v3/aida/hr_carry_6.mp3",
+   "audio/voice_v3/aida/hr_carry_7.mp3",
+   "audio/voice_v3/aida/hr_carry_8.mp3"
+  ],
+  "hr": [
+   "audio/voice_v3/aida/hr_1.mp3",
+   "audio/voice_v3/aida/hr_2.mp3",
+   "audio/voice_v3/aida/hr_3.mp3",
+   "audio/voice_v3/aida/hr_4.mp3"
+  ],
+  "caught": [
+   "audio/voice_v3/aida/caught_1.mp3",
+   "audio/voice_v3/aida/caught_2.mp3",
+   "audio/voice_v3/aida/caught_3.mp3",
+   "audio/voice_v3/aida/caught_4.mp3",
+   "audio/voice_v3/aida/caught_5.mp3",
+   "audio/voice_v3/aida/caught_6.mp3",
+   "audio/voice_v3/aida/caught_7.mp3",
+   "audio/voice_v3/aida/caught_8.mp3",
+   "audio/voice_v3/aida/caught_9.mp3",
+   "audio/voice_v3/aida/caught_10.mp3",
+   "audio/voice_v3/aida/caught_11.mp3",
+   "audio/voice_v3/aida/caught_12.mp3",
+   "audio/voice_v3/aida/caught_13.mp3",
+   "audio/voice_v3/aida/caught_14.mp3"
+  ],
+  "fine_play": [
+   "audio/voice_v3/aida/fine_play_1.mp3",
+   "audio/voice_v3/aida/fine_play_2.mp3",
+   "audio/voice_v3/aida/fine_play_3.mp3",
+   "audio/voice_v3/aida/fine_play_4.mp3",
+   "audio/voice_v3/aida/fine_play_5.mp3",
+   "audio/voice_v3/aida/fine_play_6.mp3",
+   "audio/voice_v3/aida/fine_play_7.mp3",
+   "audio/voice_v3/aida/fine_play_8.mp3",
+   "audio/voice_v3/aida/fine_play_9.mp3",
+   "audio/voice_v3/aida/fine_play_10.mp3",
+   "audio/voice_v3/aida/fine_play_11.mp3",
+   "audio/voice_v3/aida/fine_play_12.mp3",
+   "audio/voice_v3/aida/fine_play_13.mp3",
+   "audio/voice_v3/aida/fine_play_14.mp3",
+   "audio/voice_v3/aida/fine_play_15.mp3",
+   "audio/voice_v3/aida/fine_play_16.mp3",
+   "audio/voice_v3/aida/fine_play_17.mp3",
+   "audio/voice_v3/aida/fine_play_18.mp3",
+   "audio/voice_v3/aida/fine_play_19.mp3"
+  ],
+  "nice_catch": [
+   "audio/voice_v3/aida/nice_catch_1.mp3",
+   "audio/voice_v3/aida/nice_catch_2.mp3",
+   "audio/voice_v3/aida/nice_catch_3.mp3",
+   "audio/voice_v3/aida/nice_catch_4.mp3",
+   "audio/voice_v3/aida/nice_catch_5.mp3",
+   "audio/voice_v3/aida/nice_catch_6.mp3",
+   "audio/voice_v3/aida/nice_catch_7.mp3"
+  ],
+  "diving_catch": [
+   "audio/voice_v3/aida/diving_catch_1.mp3",
+   "audio/voice_v3/aida/diving_catch_2.mp3",
+   "audio/voice_v3/aida/diving_catch_3.mp3",
+   "audio/voice_v3/aida/diving_catch_4.mp3",
+   "audio/voice_v3/aida/diving_catch_5.mp3",
+   "audio/voice_v3/aida/diving_catch_6.mp3",
+   "audio/voice_v3/aida/diving_catch_7.mp3",
+   "audio/voice_v3/aida/diving_catch_8.mp3",
+   "audio/voice_v3/aida/diving_catch_9.mp3",
+   "audio/voice_v3/aida/diving_catch_10.mp3",
+   "audio/voice_v3/aida/diving_catch_11.mp3",
+   "audio/voice_v3/aida/diving_catch_12.mp3",
+   "audio/voice_v3/aida/diving_catch_13.mp3"
+  ],
+  "jumping_catch": [
+   "audio/voice_v3/aida/jumping_catch_1.mp3",
+   "audio/voice_v3/aida/jumping_catch_2.mp3",
+   "audio/voice_v3/aida/jumping_catch_3.mp3",
+   "audio/voice_v3/aida/jumping_catch_4.mp3",
+   "audio/voice_v3/aida/jumping_catch_5.mp3",
+   "audio/voice_v3/aida/jumping_catch_6.mp3",
+   "audio/voice_v3/aida/jumping_catch_7.mp3",
+   "audio/voice_v3/aida/jumping_catch_8.mp3",
+   "audio/voice_v3/aida/jumping_catch_9.mp3",
+   "audio/voice_v3/aida/jumping_catch_10.mp3",
+   "audio/voice_v3/aida/jumping_catch_11.mp3"
+  ],
+  "dive_short": [
+   "audio/voice_v3/aida/dive_short_1.mp3",
+   "audio/voice_v3/aida/dive_short_2.mp3",
+   "audio/voice_v3/aida/dive_short_3.mp3",
+   "audio/voice_v3/aida/dive_short_4.mp3",
+   "audio/voice_v3/aida/dive_short_5.mp3",
+   "audio/voice_v3/aida/dive_short_6.mp3",
+   "audio/voice_v3/aida/dive_short_7.mp3"
+  ],
+  "dive_second": [
+   "audio/voice_v3/aida/dive_second_1.mp3",
+   "audio/voice_v3/aida/dive_second_2.mp3",
+   "audio/voice_v3/aida/dive_second_3.mp3",
+   "audio/voice_v3/aida/dive_second_4.mp3",
+   "audio/voice_v3/aida/dive_second_5.mp3",
+   "audio/voice_v3/aida/dive_second_6.mp3",
+   "audio/voice_v3/aida/dive_second_7.mp3"
+  ],
+  "dive_third": [
+   "audio/voice_v3/aida/dive_third_1.mp3",
+   "audio/voice_v3/aida/dive_third_2.mp3",
+   "audio/voice_v3/aida/dive_third_3.mp3",
+   "audio/voice_v3/aida/dive_third_4.mp3",
+   "audio/voice_v3/aida/dive_third_5.mp3",
+   "audio/voice_v3/aida/dive_third_6.mp3"
+  ],
+  "dive_first": [
+   "audio/voice_v3/aida/dive_first_1.mp3",
+   "audio/voice_v3/aida/dive_first_2.mp3",
+   "audio/voice_v3/aida/dive_first_3.mp3",
+   "audio/voice_v3/aida/dive_first_4.mp3",
+   "audio/voice_v3/aida/dive_first_5.mp3",
+   "audio/voice_v3/aida/dive_first_6.mp3"
+  ],
+  "to_first": [
+   "audio/voice_v3/aida/to_first_1.mp3",
+   "audio/voice_v3/aida/to_first_2.mp3",
+   "audio/voice_v3/aida/to_first_3.mp3",
+   "audio/voice_v3/aida/to_first_4.mp3",
+   "audio/voice_v3/aida/to_first_5.mp3",
+   "audio/voice_v3/aida/to_first_6.mp3",
+   "audio/voice_v3/aida/to_first_7.mp3",
+   "audio/voice_v3/aida/to_first_8.mp3",
+   "audio/voice_v3/aida/to_first_9.mp3",
+   "audio/voice_v3/aida/to_first_10.mp3",
+   "audio/voice_v3/aida/to_first_11.mp3"
+  ],
+  "to_second": [
+   "audio/voice_v3/aida/to_second_1.mp3",
+   "audio/voice_v3/aida/to_second_2.mp3",
+   "audio/voice_v3/aida/to_second_3.mp3",
+   "audio/voice_v3/aida/to_second_4.mp3",
+   "audio/voice_v3/aida/to_second_5.mp3",
+   "audio/voice_v3/aida/to_second_6.mp3",
+   "audio/voice_v3/aida/to_second_7.mp3",
+   "audio/voice_v3/aida/to_second_8.mp3",
+   "audio/voice_v3/aida/to_second_9.mp3",
+   "audio/voice_v3/aida/to_second_10.mp3",
+   "audio/voice_v3/aida/to_second_11.mp3"
+  ],
+  "to_third": [
+   "audio/voice_v3/aida/to_third_1.mp3",
+   "audio/voice_v3/aida/to_third_2.mp3",
+   "audio/voice_v3/aida/to_third_3.mp3",
+   "audio/voice_v3/aida/to_third_4.mp3",
+   "audio/voice_v3/aida/to_third_5.mp3",
+   "audio/voice_v3/aida/to_third_6.mp3",
+   "audio/voice_v3/aida/to_third_7.mp3",
+   "audio/voice_v3/aida/to_third_8.mp3"
+  ],
+  "to_home": [
+   "audio/voice_v3/aida/to_home_1.mp3",
+   "audio/voice_v3/aida/to_home_2.mp3",
+   "audio/voice_v3/aida/to_home_3.mp3",
+   "audio/voice_v3/aida/to_home_4.mp3",
+   "audio/voice_v3/aida/to_home_5.mp3",
+   "audio/voice_v3/aida/to_home_6.mp3",
+   "audio/voice_v3/aida/to_home_7.mp3",
+   "audio/voice_v3/aida/to_home_8.mp3",
+   "audio/voice_v3/aida/to_home_9.mp3",
+   "audio/voice_v3/aida/to_home_10.mp3",
+   "audio/voice_v3/aida/to_home_11.mp3"
+  ],
+  "nice_throw": [
+   "audio/voice_v3/aida/nice_throw_1.mp3",
+   "audio/voice_v3/aida/nice_throw_2.mp3",
+   "audio/voice_v3/aida/nice_throw_3.mp3",
+   "audio/voice_v3/aida/nice_throw_4.mp3",
+   "audio/voice_v3/aida/nice_throw_5.mp3",
+   "audio/voice_v3/aida/nice_throw_6.mp3",
+   "audio/voice_v3/aida/nice_throw_7.mp3",
+   "audio/voice_v3/aida/nice_throw_8.mp3",
+   "audio/voice_v3/aida/nice_throw_9.mp3",
+   "audio/voice_v3/aida/nice_throw_10.mp3",
+   "audio/voice_v3/aida/nice_throw_11.mp3"
+  ],
+  "out": [
+   "audio/voice_v3/aida/out_1.mp3",
+   "audio/voice_v3/aida/out_2.mp3",
+   "audio/voice_v3/aida/out_3.mp3",
+   "audio/voice_v3/aida/out_4.mp3",
+   "audio/voice_v3/aida/out_5.mp3",
+   "audio/voice_v3/aida/out_6.mp3",
+   "audio/voice_v3/aida/out_7.mp3",
+   "audio/voice_v3/aida/out_8.mp3",
+   "audio/voice_v3/aida/out_9.mp3",
+   "audio/voice_v3/aida/out_10.mp3",
+   "audio/voice_v3/aida/out_11.mp3",
+   "audio/voice_v3/aida/out_12.mp3",
+   "audio/voice_v3/aida/out_13.mp3",
+   "audio/voice_v3/aida/out_14.mp3"
+  ],
+  "safe": [
+   "audio/voice_v3/aida/safe_1.mp3",
+   "audio/voice_v3/aida/safe_2.mp3",
+   "audio/voice_v3/aida/safe_3.mp3",
+   "audio/voice_v3/aida/safe_4.mp3",
+   "audio/voice_v3/aida/safe_5.mp3",
+   "audio/voice_v3/aida/safe_6.mp3",
+   "audio/voice_v3/aida/safe_7.mp3",
+   "audio/voice_v3/aida/safe_8.mp3",
+   "audio/voice_v3/aida/safe_9.mp3",
+   "audio/voice_v3/aida/safe_10.mp3",
+   "audio/voice_v3/aida/safe_11.mp3"
+  ],
+  "tag_out": [
+   "audio/voice_v3/aida/tag_out_1.mp3",
+   "audio/voice_v3/aida/tag_out_2.mp3",
+   "audio/voice_v3/aida/tag_out_3.mp3",
+   "audio/voice_v3/aida/tag_out_4.mp3",
+   "audio/voice_v3/aida/tag_out_5.mp3",
+   "audio/voice_v3/aida/tag_out_6.mp3",
+   "audio/voice_v3/aida/tag_out_7.mp3",
+   "audio/voice_v3/aida/tag_out_8.mp3",
+   "audio/voice_v3/aida/tag_out_9.mp3",
+   "audio/voice_v3/aida/tag_out_10.mp3"
+  ],
+  "double_play": [
+   "audio/voice_v3/aida/double_play_1.mp3",
+   "audio/voice_v3/aida/double_play_2.mp3",
+   "audio/voice_v3/aida/double_play_3.mp3",
+   "audio/voice_v3/aida/double_play_4.mp3",
+   "audio/voice_v3/aida/double_play_6.mp3",
+   "audio/voice_v3/aida/double_play_7.mp3",
+   "audio/voice_v3/aida/double_play_9.mp3",
+   "audio/voice_v3/aida/double_play_10.mp3",
+   "audio/voice_v3/aida/double_play_11.mp3",
+   "audio/voice_v3/aida/double_play_12.mp3",
+   "audio/voice_v3/aida/double_play_13.mp3",
+   "audio/voice_v3/aida/double_play_14.mp3"
+  ],
+  "dp_643": [
+   "audio/voice_v3/aida/dp_643_1.mp3",
+   "audio/voice_v3/aida/dp_643_2.mp3",
+   "audio/voice_v3/aida/dp_643_3.mp3"
+  ],
+  "dp_463": [
+   "audio/voice_v3/aida/dp_463_1.mp3",
+   "audio/voice_v3/aida/dp_463_2.mp3",
+   "audio/voice_v3/aida/dp_463_3.mp3"
+  ],
+  "dp_543": [
+   "audio/voice_v3/aida/dp_543_1.mp3",
+   "audio/voice_v3/aida/dp_543_2.mp3",
+   "audio/voice_v3/aida/dp_543_3.mp3"
+  ],
+  "runner_go": [
+   "audio/voice_v3/aida/runner_go_1.mp3",
+   "audio/voice_v3/aida/runner_go_2.mp3",
+   "audio/voice_v3/aida/runner_go_3.mp3",
+   "audio/voice_v3/aida/runner_go_4.mp3",
+   "audio/voice_v3/aida/runner_go_5.mp3",
+   "audio/voice_v3/aida/runner_go_6.mp3",
+   "audio/voice_v3/aida/runner_go_7.mp3",
+   "audio/voice_v3/aida/runner_go_8.mp3",
+   "audio/voice_v3/aida/runner_go_9.mp3",
+   "audio/voice_v3/aida/runner_go_10.mp3"
+  ],
+  "home_in": [
+   "audio/voice_v3/aida/home_in_1.mp3",
+   "audio/voice_v3/aida/home_in_2.mp3",
+   "audio/voice_v3/aida/home_in_3.mp3",
+   "audio/voice_v3/aida/home_in_4.mp3",
+   "audio/voice_v3/aida/home_in_5.mp3",
+   "audio/voice_v3/aida/home_in_6.mp3",
+   "audio/voice_v3/aida/home_in_7.mp3",
+   "audio/voice_v3/aida/home_in_9.mp3",
+   "audio/voice_v3/aida/home_in_10.mp3",
+   "audio/voice_v3/aida/home_in_11.mp3"
+  ],
+  "tagup": [
+   "audio/voice_v3/aida/tagup_1.mp3",
+   "audio/voice_v3/aida/tagup_2.mp3",
+   "audio/voice_v3/aida/tagup_3.mp3",
+   "audio/voice_v3/aida/tagup_4.mp3",
+   "audio/voice_v3/aida/tagup_5.mp3",
+   "audio/voice_v3/aida/tagup_6.mp3"
+  ],
+  "steal": [
+   "audio/voice_v3/aida/steal_1.mp3",
+   "audio/voice_v3/aida/steal_2.mp3",
+   "audio/voice_v3/aida/steal_3.mp3",
+   "audio/voice_v3/aida/steal_4.mp3",
+   "audio/voice_v3/aida/steal_5.mp3",
+   "audio/voice_v3/aida/steal_6.mp3"
+  ],
+  "steal_out": [
+   "audio/voice_v3/aida/steal_out_1.mp3",
+   "audio/voice_v3/aida/steal_out_2.mp3",
+   "audio/voice_v3/aida/steal_out_3.mp3",
+   "audio/voice_v3/aida/steal_out_4.mp3",
+   "audio/voice_v3/aida/steal_out_5.mp3",
+   "audio/voice_v3/aida/steal_out_6.mp3"
+  ],
+  "steal_safe": [
+   "audio/voice_v3/aida/steal_safe_1.mp3",
+   "audio/voice_v3/aida/steal_safe_2.mp3",
+   "audio/voice_v3/aida/steal_safe_3.mp3",
+   "audio/voice_v3/aida/steal_safe_4.mp3",
+   "audio/voice_v3/aida/steal_safe_5.mp3"
+  ],
+  "sac_fly": [
+   "audio/voice_v3/aida/sac_fly_1.mp3",
+   "audio/voice_v3/aida/sac_fly_2.mp3",
+   "audio/voice_v3/aida/sac_fly_3.mp3"
+  ],
+  "bunt": [
+   "audio/voice_v3/aida/bunt_1.mp3",
+   "audio/voice_v3/aida/bunt_2.mp3",
+   "audio/voice_v3/aida/bunt_3.mp3",
+   "audio/voice_v3/aida/bunt_4.mp3",
+   "audio/voice_v3/aida/bunt_5.mp3",
+   "audio/voice_v3/aida/bunt_6.mp3",
+   "audio/voice_v3/aida/bunt_7.mp3",
+   "audio/voice_v3/aida/bunt_8.mp3",
+   "audio/voice_v3/aida/bunt_9.mp3"
+  ],
+  "infield_fly": [
+   "audio/voice_v3/aida/infield_fly_1.mp3",
+   "audio/voice_v3/aida/infield_fly_2.mp3",
+   "audio/voice_v3/aida/infield_fly_3.mp3",
+   "audio/voice_v3/aida/infield_fly_4.mp3"
+  ],
+  "wild_pitch": [
+   "audio/voice_v3/aida/wild_pitch_1.mp3",
+   "audio/voice_v3/aida/wild_pitch_2.mp3",
+   "audio/voice_v3/aida/wild_pitch_3.mp3"
+  ],
+  "passed_ball": [
+   "audio/voice_v3/aida/passed_ball_1.mp3",
+   "audio/voice_v3/aida/passed_ball_2.mp3",
+   "audio/voice_v3/aida/passed_ball_3.mp3"
+  ],
+  "dropped_third": [
+   "audio/voice_v3/aida/dropped_third_1.mp3",
+   "audio/voice_v3/aida/dropped_third_2.mp3",
+   "audio/voice_v3/aida/dropped_third_3.mp3"
+  ],
+  "strikeout": [
+   "audio/voice_v3/aida/strikeout_1.mp3",
+   "audio/voice_v3/aida/strikeout_2.mp3",
+   "audio/voice_v3/aida/strikeout_3.mp3",
+   "audio/voice_v3/aida/strikeout_4.mp3"
+  ],
+  "strikeout_looking": [
+   "audio/voice_v3/aida/strikeout_looking_1.mp3",
+   "audio/voice_v3/aida/strikeout_looking_2.mp3",
+   "audio/voice_v3/aida/strikeout_looking_3.mp3"
+  ],
+  "walk": [
+   "audio/voice_v3/aida/walk_1.mp3",
+   "audio/voice_v3/aida/walk_2.mp3",
+   "audio/voice_v3/aida/walk_3.mp3"
+  ],
+  "hbp": [
+   "audio/voice_v3/aida/hbp_1.mp3",
+   "audio/voice_v3/aida/hbp_2.mp3",
+   "audio/voice_v3/aida/hbp_3.mp3"
+  ],
+  "foul": [
+   "audio/voice_v3/aida/foul_1.mp3",
+   "audio/voice_v3/aida/foul_2.mp3",
+   "audio/voice_v3/aida/foul_3.mp3",
+   "audio/voice_v3/aida/foul_4.mp3",
+   "audio/voice_v3/aida/foul_5.mp3",
+   "audio/voice_v3/aida/foul_6.mp3",
+   "audio/voice_v3/aida/foul_7.mp3",
+   "audio/voice_v3/aida/foul_8.mp3"
+  ],
+  "pitch_set": [
+   "audio/voice_v3/aida/pitch_set_1.mp3",
+   "audio/voice_v3/aida/pitch_set_2.mp3",
+   "audio/voice_v3/aida/pitch_set_3.mp3"
+  ],
+  "pitch_windup": [
+   "audio/voice_v3/aida/pitch_windup_1.mp3",
+   "audio/voice_v3/aida/pitch_windup_2.mp3",
+   "audio/voice_v3/aida/pitch_windup_3.mp3"
+  ],
+  "pitch_throw": [
+   "audio/voice_v3/aida/pitch_throw_1.mp3",
+   "audio/voice_v3/aida/pitch_throw_2.mp3",
+   "audio/voice_v3/aida/pitch_throw_3.mp3"
+  ],
+  "pitch_count_1": [
+   "audio/voice_v3/aida/pitch_count_1_1.mp3",
+   "audio/voice_v3/aida/pitch_count_1_2.mp3"
+  ],
+  "pitch_count_2": [
+   "audio/voice_v3/aida/pitch_count_2_1.mp3",
+   "audio/voice_v3/aida/pitch_count_2_2.mp3"
+  ],
+  "pitch_count_3": [
+   "audio/voice_v3/aida/pitch_count_3_1.mp3",
+   "audio/voice_v3/aida/pitch_count_3_2.mp3"
+  ],
+  "pitch_count_4": [
+   "audio/voice_v3/aida/pitch_count_4_1.mp3",
+   "audio/voice_v3/aida/pitch_count_4_2.mp3"
+  ],
+  "pitch_count_5": [
+   "audio/voice_v3/aida/pitch_count_5_1.mp3",
+   "audio/voice_v3/aida/pitch_count_5_2.mp3"
+  ],
+  "pitch_count_6": [
+   "audio/voice_v3/aida/pitch_count_6_1.mp3",
+   "audio/voice_v3/aida/pitch_count_6_2.mp3"
+  ],
+  "pitch_count_7": [
+   "audio/voice_v3/aida/pitch_count_7_1.mp3",
+   "audio/voice_v3/aida/pitch_count_7_2.mp3"
+  ],
+  "pitch_count_8": [
+   "audio/voice_v3/aida/pitch_count_8_1.mp3",
+   "audio/voice_v3/aida/pitch_count_8_2.mp3"
+  ],
+  "pitch_count_9": [
+   "audio/voice_v3/aida/pitch_count_9_1.mp3",
+   "audio/voice_v3/aida/pitch_count_9_2.mp3"
+  ],
+  "full_count": [
+   "audio/voice_v3/aida/full_count_1.mp3",
+   "audio/voice_v3/aida/full_count_2.mp3",
+   "audio/voice_v3/aida/full_count_3.mp3"
+  ],
+  "two_strikes": [
+   "audio/voice_v3/aida/two_strikes_1.mp3",
+   "audio/voice_v3/aida/two_strikes_2.mp3",
+   "audio/voice_v3/aida/two_strikes_3.mp3"
+  ],
+  "no_out": [
+   "audio/voice_v3/aida/no_out_1.mp3",
+   "audio/voice_v3/aida/no_out_2.mp3",
+   "audio/voice_v3/aida/no_out_3.mp3",
+   "audio/voice_v3/aida/no_out_4.mp3",
+   "audio/voice_v3/aida/no_out_5.mp3"
+  ],
+  "one_out": [
+   "audio/voice_v3/aida/one_out_1.mp3",
+   "audio/voice_v3/aida/one_out_2.mp3",
+   "audio/voice_v3/aida/one_out_3.mp3",
+   "audio/voice_v3/aida/one_out_4.mp3",
+   "audio/voice_v3/aida/one_out_5.mp3"
+  ],
+  "two_out": [
+   "audio/voice_v3/aida/two_out_1.mp3",
+   "audio/voice_v3/aida/two_out_2.mp3",
+   "audio/voice_v3/aida/two_out_3.mp3",
+   "audio/voice_v3/aida/two_out_4.mp3",
+   "audio/voice_v3/aida/two_out_5.mp3"
+  ],
+  "runner_1": [
+   "audio/voice_v3/aida/runner_1_1.mp3",
+   "audio/voice_v3/aida/runner_1_2.mp3",
+   "audio/voice_v3/aida/runner_1_3.mp3",
+   "audio/voice_v3/aida/runner_1_4.mp3"
+  ],
+  "runner_2": [
+   "audio/voice_v3/aida/runner_2_1.mp3",
+   "audio/voice_v3/aida/runner_2_2.mp3",
+   "audio/voice_v3/aida/runner_2_3.mp3",
+   "audio/voice_v3/aida/runner_2_4.mp3"
+  ],
+  "runner_3": [
+   "audio/voice_v3/aida/runner_3_1.mp3",
+   "audio/voice_v3/aida/runner_3_2.mp3",
+   "audio/voice_v3/aida/runner_3_3.mp3",
+   "audio/voice_v3/aida/runner_3_4.mp3"
+  ],
+  "runner_12": [
+   "audio/voice_v3/aida/runner_12_1.mp3",
+   "audio/voice_v3/aida/runner_12_2.mp3",
+   "audio/voice_v3/aida/runner_12_3.mp3",
+   "audio/voice_v3/aida/runner_12_4.mp3"
+  ],
+  "runner_13": [
+   "audio/voice_v3/aida/runner_13_2.mp3",
+   "audio/voice_v3/aida/runner_13_3.mp3",
+   "audio/voice_v3/aida/runner_13_4.mp3"
+  ],
+  "runner_23": [
+   "audio/voice_v3/aida/runner_23_1.mp3",
+   "audio/voice_v3/aida/runner_23_2.mp3",
+   "audio/voice_v3/aida/runner_23_3.mp3",
+   "audio/voice_v3/aida/runner_23_4.mp3"
+  ],
+  "loaded": [
+   "audio/voice_v3/aida/loaded_1.mp3",
+   "audio/voice_v3/aida/loaded_2.mp3",
+   "audio/voice_v3/aida/loaded_3.mp3",
+   "audio/voice_v3/aida/loaded_4.mp3",
+   "audio/voice_v3/aida/loaded_5.mp3",
+   "audio/voice_v3/aida/loaded_6.mp3"
+  ],
+  "two_out_loaded": [
+   "audio/voice_v3/aida/two_out_loaded_1.mp3",
+   "audio/voice_v3/aida/two_out_loaded_2.mp3",
+   "audio/voice_v3/aida/two_out_loaded_3.mp3",
+   "audio/voice_v3/aida/two_out_loaded_4.mp3",
+   "audio/voice_v3/aida/two_out_loaded_5.mp3",
+   "audio/voice_v3/aida/two_out_loaded_6.mp3"
+  ],
+  "pinch": [
+   "audio/voice_v3/aida/pinch_1.mp3",
+   "audio/voice_v3/aida/pinch_2.mp3",
+   "audio/voice_v3/aida/pinch_3.mp3",
+   "audio/voice_v3/aida/pinch_4.mp3",
+   "audio/voice_v3/aida/pinch_5.mp3",
+   "audio/voice_v3/aida/pinch_6.mp3"
+  ],
+  "big_moment": [
+   "audio/voice_v3/aida/big_moment_1.mp3",
+   "audio/voice_v3/aida/big_moment_2.mp3",
+   "audio/voice_v3/aida/big_moment_3.mp3",
+   "audio/voice_v3/aida/big_moment_4.mp3",
+   "audio/voice_v3/aida/big_moment_5.mp3",
+   "audio/voice_v3/aida/big_moment_6.mp3"
+  ],
+  "change": [
+   "audio/voice_v3/aida/change_1.mp3",
+   "audio/voice_v3/aida/change_2.mp3",
+   "audio/voice_v3/aida/change_3.mp3",
+   "audio/voice_v3/aida/change_4.mp3",
+   "audio/voice_v3/aida/change_5.mp3",
+   "audio/voice_v3/aida/change_6.mp3",
+   "audio/voice_v3/aida/change_7.mp3",
+   "audio/voice_v3/aida/change_8.mp3",
+   "audio/voice_v3/aida/change_9.mp3",
+   "audio/voice_v3/aida/change_10.mp3",
+   "audio/voice_v3/aida/change_11.mp3",
+   "audio/voice_v3/aida/change_12.mp3"
+  ],
+  "inning_1": [
+   "audio/voice_v3/aida/inning_1_1.mp3"
+  ],
+  "inning_2": [
+   "audio/voice_v3/aida/inning_2_1.mp3"
+  ],
+  "inning_3": [
+   "audio/voice_v3/aida/inning_3_1.mp3"
+  ],
+  "inning_4": [
+   "audio/voice_v3/aida/inning_4_1.mp3"
+  ],
+  "inning_5": [
+   "audio/voice_v3/aida/inning_5_1.mp3"
+  ],
+  "inning_6": [
+   "audio/voice_v3/aida/inning_6_1.mp3"
+  ],
+  "inning_7": [
+   "audio/voice_v3/aida/inning_7_1.mp3"
+  ],
+  "inning_8": [
+   "audio/voice_v3/aida/inning_8_1.mp3"
+  ],
+  "inning_9": [
+   "audio/voice_v3/aida/inning_9_1.mp3"
+  ],
+  "inning_10": [
+   "audio/voice_v3/aida/inning_10_1.mp3"
+  ],
+  "inning_11": [
+   "audio/voice_v3/aida/inning_11_1.mp3"
+  ],
+  "inning_12": [
+   "audio/voice_v3/aida/inning_12_1.mp3"
+  ],
+  "bottom_9": [
+   "audio/voice_v3/aida/bottom_9_1.mp3",
+   "audio/voice_v3/aida/bottom_9_2.mp3"
+  ],
+  "extra": [
+   "audio/voice_v3/aida/extra_1.mp3",
+   "audio/voice_v3/aida/extra_2.mp3"
+  ],
+  "batter_1": [
+   "audio/voice_v3/aida/batter_1_1.mp3",
+   "audio/voice_v3/aida/batter_1_2.mp3"
+  ],
+  "batter_2": [
+   "audio/voice_v3/aida/batter_2_1.mp3",
+   "audio/voice_v3/aida/batter_2_2.mp3"
+  ],
+  "batter_3": [
+   "audio/voice_v3/aida/batter_3_1.mp3",
+   "audio/voice_v3/aida/batter_3_2.mp3"
+  ],
+  "batter_4": [
+   "audio/voice_v3/aida/batter_4_1.mp3",
+   "audio/voice_v3/aida/batter_4_2.mp3"
+  ],
+  "batter_5": [
+   "audio/voice_v3/aida/batter_5_1.mp3",
+   "audio/voice_v3/aida/batter_5_2.mp3"
+  ],
+  "batter_6": [
+   "audio/voice_v3/aida/batter_6_1.mp3",
+   "audio/voice_v3/aida/batter_6_2.mp3"
+  ],
+  "batter_7": [
+   "audio/voice_v3/aida/batter_7_1.mp3",
+   "audio/voice_v3/aida/batter_7_2.mp3"
+  ],
+  "batter_8": [
+   "audio/voice_v3/aida/batter_8_1.mp3",
+   "audio/voice_v3/aida/batter_8_2.mp3"
+  ],
+  "batter_9": [
+   "audio/voice_v3/aida/batter_9_1.mp3",
+   "audio/voice_v3/aida/batter_9_2.mp3"
+  ],
+  "tie": [
+   "audio/voice_v3/aida/tie_1.mp3",
+   "audio/voice_v3/aida/tie_2.mp3",
+   "audio/voice_v3/aida/tie_3.mp3",
+   "audio/voice_v3/aida/tie_4.mp3",
+   "audio/voice_v3/aida/tie_5.mp3",
+   "audio/voice_v3/aida/tie_6.mp3",
+   "audio/voice_v3/aida/tie_7.mp3",
+   "audio/voice_v3/aida/tie_8.mp3",
+   "audio/voice_v3/aida/tie_9.mp3",
+   "audio/voice_v3/aida/tie_10.mp3"
+  ],
+  "lead_change": [
+   "audio/voice_v3/aida/lead_change_1.mp3",
+   "audio/voice_v3/aida/lead_change_2.mp3",
+   "audio/voice_v3/aida/lead_change_3.mp3",
+   "audio/voice_v3/aida/lead_change_4.mp3",
+   "audio/voice_v3/aida/lead_change_5.mp3",
+   "audio/voice_v3/aida/lead_change_6.mp3",
+   "audio/voice_v3/aida/lead_change_7.mp3",
+   "audio/voice_v3/aida/lead_change_8.mp3",
+   "audio/voice_v3/aida/lead_change_9.mp3"
+  ],
+  "sayonara": [
+   "audio/voice_v3/aida/sayonara_1.mp3",
+   "audio/voice_v3/aida/sayonara_2.mp3",
+   "audio/voice_v3/aida/sayonara_3.mp3",
+   "audio/voice_v3/aida/sayonara_4.mp3",
+   "audio/voice_v3/aida/sayonara_5.mp3",
+   "audio/voice_v3/aida/sayonara_6.mp3",
+   "audio/voice_v3/aida/sayonara_7.mp3"
+  ],
+  "game_set": [
+   "audio/voice_v3/aida/game_set_1.mp3",
+   "audio/voice_v3/aida/game_set_2.mp3",
+   "audio/voice_v3/aida/game_set_3.mp3",
+   "audio/voice_v3/aida/game_set_4.mp3",
+   "audio/voice_v3/aida/game_set_5.mp3"
+  ],
+  "game_set_2": [
+   "audio/voice_v3/aida/game_set_2_1.mp3",
+   "audio/voice_v3/aida/game_set_2_2.mp3",
+   "audio/voice_v3/aida/game_set_2_3.mp3"
+  ],
+  "play_ball": [
+   "audio/voice_v3/aida/play_ball_1.mp3",
+   "audio/voice_v3/aida/play_ball_2.mp3",
+   "audio/voice_v3/aida/play_ball_3.mp3"
+  ],
+  "position_P": [
+   "audio/voice_v3/aida/position_P_1.mp3",
+   "audio/voice_v3/aida/position_P_2.mp3",
+   "audio/voice_v3/aida/position_P_3.mp3",
+   "audio/voice_v3/aida/position_P_4.mp3",
+   "audio/voice_v3/aida/position_P_5.mp3",
+   "audio/voice_v3/aida/position_P_6.mp3",
+   "audio/voice_v3/aida/position_P_7.mp3",
+   "audio/voice_v3/aida/position_P_8.mp3",
+   "audio/voice_v3/aida/position_P_9.mp3",
+   "audio/voice_v3/aida/position_P_10.mp3"
+  ],
+  "position_C": [
+   "audio/voice_v3/aida/position_C_1.mp3",
+   "audio/voice_v3/aida/position_C_2.mp3",
+   "audio/voice_v3/aida/position_C_3.mp3",
+   "audio/voice_v3/aida/position_C_4.mp3",
+   "audio/voice_v3/aida/position_C_5.mp3",
+   "audio/voice_v3/aida/position_C_6.mp3",
+   "audio/voice_v3/aida/position_C_7.mp3",
+   "audio/voice_v3/aida/position_C_8.mp3",
+   "audio/voice_v3/aida/position_C_9.mp3",
+   "audio/voice_v3/aida/position_C_10.mp3"
+  ],
+  "position_1B": [
+   "audio/voice_v3/aida/position_1B_1.mp3",
+   "audio/voice_v3/aida/position_1B_2.mp3",
+   "audio/voice_v3/aida/position_1B_3.mp3",
+   "audio/voice_v3/aida/position_1B_4.mp3",
+   "audio/voice_v3/aida/position_1B_5.mp3",
+   "audio/voice_v3/aida/position_1B_6.mp3",
+   "audio/voice_v3/aida/position_1B_7.mp3",
+   "audio/voice_v3/aida/position_1B_8.mp3",
+   "audio/voice_v3/aida/position_1B_9.mp3",
+   "audio/voice_v3/aida/position_1B_10.mp3",
+   "audio/voice_v3/aida/position_1B_11.mp3",
+   "audio/voice_v3/aida/position_1B_12.mp3"
+  ],
+  "position_2B": [
+   "audio/voice_v3/aida/position_2B_1.mp3",
+   "audio/voice_v3/aida/position_2B_2.mp3",
+   "audio/voice_v3/aida/position_2B_3.mp3",
+   "audio/voice_v3/aida/position_2B_4.mp3",
+   "audio/voice_v3/aida/position_2B_5.mp3",
+   "audio/voice_v3/aida/position_2B_6.mp3",
+   "audio/voice_v3/aida/position_2B_7.mp3",
+   "audio/voice_v3/aida/position_2B_8.mp3",
+   "audio/voice_v3/aida/position_2B_9.mp3",
+   "audio/voice_v3/aida/position_2B_10.mp3",
+   "audio/voice_v3/aida/position_2B_11.mp3",
+   "audio/voice_v3/aida/position_2B_12.mp3"
+  ],
+  "position_SS": [
+   "audio/voice_v3/aida/position_SS_1.mp3",
+   "audio/voice_v3/aida/position_SS_2.mp3",
+   "audio/voice_v3/aida/position_SS_3.mp3",
+   "audio/voice_v3/aida/position_SS_4.mp3",
+   "audio/voice_v3/aida/position_SS_5.mp3",
+   "audio/voice_v3/aida/position_SS_6.mp3",
+   "audio/voice_v3/aida/position_SS_7.mp3",
+   "audio/voice_v3/aida/position_SS_8.mp3",
+   "audio/voice_v3/aida/position_SS_9.mp3",
+   "audio/voice_v3/aida/position_SS_10.mp3",
+   "audio/voice_v3/aida/position_SS_11.mp3",
+   "audio/voice_v3/aida/position_SS_12.mp3"
+  ],
+  "position_3B": [
+   "audio/voice_v3/aida/position_3B_1.mp3",
+   "audio/voice_v3/aida/position_3B_2.mp3",
+   "audio/voice_v3/aida/position_3B_3.mp3",
+   "audio/voice_v3/aida/position_3B_4.mp3",
+   "audio/voice_v3/aida/position_3B_5.mp3",
+   "audio/voice_v3/aida/position_3B_6.mp3",
+   "audio/voice_v3/aida/position_3B_7.mp3",
+   "audio/voice_v3/aida/position_3B_8.mp3",
+   "audio/voice_v3/aida/position_3B_9.mp3",
+   "audio/voice_v3/aida/position_3B_10.mp3",
+   "audio/voice_v3/aida/position_3B_11.mp3"
+  ],
+  "position_LF": [
+   "audio/voice_v3/aida/position_LF_1.mp3",
+   "audio/voice_v3/aida/position_LF_2.mp3",
+   "audio/voice_v3/aida/position_LF_3.mp3",
+   "audio/voice_v3/aida/position_LF_4.mp3",
+   "audio/voice_v3/aida/position_LF_5.mp3",
+   "audio/voice_v3/aida/position_LF_6.mp3",
+   "audio/voice_v3/aida/position_LF_7.mp3",
+   "audio/voice_v3/aida/position_LF_8.mp3",
+   "audio/voice_v3/aida/position_LF_9.mp3",
+   "audio/voice_v3/aida/position_LF_10.mp3"
+  ],
+  "position_CF": [
+   "audio/voice_v3/aida/position_CF_1.mp3",
+   "audio/voice_v3/aida/position_CF_2.mp3",
+   "audio/voice_v3/aida/position_CF_3.mp3",
+   "audio/voice_v3/aida/position_CF_4.mp3",
+   "audio/voice_v3/aida/position_CF_5.mp3",
+   "audio/voice_v3/aida/position_CF_6.mp3",
+   "audio/voice_v3/aida/position_CF_7.mp3",
+   "audio/voice_v3/aida/position_CF_8.mp3",
+   "audio/voice_v3/aida/position_CF_9.mp3",
+   "audio/voice_v3/aida/position_CF_10.mp3"
+  ],
+  "position_RF": [
+   "audio/voice_v3/aida/position_RF_1.mp3",
+   "audio/voice_v3/aida/position_RF_2.mp3",
+   "audio/voice_v3/aida/position_RF_3.mp3",
+   "audio/voice_v3/aida/position_RF_4.mp3",
+   "audio/voice_v3/aida/position_RF_5.mp3",
+   "audio/voice_v3/aida/position_RF_6.mp3",
+   "audio/voice_v3/aida/position_RF_7.mp3",
+   "audio/voice_v3/aida/position_RF_8.mp3",
+   "audio/voice_v3/aida/position_RF_9.mp3",
+   "audio/voice_v3/aida/position_RF_10.mp3"
+  ],
+  "through_center": [
+   "audio/voice_v3/aida/through_center_1.mp3",
+   "audio/voice_v3/aida/through_center_2.mp3",
+   "audio/voice_v3/aida/through_center_3.mp3",
+   "audio/voice_v3/aida/through_center_5.mp3",
+   "audio/voice_v3/aida/through_center_6.mp3",
+   "audio/voice_v3/aida/through_center_7.mp3",
+   "audio/voice_v3/aida/through_center_8.mp3",
+   "audio/voice_v3/aida/through_center_9.mp3",
+   "audio/voice_v3/aida/through_center_10.mp3",
+   "audio/voice_v3/aida/through_center_11.mp3"
+  ],
+  "through_left": [
+   "audio/voice_v3/aida/through_left_2.mp3",
+   "audio/voice_v3/aida/through_left_3.mp3",
+   "audio/voice_v3/aida/through_left_5.mp3",
+   "audio/voice_v3/aida/through_left_6.mp3",
+   "audio/voice_v3/aida/through_left_7.mp3",
+   "audio/voice_v3/aida/through_left_8.mp3",
+   "audio/voice_v3/aida/through_left_9.mp3",
+   "audio/voice_v3/aida/through_left_10.mp3",
+   "audio/voice_v3/aida/through_left_11.mp3",
+   "audio/voice_v3/aida/through_left_12.mp3"
+  ],
+  "through_right": [
+   "audio/voice_v3/aida/through_right_1.mp3",
+   "audio/voice_v3/aida/through_right_2.mp3",
+   "audio/voice_v3/aida/through_right_3.mp3",
+   "audio/voice_v3/aida/through_right_4.mp3",
+   "audio/voice_v3/aida/through_right_5.mp3",
+   "audio/voice_v3/aida/through_right_6.mp3",
+   "audio/voice_v3/aida/through_right_7.mp3",
+   "audio/voice_v3/aida/through_right_8.mp3",
+   "audio/voice_v3/aida/through_right_9.mp3",
+   "audio/voice_v3/aida/through_right_10.mp3",
+   "audio/voice_v3/aida/through_right_11.mp3"
+  ],
+  "over_center": [
+   "audio/voice_v3/aida/over_center_1.mp3",
+   "audio/voice_v3/aida/over_center_2.mp3",
+   "audio/voice_v3/aida/over_center_3.mp3",
+   "audio/voice_v3/aida/over_center_4.mp3",
+   "audio/voice_v3/aida/over_center_5.mp3",
+   "audio/voice_v3/aida/over_center_6.mp3",
+   "audio/voice_v3/aida/over_center_7.mp3",
+   "audio/voice_v3/aida/over_center_8.mp3"
+  ],
+  "hr_in": [
+   "audio/voice_v3/aida/hr_in_2.mp3",
+   "audio/voice_v3/aida/hr_in_3.mp3",
+   "audio/voice_v3/aida/hr_in_4.mp3",
+   "audio/voice_v3/aida/hr_in_5.mp3",
+   "audio/voice_v3/aida/hr_in_6.mp3",
+   "audio/voice_v3/aida/hr_in_7.mp3"
+  ],
+  "hr_dir_left": [
+   "audio/voice_v3/aida/hr_dir_left_1.mp3",
+   "audio/voice_v3/aida/hr_dir_left_2.mp3",
+   "audio/voice_v3/aida/hr_dir_left_3.mp3",
+   "audio/voice_v3/aida/hr_dir_left_4.mp3"
+  ],
+  "hr_dir_center": [
+   "audio/voice_v3/aida/hr_dir_center_1.mp3",
+   "audio/voice_v3/aida/hr_dir_center_2.mp3",
+   "audio/voice_v3/aida/hr_dir_center_3.mp3",
+   "audio/voice_v3/aida/hr_dir_center_4.mp3"
+  ],
+  "hr_dir_right": [
+   "audio/voice_v3/aida/hr_dir_right_1.mp3",
+   "audio/voice_v3/aida/hr_dir_right_2.mp3",
+   "audio/voice_v3/aida/hr_dir_right_3.mp3",
+   "audio/voice_v3/aida/hr_dir_right_4.mp3"
+  ],
+  "hr_solo": [
+   "audio/voice_v3/aida/hr_solo_1.mp3",
+   "audio/voice_v3/aida/hr_solo_2.mp3",
+   "audio/voice_v3/aida/hr_solo_3.mp3",
+   "audio/voice_v3/aida/hr_solo_4.mp3"
+  ],
+  "hr_2run": [
+   "audio/voice_v3/aida/hr_2run_1.mp3",
+   "audio/voice_v3/aida/hr_2run_2.mp3",
+   "audio/voice_v3/aida/hr_2run_3.mp3",
+   "audio/voice_v3/aida/hr_2run_4.mp3"
+  ],
+  "hr_3run": [
+   "audio/voice_v3/aida/hr_3run_1.mp3",
+   "audio/voice_v3/aida/hr_3run_2.mp3",
+   "audio/voice_v3/aida/hr_3run_3.mp3",
+   "audio/voice_v3/aida/hr_3run_4.mp3"
+  ],
+  "hr_grand": [
+   "audio/voice_v3/aida/hr_grand_1.mp3",
+   "audio/voice_v3/aida/hr_grand_2.mp3",
+   "audio/voice_v3/aida/hr_grand_3.mp3",
+   "audio/voice_v3/aida/hr_grand_4.mp3"
+  ],
+  "hr_sayonara": [
+   "audio/voice_v3/aida/hr_sayonara_1.mp3",
+   "audio/voice_v3/aida/hr_sayonara_2.mp3",
+   "audio/voice_v3/aida/hr_sayonara_3.mp3",
+   "audio/voice_v3/aida/hr_sayonara_4.mp3"
+  ],
+  "front_left": [
+   "audio/voice_v3/aida/front_left_1.mp3",
+   "audio/voice_v3/aida/front_left_2.mp3",
+   "audio/voice_v3/aida/front_left_3.mp3",
+   "audio/voice_v3/aida/front_left_4.mp3",
+   "audio/voice_v3/aida/front_left_5.mp3",
+   "audio/voice_v3/aida/front_left_6.mp3",
+   "audio/voice_v3/aida/front_left_7.mp3",
+   "audio/voice_v3/aida/front_left_8.mp3"
+  ],
+  "front_center": [
+   "audio/voice_v3/aida/front_center_1.mp3",
+   "audio/voice_v3/aida/front_center_2.mp3",
+   "audio/voice_v3/aida/front_center_3.mp3",
+   "audio/voice_v3/aida/front_center_4.mp3",
+   "audio/voice_v3/aida/front_center_5.mp3",
+   "audio/voice_v3/aida/front_center_6.mp3",
+   "audio/voice_v3/aida/front_center_7.mp3"
+  ],
+  "front_right": [
+   "audio/voice_v3/aida/front_right_1.mp3",
+   "audio/voice_v3/aida/front_right_2.mp3",
+   "audio/voice_v3/aida/front_right_3.mp3",
+   "audio/voice_v3/aida/front_right_4.mp3",
+   "audio/voice_v3/aida/front_right_5.mp3",
+   "audio/voice_v3/aida/front_right_6.mp3",
+   "audio/voice_v3/aida/front_right_7.mp3",
+   "audio/voice_v3/aida/front_right_8.mp3"
+  ],
+  "over_left": [
+   "audio/voice_v3/aida/over_left_1.mp3",
+   "audio/voice_v3/aida/over_left_2.mp3",
+   "audio/voice_v3/aida/over_left_3.mp3",
+   "audio/voice_v3/aida/over_left_4.mp3",
+   "audio/voice_v3/aida/over_left_5.mp3",
+   "audio/voice_v3/aida/over_left_6.mp3",
+   "audio/voice_v3/aida/over_left_7.mp3"
+  ],
+  "over_right": [
+   "audio/voice_v3/aida/over_right_1.mp3",
+   "audio/voice_v3/aida/over_right_2.mp3",
+   "audio/voice_v3/aida/over_right_3.mp3",
+   "audio/voice_v3/aida/over_right_4.mp3",
+   "audio/voice_v3/aida/over_right_5.mp3",
+   "audio/voice_v3/aida/over_right_6.mp3",
+   "audio/voice_v3/aida/over_right_7.mp3"
+  ],
+  "fence_catch": [
+   "audio/voice_v3/aida/fence_catch_1.mp3",
+   "audio/voice_v3/aida/fence_catch_2.mp3",
+   "audio/voice_v3/aida/fence_catch_3.mp3",
+   "audio/voice_v3/aida/fence_catch_4.mp3",
+   "audio/voice_v3/aida/fence_catch_5.mp3",
+   "audio/voice_v3/aida/fence_catch_6.mp3",
+   "audio/voice_v3/aida/fence_catch_7.mp3"
+  ],
+  "caught_LF": [
+   "audio/voice_v3/aida/caught_LF_1.mp3",
+   "audio/voice_v3/aida/caught_LF_2.mp3",
+   "audio/voice_v3/aida/caught_LF_3.mp3",
+   "audio/voice_v3/aida/caught_LF_4.mp3",
+   "audio/voice_v3/aida/caught_LF_5.mp3",
+   "audio/voice_v3/aida/caught_LF_6.mp3",
+   "audio/voice_v3/aida/caught_LF_7.mp3",
+   "audio/voice_v3/aida/caught_LF_8.mp3",
+   "audio/voice_v3/aida/caught_LF_9.mp3",
+   "audio/voice_v3/aida/caught_LF_10.mp3",
+   "audio/voice_v3/aida/caught_LF_11.mp3",
+   "audio/voice_v3/aida/caught_LF_12.mp3",
+   "audio/voice_v3/aida/caught_LF_13.mp3",
+   "audio/voice_v3/aida/caught_LF_14.mp3"
+  ],
+  "caught_CF": [
+   "audio/voice_v3/aida/caught_CF_1.mp3",
+   "audio/voice_v3/aida/caught_CF_2.mp3",
+   "audio/voice_v3/aida/caught_CF_3.mp3",
+   "audio/voice_v3/aida/caught_CF_4.mp3",
+   "audio/voice_v3/aida/caught_CF_5.mp3",
+   "audio/voice_v3/aida/caught_CF_6.mp3",
+   "audio/voice_v3/aida/caught_CF_7.mp3",
+   "audio/voice_v3/aida/caught_CF_8.mp3",
+   "audio/voice_v3/aida/caught_CF_9.mp3",
+   "audio/voice_v3/aida/caught_CF_10.mp3",
+   "audio/voice_v3/aida/caught_CF_11.mp3",
+   "audio/voice_v3/aida/caught_CF_12.mp3",
+   "audio/voice_v3/aida/caught_CF_13.mp3",
+   "audio/voice_v3/aida/caught_CF_14.mp3"
+  ],
+  "caught_RF": [
+   "audio/voice_v3/aida/caught_RF_1.mp3",
+   "audio/voice_v3/aida/caught_RF_2.mp3",
+   "audio/voice_v3/aida/caught_RF_3.mp3",
+   "audio/voice_v3/aida/caught_RF_4.mp3",
+   "audio/voice_v3/aida/caught_RF_5.mp3",
+   "audio/voice_v3/aida/caught_RF_6.mp3",
+   "audio/voice_v3/aida/caught_RF_7.mp3",
+   "audio/voice_v3/aida/caught_RF_8.mp3",
+   "audio/voice_v3/aida/caught_RF_9.mp3",
+   "audio/voice_v3/aida/caught_RF_10.mp3",
+   "audio/voice_v3/aida/caught_RF_11.mp3",
+   "audio/voice_v3/aida/caught_RF_12.mp3",
+   "audio/voice_v3/aida/caught_RF_13.mp3",
+   "audio/voice_v3/aida/caught_RF_14.mp3"
+  ],
+  "game_start": [
+   "audio/voice_v3/aida/game_start_1.mp3",
+   "audio/voice_v3/aida/game_start_2.mp3",
+   "audio/voice_v3/aida/game_start_3.mp3",
+   "audio/voice_v3/aida/game_start_4.mp3",
+   "audio/voice_v3/aida/game_start_5.mp3",
+   "audio/voice_v3/aida/game_start_6.mp3",
+   "audio/voice_v3/aida/game_start_7.mp3",
+   "audio/voice_v3/aida/game_start_8.mp3",
+   "audio/voice_v3/aida/game_start_9.mp3",
+   "audio/voice_v3/aida/game_start_10.mp3",
+   "audio/voice_v3/aida/game_start_11.mp3",
+   "audio/voice_v3/aida/game_start_12.mp3"
+  ],
+  "inning_def": [
+   "audio/voice_v3/aida/inning_def_1.mp3",
+   "audio/voice_v3/aida/inning_def_2.mp3",
+   "audio/voice_v3/aida/inning_def_3.mp3",
+   "audio/voice_v3/aida/inning_def_4.mp3",
+   "audio/voice_v3/aida/inning_def_5.mp3",
+   "audio/voice_v3/aida/inning_def_6.mp3",
+   "audio/voice_v3/aida/inning_def_7.mp3",
+   "audio/voice_v3/aida/inning_def_8.mp3",
+   "audio/voice_v3/aida/inning_def_9.mp3",
+   "audio/voice_v3/aida/inning_def_10.mp3",
+   "audio/voice_v3/aida/inning_def_11.mp3",
+   "audio/voice_v3/aida/inning_def_12.mp3",
+   "audio/voice_v3/aida/inning_def_13.mp3",
+   "audio/voice_v3/aida/inning_def_14.mp3"
+  ],
+  "ready_1B": [
+   "audio/voice_v3/aida/ready_1B_1.mp3",
+   "audio/voice_v3/aida/ready_1B_2.mp3",
+   "audio/voice_v3/aida/ready_1B_3.mp3",
+   "audio/voice_v3/aida/ready_1B_4.mp3",
+   "audio/voice_v3/aida/ready_1B_5.mp3",
+   "audio/voice_v3/aida/ready_1B_6.mp3",
+   "audio/voice_v3/aida/ready_1B_7.mp3"
+  ],
+  "ready_2B": [
+   "audio/voice_v3/aida/ready_2B_1.mp3",
+   "audio/voice_v3/aida/ready_2B_2.mp3",
+   "audio/voice_v3/aida/ready_2B_3.mp3",
+   "audio/voice_v3/aida/ready_2B_4.mp3",
+   "audio/voice_v3/aida/ready_2B_5.mp3",
+   "audio/voice_v3/aida/ready_2B_6.mp3",
+   "audio/voice_v3/aida/ready_2B_7.mp3"
+  ],
+  "ready_SS": [
+   "audio/voice_v3/aida/ready_SS_1.mp3",
+   "audio/voice_v3/aida/ready_SS_2.mp3",
+   "audio/voice_v3/aida/ready_SS_3.mp3",
+   "audio/voice_v3/aida/ready_SS_4.mp3",
+   "audio/voice_v3/aida/ready_SS_5.mp3",
+   "audio/voice_v3/aida/ready_SS_6.mp3",
+   "audio/voice_v3/aida/ready_SS_7.mp3"
+  ],
+  "ready_3B": [
+   "audio/voice_v3/aida/ready_3B_1.mp3",
+   "audio/voice_v3/aida/ready_3B_2.mp3",
+   "audio/voice_v3/aida/ready_3B_3.mp3",
+   "audio/voice_v3/aida/ready_3B_4.mp3",
+   "audio/voice_v3/aida/ready_3B_5.mp3",
+   "audio/voice_v3/aida/ready_3B_6.mp3",
+   "audio/voice_v3/aida/ready_3B_7.mp3"
+  ],
+  "ready_LF": [
+   "audio/voice_v3/aida/ready_LF_1.mp3",
+   "audio/voice_v3/aida/ready_LF_2.mp3",
+   "audio/voice_v3/aida/ready_LF_3.mp3",
+   "audio/voice_v3/aida/ready_LF_4.mp3",
+   "audio/voice_v3/aida/ready_LF_5.mp3",
+   "audio/voice_v3/aida/ready_LF_6.mp3",
+   "audio/voice_v3/aida/ready_LF_7.mp3"
+  ],
+  "ready_CF": [
+   "audio/voice_v3/aida/ready_CF_1.mp3",
+   "audio/voice_v3/aida/ready_CF_2.mp3",
+   "audio/voice_v3/aida/ready_CF_3.mp3",
+   "audio/voice_v3/aida/ready_CF_4.mp3",
+   "audio/voice_v3/aida/ready_CF_5.mp3",
+   "audio/voice_v3/aida/ready_CF_6.mp3",
+   "audio/voice_v3/aida/ready_CF_7.mp3",
+   "audio/voice_v3/aida/ready_CF_8.mp3"
+  ],
+  "ready_RF": [
+   "audio/voice_v3/aida/ready_RF_1.mp3",
+   "audio/voice_v3/aida/ready_RF_2.mp3",
+   "audio/voice_v3/aida/ready_RF_3.mp3",
+   "audio/voice_v3/aida/ready_RF_4.mp3",
+   "audio/voice_v3/aida/ready_RF_5.mp3",
+   "audio/voice_v3/aida/ready_RF_6.mp3",
+   "audio/voice_v3/aida/ready_RF_7.mp3"
+  ],
+  "pre_first": [
+   "audio/voice_v3/aida/pre_first_1.mp3",
+   "audio/voice_v3/aida/pre_first_2.mp3",
+   "audio/voice_v3/aida/pre_first_3.mp3",
+   "audio/voice_v3/aida/pre_first_4.mp3",
+   "audio/voice_v3/aida/pre_first_5.mp3",
+   "audio/voice_v3/aida/pre_first_6.mp3",
+   "audio/voice_v3/aida/pre_first_7.mp3",
+   "audio/voice_v3/aida/pre_first_8.mp3",
+   "audio/voice_v3/aida/pre_first_9.mp3",
+   "audio/voice_v3/aida/pre_first_10.mp3",
+   "audio/voice_v3/aida/pre_first_11.mp3",
+   "audio/voice_v3/aida/pre_first_12.mp3",
+   "audio/voice_v3/aida/pre_first_13.mp3",
+   "audio/voice_v3/aida/pre_first_14.mp3",
+   "audio/voice_v3/aida/pre_first_16.mp3"
+  ],
+  "pre_ahead": [
+   "audio/voice_v3/aida/pre_ahead_1.mp3",
+   "audio/voice_v3/aida/pre_ahead_2.mp3",
+   "audio/voice_v3/aida/pre_ahead_3.mp3",
+   "audio/voice_v3/aida/pre_ahead_4.mp3",
+   "audio/voice_v3/aida/pre_ahead_5.mp3",
+   "audio/voice_v3/aida/pre_ahead_6.mp3",
+   "audio/voice_v3/aida/pre_ahead_7.mp3",
+   "audio/voice_v3/aida/pre_ahead_8.mp3",
+   "audio/voice_v3/aida/pre_ahead_9.mp3"
+  ],
+  "pre_ahead_p": [
+   "audio/voice_v3/aida/pre_ahead_p_1.mp3",
+   "audio/voice_v3/aida/pre_ahead_p_2.mp3",
+   "audio/voice_v3/aida/pre_ahead_p_3.mp3",
+   "audio/voice_v3/aida/pre_ahead_p_4.mp3",
+   "audio/voice_v3/aida/pre_ahead_p_5.mp3",
+   "audio/voice_v3/aida/pre_ahead_p_6.mp3"
+  ],
+  "pre_two_strikes": [
+   "audio/voice_v3/aida/pre_two_strikes_1.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_2.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_3.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_4.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_5.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_6.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_7.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_8.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_9.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_10.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_11.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_12.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_13.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_14.mp3",
+   "audio/voice_v3/aida/pre_two_strikes_15.mp3"
+  ],
+  "pre_full": [
+   "audio/voice_v3/aida/pre_full_1.mp3",
+   "audio/voice_v3/aida/pre_full_2.mp3",
+   "audio/voice_v3/aida/pre_full_3.mp3",
+   "audio/voice_v3/aida/pre_full_4.mp3",
+   "audio/voice_v3/aida/pre_full_5.mp3",
+   "audio/voice_v3/aida/pre_full_6.mp3",
+   "audio/voice_v3/aida/pre_full_7.mp3",
+   "audio/voice_v3/aida/pre_full_8.mp3",
+   "audio/voice_v3/aida/pre_full_9.mp3",
+   "audio/voice_v3/aida/pre_full_10.mp3",
+   "audio/voice_v3/aida/pre_full_11.mp3",
+   "audio/voice_v3/aida/pre_full_12.mp3",
+   "audio/voice_v3/aida/pre_full_13.mp3"
+  ],
+  "pre_even": [
+   "audio/voice_v3/aida/pre_even_1.mp3",
+   "audio/voice_v3/aida/pre_even_2.mp3",
+   "audio/voice_v3/aida/pre_even_3.mp3",
+   "audio/voice_v3/aida/pre_even_4.mp3"
+  ],
+  "pre_tie": [
+   "audio/voice_v3/aida/pre_tie_1.mp3",
+   "audio/voice_v3/aida/pre_tie_2.mp3",
+   "audio/voice_v3/aida/pre_tie_3.mp3",
+   "audio/voice_v3/aida/pre_tie_4.mp3",
+   "audio/voice_v3/aida/pre_tie_5.mp3",
+   "audio/voice_v3/aida/pre_tie_6.mp3",
+   "audio/voice_v3/aida/pre_tie_7.mp3",
+   "audio/voice_v3/aida/pre_tie_8.mp3",
+   "audio/voice_v3/aida/pre_tie_9.mp3"
+  ],
+  "pre_lead1": [
+   "audio/voice_v3/aida/pre_lead1_1.mp3",
+   "audio/voice_v3/aida/pre_lead1_2.mp3",
+   "audio/voice_v3/aida/pre_lead1_3.mp3",
+   "audio/voice_v3/aida/pre_lead1_4.mp3",
+   "audio/voice_v3/aida/pre_lead1_5.mp3",
+   "audio/voice_v3/aida/pre_lead1_6.mp3"
+  ],
+  "pre_lead": [
+   "audio/voice_v3/aida/pre_lead_1.mp3",
+   "audio/voice_v3/aida/pre_lead_2.mp3",
+   "audio/voice_v3/aida/pre_lead_3.mp3",
+   "audio/voice_v3/aida/pre_lead_4.mp3",
+   "audio/voice_v3/aida/pre_lead_5.mp3",
+   "audio/voice_v3/aida/pre_lead_6.mp3",
+   "audio/voice_v3/aida/pre_lead_7.mp3",
+   "audio/voice_v3/aida/pre_lead_8.mp3",
+   "audio/voice_v3/aida/pre_lead_9.mp3"
+  ],
+  "pre_behind": [
+   "audio/voice_v3/aida/pre_behind_1.mp3",
+   "audio/voice_v3/aida/pre_behind_2.mp3",
+   "audio/voice_v3/aida/pre_behind_3.mp3",
+   "audio/voice_v3/aida/pre_behind_4.mp3",
+   "audio/voice_v3/aida/pre_behind_5.mp3",
+   "audio/voice_v3/aida/pre_behind_6.mp3",
+   "audio/voice_v3/aida/pre_behind_7.mp3",
+   "audio/voice_v3/aida/pre_behind_8.mp3",
+   "audio/voice_v3/aida/pre_behind_9.mp3"
+  ],
+  "pre_tying": [
+   "audio/voice_v3/aida/pre_tying_1.mp3",
+   "audio/voice_v3/aida/pre_tying_2.mp3",
+   "audio/voice_v3/aida/pre_tying_3.mp3",
+   "audio/voice_v3/aida/pre_tying_4.mp3",
+   "audio/voice_v3/aida/pre_tying_5.mp3",
+   "audio/voice_v3/aida/pre_tying_6.mp3"
+  ],
+  "pre_goahead": [
+   "audio/voice_v3/aida/pre_goahead_1.mp3",
+   "audio/voice_v3/aida/pre_goahead_2.mp3",
+   "audio/voice_v3/aida/pre_goahead_3.mp3",
+   "audio/voice_v3/aida/pre_goahead_4.mp3",
+   "audio/voice_v3/aida/pre_goahead_5.mp3",
+   "audio/voice_v3/aida/pre_goahead_6.mp3"
+  ],
+  "pre_sayonara": [
+   "audio/voice_v3/aida/pre_sayonara_1.mp3",
+   "audio/voice_v3/aida/pre_sayonara_2.mp3",
+   "audio/voice_v3/aida/pre_sayonara_3.mp3",
+   "audio/voice_v3/aida/pre_sayonara_4.mp3"
+  ],
+  "pre_early": [
+   "audio/voice_v3/aida/pre_early_1.mp3",
+   "audio/voice_v3/aida/pre_early_2.mp3",
+   "audio/voice_v3/aida/pre_early_3.mp3",
+   "audio/voice_v3/aida/pre_early_4.mp3",
+   "audio/voice_v3/aida/pre_early_5.mp3"
+  ],
+  "pre_mid": [
+   "audio/voice_v3/aida/pre_mid_1.mp3",
+   "audio/voice_v3/aida/pre_mid_2.mp3",
+   "audio/voice_v3/aida/pre_mid_3.mp3",
+   "audio/voice_v3/aida/pre_mid_4.mp3",
+   "audio/voice_v3/aida/pre_mid_5.mp3"
+  ],
+  "pre_late": [
+   "audio/voice_v3/aida/pre_late_1.mp3",
+   "audio/voice_v3/aida/pre_late_2.mp3",
+   "audio/voice_v3/aida/pre_late_3.mp3",
+   "audio/voice_v3/aida/pre_late_4.mp3",
+   "audio/voice_v3/aida/pre_late_5.mp3",
+   "audio/voice_v3/aida/pre_late_6.mp3",
+   "audio/voice_v3/aida/pre_late_7.mp3",
+   "audio/voice_v3/aida/pre_late_8.mp3"
+  ],
+  "pre_final": [
+   "audio/voice_v3/aida/pre_final_1.mp3",
+   "audio/voice_v3/aida/pre_final_2.mp3",
+   "audio/voice_v3/aida/pre_final_3.mp3",
+   "audio/voice_v3/aida/pre_final_4.mp3",
+   "audio/voice_v3/aida/pre_final_5.mp3",
+   "audio/voice_v3/aida/pre_final_6.mp3",
+   "audio/voice_v3/aida/pre_final_7.mp3"
+  ],
+  "pre_last_out": [
+   "audio/voice_v3/aida/pre_last_out_1.mp3",
+   "audio/voice_v3/aida/pre_last_out_2.mp3",
+   "audio/voice_v3/aida/pre_last_out_3.mp3",
+   "audio/voice_v3/aida/pre_last_out_4.mp3",
+   "audio/voice_v3/aida/pre_last_out_5.mp3",
+   "audio/voice_v3/aida/pre_last_out_6.mp3",
+   "audio/voice_v3/aida/pre_last_out_7.mp3",
+   "audio/voice_v3/aida/pre_last_out_8.mp3",
+   "audio/voice_v3/aida/pre_last_out_9.mp3"
+  ],
+  "pre_extra": [
+   "audio/voice_v3/aida/pre_extra_1.mp3",
+   "audio/voice_v3/aida/pre_extra_2.mp3",
+   "audio/voice_v3/aida/pre_extra_3.mp3",
+   "audio/voice_v3/aida/pre_extra_4.mp3"
+  ],
+  "pre_hold": [
+   "audio/voice_v3/aida/pre_hold_1.mp3",
+   "audio/voice_v3/aida/pre_hold_2.mp3",
+   "audio/voice_v3/aida/pre_hold_3.mp3",
+   "audio/voice_v3/aida/pre_hold_4.mp3",
+   "audio/voice_v3/aida/pre_hold_5.mp3",
+   "audio/voice_v3/aida/pre_hold_6.mp3",
+   "audio/voice_v3/aida/pre_hold_7.mp3",
+   "audio/voice_v3/aida/pre_hold_8.mp3",
+   "audio/voice_v3/aida/pre_hold_9.mp3",
+   "audio/voice_v3/aida/pre_hold_10.mp3",
+   "audio/voice_v3/aida/pre_hold_11.mp3",
+   "audio/voice_v3/aida/pre_hold_12.mp3",
+   "audio/voice_v3/aida/pre_hold_13.mp3",
+   "audio/voice_v3/aida/pre_hold_14.mp3",
+   "audio/voice_v3/aida/pre_hold_15.mp3",
+   "audio/voice_v3/aida/pre_hold_16.mp3",
+   "audio/voice_v3/aida/pre_hold_17.mp3",
+   "audio/voice_v3/aida/pre_hold_18.mp3",
+   "audio/voice_v3/aida/pre_hold_19.mp3",
+   "audio/voice_v3/aida/pre_hold_20.mp3",
+   "audio/voice_v3/aida/pre_hold_21.mp3",
+   "audio/voice_v3/aida/pre_hold_22.mp3",
+   "audio/voice_v3/aida/pre_hold_23.mp3",
+   "audio/voice_v3/aida/pre_hold_24.mp3",
+   "audio/voice_v3/aida/pre_hold_25.mp3",
+   "audio/voice_v3/aida/pre_hold_26.mp3",
+   "audio/voice_v3/aida/pre_hold_27.mp3",
+   "audio/voice_v3/aida/pre_hold_28.mp3",
+   "audio/voice_v3/aida/pre_hold_29.mp3",
+   "audio/voice_v3/aida/pre_hold_30.mp3",
+   "audio/voice_v3/aida/pre_hold_31.mp3"
+  ],
+  "pre_pinch": [
+   "audio/voice_v3/aida/pre_pinch_1.mp3",
+   "audio/voice_v3/aida/pre_pinch_2.mp3",
+   "audio/voice_v3/aida/pre_pinch_3.mp3",
+   "audio/voice_v3/aida/pre_pinch_4.mp3",
+   "audio/voice_v3/aida/pre_pinch_5.mp3",
+   "audio/voice_v3/aida/pre_pinch_6.mp3",
+   "audio/voice_v3/aida/pre_pinch_7.mp3",
+   "audio/voice_v3/aida/pre_pinch_8.mp3",
+   "audio/voice_v3/aida/pre_pinch_9.mp3",
+   "audio/voice_v3/aida/pre_pinch_10.mp3",
+   "audio/voice_v3/aida/pre_pinch_11.mp3",
+   "audio/voice_v3/aida/pre_pinch_12.mp3",
+   "audio/voice_v3/aida/pre_pinch_13.mp3"
+  ],
+  "pre_two_out": [
+   "audio/voice_v3/aida/pre_two_out_1.mp3",
+   "audio/voice_v3/aida/pre_two_out_2.mp3",
+   "audio/voice_v3/aida/pre_two_out_3.mp3",
+   "audio/voice_v3/aida/pre_two_out_4.mp3",
+   "audio/voice_v3/aida/pre_two_out_5.mp3"
+  ],
+  "pre_no_out": [
+   "audio/voice_v3/aida/pre_no_out_1.mp3",
+   "audio/voice_v3/aida/pre_no_out_2.mp3",
+   "audio/voice_v3/aida/pre_no_out_3.mp3"
+  ],
+  "pre_scoring": [
+   "audio/voice_v3/aida/pre_scoring_1.mp3",
+   "audio/voice_v3/aida/pre_scoring_2.mp3",
+   "audio/voice_v3/aida/pre_scoring_3.mp3",
+   "audio/voice_v3/aida/pre_scoring_4.mp3",
+   "audio/voice_v3/aida/pre_scoring_5.mp3",
+   "audio/voice_v3/aida/pre_scoring_6.mp3"
+  ],
+  "pre_dp": [
+   "audio/voice_v3/aida/pre_dp_1.mp3",
+   "audio/voice_v3/aida/pre_dp_3.mp3",
+   "audio/voice_v3/aida/pre_dp_4.mp3",
+   "audio/voice_v3/aida/pre_dp_5.mp3"
+  ],
+  "pre_in": [
+   "audio/voice_v3/aida/pre_in_1.mp3",
+   "audio/voice_v3/aida/pre_in_2.mp3",
+   "audio/voice_v3/aida/pre_in_3.mp3",
+   "audio/voice_v3/aida/pre_in_4.mp3",
+   "audio/voice_v3/aida/pre_in_5.mp3"
+  ],
+  "pre_deep": [
+   "audio/voice_v3/aida/pre_deep_1.mp3",
+   "audio/voice_v3/aida/pre_deep_2.mp3",
+   "audio/voice_v3/aida/pre_deep_3.mp3",
+   "audio/voice_v3/aida/pre_deep_4.mp3"
+  ],
+  "pre_crowd": [
+   "audio/voice_v3/aida/pre_crowd_1.mp3",
+   "audio/voice_v3/aida/pre_crowd_2.mp3",
+   "audio/voice_v3/aida/pre_crowd_3.mp3",
+   "audio/voice_v3/aida/pre_crowd_4.mp3",
+   "audio/voice_v3/aida/pre_crowd_5.mp3",
+   "audio/voice_v3/aida/pre_crowd_6.mp3",
+   "audio/voice_v3/aida/pre_crowd_7.mp3",
+   "audio/voice_v3/aida/pre_crowd_8.mp3",
+   "audio/voice_v3/aida/pre_crowd_9.mp3",
+   "audio/voice_v3/aida/pre_crowd_10.mp3",
+   "audio/voice_v3/aida/pre_crowd_11.mp3",
+   "audio/voice_v3/aida/pre_crowd_12.mp3",
+   "audio/voice_v3/aida/pre_crowd_13.mp3",
+   "audio/voice_v3/aida/pre_crowd_14.mp3",
+   "audio/voice_v3/aida/pre_crowd_15.mp3",
+   "audio/voice_v3/aida/pre_crowd_16.mp3",
+   "audio/voice_v3/aida/pre_crowd_17.mp3",
+   "audio/voice_v3/aida/pre_crowd_18.mp3",
+   "audio/voice_v3/aida/pre_crowd_19.mp3",
+   "audio/voice_v3/aida/pre_crowd_20.mp3",
+   "audio/voice_v3/aida/pre_crowd_21.mp3",
+   "audio/voice_v3/aida/pre_crowd_22.mp3",
+   "audio/voice_v3/aida/pre_crowd_23.mp3"
+  ],
+  "pre_atmos": [
+   "audio/voice_v3/aida/pre_atmos_2.mp3",
+   "audio/voice_v3/aida/pre_atmos_3.mp3",
+   "audio/voice_v3/aida/pre_atmos_4.mp3",
+   "audio/voice_v3/aida/pre_atmos_5.mp3",
+   "audio/voice_v3/aida/pre_atmos_6.mp3",
+   "audio/voice_v3/aida/pre_atmos_7.mp3",
+   "audio/voice_v3/aida/pre_atmos_8.mp3",
+   "audio/voice_v3/aida/pre_atmos_9.mp3",
+   "audio/voice_v3/aida/pre_atmos_10.mp3",
+   "audio/voice_v3/aida/pre_atmos_11.mp3",
+   "audio/voice_v3/aida/pre_atmos_12.mp3",
+   "audio/voice_v3/aida/pre_atmos_13.mp3",
+   "audio/voice_v3/aida/pre_atmos_14.mp3",
+   "audio/voice_v3/aida/pre_atmos_15.mp3",
+   "audio/voice_v3/aida/pre_atmos_16.mp3",
+   "audio/voice_v3/aida/pre_atmos_17.mp3",
+   "audio/voice_v3/aida/pre_atmos_18.mp3",
+   "audio/voice_v3/aida/pre_atmos_19.mp3",
+   "audio/voice_v3/aida/pre_atmos_20.mp3",
+   "audio/voice_v3/aida/pre_atmos_21.mp3",
+   "audio/voice_v3/aida/pre_atmos_22.mp3",
+   "audio/voice_v3/aida/pre_atmos_23.mp3",
+   "audio/voice_v3/aida/pre_atmos_24.mp3",
+   "audio/voice_v3/aida/pre_atmos_25.mp3",
+   "audio/voice_v3/aida/pre_atmos_26.mp3",
+   "audio/voice_v3/aida/pre_atmos_27.mp3",
+   "audio/voice_v3/aida/pre_atmos_28.mp3",
+   "audio/voice_v3/aida/pre_atmos_29.mp3",
+   "audio/voice_v3/aida/pre_atmos_30.mp3",
+   "audio/voice_v3/aida/pre_atmos_31.mp3"
+  ],
+  "pre_pitcher": [
+   "audio/voice_v3/aida/pre_pitcher_1.mp3",
+   "audio/voice_v3/aida/pre_pitcher_2.mp3",
+   "audio/voice_v3/aida/pre_pitcher_3.mp3",
+   "audio/voice_v3/aida/pre_pitcher_4.mp3",
+   "audio/voice_v3/aida/pre_pitcher_5.mp3",
+   "audio/voice_v3/aida/pre_pitcher_6.mp3",
+   "audio/voice_v3/aida/pre_pitcher_7.mp3",
+   "audio/voice_v3/aida/pre_pitcher_8.mp3",
+   "audio/voice_v3/aida/pre_pitcher_9.mp3",
+   "audio/voice_v3/aida/pre_pitcher_10.mp3",
+   "audio/voice_v3/aida/pre_pitcher_11.mp3",
+   "audio/voice_v3/aida/pre_pitcher_12.mp3",
+   "audio/voice_v3/aida/pre_pitcher_13.mp3",
+   "audio/voice_v3/aida/pre_pitcher_14.mp3",
+   "audio/voice_v3/aida/pre_pitcher_15.mp3",
+   "audio/voice_v3/aida/pre_pitcher_16.mp3",
+   "audio/voice_v3/aida/pre_pitcher_17.mp3",
+   "audio/voice_v3/aida/pre_pitcher_18.mp3",
+   "audio/voice_v3/aida/pre_pitcher_19.mp3",
+   "audio/voice_v3/aida/pre_pitcher_20.mp3",
+   "audio/voice_v3/aida/pre_pitcher_21.mp3",
+   "audio/voice_v3/aida/pre_pitcher_22.mp3"
+  ],
+  "pre_batter": [
+   "audio/voice_v3/aida/pre_batter_1.mp3",
+   "audio/voice_v3/aida/pre_batter_2.mp3",
+   "audio/voice_v3/aida/pre_batter_3.mp3",
+   "audio/voice_v3/aida/pre_batter_4.mp3",
+   "audio/voice_v3/aida/pre_batter_5.mp3",
+   "audio/voice_v3/aida/pre_batter_6.mp3",
+   "audio/voice_v3/aida/pre_batter_7.mp3",
+   "audio/voice_v3/aida/pre_batter_8.mp3",
+   "audio/voice_v3/aida/pre_batter_9.mp3",
+   "audio/voice_v3/aida/pre_batter_10.mp3",
+   "audio/voice_v3/aida/pre_batter_11.mp3",
+   "audio/voice_v3/aida/pre_batter_12.mp3",
+   "audio/voice_v3/aida/pre_batter_13.mp3",
+   "audio/voice_v3/aida/pre_batter_14.mp3",
+   "audio/voice_v3/aida/pre_batter_15.mp3",
+   "audio/voice_v3/aida/pre_batter_16.mp3",
+   "audio/voice_v3/aida/pre_batter_17.mp3"
+  ],
+  "pre_runner": [
+   "audio/voice_v3/aida/pre_runner_1.mp3",
+   "audio/voice_v3/aida/pre_runner_2.mp3",
+   "audio/voice_v3/aida/pre_runner_3.mp3",
+   "audio/voice_v3/aida/pre_runner_4.mp3",
+   "audio/voice_v3/aida/pre_runner_5.mp3",
+   "audio/voice_v3/aida/pre_runner_6.mp3",
+   "audio/voice_v3/aida/pre_runner_7.mp3"
+  ],
+  "pre_runner3": [
+   "audio/voice_v3/aida/pre_runner3_1.mp3",
+   "audio/voice_v3/aida/pre_runner3_2.mp3",
+   "audio/voice_v3/aida/pre_runner3_3.mp3",
+   "audio/voice_v3/aida/pre_runner3_4.mp3"
+  ],
+  "good_contact": [
+   "audio/voice_v3/aida/good_contact_1.mp3",
+   "audio/voice_v3/aida/good_contact_2.mp3",
+   "audio/voice_v3/aida/good_contact_3.mp3",
+   "audio/voice_v3/aida/good_contact_4.mp3",
+   "audio/voice_v3/aida/good_contact_5.mp3",
+   "audio/voice_v3/aida/good_contact_6.mp3",
+   "audio/voice_v3/aida/good_contact_7.mp3",
+   "audio/voice_v3/aida/good_contact_8.mp3",
+   "audio/voice_v3/aida/good_contact_9.mp3",
+   "audio/voice_v3/aida/good_contact_10.mp3",
+   "audio/voice_v3/aida/good_contact_11.mp3",
+   "audio/voice_v3/aida/good_contact_12.mp3",
+   "audio/voice_v3/aida/good_contact_13.mp3",
+   "audio/voice_v3/aida/good_contact_14.mp3",
+   "audio/voice_v3/aida/good_contact_15.mp3",
+   "audio/voice_v3/aida/good_contact_16.mp3",
+   "audio/voice_v3/aida/good_contact_17.mp3",
+   "audio/voice_v3/aida/good_contact_18.mp3"
+  ],
+  "weak_contact": [
+   "audio/voice_v3/aida/weak_contact_1.mp3",
+   "audio/voice_v3/aida/weak_contact_2.mp3",
+   "audio/voice_v3/aida/weak_contact_3.mp3",
+   "audio/voice_v3/aida/weak_contact_4.mp3",
+   "audio/voice_v3/aida/weak_contact_5.mp3",
+   "audio/voice_v3/aida/weak_contact_6.mp3",
+   "audio/voice_v3/aida/weak_contact_7.mp3",
+   "audio/voice_v3/aida/weak_contact_8.mp3",
+   "audio/voice_v3/aida/weak_contact_9.mp3",
+   "audio/voice_v3/aida/weak_contact_10.mp3",
+   "audio/voice_v3/aida/weak_contact_11.mp3",
+   "audio/voice_v3/aida/weak_contact_12.mp3",
+   "audio/voice_v3/aida/weak_contact_13.mp3",
+   "audio/voice_v3/aida/weak_contact_14.mp3"
+  ],
+  "grounder_pitcher": [
+   "audio/voice_v3/aida/grounder_pitcher_1.mp3",
+   "audio/voice_v3/aida/grounder_pitcher_2.mp3",
+   "audio/voice_v3/aida/grounder_pitcher_3.mp3",
+   "audio/voice_v3/aida/grounder_pitcher_6.mp3",
+   "audio/voice_v3/aida/grounder_pitcher_7.mp3",
+   "audio/voice_v3/aida/grounder_pitcher_8.mp3",
+   "audio/voice_v3/aida/grounder_pitcher_9.mp3"
+  ],
+  "liner_left": [
+   "audio/voice_v3/aida/liner_left_1.mp3",
+   "audio/voice_v3/aida/liner_left_3.mp3",
+   "audio/voice_v3/aida/liner_left_4.mp3",
+   "audio/voice_v3/aida/liner_left_5.mp3",
+   "audio/voice_v3/aida/liner_left_6.mp3"
+  ],
+  "liner_center": [
+   "audio/voice_v3/aida/liner_center_1.mp3",
+   "audio/voice_v3/aida/liner_center_3.mp3",
+   "audio/voice_v3/aida/liner_center_5.mp3",
+   "audio/voice_v3/aida/liner_center_6.mp3"
+  ],
+  "liner_right": [
+   "audio/voice_v3/aida/liner_right_1.mp3",
+   "audio/voice_v3/aida/liner_right_3.mp3",
+   "audio/voice_v3/aida/liner_right_4.mp3",
+   "audio/voice_v3/aida/liner_right_5.mp3",
+   "audio/voice_v3/aida/liner_right_6.mp3"
+  ],
+  "liner_infield": [
+   "audio/voice_v3/aida/liner_infield_1.mp3",
+   "audio/voice_v3/aida/liner_infield_2.mp3",
+   "audio/voice_v3/aida/liner_infield_3.mp3",
+   "audio/voice_v3/aida/liner_infield_4.mp3",
+   "audio/voice_v3/aida/liner_infield_5.mp3",
+   "audio/voice_v3/aida/liner_infield_6.mp3"
+  ],
+  "fly_gap_left": [
+   "audio/voice_v3/aida/fly_gap_left_1.mp3",
+   "audio/voice_v3/aida/fly_gap_left_2.mp3",
+   "audio/voice_v3/aida/fly_gap_left_3.mp3",
+   "audio/voice_v3/aida/fly_gap_left_4.mp3",
+   "audio/voice_v3/aida/fly_gap_left_5.mp3",
+   "audio/voice_v3/aida/fly_gap_left_6.mp3",
+   "audio/voice_v3/aida/fly_gap_left_7.mp3",
+   "audio/voice_v3/aida/fly_gap_left_8.mp3"
+  ],
+  "fly_gap_right": [
+   "audio/voice_v3/aida/fly_gap_right_1.mp3",
+   "audio/voice_v3/aida/fly_gap_right_2.mp3",
+   "audio/voice_v3/aida/fly_gap_right_3.mp3",
+   "audio/voice_v3/aida/fly_gap_right_4.mp3",
+   "audio/voice_v3/aida/fly_gap_right_5.mp3",
+   "audio/voice_v3/aida/fly_gap_right_6.mp3",
+   "audio/voice_v3/aida/fly_gap_right_7.mp3",
+   "audio/voice_v3/aida/fly_gap_right_8.mp3"
+  ],
+  "fly_line_left": [
+   "audio/voice_v3/aida/fly_line_left_1.mp3",
+   "audio/voice_v3/aida/fly_line_left_2.mp3",
+   "audio/voice_v3/aida/fly_line_left_3.mp3",
+   "audio/voice_v3/aida/fly_line_left_4.mp3",
+   "audio/voice_v3/aida/fly_line_left_5.mp3",
+   "audio/voice_v3/aida/fly_line_left_6.mp3"
+  ],
+  "fly_line_right": [
+   "audio/voice_v3/aida/fly_line_right_1.mp3",
+   "audio/voice_v3/aida/fly_line_right_2.mp3",
+   "audio/voice_v3/aida/fly_line_right_3.mp3",
+   "audio/voice_v3/aida/fly_line_right_4.mp3",
+   "audio/voice_v3/aida/fly_line_right_5.mp3",
+   "audio/voice_v3/aida/fly_line_right_6.mp3"
+  ],
+  "fly_deep": [
+   "audio/voice_v3/aida/fly_deep_1.mp3",
+   "audio/voice_v3/aida/fly_deep_2.mp3",
+   "audio/voice_v3/aida/fly_deep_3.mp3",
+   "audio/voice_v3/aida/fly_deep_4.mp3",
+   "audio/voice_v3/aida/fly_deep_5.mp3",
+   "audio/voice_v3/aida/fly_deep_6.mp3",
+   "audio/voice_v3/aida/fly_deep_7.mp3",
+   "audio/voice_v3/aida/fly_deep_8.mp3",
+   "audio/voice_v3/aida/fly_deep_9.mp3",
+   "audio/voice_v3/aida/fly_deep_10.mp3",
+   "audio/voice_v3/aida/fly_deep_11.mp3",
+   "audio/voice_v3/aida/fly_deep_12.mp3",
+   "audio/voice_v3/aida/fly_deep_13.mp3"
+  ],
+  "fly_shallow": [
+   "audio/voice_v3/aida/fly_shallow_1.mp3",
+   "audio/voice_v3/aida/fly_shallow_2.mp3",
+   "audio/voice_v3/aida/fly_shallow_3.mp3",
+   "audio/voice_v3/aida/fly_shallow_4.mp3",
+   "audio/voice_v3/aida/fly_shallow_5.mp3",
+   "audio/voice_v3/aida/fly_shallow_6.mp3",
+   "audio/voice_v3/aida/fly_shallow_7.mp3",
+   "audio/voice_v3/aida/fly_shallow_8.mp3",
+   "audio/voice_v3/aida/fly_shallow_9.mp3",
+   "audio/voice_v3/aida/fly_shallow_10.mp3",
+   "audio/voice_v3/aida/fly_shallow_11.mp3"
+  ],
+  "bunt_third": [
+   "audio/voice_v3/aida/bunt_third_1.mp3",
+   "audio/voice_v3/aida/bunt_third_2.mp3",
+   "audio/voice_v3/aida/bunt_third_3.mp3",
+   "audio/voice_v3/aida/bunt_third_4.mp3",
+   "audio/voice_v3/aida/bunt_third_5.mp3"
+  ],
+  "bunt_first": [
+   "audio/voice_v3/aida/bunt_first_1.mp3",
+   "audio/voice_v3/aida/bunt_first_2.mp3",
+   "audio/voice_v3/aida/bunt_first_3.mp3",
+   "audio/voice_v3/aida/bunt_first_4.mp3",
+   "audio/voice_v3/aida/bunt_first_5.mp3"
+  ],
+  "foul_fly": [
+   "audio/voice_v3/aida/foul_fly_1.mp3",
+   "audio/voice_v3/aida/foul_fly_2.mp3",
+   "audio/voice_v3/aida/foul_fly_3.mp3",
+   "audio/voice_v3/aida/foul_fly_4.mp3",
+   "audio/voice_v3/aida/foul_fly_5.mp3",
+   "audio/voice_v3/aida/foul_fly_6.mp3",
+   "audio/voice_v3/aida/foul_fly_7.mp3",
+   "audio/voice_v3/aida/foul_fly_8.mp3"
+  ],
+  "fly_carry": [
+   "audio/voice_v3/aida/fly_carry_1.mp3",
+   "audio/voice_v3/aida/fly_carry_2.mp3",
+   "audio/voice_v3/aida/fly_carry_3.mp3",
+   "audio/voice_v3/aida/fly_carry_4.mp3",
+   "audio/voice_v3/aida/fly_carry_5.mp3",
+   "audio/voice_v3/aida/fly_carry_6.mp3",
+   "audio/voice_v3/aida/fly_carry_7.mp3",
+   "audio/voice_v3/aida/fly_carry_8.mp3",
+   "audio/voice_v3/aida/fly_carry_9.mp3",
+   "audio/voice_v3/aida/fly_carry_10.mp3",
+   "audio/voice_v3/aida/fly_carry_11.mp3"
+  ],
+  "fence_q": [
+   "audio/voice_v3/aida/fence_q_1.mp3",
+   "audio/voice_v3/aida/fence_q_2.mp3",
+   "audio/voice_v3/aida/fence_q_3.mp3",
+   "audio/voice_v3/aida/fence_q_4.mp3",
+   "audio/voice_v3/aida/fence_q_5.mp3",
+   "audio/voice_v3/aida/fence_q_6.mp3",
+   "audio/voice_v3/aida/fence_q_7.mp3",
+   "audio/voice_v3/aida/fence_q_8.mp3",
+   "audio/voice_v3/aida/fence_q_9.mp3",
+   "audio/voice_v3/aida/fence_q_10.mp3"
+  ],
+  "chase_q": [
+   "audio/voice_v3/aida/chase_q_1.mp3",
+   "audio/voice_v3/aida/chase_q_3.mp3",
+   "audio/voice_v3/aida/chase_q_4.mp3",
+   "audio/voice_v3/aida/chase_q_5.mp3",
+   "audio/voice_v3/aida/chase_q_6.mp3",
+   "audio/voice_v3/aida/chase_q_8.mp3",
+   "audio/voice_v3/aida/chase_q_9.mp3",
+   "audio/voice_v3/aida/chase_q_10.mp3",
+   "audio/voice_v3/aida/chase_q_11.mp3",
+   "audio/voice_v3/aida/chase_q_12.mp3"
+  ],
+  "drop_q": [
+   "audio/voice_v3/aida/drop_q_1.mp3",
+   "audio/voice_v3/aida/drop_q_2.mp3",
+   "audio/voice_v3/aida/drop_q_3.mp3",
+   "audio/voice_v3/aida/drop_q_4.mp3",
+   "audio/voice_v3/aida/drop_q_5.mp3",
+   "audio/voice_v3/aida/drop_q_6.mp3",
+   "audio/voice_v3/aida/drop_q_7.mp3",
+   "audio/voice_v3/aida/drop_q_8.mp3",
+   "audio/voice_v3/aida/drop_q_9.mp3",
+   "audio/voice_v3/aida/drop_q_10.mp3"
+  ],
+  "caught_IF": [
+   "audio/voice_v3/aida/caught_IF_1.mp3",
+   "audio/voice_v3/aida/caught_IF_2.mp3",
+   "audio/voice_v3/aida/caught_IF_3.mp3",
+   "audio/voice_v3/aida/caught_IF_4.mp3",
+   "audio/voice_v3/aida/caught_IF_5.mp3",
+   "audio/voice_v3/aida/caught_IF_6.mp3",
+   "audio/voice_v3/aida/caught_IF_7.mp3",
+   "audio/voice_v3/aida/caught_IF_8.mp3"
+  ],
+  "running_catch": [
+   "audio/voice_v3/aida/running_catch_1.mp3",
+   "audio/voice_v3/aida/running_catch_2.mp3",
+   "audio/voice_v3/aida/running_catch_3.mp3",
+   "audio/voice_v3/aida/running_catch_4.mp3",
+   "audio/voice_v3/aida/running_catch_5.mp3",
+   "audio/voice_v3/aida/running_catch_6.mp3",
+   "audio/voice_v3/aida/running_catch_7.mp3",
+   "audio/voice_v3/aida/running_catch_8.mp3"
+  ],
+  "sliding_catch": [
+   "audio/voice_v3/aida/sliding_catch_1.mp3",
+   "audio/voice_v3/aida/sliding_catch_2.mp3",
+   "audio/voice_v3/aida/sliding_catch_3.mp3"
+  ],
+  "crowd_roar": [
+   "audio/voice_v3/aida/crowd_roar_1.mp3",
+   "audio/voice_v3/aida/crowd_roar_2.mp3",
+   "audio/voice_v3/aida/crowd_roar_3.mp3",
+   "audio/voice_v3/aida/crowd_roar_4.mp3",
+   "audio/voice_v3/aida/crowd_roar_5.mp3",
+   "audio/voice_v3/aida/crowd_roar_6.mp3",
+   "audio/voice_v3/aida/crowd_roar_7.mp3",
+   "audio/voice_v3/aida/crowd_roar_8.mp3",
+   "audio/voice_v3/aida/crowd_roar_9.mp3",
+   "audio/voice_v3/aida/crowd_roar_10.mp3",
+   "audio/voice_v3/aida/crowd_roar_11.mp3",
+   "audio/voice_v3/aida/crowd_roar_12.mp3",
+   "audio/voice_v3/aida/crowd_roar_13.mp3"
+  ],
+  "to_cut": [
+   "audio/voice_v3/aida/to_cut_1.mp3",
+   "audio/voice_v3/aida/to_cut_2.mp3",
+   "audio/voice_v3/aida/to_cut_3.mp3",
+   "audio/voice_v3/aida/to_cut_4.mp3",
+   "audio/voice_v3/aida/to_cut_5.mp3",
+   "audio/voice_v3/aida/to_cut_6.mp3"
+  ],
+  "close_call": [
+   "audio/voice_v3/aida/close_call_1.mp3",
+   "audio/voice_v3/aida/close_call_2.mp3",
+   "audio/voice_v3/aida/close_call_3.mp3",
+   "audio/voice_v3/aida/close_call_4.mp3",
+   "audio/voice_v3/aida/close_call_5.mp3",
+   "audio/voice_v3/aida/close_call_6.mp3",
+   "audio/voice_v3/aida/close_call_7.mp3",
+   "audio/voice_v3/aida/close_call_8.mp3",
+   "audio/voice_v3/aida/close_call_9.mp3",
+   "audio/voice_v3/aida/close_call_10.mp3"
+  ],
+  "bad_throw": [
+   "audio/voice_v3/aida/bad_throw_1.mp3",
+   "audio/voice_v3/aida/bad_throw_2.mp3",
+   "audio/voice_v3/aida/bad_throw_3.mp3",
+   "audio/voice_v3/aida/bad_throw_4.mp3",
+   "audio/voice_v3/aida/bad_throw_5.mp3"
+  ],
+  "missed": [
+   "audio/voice_v3/aida/missed_1.mp3",
+   "audio/voice_v3/aida/missed_2.mp3",
+   "audio/voice_v3/aida/missed_3.mp3",
+   "audio/voice_v3/aida/missed_4.mp3"
+  ],
+  "out_first": [
+   "audio/voice_v3/aida/out_first_1.mp3",
+   "audio/voice_v3/aida/out_first_2.mp3",
+   "audio/voice_v3/aida/out_first_3.mp3",
+   "audio/voice_v3/aida/out_first_4.mp3",
+   "audio/voice_v3/aida/out_first_5.mp3",
+   "audio/voice_v3/aida/out_first_6.mp3",
+   "audio/voice_v3/aida/out_first_7.mp3",
+   "audio/voice_v3/aida/out_first_8.mp3",
+   "audio/voice_v3/aida/out_first_9.mp3"
+  ],
+  "out_close": [
+   "audio/voice_v3/aida/out_close_1.mp3",
+   "audio/voice_v3/aida/out_close_2.mp3",
+   "audio/voice_v3/aida/out_close_3.mp3",
+   "audio/voice_v3/aida/out_close_4.mp3",
+   "audio/voice_v3/aida/out_close_6.mp3",
+   "audio/voice_v3/aida/out_close_7.mp3",
+   "audio/voice_v3/aida/out_close_8.mp3",
+   "audio/voice_v3/aida/out_close_9.mp3"
+  ],
+  "out_force": [
+   "audio/voice_v3/aida/out_force_1.mp3",
+   "audio/voice_v3/aida/out_force_2.mp3",
+   "audio/voice_v3/aida/out_force_3.mp3",
+   "audio/voice_v3/aida/out_force_4.mp3"
+  ],
+  "safe_close": [
+   "audio/voice_v3/aida/safe_close_1.mp3",
+   "audio/voice_v3/aida/safe_close_2.mp3",
+   "audio/voice_v3/aida/safe_close_3.mp3",
+   "audio/voice_v3/aida/safe_close_4.mp3",
+   "audio/voice_v3/aida/safe_close_5.mp3",
+   "audio/voice_v3/aida/safe_close_6.mp3"
+  ],
+  "infield_hit": [
+   "audio/voice_v3/aida/infield_hit_1.mp3",
+   "audio/voice_v3/aida/infield_hit_2.mp3",
+   "audio/voice_v3/aida/infield_hit_3.mp3",
+   "audio/voice_v3/aida/infield_hit_4.mp3",
+   "audio/voice_v3/aida/infield_hit_5.mp3"
+  ],
+  "home_out": [
+   "audio/voice_v3/aida/home_out_1.mp3",
+   "audio/voice_v3/aida/home_out_2.mp3",
+   "audio/voice_v3/aida/home_out_3.mp3",
+   "audio/voice_v3/aida/home_out_5.mp3",
+   "audio/voice_v3/aida/home_out_6.mp3",
+   "audio/voice_v3/aida/home_out_7.mp3"
+  ],
+  "home_safe": [
+   "audio/voice_v3/aida/home_safe_1.mp3",
+   "audio/voice_v3/aida/home_safe_2.mp3",
+   "audio/voice_v3/aida/home_safe_3.mp3",
+   "audio/voice_v3/aida/home_safe_4.mp3"
+  ],
+  "escape": [
+   "audio/voice_v3/aida/escape_1.mp3",
+   "audio/voice_v3/aida/escape_2.mp3",
+   "audio/voice_v3/aida/escape_3.mp3",
+   "audio/voice_v3/aida/escape_4.mp3",
+   "audio/voice_v3/aida/escape_5.mp3",
+   "audio/voice_v3/aida/escape_6.mp3",
+   "audio/voice_v3/aida/escape_7.mp3",
+   "audio/voice_v3/aida/escape_8.mp3",
+   "audio/voice_v3/aida/escape_9.mp3",
+   "audio/voice_v3/aida/escape_10.mp3",
+   "audio/voice_v3/aida/escape_11.mp3",
+   "audio/voice_v3/aida/escape_12.mp3"
+  ],
+  "zero_inning": [
+   "audio/voice_v3/aida/zero_inning_1.mp3",
+   "audio/voice_v3/aida/zero_inning_2.mp3",
+   "audio/voice_v3/aida/zero_inning_3.mp3"
+  ],
+  "now_two_out": [
+   "audio/voice_v3/aida/now_two_out_1.mp3",
+   "audio/voice_v3/aida/now_two_out_2.mp3",
+   "audio/voice_v3/aida/now_two_out_3.mp3",
+   "audio/voice_v3/aida/now_two_out_4.mp3",
+   "audio/voice_v3/aida/now_two_out_5.mp3"
+  ],
+  "now_one_out": [
+   "audio/voice_v3/aida/now_one_out_1.mp3",
+   "audio/voice_v3/aida/now_one_out_2.mp3",
+   "audio/voice_v3/aida/now_one_out_3.mp3"
+  ],
+  "runner_hold_3": [
+   "audio/voice_v3/aida/runner_hold_3_1.mp3",
+   "audio/voice_v3/aida/runner_hold_3_2.mp3",
+   "audio/voice_v3/aida/runner_hold_3_3.mp3",
+   "audio/voice_v3/aida/runner_hold_3_4.mp3",
+   "audio/voice_v3/aida/runner_hold_3_5.mp3"
+  ],
+  "runner_to_3": [
+   "audio/voice_v3/aida/runner_to_3_1.mp3",
+   "audio/voice_v3/aida/runner_to_3_2.mp3",
+   "audio/voice_v3/aida/runner_to_3_4.mp3"
+  ],
+  "batter_to_2": [
+   "audio/voice_v3/aida/batter_to_2_1.mp3",
+   "audio/voice_v3/aida/batter_to_2_2.mp3",
+   "audio/voice_v3/aida/batter_to_2_3.mp3",
+   "audio/voice_v3/aida/batter_to_2_4.mp3",
+   "audio/voice_v3/aida/batter_to_2_5.mp3"
+  ],
+  "batter_to_3": [
+   "audio/voice_v3/aida/batter_to_3_1.mp3",
+   "audio/voice_v3/aida/batter_to_3_2.mp3",
+   "audio/voice_v3/aida/batter_to_3_3.mp3",
+   "audio/voice_v3/aida/batter_to_3_4.mp3"
+  ],
+  "runner_back": [
+   "audio/voice_v3/aida/runner_back_1.mp3",
+   "audio/voice_v3/aida/runner_back_2.mp3",
+   "audio/voice_v3/aida/runner_back_3.mp3",
+   "audio/voice_v3/aida/runner_back_4.mp3"
+  ],
+  "run_more": [
+   "audio/voice_v3/aida/run_more_1.mp3",
+   "audio/voice_v3/aida/run_more_2.mp3",
+   "audio/voice_v3/aida/run_more_3.mp3",
+   "audio/voice_v3/aida/run_more_4.mp3"
+  ],
+  "run_add": [
+   "audio/voice_v3/aida/run_add_1.mp3",
+   "audio/voice_v3/aida/run_add_2.mp3",
+   "audio/voice_v3/aida/run_add_3.mp3",
+   "audio/voice_v3/aida/run_add_4.mp3"
+  ],
+  "run_close": [
+   "audio/voice_v3/aida/run_close_1.mp3",
+   "audio/voice_v3/aida/run_close_2.mp3",
+   "audio/voice_v3/aida/run_close_3.mp3",
+   "audio/voice_v3/aida/run_close_4.mp3"
+  ],
+  "reverse": [
+   "audio/voice_v3/aida/reverse_1.mp3",
+   "audio/voice_v3/aida/reverse_2.mp3",
+   "audio/voice_v3/aida/reverse_3.mp3",
+   "audio/voice_v3/aida/reverse_4.mp3",
+   "audio/voice_v3/aida/reverse_5.mp3"
+  ],
+  "game_win": [
+   "audio/voice_v3/aida/game_win_1.mp3",
+   "audio/voice_v3/aida/game_win_2.mp3",
+   "audio/voice_v3/aida/game_win_3.mp3",
+   "audio/voice_v3/aida/game_win_4.mp3",
+   "audio/voice_v3/aida/game_win_5.mp3",
+   "audio/voice_v3/aida/game_win_6.mp3"
+  ],
+  "game_lose": [
+   "audio/voice_v3/aida/game_lose_1.mp3",
+   "audio/voice_v3/aida/game_lose_2.mp3",
+   "audio/voice_v3/aida/game_lose_3.mp3",
+   "audio/voice_v3/aida/game_lose_4.mp3"
+  ],
+  "count_00": [
+   "audio/voice_v3/aida/count_00_1.mp3",
+   "audio/voice_v3/aida/count_00_2.mp3"
+  ],
+  "count_01": [
+   "audio/voice_v3/aida/count_01_1.mp3",
+   "audio/voice_v3/aida/count_01_2.mp3"
+  ],
+  "count_02": [
+   "audio/voice_v3/aida/count_02_1.mp3",
+   "audio/voice_v3/aida/count_02_2.mp3"
+  ],
+  "count_10": [
+   "audio/voice_v3/aida/count_10_1.mp3",
+   "audio/voice_v3/aida/count_10_2.mp3"
+  ],
+  "count_11": [
+   "audio/voice_v3/aida/count_11_1.mp3",
+   "audio/voice_v3/aida/count_11_2.mp3"
+  ],
+  "count_12": [
+   "audio/voice_v3/aida/count_12_1.mp3",
+   "audio/voice_v3/aida/count_12_2.mp3",
+   "audio/voice_v3/aida/count_12_3.mp3"
+  ],
+  "count_20": [
+   "audio/voice_v3/aida/count_20_1.mp3",
+   "audio/voice_v3/aida/count_20_2.mp3"
+  ],
+  "count_21": [
+   "audio/voice_v3/aida/count_21_1.mp3",
+   "audio/voice_v3/aida/count_21_2.mp3"
+  ],
+  "count_22": [
+   "audio/voice_v3/aida/count_22_1.mp3",
+   "audio/voice_v3/aida/count_22_2.mp3",
+   "audio/voice_v3/aida/count_22_4.mp3"
+  ],
+  "count_30": [
+   "audio/voice_v3/aida/count_30_1.mp3",
+   "audio/voice_v3/aida/count_30_2.mp3"
+  ],
+  "count_31": [
+   "audio/voice_v3/aida/count_31_1.mp3",
+   "audio/voice_v3/aida/count_31_2.mp3"
+  ],
+  "inn_top_1": [
+   "audio/voice_v3/aida/inn_top_1_1.mp3",
+   "audio/voice_v3/aida/inn_top_1_2.mp3"
+  ],
+  "inn_bot_1": [
+   "audio/voice_v3/aida/inn_bot_1_1.mp3",
+   "audio/voice_v3/aida/inn_bot_1_2.mp3"
+  ],
+  "inn_top_2": [
+   "audio/voice_v3/aida/inn_top_2_1.mp3",
+   "audio/voice_v3/aida/inn_top_2_2.mp3"
+  ],
+  "inn_bot_2": [
+   "audio/voice_v3/aida/inn_bot_2_1.mp3",
+   "audio/voice_v3/aida/inn_bot_2_2.mp3"
+  ],
+  "inn_top_3": [
+   "audio/voice_v3/aida/inn_top_3_1.mp3",
+   "audio/voice_v3/aida/inn_top_3_2.mp3"
+  ],
+  "inn_bot_3": [
+   "audio/voice_v3/aida/inn_bot_3_1.mp3",
+   "audio/voice_v3/aida/inn_bot_3_2.mp3"
+  ],
+  "inn_top_4": [
+   "audio/voice_v3/aida/inn_top_4_1.mp3",
+   "audio/voice_v3/aida/inn_top_4_2.mp3"
+  ],
+  "inn_bot_4": [
+   "audio/voice_v3/aida/inn_bot_4_1.mp3",
+   "audio/voice_v3/aida/inn_bot_4_2.mp3"
+  ],
+  "inn_top_5": [
+   "audio/voice_v3/aida/inn_top_5_1.mp3"
+  ],
+  "inn_bot_5": [
+   "audio/voice_v3/aida/inn_bot_5_1.mp3",
+   "audio/voice_v3/aida/inn_bot_5_2.mp3"
+  ],
+  "inn_top_6": [
+   "audio/voice_v3/aida/inn_top_6_1.mp3",
+   "audio/voice_v3/aida/inn_top_6_2.mp3"
+  ],
+  "inn_bot_6": [
+   "audio/voice_v3/aida/inn_bot_6_1.mp3",
+   "audio/voice_v3/aida/inn_bot_6_2.mp3"
+  ],
+  "inn_top_7": [
+   "audio/voice_v3/aida/inn_top_7_1.mp3",
+   "audio/voice_v3/aida/inn_top_7_2.mp3"
+  ],
+  "inn_bot_7": [
+   "audio/voice_v3/aida/inn_bot_7_1.mp3",
+   "audio/voice_v3/aida/inn_bot_7_2.mp3"
+  ],
+  "inn_top_8": [
+   "audio/voice_v3/aida/inn_top_8_1.mp3",
+   "audio/voice_v3/aida/inn_top_8_2.mp3"
+  ],
+  "inn_bot_8": [
+   "audio/voice_v3/aida/inn_bot_8_1.mp3",
+   "audio/voice_v3/aida/inn_bot_8_2.mp3"
+  ],
+  "inn_top_9": [
+   "audio/voice_v3/aida/inn_top_9_1.mp3",
+   "audio/voice_v3/aida/inn_top_9_2.mp3"
+  ],
+  "inn_bot_9": [
+   "audio/voice_v3/aida/inn_bot_9_1.mp3",
+   "audio/voice_v3/aida/inn_bot_9_2.mp3"
+  ],
+  "inn_top_10": [
+   "audio/voice_v3/aida/inn_top_10_1.mp3",
+   "audio/voice_v3/aida/inn_top_10_2.mp3"
+  ],
+  "inn_bot_10": [
+   "audio/voice_v3/aida/inn_bot_10_1.mp3",
+   "audio/voice_v3/aida/inn_bot_10_2.mp3"
+  ],
+  "inn_top_11": [
+   "audio/voice_v3/aida/inn_top_11_1.mp3",
+   "audio/voice_v3/aida/inn_top_11_2.mp3"
+  ],
+  "inn_bot_11": [
+   "audio/voice_v3/aida/inn_bot_11_1.mp3",
+   "audio/voice_v3/aida/inn_bot_11_2.mp3"
+  ],
+  "inn_top_12": [
+   "audio/voice_v3/aida/inn_top_12_1.mp3",
+   "audio/voice_v3/aida/inn_top_12_2.mp3"
+  ],
+  "inn_bot_12": [
+   "audio/voice_v3/aida/inn_bot_12_1.mp3",
+   "audio/voice_v3/aida/inn_bot_12_2.mp3"
+  ],
+  "lead_1": [
+   "audio/voice_v3/aida/lead_1_1.mp3",
+   "audio/voice_v3/aida/lead_1_2.mp3",
+   "audio/voice_v3/aida/lead_1_3.mp3"
+  ],
+  "behind_1": [
+   "audio/voice_v3/aida/behind_1_1.mp3",
+   "audio/voice_v3/aida/behind_1_2.mp3",
+   "audio/voice_v3/aida/behind_1_3.mp3"
+  ],
+  "lead_2": [
+   "audio/voice_v3/aida/lead_2_1.mp3",
+   "audio/voice_v3/aida/lead_2_2.mp3",
+   "audio/voice_v3/aida/lead_2_3.mp3"
+  ],
+  "behind_2": [
+   "audio/voice_v3/aida/behind_2_1.mp3",
+   "audio/voice_v3/aida/behind_2_2.mp3",
+   "audio/voice_v3/aida/behind_2_3.mp3"
+  ],
+  "lead_3": [
+   "audio/voice_v3/aida/lead_3_1.mp3",
+   "audio/voice_v3/aida/lead_3_2.mp3",
+   "audio/voice_v3/aida/lead_3_3.mp3"
+  ],
+  "behind_3": [
+   "audio/voice_v3/aida/behind_3_1.mp3",
+   "audio/voice_v3/aida/behind_3_2.mp3",
+   "audio/voice_v3/aida/behind_3_3.mp3"
+  ],
+  "lead_4": [
+   "audio/voice_v3/aida/lead_4_1.mp3",
+   "audio/voice_v3/aida/lead_4_2.mp3",
+   "audio/voice_v3/aida/lead_4_3.mp3"
+  ],
+  "behind_4": [
+   "audio/voice_v3/aida/behind_4_1.mp3",
+   "audio/voice_v3/aida/behind_4_2.mp3",
+   "audio/voice_v3/aida/behind_4_3.mp3"
+  ],
+  "lead_5": [
+   "audio/voice_v3/aida/lead_5_1.mp3",
+   "audio/voice_v3/aida/lead_5_2.mp3",
+   "audio/voice_v3/aida/lead_5_3.mp3"
+  ],
+  "behind_5": [
+   "audio/voice_v3/aida/behind_5_1.mp3",
+   "audio/voice_v3/aida/behind_5_2.mp3",
+   "audio/voice_v3/aida/behind_5_3.mp3"
+  ],
+  "out_go_P": [
+   "audio/voice_v3/aida/out_go_P_1.mp3",
+   "audio/voice_v3/aida/out_go_P_2.mp3",
+   "audio/voice_v3/aida/out_go_P_3.mp3",
+   "audio/voice_v3/aida/out_go_P_4.mp3"
+  ],
+  "out_go_1B": [
+   "audio/voice_v3/aida/out_go_1B_1.mp3",
+   "audio/voice_v3/aida/out_go_1B_2.mp3",
+   "audio/voice_v3/aida/out_go_1B_3.mp3",
+   "audio/voice_v3/aida/out_go_1B_4.mp3"
+  ],
+  "out_go_2B": [
+   "audio/voice_v3/aida/out_go_2B_1.mp3",
+   "audio/voice_v3/aida/out_go_2B_2.mp3",
+   "audio/voice_v3/aida/out_go_2B_3.mp3",
+   "audio/voice_v3/aida/out_go_2B_4.mp3"
+  ],
+  "out_go_SS": [
+   "audio/voice_v3/aida/out_go_SS_1.mp3",
+   "audio/voice_v3/aida/out_go_SS_2.mp3",
+   "audio/voice_v3/aida/out_go_SS_3.mp3",
+   "audio/voice_v3/aida/out_go_SS_4.mp3"
+  ],
+  "out_go_3B": [
+   "audio/voice_v3/aida/out_go_3B_1.mp3",
+   "audio/voice_v3/aida/out_go_3B_2.mp3",
+   "audio/voice_v3/aida/out_go_3B_3.mp3",
+   "audio/voice_v3/aida/out_go_3B_4.mp3"
+  ],
+  "out_fly_LF": [
+   "audio/voice_v3/aida/out_fly_LF_1.mp3",
+   "audio/voice_v3/aida/out_fly_LF_2.mp3",
+   "audio/voice_v3/aida/out_fly_LF_3.mp3"
+  ],
+  "out_fly_CF": [
+   "audio/voice_v3/aida/out_fly_CF_1.mp3",
+   "audio/voice_v3/aida/out_fly_CF_2.mp3",
+   "audio/voice_v3/aida/out_fly_CF_3.mp3"
+  ],
+  "out_fly_RF": [
+   "audio/voice_v3/aida/out_fly_RF_1.mp3",
+   "audio/voice_v3/aida/out_fly_RF_2.mp3",
+   "audio/voice_v3/aida/out_fly_RF_3.mp3"
+  ],
+  "out_pop_P": [
+   "audio/voice_v3/aida/out_pop_P_1.mp3",
+   "audio/voice_v3/aida/out_pop_P_2.mp3"
+  ],
+  "out_pop_C": [
+   "audio/voice_v3/aida/out_pop_C_1.mp3",
+   "audio/voice_v3/aida/out_pop_C_2.mp3"
+  ],
+  "out_pop_1B": [
+   "audio/voice_v3/aida/out_pop_1B_1.mp3",
+   "audio/voice_v3/aida/out_pop_1B_2.mp3"
+  ],
+  "out_pop_2B": [
+   "audio/voice_v3/aida/out_pop_2B_1.mp3",
+   "audio/voice_v3/aida/out_pop_2B_2.mp3"
+  ],
+  "out_pop_SS": [
+   "audio/voice_v3/aida/out_pop_SS_1.mp3",
+   "audio/voice_v3/aida/out_pop_SS_2.mp3"
+  ],
+  "out_pop_3B": [
+   "audio/voice_v3/aida/out_pop_3B_1.mp3",
+   "audio/voice_v3/aida/out_pop_3B_2.mp3"
+  ],
+  "out_liner_P": [
+   "audio/voice_v3/aida/out_liner_P_1.mp3",
+   "audio/voice_v3/aida/out_liner_P_2.mp3"
+  ],
+  "out_liner_1B": [
+   "audio/voice_v3/aida/out_liner_1B_1.mp3",
+   "audio/voice_v3/aida/out_liner_1B_2.mp3"
+  ],
+  "out_liner_2B": [
+   "audio/voice_v3/aida/out_liner_2B_1.mp3",
+   "audio/voice_v3/aida/out_liner_2B_2.mp3"
+  ],
+  "out_liner_SS": [
+   "audio/voice_v3/aida/out_liner_SS_1.mp3",
+   "audio/voice_v3/aida/out_liner_SS_2.mp3"
+  ],
+  "out_liner_3B": [
+   "audio/voice_v3/aida/out_liner_3B_1.mp3",
+   "audio/voice_v3/aida/out_liner_3B_2.mp3"
+  ],
+  "out_liner_LF": [
+   "audio/voice_v3/aida/out_liner_LF_1.mp3",
+   "audio/voice_v3/aida/out_liner_LF_2.mp3"
+  ],
+  "out_liner_CF": [
+   "audio/voice_v3/aida/out_liner_CF_1.mp3",
+   "audio/voice_v3/aida/out_liner_CF_2.mp3"
+  ],
+  "out_liner_RF": [
+   "audio/voice_v3/aida/out_liner_RF_1.mp3",
+   "audio/voice_v3/aida/out_liner_RF_2.mp3"
+  ],
+  "hit_double": [
+   "audio/voice_v3/aida/hit_double_1.mp3",
+   "audio/voice_v3/aida/hit_double_2.mp3",
+   "audio/voice_v3/aida/hit_double_3.mp3",
+   "audio/voice_v3/aida/hit_double_4.mp3",
+   "audio/voice_v3/aida/hit_double_5.mp3"
+  ],
+  "hit_triple": [
+   "audio/voice_v3/aida/hit_triple_1.mp3",
+   "audio/voice_v3/aida/hit_triple_2.mp3",
+   "audio/voice_v3/aida/hit_triple_3.mp3",
+   "audio/voice_v3/aida/hit_triple_4.mp3",
+   "audio/voice_v3/aida/hit_triple_5.mp3"
+  ],
+  "g_comebacker": [
+   "audio/voice_v3/aida/g_comebacker_1.mp3",
+   "audio/voice_v3/aida/g_comebacker_2.mp3",
+   "audio/voice_v3/aida/g_comebacker_3.mp3",
+   "audio/voice_v3/aida/g_comebacker_4.mp3",
+   "audio/voice_v3/aida/g_comebacker_5.mp3",
+   "audio/voice_v3/aida/g_comebacker_6.mp3",
+   "audio/voice_v3/aida/g_comebacker_7.mp3"
+  ],
+  "g_pitcher_soft": [
+   "audio/voice_v3/aida/g_pitcher_soft_1.mp3",
+   "audio/voice_v3/aida/g_pitcher_soft_2.mp3",
+   "audio/voice_v3/aida/g_pitcher_soft_4.mp3",
+   "audio/voice_v3/aida/g_pitcher_soft_5.mp3",
+   "audio/voice_v3/aida/g_pitcher_soft_6.mp3",
+   "audio/voice_v3/aida/g_pitcher_soft_7.mp3"
+  ],
+  "g_chopper_pitcher": [
+   "audio/voice_v3/aida/g_chopper_pitcher_1.mp3",
+   "audio/voice_v3/aida/g_chopper_pitcher_2.mp3",
+   "audio/voice_v3/aida/g_chopper_pitcher_3.mp3",
+   "audio/voice_v3/aida/g_chopper_pitcher_4.mp3"
+  ],
+  "bunt_pitcher": [
+   "audio/voice_v3/aida/bunt_pitcher_1.mp3",
+   "audio/voice_v3/aida/bunt_pitcher_2.mp3",
+   "audio/voice_v3/aida/bunt_pitcher_3.mp3",
+   "audio/voice_v3/aida/bunt_pitcher_4.mp3",
+   "audio/voice_v3/aida/bunt_pitcher_5.mp3"
+  ],
+  "liner_pitcher": [
+   "audio/voice_v3/aida/liner_pitcher_1.mp3",
+   "audio/voice_v3/aida/liner_pitcher_2.mp3",
+   "audio/voice_v3/aida/liner_pitcher_3.mp3",
+   "audio/voice_v3/aida/liner_pitcher_4.mp3",
+   "audio/voice_v3/aida/liner_pitcher_5.mp3"
+  ],
+  "pop_pitcher": [
+   "audio/voice_v3/aida/pop_pitcher_1.mp3",
+   "audio/voice_v3/aida/pop_pitcher_2.mp3",
+   "audio/voice_v3/aida/pop_pitcher_3.mp3",
+   "audio/voice_v3/aida/pop_pitcher_4.mp3",
+   "audio/voice_v3/aida/pop_pitcher_5.mp3"
+  ],
+  "g_chopper": [
+   "audio/voice_v3/aida/g_chopper_1.mp3",
+   "audio/voice_v3/aida/g_chopper_2.mp3",
+   "audio/voice_v3/aida/g_chopper_3.mp3",
+   "audio/voice_v3/aida/g_chopper_4.mp3",
+   "audio/voice_v3/aida/g_chopper_5.mp3",
+   "audio/voice_v3/aida/g_chopper_6.mp3",
+   "audio/voice_v3/aida/g_chopper_7.mp3"
+  ],
+  "g_dribbler_3B": [
+   "audio/voice_v3/aida/g_dribbler_3B_1.mp3",
+   "audio/voice_v3/aida/g_dribbler_3B_2.mp3",
+   "audio/voice_v3/aida/g_dribbler_3B_3.mp3",
+   "audio/voice_v3/aida/g_dribbler_3B_4.mp3",
+   "audio/voice_v3/aida/g_dribbler_3B_5.mp3",
+   "audio/voice_v3/aida/g_dribbler_3B_6.mp3"
+  ],
+  "g_hard_3B": [
+   "audio/voice_v3/aida/g_hard_3B_1.mp3",
+   "audio/voice_v3/aida/g_hard_3B_2.mp3",
+   "audio/voice_v3/aida/g_hard_3B_3.mp3",
+   "audio/voice_v3/aida/g_hard_3B_4.mp3",
+   "audio/voice_v3/aida/g_hard_3B_5.mp3"
+  ],
+  "g_dribbler_SS": [
+   "audio/voice_v3/aida/g_dribbler_SS_1.mp3",
+   "audio/voice_v3/aida/g_dribbler_SS_2.mp3",
+   "audio/voice_v3/aida/g_dribbler_SS_3.mp3",
+   "audio/voice_v3/aida/g_dribbler_SS_4.mp3",
+   "audio/voice_v3/aida/g_dribbler_SS_5.mp3",
+   "audio/voice_v3/aida/g_dribbler_SS_6.mp3"
+  ],
+  "g_hard_SS": [
+   "audio/voice_v3/aida/g_hard_SS_1.mp3",
+   "audio/voice_v3/aida/g_hard_SS_3.mp3",
+   "audio/voice_v3/aida/g_hard_SS_4.mp3",
+   "audio/voice_v3/aida/g_hard_SS_5.mp3"
+  ],
+  "g_dribbler_2B": [
+   "audio/voice_v3/aida/g_dribbler_2B_1.mp3",
+   "audio/voice_v3/aida/g_dribbler_2B_2.mp3",
+   "audio/voice_v3/aida/g_dribbler_2B_3.mp3",
+   "audio/voice_v3/aida/g_dribbler_2B_4.mp3",
+   "audio/voice_v3/aida/g_dribbler_2B_5.mp3",
+   "audio/voice_v3/aida/g_dribbler_2B_6.mp3"
+  ],
+  "g_hard_2B": [
+   "audio/voice_v3/aida/g_hard_2B_1.mp3",
+   "audio/voice_v3/aida/g_hard_2B_2.mp3",
+   "audio/voice_v3/aida/g_hard_2B_3.mp3",
+   "audio/voice_v3/aida/g_hard_2B_4.mp3",
+   "audio/voice_v3/aida/g_hard_2B_5.mp3"
+  ],
+  "g_dribbler_1B": [
+   "audio/voice_v3/aida/g_dribbler_1B_1.mp3",
+   "audio/voice_v3/aida/g_dribbler_1B_2.mp3",
+   "audio/voice_v3/aida/g_dribbler_1B_3.mp3",
+   "audio/voice_v3/aida/g_dribbler_1B_4.mp3",
+   "audio/voice_v3/aida/g_dribbler_1B_5.mp3",
+   "audio/voice_v3/aida/g_dribbler_1B_6.mp3"
+  ],
+  "g_hard_1B": [
+   "audio/voice_v3/aida/g_hard_1B_1.mp3",
+   "audio/voice_v3/aida/g_hard_1B_2.mp3",
+   "audio/voice_v3/aida/g_hard_1B_3.mp3",
+   "audio/voice_v3/aida/g_hard_1B_4.mp3",
+   "audio/voice_v3/aida/g_hard_1B_5.mp3"
+  ],
+  "bunt_safety": [
+   "audio/voice_v3/aida/bunt_safety_1.mp3",
+   "audio/voice_v3/aida/bunt_safety_2.mp3",
+   "audio/voice_v3/aida/bunt_safety_4.mp3"
+  ],
+  "pop_back": [
+   "audio/voice_v3/aida/pop_back_1.mp3",
+   "audio/voice_v3/aida/pop_back_2.mp3",
+   "audio/voice_v3/aida/pop_back_3.mp3",
+   "audio/voice_v3/aida/pop_back_4.mp3",
+   "audio/voice_v3/aida/pop_back_5.mp3"
+  ],
+  "liner_sink": [
+   "audio/voice_v3/aida/liner_sink_1.mp3",
+   "audio/voice_v3/aida/liner_sink_2.mp3",
+   "audio/voice_v3/aida/liner_sink_3.mp3",
+   "audio/voice_v3/aida/liner_sink_4.mp3"
+  ],
+  "liner_carry": [
+   "audio/voice_v3/aida/liner_carry_1.mp3",
+   "audio/voice_v3/aida/liner_carry_2.mp3",
+   "audio/voice_v3/aida/liner_carry_3.mp3"
+  ],
+  "fly_slice": [
+   "audio/voice_v3/aida/fly_slice_1.mp3",
+   "audio/voice_v3/aida/fly_slice_2.mp3",
+   "audio/voice_v3/aida/fly_slice_3.mp3"
+  ],
+  "fly_high": [
+   "audio/voice_v3/aida/fly_high_1.mp3",
+   "audio/voice_v3/aida/fly_high_2.mp3",
+   "audio/voice_v3/aida/fly_high_3.mp3",
+   "audio/voice_v3/aida/fly_high_4.mp3"
+  ],
+  "pre_pitchno_2": [
+   "audio/voice_v3/aida/pre_pitchno_2_1.mp3",
+   "audio/voice_v3/aida/pre_pitchno_2_2.mp3"
+  ],
+  "pre_pitchno_3": [
+   "audio/voice_v3/aida/pre_pitchno_3_1.mp3",
+   "audio/voice_v3/aida/pre_pitchno_3_2.mp3"
+  ],
+  "pre_pitchno_4": [
+   "audio/voice_v3/aida/pre_pitchno_4_1.mp3",
+   "audio/voice_v3/aida/pre_pitchno_4_2.mp3"
+  ],
+  "pre_pitchno_5": [
+   "audio/voice_v3/aida/pre_pitchno_5_1.mp3",
+   "audio/voice_v3/aida/pre_pitchno_5_2.mp3"
+  ],
+  "pre_pitchno_6": [
+   "audio/voice_v3/aida/pre_pitchno_6_1.mp3",
+   "audio/voice_v3/aida/pre_pitchno_6_2.mp3"
+  ],
+  "pre_pitchno_7": [
+   "audio/voice_v3/aida/pre_pitchno_7_1.mp3",
+   "audio/voice_v3/aida/pre_pitchno_7_2.mp3",
+   "audio/voice_v3/aida/pre_pitchno_7_3.mp3"
+  ],
+  "after_out": [
+   "audio/voice_v3/aida/after_out_1.mp3",
+   "audio/voice_v3/aida/after_out_2.mp3",
+   "audio/voice_v3/aida/after_out_3.mp3",
+   "audio/voice_v3/aida/after_out_4.mp3",
+   "audio/voice_v3/aida/after_out_5.mp3",
+   "audio/voice_v3/aida/after_out_6.mp3"
+  ]
+ },
+ "gain": {
+  "audio/cheer.mp3": 0.84,
+  "audio/applause.mp3": 0.82
+ },
+ "pa": {
+  "batter_1": [
+   "audio/pa/batter_1.mp3"
+  ],
+  "batter_2": [
+   "audio/pa/batter_2.mp3"
+  ],
+  "batter_3": [
+   "audio/pa/batter_3.mp3"
+  ],
+  "batter_4": [
+   "audio/pa/batter_4.mp3"
+  ],
+  "batter_5": [
+   "audio/pa/batter_5.mp3"
+  ],
+  "batter_6": [
+   "audio/pa/batter_6.mp3"
+  ],
+  "batter_7": [
+   "audio/pa/batter_7.mp3"
+  ],
+  "batter_8": [
+   "audio/pa/batter_8.mp3"
+  ],
+  "batter_9": [
+   "audio/pa/batter_9.mp3"
+  ],
+  "foul_caution": [
+   "audio/pa/foul_caution.mp3",
+   "audio/pa/foul_caution_2.mp3"
+  ]
+ },
+ "vendor": {
+  "call": [
+   "audio/vendor/vendor_1.mp3",
+   "audio/vendor/vendor_2.mp3",
+   "audio/vendor/vendor_3.mp3",
+   "audio/vendor/vendor_4.mp3",
+   "audio/vendor/vendor_5.mp3",
+   "audio/vendor/vendor_6.mp3"
+  ]
+ },
+ "cheer_songs": {
+  "pro": {
+   "normal": {
+    "file": "audio/cheer_songs/pro_normal_koushin.mp3",
+    "loopStart": 0.5,
+    "loopEnd": 57.1048,
+    "title": "外野スタンドの行進",
+    "made": "2026-11-21 Suno 有料プラン(Premier)で作曲・インスト",
+    "bar": 1.715,
+    "bpm": 139.9
+   },
+   "chance": {
+    "file": "audio/cheer_songs/pro_chance_oseose.mp3",
+    "loopStart": 0.5,
+    "loopEnd": 54.4979,
+    "title": "押せ押せファンファーレ",
+    "made": "2026-11-21 Suno 有料プラン(Premier)で作曲・インスト",
+    "bar": 3.0,
+    "bpm": 80.0
+   },
+   "score": {
+    "file": "audio/cheer_songs/pro_score_gaika.mp3",
+    "loopStart": 0.5,
+    "loopEnd": 53.1379,
+    "title": "外野の凱歌",
+    "made": "2026-11-21 Suno 有料プラン(Premier)で作曲・インスト",
+    "bar": 1.595,
+    "bpm": 150.5
+   }
+  },
+  "hs": {
+   "normal": {
+    "file": "audio/cheer_songs/hs_normal_alps.mp3",
+    "loopStart": 0.5,
+    "loopEnd": 51.498,
+    "title": "アルプスの青空",
+    "made": "2026-11-21 Suno 有料プラン(Premier)で作曲・インスト",
+    "bar": 1.7,
+    "bpm": 141.2
+   },
+   "chance": {
+    "file": "audio/cheer_songs/hs_chance_oikaze.mp3",
+    "loopStart": 0.5,
+    "loopEnd": 53.4297,
+    "title": "夏の追い風",
+    "made": "2026-11-21 Suno 有料プラン(Premier)で作曲・インスト",
+    "bar": 2.94,
+    "bpm": 81.6
+   },
+   "score": {
+    "file": "audio/cheer_songs/hs_score_yossha.mp3",
+    "loopStart": 0.5,
+    "loopEnd": 51.7143,
+    "title": "よっしゃ一点マーチ",
+    "made": "2026-11-21 Suno 有料プラン(Premier)で作曲・インスト",
+    "bar": 1.6,
+    "bpm": 150.0
+   }
+  }
+ }
+}

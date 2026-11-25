@@ -1,0 +1,52 @@
+/* ================================================================ スマホ画面対応(11/19 午後、docs\スマホ対応の引き継ぎ.md)
+   いちばん後に読み、ノッチ・下のバー(safe area)と指で押す大きさだけを直す。見た目の作りは ui_v5.css のまま。
+   点検: python tools\mobileui.py <名前>(縦 390x844・横 844x390、safe area を真似て、切れ・重なり・44px 未満を探す) */
+
+/* 横持ち: 画面の上下にも safe area を(下のホームバー 21px にボタンがかからないように) */
+@media (max-height:460px){
+  .screen{padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom))}
+}
+
+/* 行き先の案内(js/wayfinding.js の #wayf: 丸い地図と札)。右上の 視点・一時停止 の下へ下げ、横持ちのノッチ側(右の safe area)にかからないように */
+#wayf{right:max(6px,env(safe-area-inset-right))!important;top:calc(max(10px,env(safe-area-inset-top)) + 66px)!important}
+@media (max-width:640px),(pointer:coarse){ #wayf{top:calc(max(10px,env(safe-area-inset-top)) + 62px)!important} }
+
+/* 観戦の縦持ち: 持っているお金の札(.low)が左の塁の図(#runMap)に重なっていたので、図の右へ */
+@media (max-width:480px){ #fpWallet.low{left:calc(max(10px,env(safe-area-inset-left)) + 128px)} }
+
+/* 観戦の縦持ち: チケットの案内(#fpGuide)が行き先の案内(#wayf)の 2 行の札に重なっていたので、その下へ */
+@media (max-width:480px){ #fpGuide{top:calc(max(10px,env(safe-area-inset-top)) + 262px)} }
+
+/* 横持ち: 行き先の案内は丸い地図の左に札を並べる(縦に積むと右下の「できること」のボタンにかかる) */
+@media (max-height:460px){
+  #wayf{flex-direction:row-reverse!important;align-items:flex-start!important;top:calc(max(10px,env(safe-area-inset-top)) + 108px)!important}   /* 持っているお金とチケットの札(右上、〜100px)の下 */
+  #wayf canvas{width:84px!important;height:84px!important}
+}
+
+/* 全体の地図(js/wayfinding.js の #wfMap。丸い地図を押す/M で開く)。safe area の余白は wayfinding.js の中の CSS(後から読まれるのでそちらが効く)。
+   丸い地図を押した時に視点の指にならないよう main.js の CONTROLS に #wayf canvas を入れてある */
+
+/* 11/20 モード名が「ボールパークで過ごす」(10 字)になり、PC の横一列(幅 250px)で字が枠の右へはみ出していた(1280x720 で 7px)。
+   この 1 つだけ字を少し小さく・絵を 36px に。4 つの幅はそろえたまま、狭い PC(900〜1100px)でも枠に収める。スマホの縦・横は 1 行に収まっていて直さない */
+@media (min-width:900px) and (min-height:560px){
+  #title .modes[data-n="4"]{width:min(1054px,calc(100vw - 32px))}
+  #title .modes[data-n="4"] .mode,#title .modes[data-n="4"] .mode.big{flex:1 1 0;width:auto;min-width:0;max-width:250px}
+  #title .modes[data-n="4"] .mode[data-mode="watch"]{font-size:clamp(17px,1.75vw,21px);letter-spacing:0;gap:8px}
+  #title .modes[data-n="4"] .mode[data-mode="watch"] .ic{width:36px;height:36px}
+}
+
+/* 11/20 夜 持ち主「ボールパークで過ごすの文字がずれてる」(スマホ): 端末の字(Android の Noto・iPhone のヒラギノ)は Edge より幅が広く、
+   10 字が枠に入りきらず 2 行に折れたり右へずれたりしていた。スマホの縦・横では、この 1 つだけ字を幅に合わせて小さくし、折り返さない */
+@media (max-width:899px),(max-height:559px){
+  #title .mode[data-mode="watch"]{white-space:nowrap;letter-spacing:0;gap:6px;font-size:min(1em,clamp(16px,5.4vw,22px))}
+  #title .mode[data-mode="watch"] b{white-space:nowrap}
+  #title .mode[data-mode="watch"] .ic{width:32px;height:32px;flex:0 0 32px}
+}
+@media (max-height:559px) and (min-width:600px){ #title .mode[data-mode="watch"]{font-size:clamp(16px,2.6vw,21px)} }
+
+/* 11/22 タイトルが 3 つ(守備の試合・ノック・過ごす)になり、PC の横一列で「ボールパークで過ごす」が 2 行に折れていた。この 1 つだけ字を少し小さく・1 行に */
+@media (min-width:900px) and (min-height:560px){
+  #title .modes[data-n="3"] .mode[data-mode="watch"]{white-space:nowrap;letter-spacing:0;gap:8px;padding-left:18px;padding-right:18px;font-size:24px}
+  #title .modes[data-n="3"] .mode[data-mode="watch"] b{white-space:nowrap;font-size:24px}
+  #title .modes[data-n="3"] .mode[data-mode="watch"] .ic{width:36px;height:36px;flex:0 0 36px}
+}

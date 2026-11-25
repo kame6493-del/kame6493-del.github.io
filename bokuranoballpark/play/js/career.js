@@ -1,0 +1,385 @@
+// 11/25 守備のキャリア: 高校 → 社会人 → プロ。1 試合ごとに守備の評価(S〜D)と個人の UZR を出し、基準を超えたら次の段へ。
+// 能力は 肩・守備・エラー回避 の 3 つ。試合の中のプレーで経験値が入って上がり、プレーに少しだけ効く(効き方の数は下の EFFECT)。
+// 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
+// defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
+// 進み具合は localStorage の r4walk.career.v1。
+import { CareerUI } from './career_ui.js?v=1125t';
+
+const KEY = 'r4walk.career.v1';
+const OFS = ['LF', 'CF', 'RF'];
+export const POS_NAME = { P: '投手', C: '捕手', '1B': '一塁手', '2B': '二塁手', '3B': '三塁手', SS: '遊撃手', LF: '左翼手', CF: '中堅手', RF: '右翼手' };
+export const AB_NAME = { arm: '肩', field: '守備', sure: 'エラー回避' };
+const AB_MIN = 30, AB_MAX = 99;
+// 段: evK 打球(ゴロ・ライナー)の速さの倍率、hard 難しい種類の打球を選ぶ割合、need 昇格の基準(評価がこれ以上 か UZR がこれ以上)
+// 11/25 夜 持ち主「全部いい感じに」: 1 試合で上がっていたのを、その段で min 試合以上・直近 3 試合のうち 2 試合で基準を超えたら上がる形に(各段 5〜10 試合ほど)
+export const STAGES = [
+  { key: 'hs', name: '高校', long: '高校野球', evK: 1.00, hard: 0.00, need: { rank: 'B', uzr: 1.0 }, min: 5 },
+  { key: 'corp', name: '社会人', long: '社会人野球', evK: 1.04, hard: 0.12, need: { rank: 'A', uzr: 0.8 }, min: 6 },
+  { key: 'pro', name: 'プロ', long: 'プロ野球', evK: 1.08, hard: 0.22, need: null },
+];
+export const FINAL_GAMES = 5;   // プロで 5 試合守ったら「キャリアの最終評価」を確定して出す(その後も続けられる)
+const RANK_N = { S: 5, A: 4, B: 3, C: 2, D: 1 };
+
+// 能力の効き方(t は 0 = 最初の 30、1 = 最高の 99)
+const tOf = (v) => Math.max(0, Math.min(1, (v - AB_MIN) / (AB_MAX - AB_MIN)));
+const lerp = (a, b, t) => a + (b - a) * t;
+export const EFFECT = {
+  reach: (v) => lerp(0.96, 1.12, tOf(v)),      // 守備: グローブの届く幅(標準 1.4 m → 1.34〜1.57 m)
+  speed: (v) => lerp(0.97, 1.07, tOf(v)),      // 守備: 全力の速さ(標準 8.3 m/s → 8.05〜8.88 m/s)
+  dive: (v) => lerp(1.0, 1.1, tOf(v)),         // 守備: 飛び込みで体が進む距離とグラブの先(標準で走るより約 1 m 先 → 最高で約 +0.35 m 伸びる)
+  arm: (v) => lerp(0.95, 1.12, tOf(v)),        // 肩: 送球の初速(届く距離も伸びる)
+  bobHard: (v) => lerp(0.045, 0.008, tOf(v)),  // エラー回避: 難しい捕球でお手玉する確率
+  bobEasy: (v) => lerp(0.015, 0.002, tOf(v)),  // エラー回避: 普通の捕球でお手玉する確率
+  sigma: (v) => lerp(0.55, 0.18, tOf(v)),      // エラー回避: 送球の横のそれ(m、標準偏差)
+  wild: (v) => lerp(0.018, 0.003, tOf(v)),     // エラー回避: 大きくそれる(受け手が捕れない)送球の確率
+};
+// 次の 1 を上げるのに要る経験値(11/25 夜 そろえ直し: 1 試合の経験値は 3 つとも 10〜25 ほど。30 のころは 1 試合で 3〜5、
+// 60 で 2 前後、80 を超えると 1 前後。30 → 99 は全部で約 1,050 で、プロに入ってから数十試合で届く)
+export const xpNeed = (v) => 5 + Math.floor((v - AB_MIN) * 0.3);
+export const XP_CAP = 16;      // 1 試合のプレーで入る経験値の上限(能力ごと。補殺の多い内野で肩だけ伸びないように)
+export const RANK_LIST = ['S', 'A', 'B', 'C', 'D'];
+// 昇格の進み具合: 直近 3 試合で基準を超えた数と、最短であと何試合か
+export function promoInfo(D) {
+  const st = STAGES[D.stage]; if (!st.need) return null;
+  const played = D.stageGames[D.stage] || 0, P = ((D.pass || [])[D.stage] || []).slice(-3);
+  const ok3 = P.filter(Boolean).length;
+  let k = 0;
+  for (; k < 20; k++) { const L = P.concat(Array(k).fill(true)).slice(-3); if (played + k >= st.min && L.filter(Boolean).length >= 2 && k > 0) break; }
+  return { played, min: st.min, ok3, last3: P, left: k };
+}
+
+const sig = (x) => 1 / (1 + Math.exp(-x));
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+function fresh() {
+  return { v: 1, stage: 0, pos: 'SS', ab: { arm: AB_MIN, field: AB_MIN, sure: AB_MIN }, xp: { arm: 0, field: 0, sure: 0 },
+    stageGames: [0, 0, 0], tot: { games: 0, po: 0, a: 0, e: 0, uzr: 0, wins: 0 }, hist: [], final: null, made: Date.now(),
+    name: '', num: 6, pass: [[], [], []], best: null };
+}
+
+// ------------------------------------------------------------ 「普通の野手なら何%でアウトにできたか」(UZR の基準)
+// 平均の野手: 打った 0.30 秒後に動き出し、8.0 m/s で走り、グローブの届く幅 1.3 m。
+// 11/25 投手・捕手は、その位置の普通の選手と比べる: 投手は投げ終わりの体勢から 0.40 秒・7.0 m/s、捕手は構えから立ってマスクを外して 0.50 秒・6.6 m/s(VMAX と同じ)。打球の道筋の各時刻で
+// 「その時刻に球の所へ届くのに足りない距離」の最小(need)を出し、ロジスティックで確率に直す(need 0 で 5 割、-3 m で 96%、+2 m で 9%)。
+// 飛び込み・跳べば届く物はその分だけ低い確率で足す。内野のゴロ・バントは、捕った所から一塁(走者一塁で 2 アウト未満なら二塁も)へ
+// 間に合うかを掛ける(打者は打って約 4.45 秒で一塁、一塁走者は約 3.6 秒で二塁)。
+export function outProb(d, pl) {
+  const path = pl.batted && pl.batted.path; if (!path) return 0.5;
+  const at = d.homeOf(d.my), of = OFS.includes(d.my);
+  const V = d.my === 'P' ? 7.0 : d.my === 'C' ? 6.6 : 8.0, R = 1.3, REACT = d.my === 'P' ? 0.40 : d.my === 'C' ? 0.50 : 0.30;
+  const e1 = path.events.find((e) => e.type === 'bounce' || e.type === 'roll' || e.type === 'wall'), b1 = e1 ? e1.t : 1e9;
+  const rF = Math.hypot(at.x, at.z), gr = !!(e1 && e1.p && Math.hypot(e1.p.x, e1.p.z) < 50);
+  let need = 1e9, needDive = 1e9, needJump = 1e9, first = null;
+  for (let i = 0; i < path.n; i += 2) {
+    const t = i * path.dt, x = path.pts[i * 4], y = path.pts[i * 4 + 1], z = path.pts[i * 4 + 2], r = Math.hypot(x, z);
+    if ((!of || gr) && r > rF + 5 && t > b1) break;
+    if (of && !gr && t > b1) break;
+    const avail = Math.max(0, t - REACT) * V, dh = Math.hypot(x - at.x, z - at.z);
+    if (y > -0.1 && y < 2.4) { const n = dh - R - avail; if (n < need) need = n; if (n <= 0 && !first) first = { t, x, z }; }
+    if (y > -0.2 && y < 1.3) needDive = Math.min(needDive, dh - R - 1.1 - avail);
+    if (y > 2.4 && y < 3.2) needJump = Math.min(needJump, dh - R - avail + 0.3);
+  }
+  let p = Math.max(sig(-need / 0.9), 0.35 * sig(-needDive / 0.6), 0.4 * sig(-needJump / 0.5));
+  const ty = pl.batted.type;
+  if (!of && (ty === 'grounder' || ty === 'bunt') && first) {
+    const thr = (bx, bz, runT) => sig((runT - (first.t + 0.75 + Math.hypot(first.x - bx, first.z - bz) / 31)) / 0.3);
+    let pt = thr(19.07, -19.4, 4.45);
+    const g = d.g; if (g && g.bases && g.bases[0] && g.outs < 2) pt = Math.max(pt, thr(0, -38.8, 3.6));
+    p *= pt;
+  }
+  return clamp(p, 0.02, 0.98);
+}
+
+// ------------------------------------------------------------ 最終評価(通算から)
+export function finalEval(D) {
+  const T = D.tot, g = Math.max(1, T.games);
+  const ch = T.po + T.a + T.e, fpct = ch ? (T.po + T.a) / ch : 1;
+  const rk = D.hist.slice(-10).map((h) => RANK_N[h.rank] || 0).filter(Boolean);
+  const rAvg = rk.length ? rk.reduce((a, b) => a + b, 0) / rk.length : 3;
+  const uzrPG = T.uzr / g;
+  const score = Math.round(clamp(55 + 14 * uzrPG + clamp((fpct - 0.97) * 150, -20, 8) + (rAvg - 3) * 8, 0, 100));   // 平均(UZR 0・守備率 .970・評価 B)で 55
+  const grade = score >= 88 ? 'S' : score >= 75 ? 'A' : score >= 60 ? 'B' : score >= 45 ? 'C' : 'D';
+  const title = { S: 'ゴールデン・グラブ級の名手', A: '守備で勝たせる名手', B: '堅実なレギュラー', C: '守備は平均並み', D: '守備に課題が残る' }[grade];
+  return { score, grade, title, uzrPG, fpct, uzr: T.uzr, games: T.games };
+}
+export const fpctText = (po, a, e) => { const c = po + a + e; return c ? ((po + a) / c).toFixed(3).replace(/^0/, '') : '-'; };
+export const uzrText = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(1);
+
+// ------------------------------------------------------------ 本体
+class Career {
+  constructor() {
+    this.data = this.load();
+    this.active = false;   // キャリアの画面から試合を始めた(タイトルへ戻るまで)
+    this.game = null;      // いまの試合の記録(キャリアの試合の間だけ)
+    this.cnt = 0;          // tagBase・tagRunner で数えたアウト(onCatch の中のアウトと重ねて数えないため)
+    this.K = { POS_NAME, AB_NAME, STAGES, FINAL_GAMES, EFFECT, xpNeed, finalEval, fpctText, uzrText, AB_MAX, promoInfo };
+    this.ui = new CareerUI(this);
+    this.wait();
+  }
+  load() {
+    try {
+      const j = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (j && j.v === 1) {
+        const D = Object.assign(fresh(), j);
+        if (!Array.isArray(D.pass) || D.pass.length !== 3) D.pass = [[], [], []];
+        if (!D.best && D.hist.length) D.best = D.hist.reduce((b, h) => ((RANK_N[h.rank] || 0) > (RANK_N[b] || 0) ? h.rank : b), null);
+        return D;
+      }
+    } catch (e) { /* 壊れていたら新しく */ }
+    return fresh();
+  }
+  setName(n) { this.data.name = String(n || '').replace(/[<>&"'`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 10); this.save(); }
+  setNum(n) { n = Math.round(+n); if (Number.isFinite(n) && n >= 0 && n <= 99) { this.data.num = n; this.save(); } }
+  save() { try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) { /* 残せなくても遊べる */ } }
+  reset() { this.data = fresh(); this.save(); }
+  get stage() { return STAGES[this.data.stage]; }
+
+  wait() {
+    const A = window.__app;
+    if (A && A.ui && !this.ui.built) this.ui.build(A.ui);
+    if (A && A.defense && A.ui && !this.hooked) this.hook(A.defense, A.ui);
+    if (!this.hooked) setTimeout(() => this.wait(), 200);
+  }
+  appUI() { return window.__app && window.__app.ui; }
+
+  // ------------------------------------------------ キャリアの試合を始める・やめる
+  start() {
+    const ui = this.appUI(); if (!ui || !window.__app.ready) return false;
+    this.active = true;
+    if (!this._saved) this._saved = { mode: ui.sel.mode, pos: ui.sel.pos };
+    ui.sel.mode = 'game'; ui.sel.pos = this.data.pos;   // 一時停止の「最初から」(ui.go)でもキャリアの試合になるように
+    this.ui.hide();
+    ui.hideAll();
+    ui.app.startMode({ ...ui.sel, mode: 'game', pos: this.data.pos, stadium: ui.app.stadium });
+    return true;
+  }
+  leave() {
+    this.active = false; this.game = null;
+    const ui = this.appUI();
+    if (ui && this._saved) { ui.sel.mode = this._saved.mode; ui.sel.pos = this._saved.pos; this._saved = null; }
+  }
+
+  // ------------------------------------------------ 守備の試合を包む
+  hook(d, ui) {
+    this.hooked = true;
+    const C = this, P = Object.getPrototypeOf(d);
+    const ob = d.begin;
+    d.begin = function (sel) {
+      const car = C.active && sel && sel.mode === 'game' && !sel.keepDiff;
+      if (car) sel = { ...sel, pos: C.data.pos };
+      C.game = null; this.throwMod = null; this.diveK = 1;
+      const r = ob.call(this, sel);
+      if (car && this.kind === 'game' && !this.tut) C.onBegin(this);
+      return r;
+    };
+    const sp = d.startPlay;
+    d.startPlay = function (...x) {
+      const r = sp.apply(this, x);
+      try { const pl = this.play; if (C.game && this.kind === 'game' && pl && pl.opt.fielder === this.my && pl.batted && !pl.steal) pl._car = { p: outProb(this, pl), of: OFS.includes(this.my) }; } catch (e) { console.warn(e); }
+      return r;
+    };
+    const rc = d.reachClass;   // 打球の種類の見極めは標準の野手で(能力で打球が難しくならないように)
+    d.reachClass = function (path) { if (!C.game || !C.baseD) return rc.call(this, path); const s = this.D; this.D = C.baseD; try { return rc.call(this, path); } finally { this.D = s; } };
+    const mb = d.makeBall;   // 段ごとにゴロ・ライナーを少し速く
+    d.makeBall = function (type, T, L, p0, o) {
+      const k = C.game ? C.stage.evK : 1;
+      if (k !== 1 && (type === 'grounder' || type === 'liner') && !(o && 'stop' in o) && !(o && o.coarseOnly)) {
+        if (o && o.ev) o = { ...o, ev: o.ev * k };
+        else if (type === 'grounder') o = { ...(o || {}), ev: (21 + 17 * L + this.rng() * 4) * k };
+        else o = { ...(o || {}), ev: (27 + 13 * L + this.rng() * 3) * k };
+      }
+      return mb.call(this, type, T, L, p0, o);
+    };
+    const vb = d.varietyBall;   // 段が上がると難しい種類の打球が増える
+    d.varietyBall = function (cat, want) {
+      if (C.game && !want && C.stage.hard > 0 && this.rng() < C.stage.hard) { const H = ['run', 'hard', 'back', 'hop', 'dive']; want = H[Math.floor(this.rng() * H.length)]; }
+      return vb.call(this, cat, want);
+    };
+    const oc = d.onCatch;
+    d.onCatch = function (pl, who, p, tt) {
+      if (!C.game) return oc.call(this, pl, who, p, tt);
+      const o0 = pl.outs || 0, c0 = C.cnt, first = !pl.thrown, wild = pl._carWild;
+      // 11/25 テスター「捕り損ねたのにアウト」: フライ・ライナーを宙で捕ってお手玉したら落球(アウトにしない。球は落ちて走者は進む)。前は札だけ「お手玉!」でアウトのままだった
+      try {
+        const onFly = first && who === 'me' && !pl.dropped && pl.fly && this.ball && !this.ball.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll' || e.type === 'wall') && e.t <= tt);
+        if (onFly && C.bobRoll(this, pl)) { pl._carBob = true; this.dropBall(pl, p, 'お手玉で落球'); return; }
+      } catch (e) { console.warn(e); }
+      const r = oc.call(this, pl, who, p, tt);
+      try {
+        const extra = (pl.outs || 0) - o0 - (C.cnt - c0);
+        if (who === 'me' && extra > 0) C.game.po += extra;
+        if (wild && !wild.done && pl.thrown && pl.thrown.from === 'me') { wild.done = true; wild.caught = who === wild.rk; }
+        if (first && who === 'me' && pl.choiceOpen && pl.endT == null) C.bobble(this, pl);
+      } catch (e) { console.warn(e); }
+      return r;
+    };
+    const tb = d.tagBase;
+    d.tagBase = function (pl, bi, who, quiet) { const o0 = pl.outs || 0; const r = tb.call(this, pl, bi, who, quiet); C.outsBy(pl, who, (pl.outs || 0) - o0); return r; };
+    const tr = d.tagRunner;
+    d.tagRunner = function (pl, rr, who) { const o0 = pl.outs || 0; const r = tr.call(this, pl, rr, who); C.outsBy(pl, who, (pl.outs || 0) - o0); return r; };
+    const ep = d.evalPlay;
+    d.evalPlay = function (pl) { const r = ep.call(this, pl); try { if (C.game && this.kind === 'game' && !pl._carDone) { pl._carDone = true; C.afterPlay(this, pl); } } catch (e) { console.warn(e); } return r; };
+    // 結果の画面: キャリアの試合なら、キャリアの結果の画面を出す
+    const ores = ui.result.bind(ui);
+    ui.result = function (r) { try { if (C.onResult(r)) return; } catch (e) { console.warn('career result', e); } return ores(r); };
+    // タイトルへ戻ったら、キャリアの試合の印を消す
+    const ot = ui.app.toTitle;
+    ui.app.toTitle = function (...x) { C.leave(); C.ui.hide(); return ot.apply(this, x); };
+    // キャリアの画面が開いている間は「開いている」扱い(Esc で一時停止を重ねない)
+    const oi = ui.isOpen.bind(ui);
+    ui.isOpen = function () { return oi() || C.ui.isOpen(); };
+    void P;
+  }
+  outsBy(pl, who, n) {
+    if (!this.game || n <= 0) return;
+    this.cnt += n;
+    if (who === 'me') this.game.po += n;
+    else if (pl.thrown && pl.thrown.from === 'me' && !pl._carA) { pl._carA = true; this.game.a += 1; }
+  }
+  onBegin(d) {
+    const ab = this.data.ab;
+    this.baseD = d.D;
+    d.D = { ...d.D, reach: d.D.reach * EFFECT.reach(ab.field), speed: d.D.speed * EFFECT.speed(ab.field) };
+    d.diveK = EFFECT.dive(ab.field);
+    const C = this;
+    d.throwMod = function (to, from, speed, rk, pl) {
+      if (!C.game) return null;
+      const s = C.data.ab.sure, rng = this.rng;
+      const dx = to.x - from.x, dz = to.z - from.z, L = Math.hypot(dx, dz) || 1;
+      const g = (rng() + rng() + rng() - 1.5) * 2;   // ほぼ正規分布
+      let off = g * EFFECT.sigma(s);
+      if (rng() < EFFECT.wild(s)) { off = (rng() < 0.5 ? -1 : 1) * (2.0 + rng() * 0.8); pl._carWild = { rk }; }
+      const t2 = to.clone(); t2.x += (-dz / L) * off; t2.z += (dx / L) * off;
+      return { to: t2, speed: speed * EFFECT.arm(C.data.ab.arm) };
+    };
+    this.game = { po: 0, a: 0, e: 0, uzr: 0, chances: 0, xp: { arm: 0, field: 0, sure: 0 }, xpPlay: { arm: 0, field: 0, sure: 0 }, ups: { arm: 0, field: 0, sure: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my };
+    const st = this.stage, n = this.data.stageGames[this.data.stage] + 1;
+    this.ui.intro(`${st.long} 第${n}戦`, POS_NAME[d.my]);
+  }
+  // お手玉: 捕った後、投げられるまで 0.6 秒遅れる(アウトにできなければ失策)
+  bobRoll(d, pl) {
+    const s = this.data.ab.sure, hard = (pl._car && pl._car.p < 0.75) || (pl.myReach || 0) > 0.75 || (pl.star || 0) >= 2;
+    return d.rng() < (hard ? EFFECT.bobHard(s) : EFFECT.bobEasy(s));
+  }
+  bobble(d, pl) {
+    if (pl.dropped || !this.bobRoll(d, pl)) return;   // 落とした球を拾い直した時はお手玉にしない
+    pl._carBob = true; pl.choiceOpen = false; pl.choiceAt = pl.t + 0.6;
+    this.ui.pop('お手玉!', 'bad');
+    d.updatePad && d.updatePad();
+  }
+  afterPlay(d, pl) {
+    const G = this.game; if (!G) return;
+    if (pl.label === 'ホームラン') return;
+    const mine = !!pl._car, caught = pl.fieldedBy === 'me' && !pl.missed;
+    if (pl.label === 'ファウル' && !caught) return;
+    const lt = pl.lastThrow, outs = pl.outs || 0, of = OFS.includes(d.my);
+    // 失策: 捕れる打球を落とした・悪送球・大きくそれた送球を受け手が捕れなかった・お手玉でアウトにできなかった
+    let err = 0;
+    if (pl.evalKind === 'miss' && mine && !caught && pl.label !== '悪送球' && (pl.myMin ?? 99) < d.D.reach * 0.9) err = 1;   // グラブの届く所まで来た球を捕れなかった(defense.js の「ミス(捕球)」と同じ)
+    if (pl.label === '悪送球' && lt && !lt.self) err = 1;
+    if (pl._carWild && pl._carWild.done && !pl._carWild.caught) err = 1;
+    if (pl._carBob && (outs === 0 || pl.dropped)) err = 1;
+    if (pl.dropped && mine) err = 1;   // 11/25 落球は、拾い直してほかの走者をアウトにしても失策
+    G.e += err;
+    // UZR(簡易): 自分の打球は アウトにできれば +(1-p)、できなければ -p に、1 つのアウトの重み(内野 0.75 点・外野 0.85 点)を掛ける。
+    // 足し引き: 併殺 +0.25、失策 -0.25、外野の補殺 +0.4、自分の打球でない中継・カバーの補殺 +0.15
+    let du = 0;
+    if (mine) {
+      const p = pl._car.p, rv = of ? 0.85 : 0.75, ok = caught && outs > 0;
+      du += ok ? (1 - p) * rv : -p * rv;
+      if (ok && outs >= 2) du += 0.25;
+      if (caught && pl.special === 'dive') du += 0.2;   // 飛び込んで捕った(走っても届かない球)は少し足す
+      G.chances++;
+    }
+    if (err) du -= 0.25;
+    // 11/25 捕手の盗塁: 普通の捕手の阻止率 3 割と比べる(1 つの盗塁の重み 0.5 点: 刺せば +0.35、許せば −0.15)
+    if (pl.stealC) { du += (pl.outs || 0) > 0 ? 0.35 : -0.15; G.chances++; }
+    else if (pl._carA && of) du += 0.4; else if (pl._carA && !mine) du += 0.15;
+    G.uzr += du; G.plays++;
+    // 経験値
+    // 11/25 夜 そろえ直し: 前は補殺 1 つで肩 +5(外野 +10)入り、肩だけ 1 試合で 30 → 40 になった。3 つとも同じくらい入る数にし、1 試合の上限 XP_CAP を付けた
+    const X = { arm: 0, field: 0, sure: 0 };
+    if (lt && !lt.self) { X.arm += 2; if (lt.transfer && lt.transfer < (of ? 1.1 : 0.8)) X.arm += 1; }
+    if (pl._carA) X.arm += of ? 5 : 2;
+    if (pl.evalKind === 'nice' && lt && !lt.self) X.arm += 2;
+    if (caught) X.field += 2;
+    if (caught && mine && pl._car.p < 0.7) X.field += 3;
+    if (pl.evalKind === 'fine') X.field += 4;
+    if (caught && pl.special === 'dive') X.field += 3;
+    if (du > 0 && mine) X.field += Math.min(4, Math.round(du * 5));
+    if (mine && !err) X.sure += 2;
+    if (lt && !lt.self && !err) X.sure += 1;
+    if (caught && mine && !err && pl._car.p < 0.7) X.sure += 2;   // 難しい球をきれいに捕った
+    for (const k in X) X[k] = Math.max(0, Math.min(X[k], XP_CAP - G.xpPlay[k])), G.xpPlay[k] += X[k];
+    this.addXP(X);
+    if (Math.abs(du) >= 0.05) this.ui.pop(`UZR ${uzrText(du)}`, du >= 0 ? 'good' : 'bad');
+    if (pl.evalKind === 'fine' && mine) { try { d.ctx.sound.crowdEvent('fine', 1); } catch (e) { /* 音なし */ } }
+  }
+  addXP(X, end) {
+    const D = this.data, G = this.game;
+    for (const k of ['arm', 'field', 'sure']) {
+      if (!X[k]) continue;
+      if (G) G.xp[k] += X[k];
+      D.xp[k] += X[k];
+      let up = 0;
+      while (D.ab[k] < AB_MAX && D.xp[k] >= xpNeed(D.ab[k])) { D.xp[k] -= xpNeed(D.ab[k]); D.ab[k]++; up++; }
+      if (D.ab[k] >= AB_MAX) D.xp[k] = 0;
+      if (up) { if (G) G.ups[k] += up; if (!end) this.ui.pop(`${AB_NAME[k]} +${up}`, 'up'); this.applyAbilities(); }
+    }
+    this.save();
+  }
+  // 試合の途中で能力が上がった時も、すぐプレーに効かせる
+  applyAbilities() {
+    const d = window.__app && window.__app.defense; if (!d || !this.game || !this.baseD) return;
+    const ab = this.data.ab;
+    d.D = { ...this.baseD, reach: this.baseD.reach * EFFECT.reach(ab.field), speed: this.baseD.speed * EFFECT.speed(ab.field) };
+    d.diveK = EFFECT.dive(ab.field);
+  }
+  // ------------------------------------------------ 試合の終わり
+  onResult(r) {
+    if (!this.game || !r || r.kind !== 'game') return false;
+    const G = this.game; this.game = null;
+    const d = window.__app.defense; if (d) d.throwMod = null;
+    if (r.stopped) return false;
+    const D = this.data, st = this.stage, ev = r.ev || {};
+    const rank = ev.n ? ev.rank : 'C';
+    const tc = G.po + G.a + G.e;
+    // 試合の終わりの経験値: 出た分(3 つとも 2)+ 評価(S 6・A 4・B 3・C 1)+ 無失策(エラー回避 +3)
+    { const rb = { S: 6, A: 4, B: 3, C: 1 }[rank] || 0, g = (tc > 0 || (ev.n || 0) > 0) ? 2 + rb : 1; this.addXP({ arm: g, field: g, sure: g + (G.e === 0 && tc >= 3 ? 3 : 0) }, true); }
+    const need = st.need;
+    const rankOK = need && (RANK_N[rank] || 0) >= RANK_N[need.rank];
+    const uzrOK = need && G.uzr >= need.uzr;
+    const enough = tc >= 2 || (ev.n || 0) >= 3;
+    const passed = !!(need && enough && (rankOK || uzrOK));
+    if (!Array.isArray(D.pass)) D.pass = [[], [], []];
+    if (need) { D.pass[D.stage].push(passed); if (D.pass[D.stage].length > 10) D.pass[D.stage].shift(); }
+    const P3 = need ? D.pass[D.stage].slice(-3) : [];
+    const promoted = !!(need && passed && D.stageGames[D.stage] + 1 >= st.min && P3.filter(Boolean).length >= 2);
+    if (ev.n && (RANK_N[rank] || 0) > (RANK_N[D.best] || 0)) D.best = rank;
+    const won = r.g && r.g.score && r.g.score.us > r.g.score.them;
+    D.stageGames[D.stage]++;
+    const T = D.tot; T.games++; T.po += G.po; T.a += G.a; T.e += G.e; T.uzr += G.uzr; if (won) T.wins++;
+    const res = { stage: D.stage, game: D.stageGames[D.stage], pos: G.pos, po: G.po, a: G.a, e: G.e, tc, uzr: G.uzr, chances: G.chances, rank, score: ev.n ? ev.score : null,
+      ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now() };
+    D.hist.push({ stage: res.stage, pos: res.pos, po: res.po, a: res.a, e: res.e, uzr: Math.round(res.uzr * 100) / 100, rank, won, t: res.t });
+    if (D.hist.length > 60) D.hist.shift();
+    if (!promoted && need) res.prog = promoInfo(D);
+    if (promoted) D.stage = Math.min(STAGES.length - 1, D.stage + 1);
+    if (D.stage === 2 && D.stageGames[2] >= FINAL_GAMES) { const f = finalEval(D); res.final = f; res.finalFirst = !D.final; D.final = f; }
+    this.save();
+    this.ui.result(res);
+    this.cheer(res);
+    return true;
+  }
+  cheer(res) {
+    const s = window.__app && window.__app.sound; if (!s) return;
+    try {
+      if (res.promoted) { s.crowdEvent && s.crowdEvent('fine', 1); s.voice && s.voice(['crowd_roar'], { maxWait: 2 }); }
+      else if (res.rank === 'S' || res.rank === 'A') s.voice && s.voice(['fine_play'], { maxWait: 2 });
+    } catch (e) { /* 音なし */ }
+  }
+}
+
+const career = new Career();
+try { window.__career = career; } catch (e) { /* 試験で見る */ }
+export default career;

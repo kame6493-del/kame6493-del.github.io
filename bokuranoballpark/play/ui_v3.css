@@ -1,0 +1,268 @@
+/* ================================================================ v3: ChatGPT の UI 見本(球場の色)に合わせた見た目
+   色は球場から: スタンドと大屋根の深い緑・ツタの緑・内野の土の茶・白い線・外壁のレンガ・夏の空・夕方の橙。
+   部品の絵(img/ui_*.png)は ChatGPT の見本(Downloads/球場UI_chatgpt_2026-11-17/)から切り出した物。ui.css の後に読む */
+:root{
+  --g-deep:#123d29; --g:#1b5236; --g-mid:#236b44; --g-hi:#3f9a52; --g-lite:#7fcf5a;
+  --cream:#f3ead2; --cream-d:#d9cba5; --gold:#f7c948; --orange:#ef8a2a; --brick:#a4533a; --soil:#6b4733; --sky:#3b8fd8;
+  --font-head:"Dela Gothic One","Hiragino Sans","Yu Gothic UI",sans-serif;
+}
+.sheet{background:
+    repeating-linear-gradient(135deg,rgba(255,255,255,0) 0 46px,rgba(255,255,255,.035) 46px 60px),
+    linear-gradient(180deg,var(--g) 0%,var(--g-deep) 100%);
+  border:4px solid var(--cream);border-radius:16px;box-shadow:0 0 0 2px rgba(0,0,0,.35),0 14px 36px rgba(0,0,0,.4);position:relative;
+  backdrop-filter:none;-webkit-backdrop-filter:none;padding-bottom:30px}
+/* 板の下のレンガ(外壁の色) */
+.sheet::after{content:"";position:absolute;left:0;right:0;bottom:0;height:18px;border-radius:0 0 12px 12px;pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 2px,transparent 2px 26px),
+    linear-gradient(180deg,rgba(0,0,0,.28) 0 2px,transparent 2px 9px,rgba(0,0,0,.25) 9px 11px,transparent 11px),
+    var(--brick)}
+/* 左上のつた(見本から切り出した絵) */
+.sheet::before{content:"";position:absolute;left:-8px;top:-8px;width:120px;height:88px;background:url("img/ui_ivy_corner.png") left top/contain no-repeat;pointer-events:none;z-index:2}
+#panel .sheet::before{display:none}
+.head h2{font-family:var(--font-head);font-weight:400;font-size:24px;color:var(--g-deep);letter-spacing:.04em;
+  background:url("img/ui_band.png") left center/100% 100% no-repeat;padding:10px 70px 12px 22px;margin-left:-6px;text-shadow:none}
+.back{background:linear-gradient(180deg,var(--g-mid),var(--g));border:3px solid var(--cream);border-radius:12px;color:#fff;font-weight:900;min-height:48px;min-width:64px}
+.go{font-family:var(--font-head);font-weight:400;color:#fff;letter-spacing:.08em;
+  background:
+    linear-gradient(100deg,transparent 78%,rgba(127,207,90,.55) 78% 81%,transparent 81% 84%,rgba(127,207,90,.55) 84% 87%,transparent 87%),
+    linear-gradient(180deg,#56c25b,#2f8f46 60%,#237a3a);
+  border:3px solid #fff7c6;box-shadow:0 0 0 3px var(--gold),0 0 18px rgba(247,201,72,.75),0 6px 0 rgba(0,0,0,.35);
+  -webkit-text-stroke:2px var(--g-deep);paint-order:stroke fill;text-shadow:0 2px 0 var(--g-deep)}
+.go:active{transform:translateY(3px);box-shadow:0 0 0 3px var(--gold),0 2px 0 rgba(0,0,0,.35)}
+.btn,.seg>button,.grid>button{color:#fff;background:
+    linear-gradient(100deg,transparent 80%,rgba(127,207,90,.45) 80% 83%,transparent 83% 86%,rgba(127,207,90,.45) 86% 89%,transparent 89%),
+    linear-gradient(180deg,var(--g-mid),var(--g));
+  border:3px solid var(--cream);border-radius:12px;font-weight:900;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.seg>button.on{color:#fff;background:linear-gradient(180deg,#56c25b,#2f8f46);border-color:#fff7c6;
+  box-shadow:0 0 0 3px var(--gold),0 0 14px rgba(247,201,72,.8);text-shadow:0 1px 0 var(--g-deep)}
+.lab{color:var(--cream);font-family:var(--font-head);font-weight:400;font-size:15px;letter-spacing:.08em}
+.best,.posdesc{color:var(--cream)}
+.link{color:var(--cream-d)}
+.vol input{accent-color:var(--gold)}
+
+/* タイトル: 六角の題字の板(橙の筆の線) */
+.logoWrap{display:inline-block;padding:5px;background:var(--cream);clip-path:polygon(6% 0,94% 0,100% 50%,94% 100%,6% 100%,0 50%);margin-bottom:16px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+.logo{font-family:var(--font-head);font-weight:400;color:#fff;-webkit-text-stroke:3px var(--g-deep);paint-order:stroke fill;
+  text-shadow:0 4px 0 var(--g-deep);padding:14px 48px 24px;margin:0;letter-spacing:.06em;
+  background:
+    linear-gradient(176deg,transparent 72%,var(--orange) 73% 79%,transparent 80%) center/78% 100% no-repeat,
+    linear-gradient(180deg,var(--g-mid),var(--g-deep));
+  clip-path:polygon(6% 0,94% 0,100% 50%,94% 100%,6% 100%,0 50%)}
+.mode{font-family:var(--font-head);font-weight:400;color:#fff;-webkit-text-stroke:1px var(--g-deep);paint-order:stroke fill;
+  background:
+    linear-gradient(100deg,transparent 82%,rgba(127,207,90,.5) 82% 85%,transparent 85% 88%,rgba(127,207,90,.5) 88% 91%,transparent 91%),
+    linear-gradient(180deg,var(--g-mid),var(--g));
+  border:3px solid var(--cream);border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.mode.big{background:
+    linear-gradient(100deg,transparent 82%,rgba(255,255,255,.3) 82% 85%,transparent 85% 88%,rgba(255,255,255,.3) 88% 91%,transparent 91%),
+    linear-gradient(180deg,#56c25b,#2f8f46 60%,#237a3a);
+  border-color:#fff7c6;box-shadow:0 0 0 4px var(--gold),0 0 22px rgba(247,201,72,.85),0 6px 0 rgba(0,0,0,.4)}
+.mode.wide{background:
+    linear-gradient(100deg,transparent 82%,rgba(127,207,90,.5) 82% 85%,transparent 85% 88%,rgba(127,207,90,.5) 88% 91%,transparent 91%),
+    linear-gradient(180deg,var(--g-mid),var(--g))}
+.ic{border-radius:10px}
+.ic-glove{background-image:url("img/ui_icon_glove.png")}
+.ic-ball{background-image:url("img/ui_icon_ball.png")}
+.ic-bat{background-image:url("img/ui_icon_bat.png")}
+.ic-mound{background-image:url("img/ui_icon_mound.png")}
+.ic-walk{background-image:url("img/ui_icon_walk.png")}
+.mode .ic{width:40px;height:40px}
+.mode.big .ic{width:54px;height:54px}
+.loadtxt{color:#fff;text-shadow:0 1px 3px #000}
+.bar{border-color:var(--cream)}
+.bar i{background:linear-gradient(90deg,var(--g-lite),var(--gold))}
+
+/* 守る所: 丸いボタン(深い緑・生成りの縁) */
+.posbtn{font-family:var(--font-head);font-weight:400;background:linear-gradient(180deg,var(--g-mid),var(--g-deep));border:3px solid var(--cream);color:#fff;
+  box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.posbtn.on{background:linear-gradient(180deg,#56c25b,#2f8f46);color:#fff;border-color:#fff7c6;box-shadow:0 0 0 3px var(--gold),0 0 16px rgba(247,201,72,.9)}
+
+/* 結果: スコアボード(深い緑の板に白い数字) */
+.resHead{font-family:var(--font-head);font-weight:400;color:var(--g-deep);
+  background:url("img/ui_band.png") center/100% 100% no-repeat;padding:8px 10px 12px;margin:0 -4px 10px;text-shadow:none}
+.resHead small{color:var(--g);font-family:"Hiragino Sans","Yu Gothic UI",sans-serif}
+.line{background:#0f3322;border:3px solid var(--cream);border-radius:8px;font-family:var(--font-head);font-size:15px}
+.line th{color:var(--cream-d);font-family:inherit;font-weight:400}
+.line td{color:#fff}
+.line td.t{color:var(--gold)}
+.tile{background:linear-gradient(180deg,var(--g-mid),var(--g-deep));border:3px solid var(--cream);border-radius:12px;position:relative;text-align:right;padding:6px 12px;
+  min-height:62px;display:flex;flex-direction:column;justify-content:flex-end}
+.tile b{font-family:var(--font-head);font-weight:400;color:#fff}
+.tile span{position:absolute;left:8px;top:6px;background:var(--cream);color:var(--g-deep);border-radius:6px;padding:1px 6px;font-size:11px;font-weight:900}
+
+/* 遊んでいる間の部品 */
+#hud,#board,.dgBoard{background:linear-gradient(180deg,#174a31,#0f3322);border:3px solid var(--cream);border-radius:12px}
+.sb-inn,.sb-score{font-family:var(--font-head);font-weight:400}
+.dgLines div{background:var(--cream);color:var(--g-deep);font-weight:900}
+#skipBtn{font-family:var(--font-head);font-weight:400;background:linear-gradient(180deg,#56c25b,#2f8f46);border:3px solid #fff7c6;
+  box-shadow:0 0 0 3px var(--gold),0 0 16px rgba(247,201,72,.8),0 5px 0 rgba(0,0,0,.35);-webkit-text-stroke:1px var(--g-deep);paint-order:stroke fill}
+.corner{background:linear-gradient(180deg,var(--g-mid),var(--g));border:3px solid var(--cream);border-radius:50%;color:#fff}
+#pauseBtn{background:radial-gradient(circle at 40% 35%,#c86a45,var(--brick) 60%,#7d3a26)}
+#pad .basebtn{font-family:var(--font-head);font-weight:400;background:
+    linear-gradient(120deg,transparent 62%,rgba(127,207,90,.45) 62% 66%,transparent 66%),
+    linear-gradient(180deg,var(--g-mid),var(--g-deep));border:3px solid var(--cream)}
+#pad.live .basebtn{background:linear-gradient(180deg,#56c25b,#2f8f46);color:#fff;border-color:#fff7c6;box-shadow:0 0 0 3px var(--gold),0 0 12px rgba(247,201,72,.8)}
+#pad .basebtn.cut,#pad.live .basebtn.cut{background:radial-gradient(circle at 40% 35%,#c86a45,var(--brick) 60%,#7d3a26)}
+#stick{border-color:rgba(243,234,210,.75);background:rgba(18,61,41,.35)}
+#knob{background:radial-gradient(circle at 40% 35%,#fff,var(--cream) 60%,var(--cream-d))}
+#exitMode{background:linear-gradient(180deg,var(--g-mid),var(--g));border:3px solid var(--cream)}
+@media (max-height:460px){
+  .head h2{font-size:19px;padding:7px 56px 9px 16px}
+  .sheet{padding-bottom:24px}
+  .sheet::before{width:84px;height:62px}
+  .logoWrap{margin-bottom:8px}
+  .logo{padding:8px 34px 14px}
+  .mode .ic{width:28px;height:28px}
+  .mode.big .ic{width:36px;height:36px}
+  .resHead{font-size:22px;padding:6px 8px 9px}
+}
+
+/* 設定の段: 段ごとに枠で囲み、見出しは斜めの線の入った緑の帯(見本の 3 枚目) */
+.opt{background:rgba(9,36,22,.55);border:2px solid var(--cream-d);border-radius:10px;padding:0 8px 8px;overflow:hidden}
+.opt>.lab{margin:0 -8px 8px;padding:5px 12px;color:#fff;
+  background:linear-gradient(100deg,transparent 84%,rgba(127,207,90,.6) 84% 87%,transparent 87% 90%,rgba(127,207,90,.6) 90% 93%,transparent 93%),linear-gradient(180deg,#1f6040,#174a31)}
+.vol span{background:var(--cream);color:var(--g-deep);border-radius:6px;padding:2px 6px;font-size:13px;text-align:center;width:3.4em}
+#title .titleBox{filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+/* つたは右上に(左上は「戻る」がある) */
+.sheet::before{left:auto;right:-10px;top:-10px;width:92px;height:68px;transform:scaleX(-1)}
+.resSub{text-align:center;color:var(--cream);font-weight:800;font-size:14px;margin:-4px 0 8px}
+/* 小さい字は太い普通の字体に(太い筆の字体は小さいとつぶれる) */
+.mode{font-family:"Hiragino Sans","Yu Gothic UI",sans-serif;font-weight:900;-webkit-text-stroke:0}
+.mode.big{font-family:var(--font-head);font-weight:400;-webkit-text-stroke:1px var(--g-deep)}
+.lab{font-family:"Hiragino Sans","Yu Gothic UI",sans-serif;font-weight:900;font-size:14px}
+#pad .basebtn,.posbtn{font-family:"Hiragino Sans","Yu Gothic UI",sans-serif;font-weight:900}
+/* 見出しの帯は字の長さに合わせる(横に伸ばしすぎない) */
+.head h2{flex:0 1 auto;max-width:calc(100% - 80px)}
+.head{gap:8px}
+.resHead{display:block;width:fit-content;max-width:100%;margin:0 auto 6px;padding:8px 70px 12px 26px}
+@media (max-height:460px){
+  .res .tiles{gap:5px}
+  .tile{min-height:44px;padding:3px 8px}
+  .tile b{font-size:18px}
+  .tile span{top:3px;left:5px;font-size:10px}
+  .line{font-size:12px}
+  .line th,.line td{padding:2px}
+  .resSub{font-size:12px;margin:-2px 0 4px}
+  .res .go{min-height:46px}
+  .sheet::before{width:70px;height:52px}
+}
+.head h2,.resHead{white-space:nowrap}
+@media (max-width:400px){
+  .head h2{font-size:19px;padding:8px 54px 10px 16px}
+  .resHead{font-size:28px;padding:6px 52px 10px 18px}
+  .tile b{font-size:24px}
+}
+/* 見出しの帯は 1 行に収める: 字の大きさを画面の幅で決める */
+.head h2{white-space:nowrap;font-size:clamp(15px,4.6vw,24px);padding:9px clamp(34px,11vw,70px) 11px 16px;overflow:hidden;text-overflow:clip}
+.resHead{white-space:nowrap;font-size:clamp(22px,7.2vw,40px);padding:7px clamp(34px,11vw,70px) 11px 18px}
+@media (max-height:460px){ .head h2{font-size:19px} .resHead{font-size:24px} }
+/* 帯の右の空の絵に字がかからないよう、右の余白は字の大きさに合わせる。つたは左下(レンガの上)へ */
+.head h2{padding:9px 3.3em 11px .7em}
+.resHead{padding:7px 3.1em 11px .6em}
+.sheet::before{left:-10px;right:auto;top:auto;bottom:6px;width:92px;height:68px;transform:scaleY(-1)}
+@media (max-height:460px){ .sheet::before{width:70px;height:52px} }
+
+/* つたの飾りはボタンに重なるので出さない */
+.sheet::before{display:none}
+
+/* ジャンプ・飛び込む: 送球のボタンと同じ右下の場所に、捕る前だけ出る(捕ったら送球のボタンに入れ替わる) */
+#acts{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:196px;height:196px;z-index:11}
+#acts .actbtn{position:absolute;width:84px;height:84px;border-radius:50%;border:3px solid var(--cream);color:#fff;font-family:"Hiragino Sans","Yu Gothic UI",sans-serif;font-weight:900;font-size:16px;
+  box-shadow:0 4px 0 rgba(0,0,0,.4);padding:0}
+#btnJump{right:4px;top:6px;background:linear-gradient(180deg,#56c25b,#2f8f46)}
+#btnDive{left:4px;bottom:6px;background:radial-gradient(circle at 40% 35%,#c86a45,var(--brick) 60%,#7d3a26)}
+#acts .actbtn:active{transform:translateY(3px)}
+
+/* 打つ前の状況 */
+#sit{position:fixed;left:50%;top:max(12px,env(safe-area-inset-top));transform:translateX(-50%) scale(1);z-index:10;pointer-events:none;display:flex;align-items:center;gap:10px;
+  padding:6px 14px 6px 8px;border-radius:12px;background:linear-gradient(180deg,#174a31f0,#0f3322f0);border:3px solid var(--cream);color:#fff;opacity:0;transition:opacity .25s, transform .35s}
+#sit.show{opacity:1}
+#sit.out{opacity:0;transform:translateX(-50%) scale(.7) translateY(-20px)}
+#sit svg{width:46px;height:46px}
+#sit .st b{display:block;font-size:19px;font-family:'Dela Gothic One',sans-serif;letter-spacing:.02em;white-space:nowrap}
+#sit .st span{font-size:12px;opacity:.85}
+#sit .so i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-left:4px;background:rgba(255,255,255,.25)}
+#sit .so i.on{background:#ff5a36}
+/* 1 プレーの評価 */
+#evalPop{position:fixed;left:50%;top:calc(max(12px,env(safe-area-inset-top)) + 70px);transform:translateX(-50%) translateY(-6px);z-index:12;pointer-events:none;
+  font-family:'Dela Gothic One',sans-serif;font-size:20px;padding:4px 14px;border-radius:999px;color:#fff;opacity:0;transition:opacity .2s, transform .25s;white-space:nowrap;
+  text-shadow:0 2px 0 rgba(0,0,0,.35)}
+#evalPop.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#evalPop.k-fine{background:linear-gradient(180deg,#ffcf3a,#f39a10);color:#3a2300;text-shadow:none}
+#evalPop.k-nice,#evalPop.k-judge{background:#1f8a4c}
+#evalPop.k-ok{background:rgba(20,40,30,.75);font-size:16px}
+#evalPop.k-hit{background:rgba(40,40,40,.7);font-size:16px}
+#evalPop.k-miss{background:#c23a22}
+#pad .basebtn.hint{box-shadow:0 0 0 4px rgba(255,255,255,.55),0 0 16px rgba(255,230,140,.9)}
+/* 結果の評価 */
+.evalSum{margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(15,51,34,.08);border:2px solid rgba(15,51,34,.25)}
+.evalSum .es-score b{font-family:'Dela Gothic One',sans-serif;font-size:34px}
+.evalSum .es-score small{margin-left:6px;font-size:13px}
+.evalSum .es-row{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0;font-weight:800}
+.evalSum .es-row span{padding:2px 10px;border-radius:999px;color:#fff}
+.evalSum .k-fine{background:#e8920f}.evalSum .k-nice{background:#1f8a4c}.evalSum .k-miss{background:#c23a22}
+.evalSum .es-word{font-size:14px}
+body.photo #sit,body.photo #evalPop{display:none}
+@media (max-width:600px){
+  #sit{top:calc(max(12px,env(safe-area-inset-top)) + 70px);padding:4px 10px 4px 6px;gap:6px}
+  #sit svg{width:36px;height:36px}
+  #sit .st b{font-size:16px}
+  #evalPop{top:calc(max(12px,env(safe-area-inset-top)) + 128px);font-size:17px}
+}
+#sit .so{white-space:nowrap}
+
+/* 左上の点数板: 大きめで常に読める */
+#board{gap:12px;padding:8px 12px}
+#board .sb-inn{font-size:22px}
+#board .sb-inn small{font-size:13px}
+#board .sb-score{font-size:28px}
+#board .sb-score.sb-k{font-size:18px;color:#ffd54a;letter-spacing:0}
+#board .dia{width:48px;height:48px}
+#board .sb-cnt{font-size:14px;gap:2px 5px}
+#board .sb-cnt i{width:12px;height:12px}
+#board.flash{animation:sbflash .7s ease-out}
+@keyframes sbflash{0%{box-shadow:0 0 0 0 rgba(255,213,74,.95)}40%{box-shadow:0 0 0 7px rgba(255,213,74,.55)}100%{box-shadow:0 0 0 0 rgba(255,213,74,0)}}
+@media (max-width:600px){#board{gap:9px;padding:6px 9px}#board .sb-inn{font-size:19px}#board .sb-score{font-size:24px}#board .dia{width:42px;height:42px}#board .sb-cnt{font-size:13px}#board .sb-cnt i{width:11px;height:11px}}
+
+/* チームの見分け: 相手=えんじ、自分=紺+だいだいの縁 */
+.sb-teams{display:grid;gap:2px;min-width:118px}
+.sb-teams .tm{display:flex;align-items:center;gap:5px;font-weight:800;font-size:14px;line-height:1.15;padding:1px 4px;border-radius:6px}
+.sb-teams .tm .nm small{font-size:10px;margin-left:3px;opacity:.75;font-weight:600}
+.sb-teams .tm b{margin-left:auto;font-family:var(--font-head);font-weight:400;font-size:20px}
+.sb-teams .tm .bat{width:10px;color:#ffd54a;font-size:11px}
+.sb-teams .tm.me{box-shadow:inset 0 0 0 2px #ff7a1a;background:rgba(255,122,26,.12)}
+.sw{display:inline-block;width:8px;height:16px;border-radius:2px;vertical-align:middle}
+.sw.away{background:#9c2f3a}.sw.home{background:#f2f2ee;box-shadow:inset 0 0 0 2px #1f3557}
+.sb-diff{font-size:11px;opacity:.85;padding-left:4px}
+.sb-diff.up{color:#7fe0a0}.sb-diff.dn{color:#ff9d84}
+table.line th small{font-size:10px;margin-left:3px;opacity:.7}
+table.line tr.me{background:rgba(255,122,26,.14);box-shadow:inset 3px 0 0 #ff7a1a}
+table.line th .sw{margin-right:4px}
+@media (max-width:600px){.sb-teams{min-width:104px}.sb-teams .tm{font-size:13px}.sb-teams .tm b{font-size:18px}}
+@media (max-width:600px){
+  #board{max-width:calc(100vw - 150px);flex-wrap:wrap;row-gap:4px}
+  #board .sb-cnt{grid-template-columns:auto auto auto auto auto auto;order:5}
+}
+
+/* 試合・ノックの最後の守備の評価(深い緑の板・金の縁・スコアボード風) */
+.evalTotal{margin:10px 0 12px;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,#174a31,#0f3322);border:3px solid #e9c25a;color:#f4f2ea;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.evalTotal .ev-head{font-family:var(--font-head);font-size:16px;letter-spacing:.08em;color:#e9c25a}
+.evalTotal .ev-main{display:flex;align-items:center;gap:14px;margin:6px 0 8px}
+.evalTotal .ev-rank{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-head);font-size:48px;color:#fff;border:4px solid #fff;transform:scale(1.6) rotate(-14deg);opacity:0;transition:transform .35s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+.evalTotal .ev-rank.stamp{transform:scale(1) rotate(-8deg);opacity:1}
+.evalTotal .r-S{background:#e8a50f}.evalTotal .r-A{background:#c0392b}.evalTotal .r-B{background:#1f8a4c}.evalTotal .r-C{background:#2f6d9e}.evalTotal .r-D{background:#666}
+.evalTotal .ev-score b{font-family:var(--font-head);font-size:44px;font-weight:400;line-height:1}
+.evalTotal .ev-score small{font-size:14px;margin-left:4px;opacity:.8}
+.evalTotal .ev-cmp{display:inline-block;font-size:12px;margin-right:8px;opacity:.9}
+.evalTotal .ev-cmp.up{color:#7fe0a0}.evalTotal .ev-cmp.dn{color:#ff9d84}
+.evalTotal .ev-subs{display:grid;gap:4px}
+.evalTotal .ev-sub{display:grid;grid-template-columns:84px 1fr 34px;align-items:center;gap:6px;font-size:13px}
+.evalTotal .ev-sub small{grid-column:2 / 4;font-size:11px;opacity:.75;margin-top:-3px}
+.evalTotal .ev-bar{height:9px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden}
+.evalTotal .ev-bar i{display:block;height:100%;background:linear-gradient(90deg,#e9c25a,#ffd54a)}
+.evalTotal .ev-sub b{text-align:right;font-family:var(--font-head);font-weight:400}
+.evalTotal .ev-scene{margin-top:8px;font-size:13px;line-height:1.5}
+.evalTotal .ev-scene span{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;margin-right:6px;color:#fff}
+.evalTotal .ev-scene.good span{background:#e8920f}.evalTotal .ev-scene.bad span{background:#c23a22}
+.evalTotal .ev-word{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(233,194,90,.5);font-size:14px;font-weight:700}

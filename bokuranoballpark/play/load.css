@@ -1,0 +1,6 @@
+/* 11/21 持ち主「始めたときのローディングで画面が固まる」: タイトルの読み込みの字の前にも、読み込みの画面と同じ回るボールを出す。
+   回す動きは transform だけ(will-change で別の層)なので、主スレッドが少し忙しい間も画面の合成の係が回し続ける */
+#title .loadtxt{display:flex;align-items:center;justify-content:center;gap:8px}
+#title .loadtxt::before{content:"";flex:none;width:22px;height:22px;background:url("img/ui5_icon_ball.png") center/contain no-repeat;animation:lsSpin 1s linear infinite;will-change:transform}
+#loadScreen .lsTxt::before{will-change:transform}
+@keyframes lsSpin{to{transform:rotate(360deg)}}

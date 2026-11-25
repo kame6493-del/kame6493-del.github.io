@@ -1,0 +1,366 @@
+{
+ "locators": {
+  "LOC_Spawn": [
+   0.0,
+   0.02,
+   8.0
+  ],
+  "LOC_Spawn_Concourse": [
+   0.0,
+   15.85,
+   48.0
+  ],
+  "LOC_PhotoSpot_01_Mound": [
+   0.0,
+   0.26,
+   -20.5
+  ],
+  "LOC_PhotoSpot_02_HomePlate": [
+   0.0,
+   0.02,
+   2.0
+  ],
+  "LOC_PhotoSpot_03_RFCorner": [
+   64.0,
+   0.02,
+   -70.0
+  ],
+  "LOC_PhotoSpot_04_LFCorner": [
+   -64.0,
+   0.02,
+   -70.0
+  ],
+  "LOC_PhotoSpot_05_Alps1BTop": [
+   100.0,
+   25.5,
+   -60.0
+  ],
+  "LOC_PhotoSpot_06_PressBox": [
+   0.0,
+   25.0,
+   50.0
+  ],
+  "LOC_PhotoSpot_07_CFDeck": [
+   0.0,
+   3.9,
+   -124.0
+  ],
+  "LOC_PhotoSpot_08_Gate7": [
+   -4.0,
+   0.02,
+   72.0
+  ],
+  "LOC_PhotoSpot_09_Dugout1B": [
+   28.0,
+   -0.9,
+   4.5
+  ],
+  "LOC_PhotoSpot_10_LFUpper": [
+   -70.0,
+   21.0,
+   -130.0
+  ]
+ },
+ "lights": [
+  {
+   "name": "C_Alps3B",
+   "pos": [
+    -112.0,
+    41.2,
+    -74.0
+   ],
+   "dir": [
+    0.912,
+    -0.335,
+    0.236
+   ],
+   "color": [
+    1.0,
+    0.96,
+    0.9
+   ],
+   "size": 15.0
+  },
+  {
+   "name": "D_Alps1B",
+   "pos": [
+    113.0,
+    41.2,
+    -78.0
+   ],
+   "dir": [
+    -0.906,
+    -0.33,
+    0.265
+   ],
+   "color": [
+    1.0,
+    0.96,
+    0.9
+   ],
+   "size": 15.0
+  },
+  {
+   "name": "E_LF",
+   "pos": [
+    -51.908,
+    41.2,
+    -121.876
+   ],
+   "dir": [
+    0.511,
+    -0.406,
+    0.757
+   ],
+   "color": [
+    1.0,
+    0.96,
+    0.9
+   ],
+   "size": 15.0
+  },
+  {
+   "name": "F_RF",
+   "pos": [
+    51.625,
+    41.2,
+    -123.673
+   ],
+   "dir": [
+    -0.503,
+    -0.401,
+    0.766
+   ],
+   "color": [
+    1.0,
+    0.96,
+    0.9
+   ],
+   "size": 15.0
+  },
+  {
+   "name": "ROOF_3B",
+   "pos": [
+    -36.056,
+    25.7,
+    21.866
+   ],
+   "dir": [
+    0.45,
+    -0.32,
+    -0.834
+   ],
+   "color": [
+    1.0,
+    0.96,
+    0.9
+   ],
+   "size": 24.0
+  },
+  {
+   "name": "ROOF_1B",
+   "pos": [
+    39.531,
+    25.7,
+    21.227
+   ],
+   "dir": [
+    -0.486,
+    -0.316,
+    -0.815
+   ],
+   "color": [
+    1.0,
+    0.96,
+    0.9
+   ],
+   "size": 24.0
+  }
+ ],
+ "field": {
+  "home": [
+   0.0,
+   0.02,
+   -0.216
+  ],
+  "first": [
+   19.074,
+   0.055,
+   -19.397
+  ],
+  "second": [
+   0.0,
+   0.055,
+   -38.795
+  ],
+  "third": [
+   -19.074,
+   0.055,
+   -19.397
+  ],
+  "rubber": [
+   0.0,
+   0.254,
+   -18.515
+  ]
+ },
+ "led_count": 757,
+ "surface": {
+  "x0": -80,
+  "y0": -25,
+  "note": "rows[y - y0][x - x0], Blender の x,y(three の x, -z)。s 土 g 芝 t 外野の警告帯",
+  "rows": [
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".....................................................................ssssssssssssssssssssss......................................................................",
+   "..................................................................sssssssssssssssssssssssssss....................................................................",
+   "................................................................sssssssssssssssssssssssssssssss..................................................................",
+   "...............................................................sssssssssssssssssssssssssssssssss.................................................................",
+   ".............................................................ssssssssssssssssssssssssssssssssssss................................................................",
+   "............................................................sssssssssssssssssssssssssssssssssssssss..............................................................",
+   "...........................................................sssssssssssssssssssssssssssssssssssssssss.............................................................",
+   "..........................................................sssssssssssssssssssssssssssssssssssssssssss............................................................",
+   ".........................................................sssssssssssssssssssssssssssssssssssssssssssss...........................................................",
+   ".........................................................ssssssssssssssssssssssssssssssssssssssssssssss..........................................................",
+   ".........................................................sssssssssssssssssssssssssssssssssssssssssssssss.........................................................",
+   "........................................................sssssssssssssssssssssssssssssssssssssssssssssssss........................................................",
+   ".......................................................sssssssssssssssssssssssssssssssssssssssssssssssssss.......................................................",
+   ".......................................................sssssssssssssssssssssssssssssssssssssssssssssssssss.......................................................",
+   "......................................................sssssssssssssssssssssssssssssssssssssssssssssssssssss......................................................",
+   ".....................................................sssssssssssssssssssssssssssssssssssssssssssssssssssssss.....................................................",
+   ".....................................................sssssssssssssssssssssssssssssssssssssssssssssssssssssss.....................................................",
+   "....................................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssss....................................................",
+   "...................................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss...................................................",
+   "...................................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss...................................................",
+   ".............................................ss...sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss..................................................",
+   "............................................ssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss..................................................",
+   "...........................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.................................................",
+   "...........................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.................................................",
+   "..........................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss................................................",
+   ".........................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss................................................",
+   ".........................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss...............................................",
+   "........................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss...............................................",
+   ".......................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss..............................................",
+   "......................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.............................................",
+   "......................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.............................................",
+   ".....................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss............................................",
+   ".....................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss............................................",
+   "....................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss...........................................",
+   "...................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss...........................................",
+   "...................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss..........................................",
+   "..................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss..........................................",
+   "..................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.........................................",
+   ".................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.........................................",
+   "................................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss........................................",
+   "................................ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.......................................",
+   "...............................sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.......................................",
+   "...............................sssssggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss......................................",
+   "..............................ssssstggggggggggssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.....................................",
+   "..............................sssssggggggggggggssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggtsssss.....................................",
+   ".............................ssssstggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggtsssss....................................",
+   ".............................sssssgggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssggggggtsssss...................................",
+   ".............................sssstgggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggggssssss..................................",
+   "............................sttttgggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssggggggggtttttts.................................",
+   "............................tttttgggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggggggttttttt................................",
+   "............................tttttggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggggggggttttttt...............................",
+   "...........................tttttgggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssggggggggggggttttttt..............................",
+   "...........................tttttggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssggggggggggggggtttttttt............................",
+   "...........................tttttggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggggggggggggtttttttt...........................",
+   "..........................tttttggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggggggggggggggtttttttt..........................",
+   "..........................tttttggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssggggggggggggggggggttttttt..........................",
+   "..........................tttttgggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggggggggggggggggggttttt..........................",
+   ".........................tttttgggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssssgggggggggggggggggggggggttttt.........................",
+   ".........................tttttggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssssggggggggggggggggggggggggttttt.........................",
+   "........................ttttttgggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssssgggggggggggggggggggggggggtttttt........................",
+   "........................tttttgggggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssssgggggggggggggggggggggggggggttttt........................",
+   "........................tttttggggggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssssggggggggggggggggggggggggggggtttttt.......................",
+   ".......................tttttggggggggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssssggggggggggggggggggggggggggggggttttt.......................",
+   ".......................tttttgggggggggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssssgggggggggggggggggggggggggggggggttttt.......................",
+   "......................ttttttggggggggggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssssssgggggggggggggggggggggggggggggggggttttt......................",
+   "......................tttttgggggggggggggggggggggggggggggggggggsssssssssssssssssssssssssssssssssssssgggggggggggggggggggggggggggggggggggttttt......................",
+   ".....................ttttttgggggggggggggggggggggggggggggggggggggsssssssssssssssssssssssssssssssssgggggggggggggggggggggggggggggggggggggtttttt.....................",
+   ".....................tttttggggggggggggggggggggggggggggggggggggggggsssssssssssssssssssssssssssssggggggggggggggggggggggggggggggggggggggggttttt.....................",
+   ".....................tttttggggggggggggggggggggggggggggggggggggggggggsssssssssssssssssssssssssggggggggggggggggggggggggggggggggggggggggggtttttt....................",
+   "....................tttttggggggggggggggggggggggggggggggggggggggggggggggsssssssssssssssssssggggggggggggggggggggggggggggggggggggggggggggggttttt....................",
+   "....................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggsssssssssgggggggggggggggggggggggggggggggggggggggggggggggggggttttt....................",
+   "...................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt...................",
+   "...................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt...................",
+   "..................ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt..................",
+   "..................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt..................",
+   ".................ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt.................",
+   ".................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt.................",
+   ".................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt.................",
+   "................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt................",
+   "................tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt................",
+   "...............ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt...............",
+   "...............tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt...............",
+   "..............ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt..............",
+   "..............tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt..............",
+   ".............ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt..............",
+   ".............tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt.............",
+   ".............tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt.............",
+   "............tttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt............",
+   "............tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt............",
+   "...........ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt...........",
+   "...........tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt...........",
+   "..........ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt...........",
+   "..........tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt..........",
+   "..........tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt..........",
+   ".........tttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt.........",
+   ".........tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt.........",
+   "........ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt........",
+   "........tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt........",
+   ".......ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttt........",
+   ".......tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt........",
+   ".......tttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt.........",
+   "......tttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt..........",
+   "......tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt..........",
+   "......tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt...........",
+   "......tttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt............",
+   "......tttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttt.............",
+   "......ttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt.............",
+   ".......tttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt..............",
+   ".......ttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt...............",
+   "........ttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt................",
+   "........tttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt.................",
+   ".........tttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt..................",
+   "..........tttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt...................",
+   "...........tttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttt....................",
+   "............tttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttttt.....................",
+   ".............tttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttttt......................",
+   "..............tttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttt.......................",
+   "...............ttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttttt.........................",
+   "................ttttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttt..........................",
+   ".................tttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttt...........................",
+   "...................tttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttt.............................",
+   "....................ttttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttttttt..............................",
+   "......................ttttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttttttt................................",
+   ".......................tttttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttttttt..................................",
+   ".........................ttttttttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttttt...................................",
+   "...........................ttttttttttttggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttttt.....................................",
+   ".............................ttttttttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggtttttttttttt.......................................",
+   "...............................tttttttttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttttttt.........................................",
+   "..................................ttttttttttttttttgggggggggggggggggggggggggggggggggggggggggggggggggggggttttttttttttttt...........................................",
+   "....................................ttttttttttttttttttggggggggggggggggggggggggggggggggggggggggggggtttttttttttttttttt.............................................",
+   ".......................................ttttttttttttttttttttggggggggggggggggggggggggggggggggggtttttttttttttttttttt................................................",
+   "...........................................ttttttttttttttttttttttttgggggggggggggggggggtttttttttttttttttttttttt...................................................",
+   "..............................................ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt......................................................",
+   "..................................................tttttttttttttttttttttttttttttttttttttttttttttttttttt...........................................................",
+   ".......................................................tttttttttttttttttttttttttttttttttttttttttt................................................................",
+   ".............................................................ttttttttttttttttttttttttttttttt.....................................................................",
+   "......................................................................ttttttttttttt..............................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   ".................................................................................................................................................................",
+   "................................................................................................................................................................."
+  ]
+ }
+}

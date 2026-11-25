@@ -1,0 +1,145 @@
+/* 自由に遊ぶ球場(js/freeplay.js)の画面の部品。UI v5 の色(ui_v5.css の --v5-*)に合わせる。docs\自由に遊べる球場.md */
+
+/* 持っているお金(右上、一時停止・視点のボタンの下。小さく) */
+#fpWallet{position:fixed;right:calc(max(10px,env(safe-area-inset-right)) + 130px);top:calc(max(10px,env(safe-area-inset-top)) + 4px);z-index:9;pointer-events:none;
+  display:flex;flex-direction:column;align-items:flex-end;gap:0;font-family:var(--v5-head,sans-serif);color:#fff}
+#fpWallet .coin{display:none}
+#fpWallet .v{font-weight:900;font-size:17px;padding:3px 10px;border-radius:999px;background:rgba(6,38,74,.72);border:2px solid var(--v5-yellow,#fdc803);
+  -webkit-text-stroke:0;letter-spacing:.02em}
+#fpWallet small{font-size:10px;opacity:.85;margin-top:2px;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+#fpWallet .pop{position:absolute;right:0;top:46px;white-space:nowrap;font-style:normal;font-weight:900;font-size:15px;color:var(--v5-yellow2,#fae957);
+  text-shadow:0 2px 3px rgba(0,0,0,.8);opacity:0}
+#fpWallet .pop.on{animation:fpPop 2.6s ease-out}
+@keyframes fpPop{0%{opacity:0;transform:translateY(6px)}12%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+
+/* スマホ: 使う(持っている物で)・できること */
+#fpUse{right:max(112px,calc(env(safe-area-inset-right) + 112px));bottom:calc(max(40px,env(safe-area-inset-bottom)) + 98px);width:76px;height:76px;
+  background:rgba(237,96,1,.45);border-color:rgba(255,170,90,.95);color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:14px;padding:2px}
+#fpMenu{right:max(24px,env(safe-area-inset-right));bottom:calc(max(30px,env(safe-area-inset-bottom)) + 90px);width:68px;height:68px;
+  background:rgba(1,82,174,.5);border-color:rgba(209,238,253,.95);color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:13px;line-height:1.15;padding:2px}
+
+/* 整備の進み具合 */
+#fpBar{position:fixed;left:50%;top:max(12px,env(safe-area-inset-top));transform:translateX(-50%);z-index:9;pointer-events:none;
+  padding:6px 16px;border-radius:999px;background:rgba(7,133,30,.8);border:2px solid #fff;color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:16px}
+
+/* 品を並べる窓(売店・操作盤・着替え・できること) */
+#fpSheet{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(2,20,45,.45);padding:12px}
+#fpSheet .box{width:min(440px,100%);max-height:min(88vh,640px);display:flex;flex-direction:column;background:rgba(2,40,90,.94);border:3px solid var(--v5-light,#d1eefd);
+  border-radius:20px;box-shadow:0 12px 30px rgba(0,0,0,.45);color:#fff;font-family:var(--v5-head,sans-serif);overflow:hidden}
+#fpSheet .hd{display:flex;align-items:center;gap:8px;padding:12px 12px 8px 16px}
+#fpSheet .hd h3{flex:1;margin:0;font-size:19px;font-weight:900;line-height:1.3}
+#fpSheet .hd .x{flex:0 0 auto;min-height:44px;padding:0 14px;border-radius:12px;border:2px solid #fff;background:var(--v5-blue,#0152ae);color:#fff;font-weight:900;font-size:15px}
+#fpSheet .have{padding:0 16px 8px;font-size:14px}
+#fpSheet .have b{color:var(--v5-yellow,#fdc803);font-size:17px}
+#fpSheet .have small{display:block;font-size:11px;opacity:.8}
+#fpSheet .list{overflow-y:auto;padding:4px 10px 10px;display:flex;flex-direction:column;gap:6px}
+#fpSheet .sec{margin:8px 4px 0;font-size:13px;font-weight:900;color:var(--v5-yellow2,#fae957)}
+#fpSheet .row{display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 12px;border-radius:12px;border:2px solid rgba(209,238,253,.55);
+  background:rgba(1,92,215,.55);color:#fff;font:inherit;font-weight:800;font-size:15px;text-align:left;cursor:pointer}
+#fpSheet .row .l{flex:1;line-height:1.3}
+#fpSheet .row .p{flex:0 0 auto;font-weight:900;color:var(--v5-yellow,#fdc803)}
+#fpSheet .row.on{border-color:var(--v5-yellow,#fdc803);background:rgba(7,133,30,.7)}
+#fpSheet .row.off{cursor:default;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);font-weight:600;font-size:13px}
+#fpSheet .row:not(.off):active{transform:translateY(2px)}
+#fpSheet .note{padding:8px 16px 14px;font-size:12px;opacity:.85;line-height:1.5}
+
+body.photo #fpWallet,body.photo #fpUse,body.photo #fpMenu,body.photo #fpBar{display:none!important}
+/* 縦のスマホ(幅 480 まで): 観戦の点数板(左上)と重ならないよう、視点のボタンの下・小さな地図の左へ */
+@media (max-width:480px){
+  #fpWallet{top:calc(max(10px,env(safe-area-inset-top)) + 62px);right:calc(max(10px,env(safe-area-inset-right)) + 116px)}
+  #fpWallet .v{font-size:14px;padding:2px 8px}
+  #fpWallet .pop{font-size:13px;top:38px}
+}
+@media (max-width:480px){ #fpWallet.low{left:max(10px,env(safe-area-inset-left));right:auto;align-items:flex-start} #fpWallet.low .pop{left:0;right:auto} }   /* 観戦中は左上の点数板が横に長いので、その下の高さへ */
+
+/* 観覧車のゴンドラの窓枠(乗っている間だけ)。外側の赤い枠・角の丸い窓・横の手すり */
+#fpGondola{position:fixed;inset:0;z-index:8;pointer-events:none;border:clamp(14px,3.2vw,30px) solid #b8323a;border-radius:clamp(28px,6vw,64px);
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.35),inset 0 0 40px rgba(0,0,0,.35)}
+#fpGondola i{position:absolute;left:0;right:0;bottom:16%;height:clamp(6px,1.2vw,12px);background:linear-gradient(#d9dde2,#8d939a);box-shadow:0 2px 4px rgba(0,0,0,.4)}
+#fpGondola b{position:absolute;top:0;bottom:0;left:22%;width:clamp(5px,0.9vw,9px);transform:translateX(-50%);background:linear-gradient(90deg,#8d939a,#d9dde2,#8d939a);opacity:.9}
+body.photo #fpGondola{display:none!important}
+
+/* 観戦のチケットの案内の札(右上の小さな地図の下、地図の札と同じ見た目) */
+#fpGuide{position:fixed;right:max(10px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 236px);z-index:7;pointer-events:none;display:flex;align-items:center;gap:6px;
+  max-width:240px;padding:5px 10px 5px 6px;border-radius:14px;background:rgba(7,133,30,.82);border:2px solid #fff;color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:14px;line-height:1.2}
+#fpGuide i{flex:0 0 22px;height:22px;background:#fff;clip-path:polygon(50% 0,100% 55%,68% 55%,68% 100%,32% 100%,32% 55%,0 55%);transition:transform .15s}
+@media (max-width:640px),(pointer:coarse){#fpGuide{top:calc(max(10px,env(safe-area-inset-top)) + 200px);font-size:12px;max-width:180px}}
+body.photo #fpGuide{display:none!important}
+
+/* 売店の店員の仕事: 注文の品を 4 つから選ぶ(画面の下の真ん中) */
+#fpShop{position:fixed;left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 120px);transform:translateX(-50%);z-index:20;width:min(460px,calc(100% - 24px));
+  padding:12px;border-radius:18px;background:rgba(2,40,90,.92);border:3px solid #d1eefd;color:#fff;font-family:var(--v5-head,sans-serif);text-align:center;box-shadow:0 10px 24px rgba(0,0,0,.4)}
+#fpShop .q{font-size:17px;font-weight:900;margin-bottom:10px}
+#fpShop .q b{color:#fdc803;font-size:20px}
+#fpShop .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#fpShop .opts button{min-height:52px;border-radius:12px;border:3px solid #fff;background:#0152ae;color:#fff;font:inherit;font-weight:900;font-size:17px}
+#fpShop .opts button.ng{background:#7a2a2a}
+#fpShop .st{margin-top:8px;font-size:13px;opacity:.9}
+#fpWallet .tk{font-style:normal;font-size:11px;font-weight:900;margin-top:2px;padding:1px 8px;border-radius:999px;background:rgba(7,133,30,.8);text-shadow:none}
+#fpWallet .tk:empty{display:none}
+/* スマホ横(高さ 500 まで): 案内の札は右の「できること」と重ならないよう、下の真ん中へ */
+@media (max-height:500px){ #fpGuide{top:auto;right:auto;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom))} }
+#fpSheet .row .ic{flex:0 0 40px;width:40px;height:40px;border-radius:10px;background:url("img/fp_items.jpg") 0 0/500% 500% no-repeat;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+
+/* 試合の知らせの帯(観戦・歩く・自由に遊ぶ時。守備の試合は ui.js の大きな札のまま): 上の真ん中に小さく 1 行 */
+#fpTop{position:fixed;left:50%;top:max(8px,env(safe-area-inset-top));transform:translateX(-50%);z-index:9;pointer-events:none;padding:3px 14px;border-radius:999px;
+  background:rgba(6,38,74,.78);border:1.5px solid var(--v5-yellow,#fdc803);color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:14px;white-space:nowrap;opacity:0;transition:opacity .2s}
+#fpTop.on{opacity:1}
+body.photo #fpTop{display:none!important}
+
+/* ---------------------------------------------------------------- 11/20 夜 すっきりの形(js/freeplay.js の simple。?fpfull=1 で前の形)
+   持ち主「ゲーム中のお金は下に目立たないところに」「案内が滅茶苦茶邪魔」「すべるはおかしい」「アルバイトはいつでもスキップ」 */
+/* お金: 左下の端(スティックの下)に数字だけ小さく。増えた・減った時は横に小さく出て消える */
+#fpWallet.fpLow{top:auto!important;right:auto!important;left:max(20px,env(safe-area-inset-left));bottom:calc(max(24px,env(safe-area-inset-bottom)) + 136px);flex-direction:row;align-items:center;gap:6px;opacity:.82}
+#fpWallet.fpLow .v{font-size:12px;font-weight:800;padding:1px 8px;border-width:1px;border-color:rgba(255,255,255,.45);background:rgba(6,38,74,.5)}
+#fpWallet.fpLow .tk{display:none}
+#fpWallet.fpLow .pop{position:static;font-size:12px;top:auto}
+/* PC(スティックが無い): 左下の端 */
+@media (min-width:900px) and (pointer:fine){ #fpWallet.fpLow{left:max(14px,env(safe-area-inset-left));bottom:max(6px,env(safe-area-inset-bottom))} }
+/* スマホ: スティックのすぐ上(スティックの円 128px の上) */
+/* 一言の帯(本当に要る物だけ。もぎりの「チケットを購入してください」など): 下の真ん中、ボタンより上に小さく 1 行。すぐ消える */
+#fpSay{position:fixed;left:50%;bottom:calc(max(24px,env(safe-area-inset-bottom)) + 176px);transform:translateX(-50%);z-index:9;pointer-events:none;max-width:calc(100% - 32px);
+  padding:5px 14px;border-radius:999px;background:rgba(6,38,74,.8);border:1.5px solid rgba(255,255,255,.7);color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:15px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .15s}
+#fpSay.on{opacity:1}
+@media (min-width:900px) and (pointer:fine){ #fpSay{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 52px)} }
+@media (max-height:500px){ #fpSay{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 112px)} }
+body.photo #fpSay{display:none!important}
+/* 仕事の帯と「やめる」: 下の真ん中に並べる(上の点数板と重ならない) */
+#fpJob{position:fixed;left:50%;bottom:calc(max(24px,env(safe-area-inset-bottom)) + 222px);transform:translateX(-50%);z-index:9;display:flex;align-items:center;gap:8px;pointer-events:none}
+#fpJob #fpBar{position:static;transform:none;font-size:14px;padding:4px 12px}
+#fpQuit{pointer-events:auto;min-width:72px;min-height:44px;padding:0 14px;border-radius:999px;border:2px solid #fff;background:rgba(160,40,40,.85);color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:15px;cursor:pointer}
+#fpQuit.hide{display:none}
+@media (min-width:900px) and (pointer:fine){ #fpJob{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 96px)} }
+@media (max-height:500px){ #fpJob{bottom:auto;top:calc(max(8px,env(safe-area-inset-top)) + 40px);left:auto;transform:none;right:calc(max(10px,env(safe-area-inset-right)) + 150px)} }   /* 上の真ん中の試合の知らせ(#fpTop)の下 */
+body.photo #fpJob{display:none!important}
+/* 11/21 手に食べ物を持っている時だけ出る「食べる」「しまう」、手が空で袋に物がある時の「袋」(仕事の帯と同じ所。仕事中は出ない) */
+#fpHand{position:fixed;left:50%;bottom:calc(max(24px,env(safe-area-inset-bottom)) + 222px);transform:translateX(-50%);z-index:9;display:flex;align-items:center;gap:8px}
+#fpHand.hide{display:none}
+#fpHand button{min-width:76px;min-height:46px;padding:0 16px;border-radius:999px;border:2px solid #fff;background:rgba(7,133,30,.88);color:#fff;font-family:var(--v5-head,sans-serif);font-weight:900;font-size:16px;cursor:pointer}
+#fpHand button.stow,#fpHand button.bag{background:rgba(1,82,174,.85);font-size:14px;min-width:64px}
+@media (min-width:900px) and (pointer:fine){ #fpHand{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 96px)} }
+@media (max-height:500px){ #fpHand{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 12px)} }
+body.photo #fpHand{display:none!important}
+/* 11/21 1 時 持ち主「スマホ画面ですが お金の見える位置はめだたないところで」: スマホの縦は、左上の小さな球場の図の下に、小さく薄く(枠なし) */
+@media (max-width:480px) and (orientation:portrait){
+  #fpWallet.fpLow{bottom:auto!important;top:calc(max(10px,env(safe-area-inset-top)) + 236px)!important;left:max(12px,env(safe-area-inset-left))!important;opacity:.55}
+  #fpWallet.fpLow .v{font-size:11px;font-weight:700;padding:0 6px;border:none;background:rgba(6,38,74,.35)}
+  #fpWallet.fpLow .pop{font-size:11px}
+}
+/* 11/22 持ち主「袋1とか見ずらい」: 袋の絵の丸いボタン + 数の丸い印(0 の時は出さない)。PC は左下(お金の上)、スマホ縦は右下の「ジャンプ」の上(真ん中の視界をふさがない) */
+#fpBag{position:fixed;left:max(14px,env(safe-area-inset-left));bottom:calc(max(12px,env(safe-area-inset-bottom)) + 30px);z-index:9;width:56px;height:56px;padding:0;border-radius:50%;
+  border:3px solid #fff;background:radial-gradient(circle at 50% 35%,#1f6fc9,#0b3f86 70%);box-shadow:0 3px 0 rgba(0,0,0,.35);cursor:pointer;display:flex;align-items:center;justify-content:center}
+#fpBag.hide{display:none}
+#fpBag .bg{width:38px;height:38px;display:block;pointer-events:none}
+#fpBag .n{position:absolute;right:-6px;top:-6px;min-width:24px;height:24px;padding:0 5px;box-sizing:border-box;border-radius:12px;background:#ffd65a;border:2px solid #3a2300;color:#3a2300;
+  font:900 14px/20px var(--v5-head,sans-serif);text-align:center;pointer-events:none}
+#fpBag:active{transform:translateY(2px)}
+@media (max-width:640px),(pointer:coarse){ #fpBag{left:auto;right:max(18px,env(safe-area-inset-right));bottom:calc(max(24px,env(safe-area-inset-bottom)) + 118px)} }
+@media (max-height:500px){ #fpBag{left:auto;right:max(18px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 96px);width:50px;height:50px} #fpBag .bg{width:34px;height:34px} }
+body.photo #fpBag{display:none!important}
+/* 袋の窓の 1 行に並ぶ「食べる」「持つ」「しまう」 */
+#fpSheet .row.acts .p{display:flex;gap:6px}
+#fpSheet .row .act{display:inline-flex;align-items:center;justify-content:center;min-width:58px;min-height:38px;padding:0 10px;border-radius:999px;border:2px solid #fff;background:rgba(1,82,174,.9);color:#fff;font-size:14px;font-weight:900}
+#fpSheet .row .act.main{background:rgba(7,133,30,.92)}
+#fpSheet .row .act:active{transform:translateY(2px)}

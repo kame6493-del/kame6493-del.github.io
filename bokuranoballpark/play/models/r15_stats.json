@@ -1,0 +1,790 @@
+{
+ "stadium": 536353,
+ "net": 254,
+ "seats": 299636,
+ "ivy_hi": 499790,
+ "ivy_lo": 160326,
+ "collision": 443054,
+ "seat_places": 46308,
+ "leds": 757,
+ "materials": 363,
+ "files_mb": {
+  "collision.glb": 0.54,
+  "ivy_hi.glb": 3.5,
+  "ivy_lo.glb": 1.18,
+  "seats.bin": 0.37,
+  "seats.glb": 1.81,
+  "stadium.glb": 7.0
+ },
+ "material_images": {
+  "base_white": [],
+  "bench_green": [
+   "bench_green_normal",
+   "r3_bench_green_albedo.png"
+  ],
+  "brick_tan": [
+   "brick_tan_albedo",
+   "brick_tan_normal"
+  ],
+  "chainlink": [
+   "net_albedo"
+  ],
+  "chalk": [
+   "chalk_albedo",
+   "chalk_normal"
+  ],
+  "concrete": [
+   "concrete_albedo",
+   "concrete_normal"
+  ],
+  "concrete_stand": [
+   "concrete_stand_albedo",
+   "concrete_stand_normal"
+  ],
+  "floodlight": [],
+  "foul_pole": [],
+  "galvalume": [
+   "galvalume_albedo",
+   "galvalume_normal"
+  ],
+  "glass_dark": [],
+  "grass": [
+   "field_grass_est_albedo.png",
+   "grass_normal"
+  ],
+  "ivy_observed_0": [],
+  "ivy_observed_1": [],
+  "ivy_observed_2": [],
+  "louver_green": [
+   "louver_green_albedo",
+   "louver_green_normal"
+  ],
+  "net": [],
+  "padding_green": [
+   "padding_green_albedo",
+   "padding_green_normal"
+  ],
+  "paint_green_dark": [],
+  "paint_stone": [],
+  "painted_wall": [
+   "wall_albedo",
+   "wall_normal"
+  ],
+  "r10_alu_frame": [],
+  "r10_black": [],
+  "r10_board_white": [],
+  "r10_bs_lamp": [],
+  "r10_bullpen_ceiling": [],
+  "r10_bullpen_lamp": [],
+  "r10_bullpen_net": [],
+  "r10_bullpen_window": [],
+  "r10_chair_blue": [],
+  "r10_chrome": [],
+  "r10_clock_face": [],
+  "r10_conc_ceiling_slats": [
+   "r10_ceiling_slats.png"
+  ],
+  "r10_crew_shutter": [],
+  "r10_door_grey": [],
+  "r10_exit_box": [],
+  "r10_extinguisher": [],
+  "r10_locker_green": [],
+  "r10_locker_mesh": [],
+  "r10_nameplate": [],
+  "r10_pipe_white": [],
+  "r10_roof_downlight": [],
+  "r10_screen_dark": [],
+  "r10_screen_on": [],
+  "r10_shop_front_wood": [],
+  "r10_skirting": [],
+  "r10_softbox": [],
+  "r10_table_top": [],
+  "r10_tunnel_light2": [],
+  "r10_wall_lamp": [],
+  "r10_window_glass": [],
+  "r11_ball_white": [],
+  "r11_bat_wood": [],
+  "r11_bs_ceiling": [
+   "r11_bs_ceiling.png"
+  ],
+  "r11_bs_floor_grey": [
+   "r11_bs_floor_grey.png"
+  ],
+  "r11_bs_floor_vinyl": [
+   "r11_bs_floor_vinyl.png"
+  ],
+  "r11_bs_floor_wood": [
+   "r11_bs_floor_wood.png"
+  ],
+  "r11_bs_wall_c": [
+   "r11_bs_wall_cream.png"
+  ],
+  "r11_bs_wall_gw": [
+   "r11_bs_wall_green_white.png"
+  ],
+  "r11_bs_wall_w": [
+   "r11_bs_wall_white.png"
+  ],
+  "r11_cardboard": [],
+  "r11_cushion_green": [],
+  "r11_door_frame": [],
+  "r11_fridge_glass": [],
+  "r11_fridge_white": [],
+  "r11_ice_water": [],
+  "r11_interview_backdrop": [
+   "r11_interview_backdrop.png"
+  ],
+  "r11_lamp_frame": [],
+  "r11_laundry_canvas": [],
+  "r11_locker_wood": [],
+  "r11_locker_wood_dark": [],
+  "r11_massage_pad": [],
+  "r11_mirror": [],
+  "r11_notice_0": [
+   "r11_notice_0.png"
+  ],
+  "r11_notice_1": [
+   "r11_notice_1.png"
+  ],
+  "r11_notice_2": [
+   "r11_notice_2.png"
+  ],
+  "r11_riser_black": [],
+  "r11_shelf_grey": [],
+  "r11_sofa_black": [],
+  "r11_stainless": [],
+  "r11_towel_white": [],
+  "r11_tv_screen": [
+   "r11_tv_screen.png"
+  ],
+  "r11_whiteboard": [
+   "r11_whiteboard.png"
+  ],
+  "r12_conc_aedbox": [],
+  "r12_conc_bench": [],
+  "r12_conc_benchleg": [],
+  "r12_conc_bin_blue": [],
+  "r12_conc_bin_green": [],
+  "r12_conc_bin_yellow": [],
+  "r12_conc_column": [
+   "r12_wall_paint.png"
+  ],
+  "r12_conc_extinguisher": [],
+  "r12_conc_floor": [
+   "r12_floor_painted.png"
+  ],
+  "r12_conc_floor_walk": [
+   "r12_floor_painted_walk.png"
+  ],
+  "r12_conc_plate_aed": [
+   "r12_plate_aed.png"
+  ],
+  "r12_conc_plate_ext": [
+   "r12_plate_ext.png"
+  ],
+  "r12_conc_poster_0": [
+   "r12_poster_0.png"
+  ],
+  "r12_conc_poster_1": [
+   "r12_poster_1.png"
+  ],
+  "r12_conc_poster_2": [
+   "r12_poster_2.png"
+  ],
+  "r12_conc_poster_3": [
+   "r12_poster_3.png"
+  ],
+  "r12_conc_poster_4": [
+   "r12_poster_4.png"
+  ],
+  "r12_conc_poster_5": [
+   "r12_poster_5.png"
+  ],
+  "r12_conc_posterframe": [],
+  "r12_conc_queue": [
+   "r12_queue_mark.png"
+  ],
+  "r12_conc_tactile": [],
+  "r12_conc_vending_0": [
+   "r12_vending_0.png"
+  ],
+  "r12_conc_vending_1": [
+   "r12_vending_1.png"
+  ],
+  "r12_conc_vending_2": [
+   "r12_vending_2.png"
+  ],
+  "r12_conc_wall": [
+   "r12_wall_paint.png"
+  ],
+  "r12_dug_bat": [],
+  "r12_dug_bat_dark": [],
+  "r12_dug_bin": [],
+  "r12_dug_board": [
+   "r12_dug_board.png"
+  ],
+  "r12_dug_ceiling": [],
+  "r12_dug_clock": [
+   "r12_dug_clock.png"
+  ],
+  "r12_dug_concrete": [
+   "r12_floor_painted.png"
+  ],
+  "r12_dug_cooler_o": [],
+  "r12_dug_cooler_w": [],
+  "r12_dug_cups": [],
+  "r12_dug_fan": [],
+  "r12_dug_fanblade": [],
+  "r12_dug_glove": [],
+  "r12_dug_helmet": [],
+  "r12_dug_lamp": [],
+  "r12_dug_nosing": [],
+  "r12_dug_pad": [],
+  "r12_dug_padbar": [],
+  "r12_dug_post": [],
+  "r12_dug_rack": [],
+  "r12_dug_rubber": [],
+  "r12_dug_seat": [],
+  "r12_dug_towel": [],
+  "r12_dug_wall": [],
+  "r12_kitchen_coal": [],
+  "r12_kitchen_containers": [],
+  "r12_kitchen_containers_red": [],
+  "r12_kitchen_food": [],
+  "r12_kitchen_griddle": [],
+  "r12_kitchen_oil": [],
+  "r12_kitchen_pot": [],
+  "r12_kitchen_steam": [
+   "r12_steam.png"
+  ],
+  "r12_kitchen_steel": [],
+  "r12_kitchen_steel_dark": [],
+  "r12_kitchen_tile": [
+   "r12_kitchen_tile.png"
+  ],
+  "r12_shop_beertap": [],
+  "r12_shop_black": [],
+  "r12_shop_case_glass": [],
+  "r12_shop_case_inside": [],
+  "r12_shop_cooler": [
+   "r12_cooler_front.png"
+  ],
+  "r12_shop_cups": [],
+  "r12_shop_goods_a": [],
+  "r12_shop_goods_b": [],
+  "r12_shop_goods_c": [],
+  "r12_shop_green": [],
+  "r12_shop_kick": [],
+  "r12_shop_menu_0": [
+   "r12_menupanel_0.png"
+  ],
+  "r12_shop_menu_1": [
+   "r12_menupanel_1.png"
+  ],
+  "r12_shop_menu_10": [
+   "r12_menupanel_10.png"
+  ],
+  "r12_shop_menu_11": [
+   "r12_menupanel_11.png"
+  ],
+  "r12_shop_menu_12": [
+   "r12_menupanel_12.png"
+  ],
+  "r12_shop_menu_13": [
+   "r12_menupanel_13.png"
+  ],
+  "r12_shop_menu_2": [
+   "r12_menupanel_2.png"
+  ],
+  "r12_shop_menu_3": [
+   "r12_menupanel_3.png"
+  ],
+  "r12_shop_menu_4": [
+   "r12_menupanel_4.png"
+  ],
+  "r12_shop_menu_5": [
+   "r12_menupanel_5.png"
+  ],
+  "r12_shop_menu_6": [
+   "r12_menupanel_6.png"
+  ],
+  "r12_shop_menu_7": [
+   "r12_menupanel_7.png"
+  ],
+  "r12_shop_menu_8": [
+   "r12_menupanel_8.png"
+  ],
+  "r12_shop_menu_9": [
+   "r12_menupanel_9.png"
+  ],
+  "r12_shop_name_0": [
+   "r12_shopname_0.png"
+  ],
+  "r12_shop_name_1": [
+   "r12_shopname_1.png"
+  ],
+  "r12_shop_name_10": [
+   "r12_shopname_10.png"
+  ],
+  "r12_shop_name_11": [
+   "r12_shopname_11.png"
+  ],
+  "r12_shop_name_12": [
+   "r12_shopname_12.png"
+  ],
+  "r12_shop_name_13": [
+   "r12_shopname_13.png"
+  ],
+  "r12_shop_name_2": [
+   "r12_shopname_2.png"
+  ],
+  "r12_shop_name_3": [
+   "r12_shopname_3.png"
+  ],
+  "r12_shop_name_4": [
+   "r12_shopname_4.png"
+  ],
+  "r12_shop_name_5": [
+   "r12_shopname_5.png"
+  ],
+  "r12_shop_name_6": [
+   "r12_shopname_6.png"
+  ],
+  "r12_shop_name_7": [
+   "r12_shopname_7.png"
+  ],
+  "r12_shop_name_8": [
+   "r12_shopname_8.png"
+  ],
+  "r12_shop_name_9": [
+   "r12_shopname_9.png"
+  ],
+  "r12_shop_navy": [],
+  "r12_shop_noren_11": [
+   "r12_noren_11.png"
+  ],
+  "r12_shop_noren_3": [
+   "r12_noren_3.png"
+  ],
+  "r12_shop_noren_8": [
+   "r12_noren_8.png"
+  ],
+  "r12_shop_noren_9": [
+   "r12_noren_9.png"
+  ],
+  "r12_shop_pendant": [],
+  "r12_shop_red": [],
+  "r12_shop_register": [],
+  "r12_shop_regscreen": [],
+  "r12_shop_shutter": [
+   "r12_shutter.png"
+  ],
+  "r12_shop_soffit": [],
+  "r12_shop_white": [],
+  "r12_shop_wood": [],
+  "r12_shop_wood_dark": [],
+  "r12_shop_wood_light": [],
+  "r12_shop_yellow": [],
+  "r13_plaza_bench": [],
+  "r13_plaza_drain": [],
+  "r13_plaza_kerb": [],
+  "r13_plaza_paving": [
+   "r13_paving.png"
+  ],
+  "r13_plaza_steel": [],
+  "r13_plaza_tactile": [],
+  "r14_aisle_floor": [
+   "r12_floor_painted_walk.png"
+  ],
+  "r14_aisle_line": [],
+  "r14_aisle_rail": [],
+  "r14_vom_edge": [],
+  "r14_vom_exitsign": [
+   "r14_exit_sign.png"
+  ],
+  "r3_ground_aerial": [
+   "r3_ground_aerial_gsi.jpg"
+  ],
+  "r3_ground_asphalt_r15": [
+   "r15_ground_asphalt.png"
+  ],
+  "r3_ground_far": [],
+  "r3_ground_tile_r15": [
+   "r15_ground_tile.png"
+  ],
+  "r3_neighbour_grey": [],
+  "r3_neighbour_white": [],
+  "r3_scoreboard_dark": [],
+  "r3_viaduct_asphalt": [],
+  "r3_viaduct_concrete": [],
+  "r4_facility_glass": [],
+  "r4_ribbon_dark": [],
+  "r7_ad_band_0": [
+   "r7_ad_0_band.png"
+  ],
+  "r7_ad_band_1": [
+   "r7_ad_1_band.png"
+  ],
+  "r7_ad_band_2": [
+   "r7_ad_2_band.png"
+  ],
+  "r7_ad_band_3": [
+   "r7_ad_3_band.png"
+  ],
+  "r7_ad_band_4": [
+   "r7_ad_4_band.png"
+  ],
+  "r7_ad_band_5": [
+   "r7_ad_5_band.png"
+  ],
+  "r7_ad_band_6": [
+   "r7_ad_6_band.png"
+  ],
+  "r7_ad_band_7": [
+   "r7_ad_7_band.png"
+  ],
+  "r7_ad_tall_0": [
+   "r7_ad_0_tall.png"
+  ],
+  "r7_ad_tall_1": [
+   "r7_ad_1_tall.png"
+  ],
+  "r7_ad_tall_2": [
+   "r7_ad_2_tall.png"
+  ],
+  "r7_ad_tall_3": [
+   "r7_ad_3_tall.png"
+  ],
+  "r7_ad_tall_4": [
+   "r7_ad_4_tall.png"
+  ],
+  "r7_ad_tall_5": [
+   "r7_ad_5_tall.png"
+  ],
+  "r7_ad_tall_6": [
+   "r7_ad_6_tall.png"
+  ],
+  "r7_ad_tall_7": [
+   "r7_ad_7_tall.png"
+  ],
+  "r7_ad_wide_0": [
+   "r7_ad_0_wide.png"
+  ],
+  "r7_ad_wide_1": [
+   "r7_ad_1_wide.png"
+  ],
+  "r7_ad_wide_2": [
+   "r7_ad_2_wide.png"
+  ],
+  "r7_ad_wide_3": [
+   "r7_ad_3_wide.png"
+  ],
+  "r7_ad_wide_4": [
+   "r7_ad_4_wide.png"
+  ],
+  "r7_ad_wide_5": [
+   "r7_ad_5_wide.png"
+  ],
+  "r7_ad_wide_6": [
+   "r7_ad_6_wide.png"
+  ],
+  "r7_ad_wide_7": [
+   "r7_ad_7_wide.png"
+  ],
+  "r7_aisle_2A": [
+   "r7_sign_aisle_2A.png"
+  ],
+  "r7_aisle_2B": [
+   "r7_sign_aisle_2B.png"
+  ],
+  "r7_aisle_2C": [
+   "r7_sign_aisle_2C.png"
+  ],
+  "r7_aisle_2D": [
+   "r7_sign_aisle_2D.png"
+  ],
+  "r7_aisle_2E": [
+   "r7_sign_aisle_2E.png"
+  ],
+  "r7_aisle_2F": [
+   "r7_sign_aisle_2F.png"
+  ],
+  "r7_aisle_2G": [
+   "r7_sign_aisle_2G.png"
+  ],
+  "r7_aisle_2H": [
+   "r7_sign_aisle_2H.png"
+  ],
+  "r7_aisle_2I": [
+   "r7_sign_aisle_2I.png"
+  ],
+  "r7_aisle_2J": [
+   "r7_sign_aisle_2J.png"
+  ],
+  "r7_aisle_2K": [
+   "r7_sign_aisle_2K.png"
+  ],
+  "r7_aisle_2L": [
+   "r7_sign_aisle_2L.png"
+  ],
+  "r7_aisle_3A": [
+   "r7_sign_aisle_3A.png"
+  ],
+  "r7_aisle_3B": [
+   "r7_sign_aisle_3B.png"
+  ],
+  "r7_aisle_3C": [
+   "r7_sign_aisle_3C.png"
+  ],
+  "r7_aisle_3D": [
+   "r7_sign_aisle_3D.png"
+  ],
+  "r7_aisle_3E": [
+   "r7_sign_aisle_3E.png"
+  ],
+  "r7_aisle_3F": [
+   "r7_sign_aisle_3F.png"
+  ],
+  "r7_aisle_3G": [
+   "r7_sign_aisle_3G.png"
+  ],
+  "r7_aisle_3H": [
+   "r7_sign_aisle_3H.png"
+  ],
+  "r7_aisle_3I": [
+   "r7_sign_aisle_3I.png"
+  ],
+  "r7_aisle_L1": [
+   "r7_sign_aisle_L1.png"
+  ],
+  "r7_aisle_L2": [
+   "r7_sign_aisle_L2.png"
+  ],
+  "r7_aisle_L3": [
+   "r7_sign_aisle_L3.png"
+  ],
+  "r7_aisle_L4": [
+   "r7_sign_aisle_L4.png"
+  ],
+  "r7_aisle_L5": [
+   "r7_sign_aisle_L5.png"
+  ],
+  "r7_aisle_R1": [
+   "r7_sign_aisle_R1.png"
+  ],
+  "r7_aisle_R2": [
+   "r7_sign_aisle_R2.png"
+  ],
+  "r7_aisle_R3": [
+   "r7_sign_aisle_R3.png"
+  ],
+  "r7_aisle_R4": [
+   "r7_sign_aisle_R4.png"
+  ],
+  "r7_aisle_R5": [
+   "r7_sign_aisle_R5.png"
+  ],
+  "r7_aisle_R6": [
+   "r7_sign_aisle_R6.png"
+  ],
+  "r7_gate_01": [
+   "r7_sign_gate_01.png"
+  ],
+  "r7_gate_04": [
+   "r7_sign_gate_04.png"
+  ],
+  "r7_gate_10": [
+   "r7_sign_gate_10.png"
+  ],
+  "r7_gate_14": [
+   "r7_sign_gate_14.png"
+  ],
+  "r7_gate_18": [
+   "r7_sign_gate_18.png"
+  ],
+  "r7_gate_21": [
+   "r7_sign_gate_21.png"
+  ],
+  "r7_scoreboard_face": [
+   "r7_sign_scoreboard.png"
+  ],
+  "r7_sign_1b": [
+   "r7_sign_1b.png"
+  ],
+  "r7_sign_3b": [
+   "r7_sign_3b.png"
+  ],
+  "r7_sign_exit": [
+   "r7_sign_exit.png"
+  ],
+  "r7_sign_toilet": [
+   "r7_sign_toilet.png"
+  ],
+  "r8_asphalt": [
+   "asphalt_albedo.png"
+  ],
+  "r8_bin": [],
+  "r8_booth_chair": [],
+  "r8_booth_desk": [],
+  "r8_booth_glass": [],
+  "r8_booth_light": [],
+  "r8_booth_monitor": [],
+  "r8_booth_screen": [],
+  "r8_booth_wall": [],
+  "r8_colnum": [
+   "r8_colnum_atlas.png"
+  ],
+  "r8_conc_beam": [],
+  "r8_conc_lightfit": [],
+  "r8_indoor_turf": [
+   "r8_indoor_turf.png"
+  ],
+  "r8_lamp_head": [],
+  "r8_lamp_pole": [],
+  "r8_mound": [],
+  "r8_planter_soil": [],
+  "r8_plate": [],
+  "r8_rail": [],
+  "r8_room_white": [],
+  "r8_seat_frame": [],
+  "r8_shrub": [],
+  "r8_stair": [
+   "r8_floor_concrete.png"
+  ],
+  "r8_stair_nosing": [],
+  "r8_toilet_entry": [],
+  "r8_vending_plain": [],
+  "r8_wall_waist": [],
+  "r9_ac_cassette": [],
+  "r9_bollard": [],
+  "r9_paving": [
+   "r9_paving_small.png"
+  ],
+  "r9_round_2A": [
+   "r9_sign_round_2A.png"
+  ],
+  "r9_round_2B": [
+   "r9_sign_round_2B.png"
+  ],
+  "r9_round_2C": [
+   "r9_sign_round_2C.png"
+  ],
+  "r9_round_2D": [
+   "r9_sign_round_2D.png"
+  ],
+  "r9_round_2E": [
+   "r9_sign_round_2E.png"
+  ],
+  "r9_round_2F": [
+   "r9_sign_round_2F.png"
+  ],
+  "r9_round_2G": [
+   "r9_sign_round_2G.png"
+  ],
+  "r9_round_2H": [
+   "r9_sign_round_2H.png"
+  ],
+  "r9_round_2I": [
+   "r9_sign_round_2I.png"
+  ],
+  "r9_round_2J": [
+   "r9_sign_round_2J.png"
+  ],
+  "r9_round_2K": [
+   "r9_sign_round_2K.png"
+  ],
+  "r9_round_2L": [
+   "r9_sign_round_2L.png"
+  ],
+  "r9_round_3A": [
+   "r9_sign_round_3A.png"
+  ],
+  "r9_round_3B": [
+   "r9_sign_round_3B.png"
+  ],
+  "r9_round_3C": [
+   "r9_sign_round_3C.png"
+  ],
+  "r9_round_3D": [
+   "r9_sign_round_3D.png"
+  ],
+  "r9_round_3E": [
+   "r9_sign_round_3E.png"
+  ],
+  "r9_round_3F": [
+   "r9_sign_round_3F.png"
+  ],
+  "r9_round_3G": [
+   "r9_sign_round_3G.png"
+  ],
+  "r9_round_3H": [
+   "r9_sign_round_3H.png"
+  ],
+  "r9_round_3I": [
+   "r9_sign_round_3I.png"
+  ],
+  "r9_round_L1": [
+   "r9_sign_round_L1.png"
+  ],
+  "r9_round_L2": [
+   "r9_sign_round_L2.png"
+  ],
+  "r9_round_L3": [
+   "r9_sign_round_L3.png"
+  ],
+  "r9_round_L4": [
+   "r9_sign_round_L4.png"
+  ],
+  "r9_round_L5": [
+   "r9_sign_round_L5.png"
+  ],
+  "r9_round_R1": [
+   "r9_sign_round_R1.png"
+  ],
+  "r9_round_R2": [
+   "r9_sign_round_R2.png"
+  ],
+  "r9_round_R3": [
+   "r9_sign_round_R3.png"
+  ],
+  "r9_round_R4": [
+   "r9_sign_round_R4.png"
+  ],
+  "r9_round_R5": [
+   "r9_sign_round_R5.png"
+  ],
+  "r9_round_R6": [
+   "r9_sign_round_R6.png"
+  ],
+  "r9_tower_grey": [],
+  "r9_tower_louvre": [],
+  "roof_under": [
+   "roof_under_albedo",
+   "roof_under_normal"
+  ],
+  "rubber": [],
+  "screen_main": [],
+  "seat_koshien": [
+   "r3_seat_koshien_albedo.png",
+   "seat_koshien_normal"
+  ],
+  "soil_black": [
+   "r6_soil_koshien_albedo.jpg",
+   "r6_soil_koshien_normal.png"
+  ],
+  "solar_panel": [],
+  "steel_dark": [
+   "metal_albedo",
+   "metal_normal"
+  ],
+  "steel_light": [],
+  "steel_tower": [
+   "steel_tower_albedo",
+   "steel_tower_normal"
+  ],
+  "turf": [
+   "field_turf_est_albedo.png",
+   "turf_normal"
+  ]
+ }
+}

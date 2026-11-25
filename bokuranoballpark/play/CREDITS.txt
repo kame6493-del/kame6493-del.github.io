@@ -1,0 +1,108 @@
+# クレジット
+
+ぼくらのボールパーク(守って、歩いて、球場まるごと)。球場・選手・学校・大会はすべて架空です。
+
+
+
+## 人の形
+- 投手(打席の向こうで投げる人): Universal Base Characters [Standard] 「Superhero_Male_FullBody」 by Quaternius(CC0 1.0)。https://quaternius.com/packs/universalbasecharacters.html 。models/LICENSE_Quaternius_UBC.txt。ユニフォームは無地、胸・背中の文字と番号、帽子の印は消した。
+- 投球の動き: CMU Graphics Lab Motion Capture Database(http://mocap.cs.cmu.edu/)被験者 124 の 124_01 / 124_02 Baseball Pitch。"The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217." BVH への変換は https://github.com/una-dinosauria/cmu-mocap 。
+- 野手・走者・打者・ノッカー・審判(2026-11-17 v3 から): 投手と同じ Quaternius「Universal Base Characters」の骨組み入りの体(CC0 1.0、https://quaternius.com/packs/universalbasecharacters.html 、models/LICENSE_Quaternius_UBC.txt)を 1 つ読み込んで使い回す。目と髪の部品は外し(顔なし)、無地の架空のユニフォーム・帽子・グラブを着せる。動き(構え・走る・ゴロとフライの捕球・送球・塁で受ける・打つ・スライディング・審判のアウト/セーフ)はjs/athletes.js で姿勢を書き、pitcher.js の姿勢ソルバー(手足の 2 骨 IK)で動かしている(動きの素材は使っていない)。
+- 自分の目の守備で捕った時に出るグラブ(models/fp_glove.glb): "Baseball Glove" by Laser Design(https://sketchfab.com/3d-models/baseball-glove-5b54ed8243804b6baa399a61439fe5e1 、https://sketchfab.com/Laserdesign)、CC BY 4.0(https://creativecommons.org/licenses/by/4.0/)。変更あり: 195 万面のスキャンを 9 千面に減らして色と凹凸を焼き直し、メーカーのロゴ・札・刻印の文字を消した。
+- 遠くの人と観客の簡単な人の形: 自作(プログラムで円柱と球を組んだもの。顔・名前・番号・ロゴは無し)。
+
+## 音(2026-11-17 の v2 で入れ替え。音は自作・合成していない。審判の声は VOICEVOX、実況の声は AivisSpeech で作った)
+一覧は audio/manifest.json。数字と確かめた結果は docs/音の一覧.md。
+
+### 実況の声
+- AivisSpeech:阿井田 茂(CV:古山キリヲ)。AivisSpeech https://aivis-project.com/ 、モデルは AivisHub https://hub.aivis-project.com/aivm-models/47e53151-a378-46f3-abee-ce13aa07feb1 。規約 ACML 1.0(商用を含めて利用可・クレジットは任意)https://github.com/Aivis-Project/ACML/blob/master/ACML-1.0.md 。audio/voice_v3/aida/。2026-11-17 夜から(v3)。
+- 言葉は高校野球の中継の言い回しに寄せた短い言葉。実在の選手名・学校名・大会名は言わず、守備位置で呼ぶ。放送の音に近づけるため、帯域(150Hz〜7kHz、2.2kHz を上げ 300Hz を下げる)・軽い圧縮・球場の短い響きを ffmpeg でかけた。
+
+### 選手の掛け声(オーライ)
+- 自分: AivisSpeech:澤原 玄二郎(CV:古山キリヲ)。AivisHub https://hub.aivis-project.com/aivm-models/2e1fdde8-d089-42d7-b64f-cf89952b1bdc 。規約 ACML 1.0(商用を含めて利用可・クレジットは任意)。
+- 味方: VOICEVOX:玄野武宏・VOICEVOX:白上虎太郎。https://voicevox.hiroshiba.jp/ 。VOICEVOX は商用・非商用とも無料、使ったことが分かるクレジットが要る。声は各キャラの規約に従う。
+- audio/voice_v3/call/。外で叫んだ響き(遅い短い響き)を足し、実況より小さく(-21.5 LUFS)した。
+
+### 審判の声
+- VOICEVOX:雀松朱司(ノーマル)。聞き比べた 6 つの声(剣崎雌雄・玄野武宏・青山龍星 熱血ほか)のうち、文字起こしで言葉がいちばん正しく聞き取れた声(文字のずれ 0.13)。audio/call/。
+
+### 効果音ラボ(https://soundeffect-lab.info/ 商用・非商用とも無料、クレジット不要、加工可。素材そのものの再配布は禁止。このゲームの中で鳴らすだけに使う)
+| ファイル | 元の音 |
+|---|---|
+| audio/sfx/bat_barrel_1.mp3, audio/sfx/bat_solid_3.mp3 | metal-bat1.mp3 |
+| audio/sfx/bat_barrel_2.mp3, audio/sfx/bat_jam_3.mp3, audio/sfx/bat_foul_2.mp3, audio/sfx/bat_grounder_2.mp3 | metal-bat2.mp3 |
+| audio/sfx/bat_barrel_3.mp3, audio/amb/cheer_big_3.mp3 | metal-bat-cheers1.mp3 |
+| audio/sfx/mitt_1.mp3, audio/sfx/throw_catch_3.mp3 | ball-mitt-catch1.mp3 |
+| audio/sfx/mitt_2.mp3 | ball-mitt-catch2.mp3 |
+| audio/sfx/base_step_3.mp3 | dash-soil1.mp3 |
+| audio/sfx/slide_1.mp3 | sliding1.mp3 |
+| audio/sfx/slide_2.mp3 | sliding2.mp3 |
+| audio/amb/cheer_big_1.mp3 | people-stadium-cheer1.mp3 |
+| audio/amb/cheer_big_2.mp3 | people-performance-cheer1.mp3 |
+| audio/amb/cheer_1.mp3 | cheer1.mp3 |
+| audio/amb/cheer_2.mp3 | people-performance-cheer2.mp3 |
+| audio/amb/sigh_4.mp3 | people-stadium-cheer2.mp3 |
+| audio/amb/applause_1.mp3 | stadium-clapping-hands1.mp3 |
+| audio/amb/applause_2.mp3 | clapping-hands1.mp3 |
+| audio/amb/band_hit_1.mp3 | trumpet2.mp3(突撃ラッパ。2026-11-17 夜から得点圏の応援の中だけ、小さく・まれに) |
+| audio/amb/band_hit_2.mp3 | trumpet1.mp3(ファンファーレ。2026-11-17 夜から鳴らさない。ファイルは残す) |
+| audio/amb/band_hit_3.mp3 | drum-japanese2.mp3 |
+| audio/amb/band_hit_4.mp3 | drum-japanese1.mp3 |
+| audio/amb/pa_chime_1.mp3 | broadcasting-start1.mp3 |
+| audio/amb/pa_chime_2.mp3 | broadcasting-end1.mp3 |
+
+### 11/17 夕方に足した観客の音
+- 効果音ラボ: people-shout-oo1/oo2(audio/amb/oo_1, oo_2)・people-performance-uwaa1(stir_1)・stadium-buzz1(buzz_loop)・people-stadium-applause1(applause_3)
+- Freesound CC0 1.0: 「crowd clap rhythmic.wav」https://freesound.org/s/424793/ (clap_rhythm_1)、「G28-36-Rhythmic Crowd Cheers Claps.wav」https://freesound.org/s/438396/ (cheer_rhythm_loop、10〜40 秒を切り出し)
+- 太鼓の拍子は、効果音ラボの太鼓の 1 打(band_hit_3/4)を、ゲームの中で間をあけて鳴らしているだけ(音は作っていない)。
+- 得点の時のメガホンを叩く音も、Freesound の 1 打(megaphone_1)をゲームの中で拍子に並べて鳴らしているだけ(音は作っていない)。Freesound の 4 つは CC0 1.0(作者の表示は要らないが書いておく)。ログインの要らない試聴用の mp3 から取った。
+
+### 打球音(2026-11-18 0 時から)
+金属バットの打球音は、効果音ラボ「金属バットで打つ1・2」(metal-bat1.mp3・metal-bat2.mp3)と「金属バットと歓声1」(metal-bat-cheers1.mp3 の頭の 0.45 秒)を 0.2〜0.7 秒に短くし、120 Hz より下を削った物(audio/sfx/bat_barrel_*・bat_solid_1・3・bat_grounder_*・bat_end_*)。bat_solid_2 は Freesound hashtagsmcgee「Bat_hit2」(CC0)。詰まり(bat_jam)とファウルチップ(bat_foul)は前のまま。
+11/17 夜に一度使った Freesound Eelke「baseball-hit-01〜04」(CC BY 4.0、https://freesound.org/people/Eelke/sounds/266642/ ほか)は「ポン」と聞こえたので使うのをやめた(audio/sfx_old/bat_eelke_2026-11-17/ に残した。ゲームでは鳴らさない)。
+
+### Freesound(どれも CC0 1.0)
+| ファイル | 元の音 | 作者 | URL |
+|---|---|---|---|
+| audio/amb/score_taiko_1.mp3(得点の時の太鼓の連打) | Taiko Drumloop 002 [With Ending] (120) | Xinematix | https://freesound.org/people/Xinematix/sounds/491278/ |
+| audio/amb/score_taiko_2.mp3(得点の時の太鼓の連打) | Taiko Drumloop 001 (120) | Xinematix | https://freesound.org/people/Xinematix/sounds/491277/ |
+| audio/amb/stand_drums_1.mp3(得点の時のスタンドの太鼓と観客) | crowd_drums_1.wav | RichieMcMullen | https://freesound.org/people/RichieMcMullen/sounds/386785/ |
+| audio/amb/megaphone_1.mp3(得点の時のメガホンを叩く音、1 打を拍子に並べて鳴らす) | Plastic clap | Kolombooo | https://freesound.org/people/Kolombooo/sounds/629019/ |
+| audio/sfx/bat_solid_1.mp3, audio/sfx/bat_grounder_1.mp3 | Hit by metal baseball bat | trader_one | https://freesound.org/people/trader_one/sounds/684607/ |
+| audio/sfx/bat_solid_2.mp3, audio/sfx/bat_foul_1.mp3 | Bat_hit2 | hashtagsmcgee | https://freesound.org/people/hashtagsmcgee/sounds/851452/ |
+| audio/sfx/bat_jam_1.mp3, audio/sfx/bat_jam_2.mp3, audio/sfx/bat_grounder_3.mp3 | Softball/Baseball Hit | bowlingballout | https://freesound.org/people/bowlingballout/sounds/860786/ |
+| audio/sfx/glove_1.mp3 | Glove Catch 1 FF014.aif | martinimeniscus | https://freesound.org/people/martinimeniscus/sounds/164499/ |
+| audio/sfx/glove_2.mp3 | catching a baseball glove | Luisa_Sanchez | https://freesound.org/people/Luisa_Sanchez/sounds/816984/ |
+| audio/sfx/throw_catch_1.mp3 | Catching a baseball glove | Luisa_Sanchez | https://freesound.org/people/Luisa_Sanchez/sounds/813394/ |
+| audio/sfx/throw_catch_2.mp3 | BallCatch.wav | ToastHatter | https://freesound.org/people/ToastHatter/sounds/514989/ |
+| audio/sfx/base_step_1.mp3, audio/sfx/base_step_2.mp3 | Running On Dirt.wav | FocusBay | https://freesound.org/people/FocusBay/sounds/210866/ |
+| audio/sfx/slide_3.mp3 | Dirt Sliding.wav | Laughingfish78 | https://freesound.org/people/Laughingfish78/sounds/537275/ |
+| audio/amb/sigh_1.mp3 | CRWDReac_Crowd Sigh In Disappointment_ShaneVincent_GSC24_XY-AKG214-96k.wav | ShangusBurger | https://freesound.org/people/ShangusBurger/sounds/763880/ |
+| audio/amb/sigh_2.mp3 | aww.wav | phmiller42 | https://freesound.org/people/phmiller42/sounds/124996/ |
+| audio/amb/sigh_3.mp3 | crowd `oh - - disappointed.mp3 | mrrap4food | https://freesound.org/people/mrrap4food/sounds/619007/ |
+| audio/amb/band_hit_5.mp3 | bb-clapRhm.mp3 | jasinski | https://freesound.org/people/jasinski/sounds/18364/ |
+| audio/amb/crowd_loop.mp3 | Large_crowd_medium_distance_stereo.wav | eguobyte | https://freesound.org/people/eguobyte/sounds/360703/ |
+| audio/amb/band_loop.mp3 | drumline.wav | cognito perceptu | https://freesound.org/people/cognito perceptu/sounds/35224/ |
+
+### 前の版から残している CC0 の音(freesound.org、「打者一人称野球」で切り出した物)
+| ファイル | 元の音 | 作者 | URL |
+|---|---|---|---|
+| audio/crack_barrel.mp3 ほか木のバットの打球音(打席で使う) | Bat Hit 9 FF095.aif / Hitting a Finnish baseball | martinimeniscus / Urkki69 | https://freesound.org/s/162886/ , https://freesound.org/s/628352/ |
+| audio/foultip.mp3, audio/tick.mp3 | Hit a ball (+ BallCatch.wav) | Breviceps / ToastHatter | https://freesound.org/s/457039/ , https://freesound.org/s/514989/ |
+| audio/mitt.mp3, mitt2.mp3 | Glove Catch 1 FF014.aif / catching a baseball glove | martinimeniscus / Luisa_Sanchez | https://freesound.org/s/164499/ , https://freesound.org/s/816984/ |
+| audio/ambience.mp3 | Camden Yards audio.mp3 | dudermensch | https://freesound.org/s/170079/ |
+| audio/ooh.mp3(11/21 から大飛球の「おおーっ」にも使う) | Crowd Ooohs and Ahhhs in Excitement | noah0189 | https://freesound.org/s/264499/ |
+| audio/cheer.mp3(11/21 から大飛球の「おおーっ」の地にも使う) | MLB Crowd Cheer - 09032022.wav | tylermyers1992 | https://freesound.org/s/649156/ |
+| audio/roar.mp3 | Crowd and field noise before and during homerun hit | bmadore | https://freesound.org/s/691975/ |
+| audio/applause.mp3 | Large crowd applause.wav | Bansemer | https://freesound.org/s/160493/ |
+
+応援は太鼓・ラッパの短い音と、ドラムラインの繰り返しだけ。実在の応援曲・有名な曲は使っていない。
+
+## メニューの背景の絵
+
+
+## 書体
+- Dela Gothic One(SIL Open Font License 1.1) https://github.com/syakuzen/DelaGothic
+
+## ライブラリ(同梱)
+- three.js r169(MIT)・three-mesh-bvh 0.8.3(MIT)・Draco の展開(three.js 同梱)

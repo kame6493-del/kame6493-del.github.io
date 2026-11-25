@@ -1,0 +1,115 @@
+/* スタンドで捕る(js/standcatch.js) 11/25。見た目は ChatGPT の案(_chatgpt_stand_1125/stand_ui_gpt_1125.png): 夜の球場の紺と金の枠・花火・緑の決定。字は HTML */
+.scScreen{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;overflow-y:auto;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 14px);
+  background:radial-gradient(120% 60% at 50% 0%,#1d3f9a 0%,#0e1f5a 45%,#071237 100%);font-family:var(--v4-body,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif);color:#fff;-webkit-tap-highlight-color:transparent}
+.scScreen.hide{display:none}
+.scScreen::before{content:"";position:absolute;inset:auto 0 0 0;height:30%;background:linear-gradient(180deg,transparent,rgba(46,140,64,.35));pointer-events:none}
+.scLogo{position:relative;width:100%;max-width:420px;height:92px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.scLogo b{position:relative;z-index:2;font-family:"Dela Gothic One",var(--v4-head,sans-serif);font-weight:400;font-size:44px;letter-spacing:1px;font-style:italic;
+  background:linear-gradient(180deg,#fff8c8 0%,#ffd84a 45%,#f0a01a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:2px #3a1a05;filter:drop-shadow(0 3px 0 #1a0c02) drop-shadow(0 0 14px rgba(255,190,60,.55))}
+.scFw{position:absolute;top:-6px;width:128px;height:66px;background:center/contain no-repeat;z-index:1;opacity:.95}
+.scFw.l{left:-6px;background-image:url("img/stand/fw_l.png")}
+.scFw.r{right:-6px;background-image:url("img/stand/fw_r.png");width:92px;height:84px}
+.scSub{display:flex;align-items:center;justify-content:center;gap:12px;min-width:min(330px,88vw);height:52px;margin:0 0 10px;border-radius:26px;
+  background:linear-gradient(180deg,#1b3c8c,#0d2160);border:3px solid #ffd84a;box-shadow:0 0 0 2px #0a1640,0 4px 14px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.18);
+  font-weight:900;font-size:26px;letter-spacing:2px;flex:0 0 auto}
+.scI{display:inline-block;width:30px;height:30px;background:center/contain no-repeat}
+.scI.seat{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='white' stroke-width='3' stroke-linejoin='round'%3E%3Cpath d='M8 15V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v8'/%3E%3Cpath d='M5 15h22v6H5zM8 21v6M24 21v6'/%3E%3C/svg%3E")}
+.scI.ball{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='white' stroke-width='2.6'%3E%3Ccircle cx='16' cy='16' r='12'/%3E%3Cpath d='M9 7c3 5 3 13 0 18M23 7c-3 5-3 13 0 18'/%3E%3C/svg%3E")}
+.scI.glove{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='%23ffd84a'%3E%3Cpath d='M9 29c-4-3-5-8-4-12l2-9a2 2 0 0 1 4 0v6l1-10a2 2 0 0 1 4 0v9l1-9a2 2 0 0 1 4 0v10l2-7a2 2 0 0 1 4 1l-3 12c-1 5-4 9-9 10z'/%3E%3C/svg%3E")}
+.scI.crown{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='%23ffd84a'%3E%3Cpath d='M4 24 3 9l8 6 5-9 5 9 8-6-1 15z'/%3E%3C/svg%3E")}
+.scPanel{position:relative;width:100%;max-width:420px;border-radius:22px;padding:12px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  background:linear-gradient(180deg,rgba(24,58,150,.92),rgba(10,28,86,.94));border:3px solid #6fb6ff;box-shadow:0 0 0 2px #0a1640,0 0 22px rgba(90,170,255,.45),inset 0 0 30px rgba(0,0,0,.35)}
+.scLead{margin:2px 0 0;font-weight:800;font-size:15px;opacity:.95}
+.scMap{position:relative;width:100%;height:min(58vh,380px);border-radius:16px;background:radial-gradient(80% 80% at 50% 60%,#16307a,#0b1a4c);overflow:hidden;border:1px solid rgba(255,255,255,.15)}
+.scMap canvas{position:absolute;inset:0}
+.scPins{position:absolute;inset:0}
+.scPin{position:absolute;transform:translate(-50%,-50%);min-width:80px;padding:4px 7px 4px;border-radius:14px;cursor:pointer;color:#fff;text-align:center;
+  background:linear-gradient(180deg,#2a7cff,#0f45b8);border:2.5px solid #bfe2ff;box-shadow:0 3px 0 #082a72,0 0 0 2px rgba(0,0,0,.35);font:inherit}
+.scPin b{display:block;font-weight:900;font-size:13.5px;line-height:1.1}
+.scPin em{display:block;margin-top:3px;font-style:normal;font-weight:800;font-size:10px;line-height:1.2;color:#3a2200;background:#fff3c4;border-radius:8px;padding:1px 5px;white-space:nowrap}
+.scPin.on{background:linear-gradient(180deg,#ffd84a,#f39a12);border-color:#fff;color:#3a1a05;box-shadow:0 3px 0 #7a3a00,0 0 16px rgba(255,210,80,.9);z-index:2}
+.scPin.on em{background:#fff}
+.scPin.off{filter:grayscale(1) brightness(.7);cursor:default}
+.scInfo{min-height:40px;text-align:center;line-height:1.3}
+.scInfo b{display:block;font-size:18px;color:#ffd84a}
+.scInfo span{font-size:13.5px;font-weight:700;opacity:.92}
+.scGo{width:100%;max-width:360px;height:64px;border-radius:32px;border:3px solid #d8ffb8;cursor:pointer;color:#fff;font:900 26px/1 var(--v4-body,sans-serif);letter-spacing:1px;
+  background:linear-gradient(180deg,#6de05a 0%,#25a92e 55%,#138a22 100%);box-shadow:0 5px 0 #0b5a16,0 0 18px rgba(120,255,120,.35);text-shadow:0 2px 0 #0b5a16}
+.scGo:disabled{filter:grayscale(1);opacity:.6}
+.scGo:active,.scBlue:active{transform:translateY(3px);box-shadow:0 2px 0 #0b5a16}
+.scBlue{flex:1;height:64px;border-radius:32px;border:3px solid #cfe8ff;cursor:pointer;color:#fff;font:900 24px/1 var(--v4-body,sans-serif);
+  background:linear-gradient(180deg,#5aa2ff 0%,#1c5ee0 55%,#0f3fb0 100%);box-shadow:0 5px 0 #08286e;text-shadow:0 2px 0 #08286e}
+.scBack{background:none;border:0;color:#cfe0ff;font:700 14px var(--v4-body,sans-serif);text-decoration:underline;cursor:pointer;padding:6px 12px;min-height:44px}
+.scRow{display:flex;gap:10px;width:100%;max-width:380px}
+.scRow .scGo{flex:1;font-size:24px}
+.scRibbon{margin-top:4px;padding:8px 34px 9px;font-weight:900;font-size:30px;color:#fff3c4;background:linear-gradient(180deg,#e0352a,#a3160f);border:2px solid #ffd84a;
+  clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%);text-shadow:0 2px 0 #5a0a05;letter-spacing:2px}
+.scBig{display:flex;align-items:baseline;justify-content:center;gap:4px;font-weight:900;font-style:italic}
+.scBig span{font-size:30px;color:#fff;-webkit-text-stroke:5px #0a1640;paint-order:stroke fill}
+.scBig b{font-size:72px;line-height:1;color:#e8261b;-webkit-text-stroke:6px #fff;paint-order:stroke fill;filter:drop-shadow(0 3px 0 rgba(0,0,0,.4))}
+.scTable{width:100%;max-width:360px;border-radius:14px;overflow:hidden;border:2px solid #6fb6ff;background:rgba(8,22,70,.75)}
+.scTable div{display:flex;align-items:center;gap:8px;padding:8px 14px;font-weight:900;font-size:18px;border-top:1px solid rgba(255,255,255,.12)}
+.scTable div:first-child{border-top:0}
+.scTable div b{margin-left:auto;font-size:30px;font-style:italic}
+.scTable b.gold{color:#ffd84a}
+.scTable div.sm{font-size:13px;font-weight:700;opacity:.85;justify-content:center}
+.scReward{position:relative;width:100%;max-width:340px;border-radius:16px;padding:22px 10px 10px;margin-top:8px;text-align:center;border:3px solid #ffd84a;
+  background:radial-gradient(60% 60% at 50% 45%,rgba(255,220,120,.35),rgba(10,28,86,.9))}
+.scRwHead{position:absolute;top:-16px;left:50%;transform:translateX(-50%);padding:5px 22px;border-radius:8px;font-weight:900;font-size:17px;white-space:nowrap;background:linear-gradient(180deg,#2fbf4f,#147a2c);border:2px solid #ffd84a}
+.scBall{display:block;width:120px;height:120px;margin:0 auto;background:url("img/stand/kinen_ball.png") center/contain no-repeat}
+.scRwName{display:inline-block;margin-top:4px;padding:6px 16px;border-radius:10px;font-weight:900;font-size:16px;color:#3a1a05;background:linear-gradient(180deg,#fff3b8,#ffc93a);border:2px solid #7a4a00}
+.scReward.none .scBall{filter:grayscale(1) brightness(.6);opacity:.6}
+.scReward.none .scRwName{background:#d8dde8;color:#2a3550;border-color:#5a6680}
+/* 遊んでいる間 */
+#scHud{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:14;pointer-events:none;text-align:center}
+#scHud.hide{display:none}
+#scHud.tall{left:auto;right:10px;transform:none;text-align:right}
+body.touch #scFlash{top:40%}
+#scHud b{display:inline-block;padding:5px 14px;border-radius:16px;background:rgba(10,22,70,.78);border:2px solid #ffd84a;font:900 15px/1.2 var(--v4-body,sans-serif);color:#fff;white-space:nowrap}
+#scHud span{display:block;margin-top:4px;font:800 13px/1.2 var(--v4-body,sans-serif);color:#fff;text-shadow:0 1px 3px #000}
+#scHud span:empty{display:none}
+#scFlash{position:fixed;left:50%;top:24%;transform:translate(-50%,-50%) scale(.8);z-index:15;pointer-events:none;opacity:0;text-align:center;transition:opacity .15s,transform .15s;white-space:nowrap}
+#scFlash.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#scFlash b{display:block;font:italic 900 34px/1.1 var(--v4-body,sans-serif);color:#fff;-webkit-text-stroke:6px #0a1640;paint-order:stroke fill;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+#scFlash.ok b{color:#ffd84a;-webkit-text-stroke-color:#3a1a05;font-size:42px}
+#scFlash.ng b{color:#cfd8ea}
+#scFlash small{display:block;margin-top:2px;font:900 20px var(--v4-body,sans-serif);color:#fff;-webkit-text-stroke:4px #0a1640;paint-order:stroke fill}
+#scFlash small:empty{display:none}
+#scTix{position:fixed;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 200px);z-index:14;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:92px;min-height:76px;padding:6px 4px;border-radius:18px;border:3px solid #ffd84a;color:#fff;cursor:pointer;background:linear-gradient(180deg,#1f4fc0,#0c2a7a);box-shadow:0 4px 0 #061a50;font-family:var(--v4-body,sans-serif)}
+#scTix.hide{display:none}
+#scTix i{width:28px;height:28px;background:url("img/stand/kinen_ball.png") center/contain no-repeat}
+#scTix b{font-weight:900;font-size:14px;line-height:1.15}
+#scTix small{font-weight:800;font-size:12px;color:#ffd84a}
+#scTix small:empty{display:none}
+#scTix.wait{background:linear-gradient(180deg,#ffd84a,#f39a12);color:#3a1a05;animation:scPulse .6s ease-in-out infinite alternate}
+@keyframes scPulse{from{transform:scale(1)}to{transform:scale(1.06)}}
+body:not(.touch) #scTix{bottom:120px}
+/* スタンドで捕るの間は、ボールパークの持ち物・お金・小さな地図を出さない(席の周りに集中する) */
+body.scMode #fpWallet,body.scMode #fpBag,body.scMode #fpHand,body.scMode #wayf,body.scMode #mkBox,body.scMode #scTix{display:none!important}
+/* PC・横長: 縦が足りない時は詰める(スクロールせずにボタンまで見える) */
+@media (min-width:700px) and (max-height:900px){
+  .scLogo{height:64px}.scLogo b{font-size:36px}.scFw.l{width:100px;height:52px}.scFw.r{width:70px;height:64px}
+  .scSub{height:42px;font-size:21px;margin-bottom:6px}
+  .scPanel{max-width:600px;padding:8px 12px 8px;gap:6px}
+  .scMap{height:calc(100vh - 318px);min-height:260px}
+  .scGo,.scBlue{height:54px;font-size:22px}
+  .scBack{min-height:32px;padding:2px 10px}
+  .scRibbon{font-size:24px;padding:5px 30px 6px}
+  .scBig b{font-size:56px}.scBig span{font-size:26px}
+  .scTable div{padding:5px 14px}.scTable div b{font-size:24px}
+  .scReward{padding:16px 10px 6px;margin-top:10px}.scBall{width:84px;height:84px}
+}
+@media (max-height:500px){
+  .scLogo{height:50px}.scLogo b{font-size:28px}.scSub{height:36px;font-size:18px;margin-bottom:4px}
+  .scMap{height:calc(100vh - 230px);min-height:180px}
+}
+/* 11/25 タイトルのモードが 5 つ以上(守備のキャリア・スタンドで捕るを足した)の時の PC の横一列: 字を 1 行に収める(4 つの時の mobile.css と同じ考え方) */
+@media (min-width:900px) and (min-height:560px){
+  #title .modes[data-n="5"],#title .modes[data-n="6"]{width:min(1240px,calc(100vw - 32px))}
+  #title .modes[data-n="5"] .mode,#title .modes[data-n="5"] .mode.big,#title .modes[data-n="6"] .mode,#title .modes[data-n="6"] .mode.big{flex:1 1 0;width:auto;min-width:0;max-width:240px;padding-left:10px;padding-right:10px;gap:6px;font-size:clamp(15px,1.45vw,19px);letter-spacing:0}
+  #title .modes[data-n="5"] .mode b,#title .modes[data-n="6"] .mode b{white-space:nowrap;font-size:inherit}
+  #title .modes[data-n="5"] .mode .ic,#title .modes[data-n="6"] .mode .ic{width:30px;height:30px;flex:0 0 30px}
+}

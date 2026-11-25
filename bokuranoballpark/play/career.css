@@ -1,0 +1,262 @@
+/* 11/25 守備のキャリア(js/career.js・js/career_ui.js)。ChatGPT の案 _chatgpt_career_1125/career_result_gpt_1125.png に合わせた:
+   夜の球場と花火 / 紺の板に金の縁 / 空色の明るい板 / 緑の見出しの帯 / 赤い判子 / 紺の表 / 緑のバーと黄色の +n / 赤い昇格の帯 / 緑の大きなボタン */
+:root{--c-navy:#0a2f7c;--c-navy2:#06215e;--c-ink:#061a46;--c-gold:#f6c437;--c-gold2:#ffe58a;--c-sky:#e6f4ff;--c-sky2:#b9defc;--c-green:#2fbf1f;--c-green2:#0f8a12;--c-red:#d81f1f}
+.carScreen{position:fixed;inset:0;z-index:32;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+  font-family:var(--v5-head,"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif);color:#fff;-webkit-tap-highlight-color:transparent}
+.carBg{position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(ellipse 70% 30% at 50% 108%,rgba(60,170,60,.85),rgba(20,90,30,0) 70%),
+  linear-gradient(180deg,rgba(5,14,48,.92) 0%,rgba(8,30,90,.70) 38%,rgba(10,40,100,.55) 62%,rgba(8,60,30,.85) 100%),
+  var(--st) center 60%/cover no-repeat,#071a4a}
+.carBg::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 8% 40%,rgba(255,255,255,.35),transparent 9%),radial-gradient(circle at 92% 40%,rgba(255,255,255,.35),transparent 9%),
+  radial-gradient(ellipse at 50% 46%,rgba(255,230,150,.18),transparent 45%)}
+.carBg i{position:absolute;top:0;width:min(30vw,210px);aspect-ratio:210/215;background:center/contain no-repeat;mix-blend-mode:screen;opacity:.95;animation:cFw 3.2s ease-in-out infinite}
+.carBg .fwL{left:0;background-image:url("img/career_fw_l.webp")}
+.carBg .fwR{right:0;width:min(23vw,162px);aspect-ratio:162/215;background-image:url("img/career_fw_r.webp");animation-delay:1.4s}
+@keyframes cFw{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+.carSheet{position:relative;max-width:430px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding-bottom:10px}
+
+/* 題字(文字。金の縁と青い影) */
+.cTop{position:relative;display:flex;align-items:center;justify-content:center;min-height:64px}
+.cLogo{margin:4px 0 0;text-align:center;font-size:clamp(34px,10vw,46px);font-weight:900;font-style:italic;letter-spacing:.02em;line-height:1.1;
+  color:#fff;-webkit-text-stroke:7px var(--c-ink);paint-order:stroke fill;text-shadow:0 0 0 #fff,0 4px 0 #0b2f86,0 0 18px rgba(80,170,255,.8);
+  background:none}
+
+.cBack{position:absolute;left:0;top:8px;min-height:44px;padding:0 16px;border-radius:999px;border:2px solid #fff;background:linear-gradient(180deg,#2266d8,#0b3a9c);
+  color:#fff;font:900 16px/1 inherit;font-family:inherit;box-shadow:0 3px 0 rgba(0,0,0,.35);z-index:2}
+.cTop .cLogo{padding:0 70px;font-size:clamp(28px,8.4vw,42px)}
+
+/* 板 */
+.cPanel{position:relative;border-radius:22px;padding:14px 14px 12px}
+.cDark{background:linear-gradient(180deg,#123f9e,var(--c-navy2));border:3px solid var(--c-gold);box-shadow:0 0 0 2px #7a5200 inset,0 6px 18px rgba(0,0,0,.45)}
+.cLight{background:linear-gradient(180deg,rgba(236,247,255,.97),rgba(190,224,252,.95));border:3px solid #fff;box-shadow:0 0 0 2px rgba(80,140,220,.6) inset,0 6px 18px rgba(0,0,0,.4);color:var(--c-ink);padding-top:30px;margin-top:16px}
+.cRibbon{position:absolute;left:50%;top:-18px;transform:translateX(-50%);min-width:180px;padding:6px 34px 8px;text-align:center;white-space:nowrap;
+  font-size:21px;font-weight:900;letter-spacing:.1em;color:#fff;-webkit-text-stroke:4px var(--c-ink);paint-order:stroke fill;
+  background:linear-gradient(180deg,#3a7fe0,#0d3f9a);clip-path:polygon(0 50%,12px 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,12px 100%);
+  filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.cRibbon.green{font-size:clamp(26px,7.6vw,34px);padding:6px 46px 9px;background:linear-gradient(180deg,#4fd13a,#0f7d16 55%,#09610f)}
+
+.cMain .cRibbon{top:-22px}
+
+/* 段の矢印(高校 > 社会人 > プロ) */
+.cLadder{display:flex;align-items:center;gap:4px}
+.cStep{flex:1 1 0;min-width:0;text-align:center;padding:8px 6px 9px 14px;font-size:clamp(19px,5.6vw,26px);font-weight:900;white-space:nowrap;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,9px 50%);
+  background:linear-gradient(180deg,#2c5fb8,#173f88);color:#c9d8f5;-webkit-text-stroke:3px #0b2558;paint-order:stroke fill}
+.cStep:first-child{clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)}
+.cStep.done{background:linear-gradient(180deg,#5a7fc4,#2d4f92);color:#e8eefc}
+.cStep.on{background:linear-gradient(180deg,#fff1a0,var(--c-gold) 45%,#e39b00);color:#3a1e00;-webkit-text-stroke:0;filter:drop-shadow(0 0 8px rgba(255,200,40,.8))}
+.cStep.lit{animation:cLit 1.1s ease-in-out .9s 3 both}
+@keyframes cLit{0%,100%{filter:none}50%{background:linear-gradient(180deg,#fff7c8,#ffd84a);color:#3a1e00;filter:drop-shadow(0 0 14px #ffe066)}}
+.cArrow{flex:0 0 10px;height:14px;background:var(--c-gold);clip-path:polygon(0 0,100% 50%,0 100%)}
+.cPosRow{display:flex;align-items:center;gap:12px;margin-top:12px}
+.cDia{flex:0 0 54px;height:40px}
+.cPosPill{flex:1;text-align:center;padding:8px 10px;border:2px solid #fff;border-radius:999px;font-size:clamp(18px,5.2vw,23px);font-weight:900;background:rgba(5,22,70,.55)}
+.cPosPill b{color:var(--c-gold)}
+.cGame,.cGoal{margin-top:10px;text-align:center;font-weight:900;font-size:15px;color:#dbe8ff}
+.cGoal{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:12px;background:rgba(0,0,0,.25)}
+.cGoal b{color:var(--c-gold);font-size:16px}
+
+/* 評価の判子と点 */
+.cRankBox{position:relative;display:flex;flex-direction:column;align-items:center;padding:4px 0 6px}
+.cShine{position:absolute;left:50%;top:44%;width:300px;height:300px;transform:translate(-50%,-50%);pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(255,236,160,.55) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 18%,transparent 64%);mask:radial-gradient(circle,#000 18%,transparent 64%);animation:cSpin 14s linear infinite}
+@keyframes cSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.cStamp{position:relative;width:150px;height:150px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle,#fff 0 52%,#f3ece4 60%,#fff 64%);box-shadow:0 0 0 12px var(--c-red) inset,0 0 0 15px #fff inset,0 0 0 17px var(--c-red) inset,0 6px 16px rgba(0,0,0,.35);
+  opacity:0;transform:scale(1.8) rotate(-12deg)}
+.cStamp span{font:900 104px/1 "Georgia","Times New Roman",serif;color:var(--c-red);-webkit-text-stroke:3px #8c0b0b;text-shadow:0 3px 0 rgba(0,0,0,.18)}
+.cStamp.stamp{animation:cStamp .38s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes cStamp{to{opacity:1;transform:scale(1) rotate(-6deg)}}
+.cStamp.rS{box-shadow:0 0 0 12px #c8920a inset,0 0 0 15px #fff inset,0 0 0 17px #c8920a inset,0 0 26px rgba(255,210,60,.9)}
+.cStamp.rS span{color:#d79a00;-webkit-text-stroke-color:#7a4c00}
+.cStamp.rC span,.cStamp.rD span{color:#3263b8;-webkit-text-stroke-color:#13306a}
+.cStamp.rC,.cStamp.rD{box-shadow:0 0 0 12px #3263b8 inset,0 0 0 15px #fff inset,0 0 0 17px #3263b8 inset,0 6px 16px rgba(0,0,0,.35)}
+.cStamp.sm{width:74px;height:74px;opacity:1;transform:rotate(-6deg);box-shadow:0 0 0 6px var(--c-red) inset,0 0 0 8px #fff inset,0 0 0 9px var(--c-red) inset}
+.cStamp.sm span{font-size:48px;-webkit-text-stroke-width:2px}
+.cStamp.sm.rS{box-shadow:0 0 0 6px #c8920a inset,0 0 0 8px #fff inset,0 0 0 9px #c8920a inset,0 0 14px rgba(255,210,60,.9)}
+.cStamp.sm.rC,.cStamp.sm.rD{box-shadow:0 0 0 6px #3263b8 inset,0 0 0 8px #fff inset,0 0 0 9px #3263b8 inset}
+.cScore{position:relative;margin-top:6px;font-style:italic;font-weight:900;color:var(--c-navy2)}
+.cScore b{font-size:64px;line-height:1;-webkit-text-stroke:2px #fff;paint-order:stroke fill}
+.cScore small{font-size:26px;margin-left:6px;color:#20407e}
+
+/* 表(紺) */
+.cTable{width:100%;border-collapse:separate;border-spacing:0;margin-top:8px;background:linear-gradient(180deg,#123f9e,#0a2b72);border:3px solid #fff;border-radius:16px;overflow:hidden;box-shadow:0 3px 0 rgba(0,0,0,.25);color:#fff}
+.cTable th,.cTable td{padding:7px 14px;font-size:clamp(19px,5.4vw,24px);font-weight:900;border-bottom:1px solid rgba(255,255,255,.4)}
+.cTable tr:last-child th,.cTable tr:last-child td{border-bottom:0}
+.cTable th{text-align:left;width:46%;border-right:1px solid rgba(255,255,255,.4);padding-left:22px}
+.cTable td{text-align:center}
+.cTable td small{display:block;font-size:11px;font-weight:700;color:#cfe0ff;white-space:nowrap}
+.cTable td.pos{color:#9cff7a}.cTable td.neg{color:#ff9d9d}
+
+/* 能力のバー */
+.cAbs{margin-top:12px;padding:10px 8px 6px;border-radius:16px;background:rgba(255,255,255,.55);border:2px solid rgba(255,255,255,.9)}
+.cAb{display:grid;grid-template-columns:auto 1fr auto 52px;align-items:center;gap:8px;margin:6px 0}
+.cAbName{display:flex;align-items:center;gap:5px;min-width:118px;padding:6px 12px 6px 8px;border-radius:999px;background:linear-gradient(180deg,#2a6ce0,#0c3a9a);color:#fff;font-size:17px;font-weight:900;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.cAbName svg{width:22px;height:22px;color:#fff}
+.cBar{height:20px;border-radius:999px;background:#e9eef4;border:2px solid #9fb2c8;overflow:hidden}
+.cBar i{display:block;height:100%;width:var(--w);border-radius:999px;background:linear-gradient(180deg,#9df07a,var(--c-green) 50%,var(--c-green2));box-shadow:0 2px 0 rgba(255,255,255,.6) inset;transition:width .8s}
+.cAb .cAbV{font-size:26px;font-style:italic;font-weight:900;color:var(--c-navy2);min-width:36px;text-align:right}
+.cPlus,.cGrade{justify-self:center;min-width:48px;text-align:center;padding:3px 8px;border-radius:999px;font-size:21px;font-weight:900}
+.cPlus{background:#fdf6b5;color:#1d9a12;box-shadow:0 0 0 2px #f2d860 inset;animation:cPlus .6s cubic-bezier(.2,1.6,.4,1) 1.1s both}
+@keyframes cPlus{from{transform:scale(0)}to{transform:scale(1)}}
+.cGrade{background:#fff;color:#57708f;box-shadow:0 0 0 2px #c3d3e6 inset}
+.cGrade.gS{color:#c38500;box-shadow:0 0 0 2px #f6c437 inset}.cGrade.gA{color:#d22}.cGrade.gB{color:#e46a00}.cGrade.gC{color:#c7a100}.cGrade.gD{color:#2c9a1a}.cGrade.gE{color:#2a7bd0}
+.cNext{grid-column:2 / -1;margin-top:-4px;font-size:12px;font-weight:700;color:#3b5578}
+.cAb.upd .cAbV{color:#1d9a12}
+.cNote{margin-top:6px;font-size:12.5px;font-weight:700;line-height:1.45;color:#3b5578;text-align:center}
+.cDark .cNote{color:#cfe0ff}
+
+/* 能力の板(結果の画面。スマホは評価の板のすぐ下、PC は右の列) */
+.cAbP{padding:10px 12px;margin-top:-4px}
+.cAbP .cAbs{margin-top:0;background:none;border:0;padding:0}
+
+/* 帯 */
+.cBand{position:relative;margin:4px -6px 0;padding:12px 40px 14px;text-align:center;clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%,4% 50%)}
+.cBand b{display:block;font-size:clamp(30px,9vw,44px);font-weight:900;font-style:italic;color:#fff2b0;-webkit-text-stroke:6px #5a0b00;paint-order:stroke fill;text-shadow:0 3px 0 rgba(0,0,0,.35);line-height:1.1}
+.cBand small{display:block;margin-top:4px;font-size:14px;font-weight:900;color:#fff}
+.cBand.promo{background:linear-gradient(180deg,#ff5a3c,var(--c-red) 50%,#9a0d0d);box-shadow:0 0 0 3px var(--c-gold) inset;animation:cBand .55s cubic-bezier(.2,1.5,.4,1) 1.3s both}
+.cBand.promo::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:cGlint 1.6s ease-in-out 2s infinite}
+@keyframes cBand{from{transform:scale(.2) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes cGlint{to{transform:translateX(120%)}}
+.cBand.stay{background:linear-gradient(180deg,#2e6fd8,#0d3a92);box-shadow:0 0 0 3px #fff inset}
+.cBand.stay b{font-size:clamp(24px,7vw,32px);color:#fff;-webkit-text-stroke:5px var(--c-ink)}
+
+/* ボタン */
+.cGo{min-height:76px;margin-top:4px;border-radius:999px;border:4px solid #fff;background:linear-gradient(180deg,#8cf05a,#2fb81a 45%,#13820f);
+  color:#fff;font-family:inherit;font-size:clamp(28px,8.4vw,38px);font-weight:900;letter-spacing:.06em;-webkit-text-stroke:6px #0b4a08;paint-order:stroke fill;
+  box-shadow:0 0 0 3px #0e6a0a,0 7px 0 #0a4d07,0 10px 18px rgba(0,0,0,.4);cursor:pointer}
+.cGo:active{transform:translateY(4px);box-shadow:0 0 0 3px #0e6a0a,0 3px 0 #0a4d07}
+.cGo:disabled{filter:grayscale(.7) brightness(.85)}
+.cRow2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cBtn{min-height:52px;border-radius:999px;border:3px solid #fff;background:linear-gradient(180deg,#2c6fe0,#0b3a9c);color:#fff;font-family:inherit;font-size:17px;font-weight:900;box-shadow:0 4px 0 rgba(0,0,0,.35);cursor:pointer}
+.cReset{align-self:center;min-height:44px;padding:0 16px;border:0;background:none;color:#cfe0ff;font-family:inherit;font-size:14px;font-weight:700;text-decoration:underline;cursor:pointer}
+.cReset.sure{color:#ffb0b0}
+
+/* 守る所 */
+.cPickHead{text-align:center;font-weight:900;font-size:17px;color:var(--c-gold);margin-bottom:8px}
+.cPosBtns{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.cPosBtns button{width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:linear-gradient(180deg,#2a6ce0,#0c3a9a);color:#fff;font-family:inherit;font-size:20px;font-weight:900;cursor:pointer}
+.cPosBtns button.on{background:linear-gradient(180deg,#fff1a0,var(--c-gold) 50%,#e39b00);color:#3a1e00;box-shadow:0 0 0 3px #fff,0 0 14px rgba(255,210,60,.9)}
+
+/* 通算・最終評価・最近の試合 */
+.cFinRow{display:flex;align-items:center;gap:14px}
+.cFinTitle{font-size:20px;font-weight:900;color:var(--c-navy2)}
+.cFinSub{font-size:13px;font-weight:700;color:#3b5578;margin-top:3px;line-height:1.4}
+.cFinal.fixed{box-shadow:0 0 0 2px var(--c-gold) inset,0 0 20px rgba(255,210,60,.6)}
+.cRecent{margin-top:10px}
+.cRecentHead{font-size:13px;font-weight:900;color:#3b5578;margin-bottom:4px}
+.cRc{display:grid;grid-template-columns:52px 22px 28px 1fr auto;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;font-size:13px;font-weight:900;color:var(--c-ink)}
+.cRc:nth-child(odd){background:rgba(255,255,255,.5)}
+.cRk{text-align:center;border-radius:6px;background:#fff;color:var(--c-red)}
+.cRk.rS{color:#c38500}.cRk.rC,.cRk.rD{color:#3263b8}
+.cRcU.pos{color:#1d8a12}.cRcU.neg{color:#c31d1d}
+.cRcS{color:#3b5578;font-weight:700}
+
+/* 昇格の紙吹雪 */
+.cConf{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.cConf i{position:absolute;left:calc(var(--x) * 1%);top:-20px;width:9px;height:15px;background:var(--c);transform:rotate(var(--r));animation:cFall 2.8s linear calc(1.3s + var(--d)) 2 both}
+@keyframes cFall{from{transform:translateY(0) rotate(var(--r))}to{transform:translateY(110vh) rotate(calc(var(--r) + 540deg))}}
+@media (prefers-reduced-motion:reduce){.cShine,.carBg i,.cConf,.cBand.promo::after{animation:none!important}.cConf{display:none}}
+
+/* PC・横長: 2 列(左に評価と表、右に能力と帯とボタン) */
+@media (min-width:900px) and (min-aspect-ratio:4/3){
+  .carSheet{max-width:980px;display:grid;grid-template-columns:1fr 1fr;column-gap:18px;align-items:start}
+  .carSheet>.cTop,.carSheet>.cLogo{grid-column:1 / -1}
+  .carSheet.res>.cPanel.cDark{grid-column:1 / -1}
+  .carSheet.res{row-gap:10px}
+  .carSheet.res>.cMain{grid-column:1;grid-row:3 / span 5}
+  .carSheet.res>.cAbP,.carSheet.res>.cBand,.carSheet.res>.cFinal,.carSheet.res>.cGo,.carSheet.res>.cRow2{grid-column:2}
+  .carSheet.res>.cAbP{margin-top:16px}
+  .carSheet.res .cLogo{font-size:34px;margin:0}
+  .carSheet.res .cPanel.cDark{padding:8px 12px}
+  .carSheet.res .cPosRow{margin-top:6px}.carSheet.res .cGame{margin-top:4px}
+  .carSheet.res .cTable th,.carSheet.res .cTable td{padding:4px 14px;font-size:20px}
+  .carSheet.res .cScore b{font-size:48px}
+  .carSheet.res .cShine{width:220px;height:220px}
+  #carHub .carSheet>.cGo,#carHub .carSheet>.cReset{grid-column:2}
+  .cStamp{width:112px;height:112px}.cStamp span{font-size:76px}
+  .cStamp{box-shadow:0 0 0 9px var(--c-red) inset,0 0 0 11px #fff inset,0 0 0 13px var(--c-red) inset,0 6px 16px rgba(0,0,0,.35)}
+}
+@media (max-height:520px) and (min-aspect-ratio:4/3){ .cLogo{font-size:30px} .cGo{min-height:60px;font-size:28px} }
+
+/* 試合の中の小さな札 */
+#carPops{position:fixed;left:12px;top:120px;z-index:13;display:flex;flex-direction:column;align-items:flex-start;gap:5px;pointer-events:none}
+.cPop{padding:4px 11px;border-radius:999px;font:900 15px/1.2 var(--v5-head,sans-serif);color:#fff;background:rgba(6,26,70,.82);border:2px solid rgba(255,255,255,.75);
+  animation:cPopIn .28s cubic-bezier(.2,1.6,.4,1) both;transition:opacity .35s,transform .35s;white-space:nowrap}
+.cPop.good{border-color:#7ef05a;color:#c8ffb0}.cPop.bad{border-color:#ff8a8a;color:#ffd0d0}
+.cPop.up{background:linear-gradient(180deg,#fff3a8,#f6c437);color:#3a1e00;border-color:#fff;font-size:17px}
+.cPop.out{opacity:0;transform:translateX(-10px)}
+@keyframes cPopIn{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+body.photo #carPops,body.replayOn #carPops{display:none}
+#carIntro{position:fixed;left:50%;top:44%;z-index:14;transform:translate(-50%,-50%) scale(.7);opacity:0;pointer-events:none;text-align:center;transition:opacity .25s,transform .3s cubic-bezier(.2,1.5,.4,1)}
+#carIntro.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#carIntro b{display:block;font:900 italic clamp(28px,7vw,46px)/1.1 var(--v5-head,sans-serif);color:#fff;-webkit-text-stroke:6px var(--c-ink);paint-order:stroke fill;white-space:nowrap}
+#carIntro span{display:inline-block;margin-top:6px;padding:3px 14px;border-radius:999px;background:var(--c-gold);color:#3a1e00;font:900 18px/1.3 var(--v5-head,sans-serif)}
+
+/* タイトルのボタン */
+#title .mode[data-mode="career"]{border-image-source:url("img/ui5_btn_orange.png")}
+#title .mode .ic-career{background:url("img/ui5_icon_glove.png") center/contain no-repeat;filter:hue-rotate(-25deg) saturate(1.3)}
+
+/* 11/25 夜 能力は文字(S〜G)を大きく・数を小さく(「肩 C 62」)。区切りと色: S 金・A 赤・B だいだい・C 黄・D 黄緑・E 緑・F 青・G 灰 */
+.cAb{grid-template-columns:auto 1fr auto auto}
+.cAbG{display:flex;align-items:baseline;gap:4px;min-width:66px;justify-content:flex-end}
+.cLetter{font:900 34px/1 "Arial Black","Segoe UI",sans-serif;font-style:italic;-webkit-text-stroke:5px #0b2558;paint-order:stroke fill;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+.cLetter.gS{color:#ffd23a;filter:drop-shadow(0 0 6px rgba(255,210,60,.9))}.cLetter.gA{color:#ff3b3b}.cLetter.gB{color:#ff8a1a}.cLetter.gC{color:#ffe02e}
+.cLetter.gD{color:#b6e83a}.cLetter.gE{color:#2fcf4a}.cLetter.gF{color:#3fa0ff}.cLetter.gG{color:#a4adb8}
+.cAb .cAbV{font-size:16px;font-style:normal;font-weight:900;color:var(--c-navy2);min-width:0}
+.cPlus.none{visibility:hidden;min-width:0;width:0;padding:0}
+.cAb.upd .cAbV{color:#1d9a12}
+
+/* 昇格の進み具合(小さく) */
+.cProg{display:block;margin-top:4px;font-size:12.5px;font-weight:800;color:#cfe0ff}
+.cProg .pm{font-style:normal;display:inline-block;width:1.2em;text-align:center}
+.cProg .pm.ok{color:#9cff7a}.cProg .pm.ng{color:#ff9d9d}
+.cBand .cProg{color:inherit;opacity:.95}
+
+/* キャリアの画面の「自分の選手カード」の入り口 */
+.cCardBtn{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:8px 14px;border-radius:18px;border:3px solid var(--c-gold);
+  background:linear-gradient(180deg,#1b4fb4,#0a2b72);color:#fff;font-family:inherit;text-align:left;box-shadow:0 4px 0 rgba(0,0,0,.35);cursor:pointer}
+.cCardNo{flex:0 0 46px;height:46px;border-radius:12px;display:grid;place-items:center;background:#eef3fa;color:#0b2558;font:900 26px/1 "Arial Black",sans-serif}
+.cCardTx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cCardTx b{font-size:20px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cCardTx small{font-size:12.5px;color:#ffe58a;font-weight:800}
+.cCardBtn::after{content:"";margin-left:auto;width:12px;height:18px;background:var(--c-gold);clip-path:polygon(0 0,100% 50%,0 100%)}
+
+/* 自分の選手カード(案 player_card_gpt_1125.png) */
+.pcHead{margin:0 6px;padding:8px 14px 10px;text-align:center;border-radius:999px;border:3px solid var(--c-gold);
+  background:linear-gradient(180deg,#2b63c8,#0b2f7c);font-size:clamp(24px,7vw,32px);font-weight:900;letter-spacing:.04em;color:#fff;-webkit-text-stroke:5px var(--c-ink);paint-order:stroke fill;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.pcCard{position:relative;display:grid;grid-template-columns:52% 1fr;gap:6px;margin-top:14px;padding:12px 10px 10px;border-radius:22px;
+  border:5px solid #f6c437;box-shadow:0 0 0 2px #8a5a00 inset,0 0 0 3px #fff3b0,0 8px 22px rgba(0,0,0,.5);
+  background:radial-gradient(ellipse at 30% 40%,rgba(120,190,255,.55),transparent 60%),linear-gradient(180deg,#1b4fb4,#082a72)}
+.pcTag{position:absolute;left:50%;top:-17px;transform:translateX(-50%);padding:4px 26px 5px;border-radius:999px;background:linear-gradient(180deg,#4a3410,#1d1406);border:2px solid #f6c437;
+  color:#ffe08a;font:italic 900 16px/1.1 "Georgia",serif;letter-spacing:.06em;white-space:nowrap}
+.pcArt{position:relative;align-self:stretch;min-height:200px;border-radius:14px;background:url("img/career_card_back.webp") center top/cover no-repeat}
+.pcNum{position:absolute;left:56.4%;top:47.5%;transform:translate(-50%,-50%) skewY(-2deg);font:900 clamp(44px,13vw,64px)/1 "Arial Black","Segoe UI",sans-serif;
+  color:#253a68;-webkit-text-stroke:2px #e8eef8;paint-order:stroke fill;opacity:.92;pointer-events:none}
+.pcInfo{display:flex;flex-direction:column;gap:12px;justify-content:center;padding:6px 0}
+.pcBox{position:relative;padding:16px 8px 8px;border-radius:12px;background:linear-gradient(180deg,#fff,#dbe6f4);border:2px solid #f6c437;color:var(--c-ink);text-align:center}
+.pcBox i{position:absolute;left:6px;top:-11px;padding:1px 9px;border-radius:8px;background:#0b2f7c;border:1px solid #f6c437;color:#fff;font:normal 800 12px/1.5 inherit}
+.pcBox b{display:block;font-size:clamp(18px,5.4vw,26px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcBox.dark{background:linear-gradient(180deg,#1b4fb4,#0a2b72);color:#ffd84a;display:flex;align-items:center;justify-content:center;gap:4px}
+.pcBox.dark .cDia{flex:0 0 40px;height:30px}
+.pcAbs{padding-top:14px;margin-top:4px}
+.pcStats{padding:10px 10px 12px}
+.pcStatHead{text-align:center;font-size:21px;font-weight:900;color:#fff;-webkit-text-stroke:3px var(--c-ink);paint-order:stroke fill;margin-bottom:6px}
+.pcTable{width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid rgba(255,255,255,.85);border-radius:10px;overflow:hidden}
+.pcTable th,.pcTable td{border:1px solid rgba(255,255,255,.45);text-align:center;padding:6px 1px;font-weight:900}
+.pcTable th{font-size:clamp(10px,3vw,13px);color:#dbe8ff;background:rgba(0,0,0,.2)}
+.pcTable td{font-size:clamp(15px,4.6vw,21px)}
+.pcTable td.pos{color:#9cff7a}.pcTable td.neg{color:#ff9d9d}
+.pcBest{font:italic 900 26px/1 "Georgia",serif;color:#ffd23a;-webkit-text-stroke:2px #7a2a00;paint-order:stroke fill}
+.pcBest.rA{color:#ff4b4b}.pcBest.rB{color:#ff9a2a}.pcBest.rC,.pcBest.rD{color:#7fb8ff;-webkit-text-stroke-color:#13306a}
+.pcEdit{display:grid;grid-template-columns:1fr 92px;gap:8px;padding:12px;border-radius:16px;background:rgba(4,20,60,.85);border:2px solid var(--c-gold)}
+.pcEdit label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:800;color:#ffe58a}
+.pcEdit input{min-height:44px;border-radius:10px;border:2px solid #fff;padding:0 10px;font:900 20px/1 inherit;font-family:inherit;color:#0b2558;background:#fff;width:100%;box-sizing:border-box}
+.pcEdit input.bad{border-color:#ff4b4b;box-shadow:0 0 0 3px rgba(255,75,75,.5)}
+.pcEdit .pcSave{grid-column:1 / -1;min-height:46px}
+.cGo.blue{background:linear-gradient(180deg,#4fa2ff,#1462d8 55%,#0b45a8);box-shadow:0 0 0 3px #fff inset,0 5px 0 #07306f,0 8px 16px rgba(0,0,0,.4)}
+#carCard{z-index:33}
+body.hud-off-carPop #carPops{display:none}
+.pcTable th{white-space:nowrap;letter-spacing:-.04em;font-size:clamp(9px,2.7vw,13px)}
+.cGo.blue{-webkit-text-stroke-color:#07306f}

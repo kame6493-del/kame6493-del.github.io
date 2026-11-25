@@ -1,0 +1,39 @@
+/* アプリ版だけ: 球場の鍵と買う画面(shop/shop.js)。色はゲームの v4 の深い緑にそろえる */
+@font-face{font-family:"Dela Gothic One";src:url("fonts/DelaGothicOne-Regular.woff2") format("woff2");font-display:swap}
+[data-key="stadium"] button.ippome-lock{position:relative;opacity:.78;padding-right:6px}
+[data-key="stadium"] button.ippome-lock::before{content:"";display:inline-block;width:11px;height:9px;margin-right:6px;vertical-align:-1px;
+  border:2px solid currentColor;border-radius:2px;box-sizing:border-box;box-shadow:0 -5px 0 -2px transparent;
+  background:linear-gradient(currentColor,currentColor) center/2px 3px no-repeat}
+[data-key="stadium"] button.ippome-lock::after{content:attr(data-lock);display:block;font-size:11px;font-weight:700;line-height:1.2;margin-top:2px;color:var(--v4-lime,#d8f23a)}
+#ippomeToast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  z-index:9999;padding:12px 18px;border-radius:999px;background:rgba(8,40,22,.94);color:#fff;font:700 15px/1.3 "Hiragino Sans","Yu Gothic UI",sans-serif;
+  border:2px solid rgba(226,236,200,.55);transition:opacity .2s,transform .2s;white-space:nowrap}
+#ippomeToast.on{opacity:1;transform:translate(-50%,0)}
+#ippomeShop{position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55)}
+#ippomeShop.hide{display:none}
+#ippomeShop .ipSheet{width:100%;max-width:440px;max-height:calc(100vh - 32px);overflow:auto;border-radius:22px;padding:18px 16px 16px;color:#fff;
+  background:linear-gradient(180deg,#14532f 0%,#0c3a21 100%);border:3px solid rgba(16,40,24,.9);box-shadow:0 0 0 2px rgba(240,230,190,.18) inset,0 16px 40px rgba(0,0,0,.5);
+  font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
+#ippomeShop h2{margin:0 0 6px;text-align:center;font:400 26px/1.3 "Dela Gothic One",sans-serif;letter-spacing:.04em}
+#ippomeShop .ipLead{margin:0 0 12px;font-size:13px;line-height:1.5;opacity:.9;text-align:center}
+#ippomeShop .ipRow{display:flex;align-items:center;gap:10px;padding:12px;margin:8px 0;border-radius:14px;background:rgba(0,0,0,.22);border:2px solid rgba(226,236,200,.25)}
+#ippomeShop .ipRow.want{border-color:#d8f23a}
+#ippomeShop .ipTxt{flex:1;min-width:0}
+#ippomeShop .ipTxt b{display:block;font-size:17px}
+#ippomeShop .ipTxt small{display:block;font-size:12px;opacity:.8;margin-top:2px;line-height:1.4}
+#ippomeShop .ipBuy{min-width:96px;min-height:46px;padding:0 12px;border-radius:999px;border:0;background:#f08a24;color:#fff;font:800 16px/1 "Hiragino Sans","Yu Gothic UI",sans-serif;box-shadow:0 3px 0 #a95812}
+#ippomeShop .ipBuy:disabled{background:#56715f;box-shadow:none;opacity:.8}
+#ippomeShop .ipMsg{min-height:1.2em;margin:8px 0 0;font-size:13px;text-align:center;color:#d8f23a}
+#ippomeShop .ipFoot{display:flex;gap:10px;margin-top:10px}
+#ippomeShop .ipFoot button{flex:1;min-height:44px;border-radius:999px;border:2px solid rgba(226,236,200,.55);background:rgba(8,40,22,.55);color:#fff;font:700 15px/1 "Hiragino Sans","Yu Gothic UI",sans-serif}
+/* 11/19 9 球場: 選んだ球場・全部パックの下に「ほかの球場」の見出し */
+#ippomeShop .ipSub{margin:14px 0 2px;font-size:12px;font-weight:700;opacity:.75;letter-spacing:.06em}
+#ippomeShop .ipRow.all{border-color:#f0c84a;background:rgba(240,200,74,.12)}
+/* 11/19 球場を選ぶ画面では下の端に決定のボタンがあるので、札は真ん中より少し下に出す */
+#ippomeToast{bottom:auto;top:58%}
+/* 11/25 買う画面に球場の絵(選んだ球場は大きく、ほかは小さく)・選ぶ画面のカードに値段の札 */
+#ippomeShop .ipHero{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;margin:4px 0 0;border:2px solid #d8f23a;background:#0a2c18}
+#ippomeShop .ipThumb{width:64px;height:40px;flex:0 0 64px;object-fit:cover;border-radius:8px;background:#0a2c18}
+#stadiumScreen i.ipPrice{font-style:normal;font-weight:800;font-size:11px;padding:1px 7px;border-radius:999px;background:#f08a24;color:#fff;margin-left:4px;white-space:nowrap}
+/* カードの角の札は site の CSS が鍵と無料だけ見せる(.stCard .stTags i:not(.stLock):not(.stFree){display:none})。値段の札も見せる */
+#stadiumScreen .stCard .stTags i.ipPrice{display:inline-flex !important;align-items:center;margin-left:0;padding:2px 6px}

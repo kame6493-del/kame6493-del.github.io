@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<script src="./shop/store_prefix.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ぼくらのボールパーク|ブラウザで遊べる3Dの野球の守備ゲーム</title>
+<meta name="description" content="グラブを構えて一人称で守る、3Dの野球ゲームです。守備の試合・ノック・守備のキャリア・ボールパークで過ごす・スタンドで捕るを、ブラウザでそのまま遊べます。ブラウザ版の球場は浜風の球場です。球場・選手・学校はすべて架空です。">
+<link rel="canonical" href="https://yurustudio.github.io/bokuranoballpark/play/">
+<meta property="og:site_name" content="YURU">
+<meta property="og:title" content="ぼくらのボールパーク|ブラウザで遊べる3Dの野球の守備ゲーム">
+<meta property="og:description" content="グラブを構えて一人称で守る、3Dの野球ゲームです。守備の試合・ノック・守備のキャリア・ボールパークで過ごす・スタンドで捕るを、ブラウザでそのまま遊べます。ブラウザ版の球場は浜風の球場です。球場・選手・学校はすべて架空です。">
+<meta property="og:url" content="https://yurustudio.github.io/bokuranoballpark/play/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@apkderete">
+<link rel="icon" type="image/png" sizes="48x48" href="./img/hade_icon_48.png"><link rel="apple-touch-icon" href="./img/hade_icon_180.png"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#0a1030">
+<link rel="stylesheet" href="./shop/shop.css">
+<link rel="stylesheet" href="./ui.css?v=202611231530">
+<link rel="stylesheet" href="./ui_v3.css?v=202611231530">
+<link rel="stylesheet" href="./ui_v4.css">
+<link rel="stylesheet" href="./ui_v5.css?v=202611231530">
+<link rel="stylesheet" href="./stadium_picker.css?v=202611231530">
+<link rel="stylesheet" href="./fp.css?v=202611231530">
+<link rel="stylesheet" href="./mobile.css?v=202611231530">
+<link rel="stylesheet" href="./hype.css?v=202611231530">
+<link rel="stylesheet" href="./load.css?v=202611231530">
+<link rel="stylesheet" href="./standcatch.css?v=1125"><!-- 11/25 スタンドで捕る -->
+<link rel="stylesheet" href="./career.css?v=1125d"><!-- 11/25 守備のキャリア -->
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<!-- タイトル: 遊ぶモードを選ぶ -->
+<section id="title" class="screen">
+  <div class="bgArt"></div>
+  <div class="titleBox">
+    <div class="logoWrap"><h1 class="logo">ぼくらのボールパーク</h1></div>
+    <div id="bar" class="bar"><i></i></div>
+    <div id="loadtxt" class="loadtxt">読み込みの準備中…</div>
+    <div id="modes" class="modes">
+      <button class="mode big" data-mode="game"><span class="ic ic-glove"></span><b>守備の試合</b></button>
+      <button class="mode" data-mode="knock"><span class="ic ic-ball"></span><b>ノック</b></button>
+      <button class="mode" data-mode="bat"><span class="ic ic-bat"></span><b>打席</b></button>
+      <button class="mode" data-mode="mound"><span class="ic ic-mound"></span><b>マウンド</b></button>
+      <button class="mode" data-mode="watch"><span class="ic ic-walk"></span><b>ボールパークで過ごす</b></button>
+      <button class="mode" data-mode="stand"><span class="ic ic-glove"></span><b>スタンドで捕る</b></button><!-- 11/25 js/standcatch.js -->
+      <button class="mode wide" data-mode="walk"><span class="ic ic-walk"></span><b>球場を歩く</b></button>
+    </div>
+    <button id="start" class="hide" disabled>はじめる</button>
+  </div>
+</section>
+
+<!-- 読み込み(球場を選んで決めた時。選んだ球場の絵・名前・進み具合) -->
+<section id="loadScreen" class="hide" aria-live="polite"><div class="lsName"></div><div class="lsBar"><i></i></div><div class="lsTxt">読み込み中…</div></section>
+
+<!-- ポジションを選ぶ(守備位置の図の上で) -->
+<section id="posScreen" class="screen hide">
+  <div class="bgArt"></div>
+  <div class="sheet">
+    <div class="head"><button class="back" data-back aria-label="戻る">戻る</button><h2>どこを守る?</h2></div>
+    <div id="field" class="field">
+      <svg viewBox="0 0 400 330" aria-hidden="true">
+        <path d="M200 318 L18 136 A258 258 0 0 1 382 136 Z" fill="#2f9e4f"/>
+        <path d="M200 318 L18 136 A258 258 0 0 1 382 136 Z" fill="url(#stripe)"/>
+        <path d="M200 312 L112 224 A124 124 0 0 1 288 224 Z" fill="#c9844e"/>
+        <path d="M200 290 L146 236 L200 182 L254 236 Z" fill="#3aa95a"/>
+        <circle cx="200" cy="238" r="9" fill="#c9844e"/>
+        <g fill="#fff"><rect x="196" y="286" width="8" height="8"/><rect x="250" y="232" width="8" height="8" transform="rotate(45 254 236)"/><rect x="196" y="178" width="8" height="8" transform="rotate(45 200 182)"/><rect x="142" y="232" width="8" height="8" transform="rotate(45 146 236)"/></g>
+        <path d="M200 318 L18 136 M200 318 L382 136" stroke="#fff" stroke-width="2.5" opacity=".9"/>
+        <defs><pattern id="stripe" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="20" height="40" fill="#fff" opacity=".07"/></pattern></defs>
+      </svg>
+    </div>
+    <button id="posNext" class="go">次へ</button>
+  </div>
+</section>
+
+<!-- 本数・難しさ・時間帯・視点 -->
+<section id="setScreen" class="screen hide">
+  <div class="bgArt"></div>
+  <div class="sheet">
+    <div class="head"><button class="back" data-back aria-label="戻る">戻る</button><h2 id="setTitle">守備の試合</h2></div>
+    <div class="opt" id="optCount"><div class="lab"><i class="li li-count"></i>本数</div><div class="seg" data-key="count"><button data-v="10">10</button><button data-v="50">50</button><button data-v="100">100</button></div></div>
+    <div class="opt" id="optStadium"><div class="lab"><i class="li li-stadium"></i>球場</div><button id="stadiumPickBtn" class="stPickBtn" type="button"><img alt=""><span class="stPickName"></span><b>選ぶ ›</b></button></div>
+    <div class="opt" id="optCheer"><div class="lab"><i class="li li-cheer"></i>応援</div><div class="seg" data-key="cheer"><button data-v="hs">高校野球</button><button data-v="pro">プロ野球風</button></div></div>
+    <div class="opt"><div class="lab"><i class="li li-time"></i>時間帯</div><div class="seg" data-key="time"><button data-v="day">昼</button><button data-v="night">ナイター</button></div></div>
+    <div class="opt" id="optView"><div class="lab"><i class="li li-view"></i>視点</div><div class="seg" data-key="view"><button data-v="3p">後ろから</button><button data-v="1p">自分の目</button></div></div>
+    <div id="setBest" class="best"></div>
+    <button id="setGo" class="go">プレイボール</button>
+  </div>
+</section>
+
+<!-- 一時停止 -->
+<section id="panel" class="screen hide">
+  <div class="sheet pause">
+    <div class="head"><h2>一時停止</h2><span id="fps"></span></div>
+    <button id="pzResume" class="go">続ける</button>
+    <button id="pzReplay" class="btn hide">リプレイを見る</button>
+    <div class="row2"><button id="pzRestart" class="btn">最初から</button><button id="pzTitle" class="btn">タイトルへ</button></div>
+    <div class="opt"><div class="lab"><i class="li li-view"></i>視点</div><div class="seg" id="views"><button data-v="3p">後ろから</button><button data-v="1p">自分の目</button></div></div>
+    <div class="opt"><div class="lab"><i class="li li-time"></i>時間帯</div><div class="seg" id="times"></div></div>
+    <div class="opt"><div class="lab"><i class="li li-sound"></i>音量</div>
+      <label class="vol"><span>全体</span><input type="range" id="volAll" min="0" max="100" value="80"></label>
+      <label class="vol"><span>球場</span><input type="range" id="volAmb" min="0" max="100" value="70"></label>
+      <label class="vol"><span>実況</span><input type="range" id="volVoice" min="0" max="100" value="80"></label>
+      <label class="vol"><span>応援歌</span><input type="range" id="volSong" min="0" max="150" value="100"></label>
+      <label class="vol"><span>歓声</span><input type="range" id="volCrowd" min="0" max="150" value="100"></label>
+      <label class="vol"><span>効果音</span><input type="range" id="volSfx" min="0" max="150" value="100"></label>
+    </div>
+    <div class="opt"><div class="lab"><i class="li li-mic"></i>そのほか</div><div class="seg wrap"><button id="voiceBtn">実況</button><button id="soundBtn">音</button><button id="crowdBtn">観客</button><button id="photoBtn">写真</button></div></div>
+    <div class="opt"><div class="lab"><i class="li li-cheer"></i>観客の入り</div><div class="seg" id="fills"></div></div>
+    <div class="opt"><div class="lab"><i class="li li-eye"></i>画質</div><div class="seg" id="quals"></div></div>
+    <div class="opt walkOnly"><div class="lab">ワープ</div><div class="grid" id="warps"></div></div>
+    <button id="credBtn" class="link">クレジット</button>
+  </div>
+</section>
+
+<!-- 結果 -->
+<section id="result" class="screen hide">
+  <div class="bgArt"></div>
+  <div class="sheet res">
+    <div id="resHead" class="resHead"></div>
+    <div id="resBody"></div>
+    <button id="resAgain" class="go">もう一度</button>
+    <div class="row2"><button id="resPos" class="btn">守る所を変える</button><button id="resClose" class="btn">タイトルへ</button></div>
+  </div>
+</section>
+
+<section id="credits" class="screen hide">
+  <div class="sheet">
+    <div class="head"><button class="back" id="credBack">戻る</button><h2>クレジット</h2></div>
+    <div id="credText" class="cred"></div>
+  </div>
+</section>
+
+<!-- 遊んでいる間の部品 -->
+<div id="hud" class="hide"></div>
+<div id="board" class="hide"></div>
+<div id="digest" class="hide"><div class="dgBoard"></div><div class="dgLines"></div></div>
+<button id="skipBtn" class="hide">次の場面へ<small>Space</small></button>
+<button id="pauseBtn" class="corner hide" aria-label="一時停止"><i></i><i></i></button>
+<button id="viewBtn" class="corner hide" aria-label="視点を切り替える">視点</button>
+<div id="hint" class="hide"></div>
+<div id="prompt" class="hide"></div>
+<div id="cross" class="hide"></div>
+<div id="charge" class="hide"><i></i></div>
+<div id="toast"></div>
+<div id="stickZone" class="hide"></div>
+<div id="stick" class="hide"><div id="knob"></div></div>
+<div id="pad" class="hide">
+  <button class="basebtn" data-base="2"><b>二塁</b></button>
+  <button class="basebtn" data-base="3"><b>三塁</b></button>
+  <button class="basebtn" data-base="1"><b>一塁</b></button>
+  <button class="basebtn" data-base="0"><b>本塁</b></button>
+  <button class="basebtn cut" data-base="5"><b>中継</b></button>
+</div>
+<div id="acts" class="hide"><button id="btnJump" class="actbtn">ジャンプ</button><button id="btnDive" class="actbtn">飛び込む</button><button id="btnCall" class="actbtn hide">オーライ</button></div>
+<button id="jump" class="round hide">ジャンプ</button>
+<button id="act" class="round hide">座る</button>
+<button id="throwBtn" class="round hide">投げる</button>
+<button id="exitMode" class="hide">打席を出る</button>
+<div id="photoBar" class="hide"><button id="photoSave">この画面を保存</button><button id="photoExit">写真モードを終える</button></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three/build/three.module.js",
+  "three/addons/": "./vendor/three/examples/jsm/",
+  "three-mesh-bvh": "./vendor/three-mesh-bvh/build/index.module.js"
+} }
+</script>
+<script src="./shop/config.js"></script><script src="./shop/gate.js"></script>
+<script type="module" src="./main.js?v=202611251200"></script>
+<script type="module" src="./shop/web.js"></script>
+<script type="module" src="./js/hype.js?v=202611231530"></script>
+<script type="module" src="./js/standcatch.js?v=1125"></script><!-- 11/25 スタンドで捕る・ボールが飛んでくる券(js/standcatch.js) -->
+<script type="module" src="./js/career.js?v=1125t"></script><!-- 11/25 守備のキャリア(js/career.js・js/career_ui.js) -->
+</body>
+</html>
