@@ -18,7 +18,18 @@ export const SCHOOLS = {
     letter: 0x1d4a33, outline: null, pipe: 0x1d4a33, pipeK: [1, 0, 1, 1], emblem: 0xf2f2ee, num: 0x1d4a33, numOutline: null },
 };
 const Q = new URLSearchParams(location.search);
-const OFF = Q.has('nouni');   // ?nouni=1 で前の無地のユニフォーム(比べる用)
+const OFF = Q.has('nouni');
+// 11/26 記憶(iOS で「重くて落ちる」): 胸の文字・帽子の記章の絵は、学校(key)ごとに 1 枚を全員で使う。
+// 前は人ごとに 512x180 と 128x128 の絵を作っていて、ボールパークで過ごす(341 人)で canvas が 184MB あった。?uniown=1 で前の形(人ごと)
+const UNI_SHARE = !Q.has('uniown');
+const SHARED_UNI = new Map();
+let BLANK_TEX = null;
+function blankTex() { if (!BLANK_TEX) { const c = document.createElement('canvas'); c.width = c.height = 4; BLANK_TEX = new THREE.CanvasTexture(c); BLANK_TEX.colorSpace = THREE.SRGBColorSpace; } return BLANK_TEX; }
+function sharedUni(kind, k, W, H, aniso, draw) {
+  const id = kind + '|' + k; let e = SHARED_UNI.get(id);
+  if (!e) { const c = document.createElement('canvas'); c.width = W; c.height = H; draw(c); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; if (aniso) t.anisotropy = aniso; e = { c, tex: t }; SHARED_UNI.set(id, e); }
+  return e;
+}   // ?nouni=1 で前の無地のユニフォーム(比べる用)
 const DRESSED = new Set();
 
 // 11/21 チームカラー(持ち主「プロ野球ならそのチーム本拠地の色のチームが後攻に」「高校野球なら完全ランダムで結構多い種類のチームカラーで」)
@@ -435,8 +446,8 @@ export function buildUniform(a, baseGeo) {
   r.uni = {};
   if (geo && geo.attributes.slot && sp) {
     // 胸の文字(幅 26cm・高さ 9cm、胸の高さ)
-    const cc = document.createElement('canvas'); cc.width = 512; cc.height = 180;
-    const ct = new THREE.CanvasTexture(cc); ct.colorSpace = THREE.SRGBColorSpace; ct.anisotropy = 8;
+    const cc = UNI_SHARE ? null : document.createElement('canvas'); if (cc) { cc.width = 512; cc.height = 180; }
+    const ct = UNI_SHARE ? blankTex() : new THREE.CanvasTexture(cc); if (!UNI_SHARE) { ct.colorSpace = THREE.SRGBColorSpace; ct.anisotropy = 8; }
     const chest = new THREE.Mesh(bentPlate(geo, 0, 1.31, 0.31, 0.108, 1, 0.005), plateMat(ct));
     chest.receiveShadow = true; chest.visible = false;
     attachToBone(r, sp, chest, body);
@@ -454,8 +465,8 @@ export function buildUniform(a, baseGeo) {
   if (head) {
     for (const [part, zf, y] of [['Cap', 0.103, 1.702], ['Helmet', 0.112, 1.700]]) {
       if (!a.parts[part] || !a.parts[part].length) continue;
-      const ec = document.createElement('canvas'); ec.width = ec.height = 128;
-      const et = new THREE.CanvasTexture(ec); et.colorSpace = THREE.SRGBColorSpace;
+      const ec = UNI_SHARE ? null : document.createElement('canvas'); if (ec) ec.width = ec.height = 128;
+      const et = UNI_SHARE ? blankTex() : new THREE.CanvasTexture(ec); if (!UNI_SHARE) et.colorSpace = THREE.SRGBColorSpace;
       const g = new THREE.PlaneGeometry(0.052, 0.052);
       g.rotateX(-0.6);   // つばの上の、上を向いた面に合わせる
       g.translate(0, y, zf + 0.004);
@@ -486,13 +497,16 @@ export function dressUniform(a) {
     const k = key + '|' + (m ? 1 : 0);
     if (m && ch.key !== k) {
       ch.key = k;
-      const g = ch.c.getContext('2d'); g.clearRect(0, 0, ch.c.width, ch.c.height);
-      const sw = m.x1 - m.x0 + 1, sh = m.y1 - m.y0 + 1;
-      const ow = S.outline != null ? 7 : 0;
-      const sc = Math.min((ch.c.width - 8 - ow * 2) / sw, (ch.c.height - 8 - ow * 2) / sh);
-      const dw = sw * sc, dh = sh * sc;
-      paint(g, m.c, m.x0, m.y0, sw, sh, (ch.c.width - dw) / 2, (ch.c.height - dh) / 2, dw, dh, S.letter, S.outline, ow);
-      ch.tex.needsUpdate = true;
+      const drawChest = (c) => {
+        const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height);
+        const sw = m.x1 - m.x0 + 1, sh = m.y1 - m.y0 + 1;
+        const ow = S.outline != null ? 7 : 0;
+        const sc = Math.min((c.width - 8 - ow * 2) / sw, (c.height - 8 - ow * 2) / sh);
+        const dw = sw * sc, dh = sh * sc;
+        paint(g, m.c, m.x0, m.y0, sw, sh, (c.width - dw) / 2, (c.height - dh) / 2, dw, dh, S.letter, S.outline, ow);
+      };
+      if (!ch.c) { const e = sharedUni('chest', k, 512, 180, 8, drawChest); ch.tex = e.tex; ch.mesh.material.map = e.tex; }   // 11/26 学校ごとに 1 枚
+      else { drawChest(ch.c); ch.tex.needsUpdate = true; }
     }
   }
   // 帽子・ヘルメットの記章
@@ -505,10 +519,13 @@ export function dressUniform(a) {
     const k = key + '|' + (m ? 1 : 0);
     if (m && e.key !== k) {
       e.key = k;
-      const g = e.c.getContext('2d'); g.clearRect(0, 0, 128, 128);
-      const sw = m.x1 - m.x0 + 1, sh = m.y1 - m.y0 + 1, sc = Math.min(116 / sw, 116 / sh);
-      paint(g, m.c, m.x0, m.y0, sw, sh, (128 - sw * sc) / 2, (128 - sh * sc) / 2, sw * sc, sh * sc, S.emblem, null, 0);
-      e.tex.needsUpdate = true;
+      const drawEm = (c) => {
+        const g = c.getContext('2d'); g.clearRect(0, 0, 128, 128);
+        const sw = m.x1 - m.x0 + 1, sh = m.y1 - m.y0 + 1, sc = Math.min(116 / sw, 116 / sh);
+        paint(g, m.c, m.x0, m.y0, sw, sh, (128 - sw * sc) / 2, (128 - sh * sc) / 2, sw * sc, sh * sc, S.emblem, null, 0);
+      };
+      if (!e.c) { const sh = sharedUni('emblem', k, 128, 128, 0, drawEm); e.tex = sh.tex; e.mesh.material.map = sh.tex; }   // 11/26 学校ごとに 1 枚
+      else { drawEm(e.c); e.tex.needsUpdate = true; }
     }
   }
 }

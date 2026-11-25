@@ -7,6 +7,7 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MeshBVH, acceleratedRaycast } from 'three-mesh-bvh';
 import { hookScene } from './js/hidskip.js';   // 11/25 軽く
+import { memGuard } from './js/memguard.js';   // 11/26 記憶の見張り(描く所が失われた時・前の起動が落ちた時・球場を替える前の片付け)
 import { Sound } from './js/audio.js';
 import { Replay } from './js/replay.js';
 import { KIT } from './js/figures.js';
@@ -73,7 +74,8 @@ const load = (k, d) => { try { const s = localStorage.getItem(k); return s ? JSO
 const canvas = $('view');
 // 画質(最高/高画質/標準/軽量)。初めは PC が高画質・スマホが軽量。選んだ物は覚える。?q= で決められる
 let quality = (() => { const q = params.get('q') || load('r4walk.q2', null); if (!params.has('q') && (IS_TOUCH ? !TOUCH_ORDER.includes(q) : q === 'auto')) return IS_TOUCH ? 'auto' : 'std'; return QUALS[q] ? q : (IS_TOUCH ? 'auto' : 'std'); })();   // 11/19 スマホ対応: スマホの初めは「自動」。前に最高・高画質を選んで覚えていても、スマホでは自動に戻す(docs/スマホ対応の引き継ぎ.md)
-const LITEQ = (q) => q === 'lite' || q === 'auto';   // 自動も模型は軽量と同じ lite の glb(中の建物は読まない)   // PC の初めは「標準」(11/18 持ち主「Chrome ちょっと重い」。高画質・最高は選んだ人だけ、選んだ段は覚える)
+const LITEQ = (q) => q === 'lite' || q === 'auto' || (q === 'std' && IS_TOUCH && !params.has('touchfull'));   // 11/26 記憶: スマホの「標準」も lite の模型(重い模型と 4096 の影で 1.4GB を超え、iOS で落ちる。?touchfull=1 で前の形)
+//   // 自動も模型は軽量と同じ lite の glb(中の建物は読まない)   // PC の初めは「標準」(11/18 持ち主「Chrome ちょっと重い」。高画質・最高は選んだ人だけ、選んだ段は覚える)
 const NO_IN = (q) => LITEQ(q) && params.has('nolitein');   // 11/21 共通: スマホ(軽量・自動)でも中の建物 interior.glb を読む(コンコース・売店・トイレの道)。?nolitein=1 で前の形(読まない)
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: params.has('shot') });
 renderer.setPixelRatio(QUALS[quality].pr(devicePixelRatio || 1, IS_TOUCH));
@@ -1885,6 +1887,7 @@ function setSound(on) {
 document.querySelectorAll('#times button,#quals button').forEach((b) => b.classList.add('btn'));
 
 const sound = new Sound();
+const memg = memGuard({ renderer, gfx, touch: IS_TOUCH, getSound: () => sound, getQuality: () => quality, setQuality: (q) => setQuality(q), store, load });   // 11/26 記憶の見張り(js/memguard.js)
 sound.windK = stadiumInfo(STADIUM).wind || 1;   // 球場の風の強さで風の音を大きく(stadiums.js の wind、海鳴りは 1.8)
 sound.enabled = soundOn;
 // 11/23 持ち主「アプリ落とした後音楽流れ続けるのは辞めさせて」: アプリが裏へ回った・閉じた時は音を全部止める(戻ったら続きから)。
@@ -2429,7 +2432,7 @@ const ctx = {
 ui = new UI({
   IS_TOUCH, load, store, stadium: STADIUM, stadiumNames: STADIUM_NAMES, stadiumIndoor: INDOOR_ST, stadiums: STADIUMS,
   // 球場を替える: 選んだ物を残して読み直す(モデルが大きく違うので)
-  setStadium: (k) => { if (k === STADIUM) return; const u = new URL(location.href); u.searchParams.set('stadium', k); location.href = u.toString(); },
+  setStadium: (k) => { if (k === STADIUM) return; const u = new URL(location.href); u.searchParams.set('stadium', k); memg.release(); location.href = u.toString(); },   // 11/26 読み直す前に描く所と音を片付ける
   get mode() { return mode; }, get view() { return activeView() === '1p' && mode !== 'defense' && mode !== 'walk' ? view : view; },
   get voiceOn() { return sound.voiceOn !== false; },
   setTime: (k) => setTime(k), setView: (v) => setView(v, true), cycleView,

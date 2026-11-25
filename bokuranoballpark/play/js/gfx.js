@@ -246,12 +246,13 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
   scene.add(sky);
   // 環境の光(空から作る。夜とドームは部屋の環境)
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const room = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  let roomRT = pmrem.fromScene(new RoomEnvironment(), 0.04), room = roomRT.texture, envKind = 'room';
   const envScene = new THREE.Scene();
   const envSky = new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), skyMat);
   envScene.add(envSky);
   let envRT = null;
   function buildEnv(kind) {
+    envKind = kind;
     if (kind !== 'sky') { scene.environment = room; return; }
     const u = skyMat.uniforms; const nd = u.uNoDisk.value, tm = u.uTime.value; u.uNoDisk.value = 1; u.uTime.value = 0;
     envSky.material = skyMat;
@@ -389,6 +390,9 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
   addEventListener('resize', () => setTimeout(resize, 0));
 
   function shadowOn(t) { return Q.shadow > 0 && (t.shadow || dome || timeKey === 'night'); }
+  // 11/26 記憶(iOS で「重くて落ちる」): スマホの影の地図は 2048 まで(標準の 4096 は色と深さで 128MB → 32MB)。?fullshadow=1 で前の形
+  const SH_MAX = touch && !/[?&]fullshadow=/.test(location.search) ? 2048 : 1e9;
+  const shSize = () => Math.min(Q.shadow, SH_MAX);
   let curT = null, shadowMute = false;
   function applyShadow(t) {
     curT = t;
@@ -397,7 +401,7 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
     const on = shadowOn(t);
     renderer.shadowMap.enabled = Q.shadow > 0;
     sun.castShadow = on;
-    if (on && sun.shadow.mapSize.x !== Q.shadow) { sun.shadow.mapSize.set(Q.shadow, Q.shadow); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
+    if (on && sun.shadow.mapSize.x !== shSize()) { sun.shadow.mapSize.set(shSize(), shSize()); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
     const S = Q.S;
     Object.assign(sun.shadow.camera, { left: -S, right: S, top: S, bottom: -S });
     sun.shadow.camera.updateProjectionMatrix();
@@ -406,6 +410,7 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
 
   // ---------------------------------------------------------------- 自動(スマホ)
   let autoLv = AUTO_START, autoCeil = AUTO_LV.length - 1, autoUpAt = -1e9, autoFps = 0;
+  let memCeil = AUTO_LV.length - 1;   // 11/26 記憶の天井(前の起動が落ちた・描く所が失われた時に下げる。js/memguard.js)
   const aw = { t0: 0, last: 0, n: 0, sum: 0, good: 0, bad: 0, settle: 1, play: 0, keep: -1 }, autoLog = [];
   // 11/25 覚える段: 遊び始めて 15 秒の内に下げた段は、その場では使うが次の起動には残さない(始めの重さ・作りの引っかかりで下がった段を持ち越さない)。
   // 15 秒を過ぎても同じ段で遊べていたら、その時に覚える
@@ -421,7 +426,7 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
     if (want === sun.castShadow) { shadowMute = false; }
     else if (!want) { shadowMute = true; if (idleNow) { sun.castShadow = false; renderer.shadowMap.enabled = false; shadowMute = false; } }
     else if (idleNow) {
-      if (sun.shadow.mapSize.x !== Q.shadow) { sun.shadow.mapSize.set(Q.shadow, Q.shadow); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
+      if (sun.shadow.mapSize.x !== shSize()) { sun.shadow.mapSize.set(shSize(), shSize()); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
       renderer.shadowMap.enabled = true; sun.castShadow = true; shadowMute = false;
       sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.035 * (Q.S / 105);
     } else shadowMute = !sun.castShadow ? false : shadowMute;
@@ -488,7 +493,7 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
     qk = QUALS[q] ? q : 'std'; Q = QUALS[qk];
     if (qk === 'auto') {
       let s0 = AUTO_START; if (autoStore) try { const v = autoStore.get(); if (Number.isFinite(v)) s0 = Math.max(0, Math.min(3, v)); } catch (e) { /* 使えない環境 */ }
-      autoLv = s0; autoCeil = AUTO_LV.length - 1; Q = autoQ(autoLv); aw.settle = 1;
+      s0 = Math.min(s0, memCeil); autoLv = s0; autoCeil = memCeil; Q = autoQ(autoLv); aw.settle = 1;
     }
     loadDetail(Q.detail);
     if (Q.detail) for (const kind of ['soil', 'grass']) if (loaded[kind + Q.detail]) GU[kind].tex.value = loaded[kind + Q.detail];
@@ -532,7 +537,7 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
     if (shadowMute) { Object.assign(sun.shadow.camera, { left: -S, right: S, top: S, bottom: -S }); }
     _c.copy(camera.position).addScaledVector(_f, S * 0.55); _c.y = 0;
     // 影の地図の 1 画素に合わせて動かす(動いた時のちらつきを抑える)
-    const texel = (2 * S) / (Q.shadow || sun.shadow.mapSize.x || 2048);
+    const texel = (2 * S) / (sun.shadow.mapSize.x || Q.shadow || 2048);
     _c.x = Math.round(_c.x / texel) * texel; _c.z = Math.round(_c.z / texel) * texel;
     const D = 450;
     sun.position.copy(_c).addScaledVector(sunDir, D);
@@ -548,12 +553,27 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
     if (composer) composer.render(); else renderer.render(scene, camera);
   }
 
+  // 11/26 描く所(WebGL)が失われて戻った時: three は絵・形を元の絵から送り直すが、描いて作った絵(環境の光・後処理の絵)は空になるので作り直す
+  function restore() {
+    try { const old = roomRT; roomRT = pmrem.fromScene(new RoomEnvironment(), 0.04); room = roomRT.texture; old.dispose(); } catch (e) { /* 作れない時は前のまま */ }
+    if (envRT) { try { envRT.dispose(); } catch (e) { } envRT = null; }
+    try { buildEnv(envKind); } catch (e) { scene.environment = room; }
+    if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+    buildComposer(); resize();
+  }
+  // 11/26 記憶の天井: 自動の段をこの段より上げない(今それより上なら下げる)
+  function setCeil(n) {
+    memCeil = Math.max(0, Math.min(AUTO_LV.length - 1, n | 0));
+    autoCeil = Math.min(autoCeil, memCeil);
+    if (qk === 'auto' && autoLv > memCeil) setLv(memCeil, 'mem');
+  }
   return {
-    sky, setQuality, setTime, update, render, patchModel, resize, autoTick, setLv,
+    sky, setQuality, setTime, update, render, patchModel, resize, autoTick, setLv, restore, setCeil,
+    get lv() { return autoLv; }, get ceil() { return memCeil; },
     cullIndoor: (list) => { if (!touch) return; for (const o of list) if (o.isMesh && !o.isInstancedMesh && !o.isSkinnedMesh && o.geometry) addCull(o, true); cullTick(true); },
-    autoInfo: () => (qk === 'auto' ? { lv: autoLv, ceil: autoCeil, fps: Math.round(autoFps), log: autoLog.slice(-8), culled: culls.reduce((n, c) => n + (c.far ? 1 : 0), 0), culls: culls.length, mute: shadowMute } : null),
+    autoInfo: () => (qk === 'auto' ? { lv: autoLv, ceil: autoCeil, memCeil, fps: Math.round(autoFps), log: autoLog.slice(-8), culled: culls.reduce((n, c) => n + (c.far ? 1 : 0), 0), culls: culls.length, mute: shadowMute } : null),
     texInfo: () => ({ max: TEX_MAX, savedMB: Math.round(texSaved * 4 * 1.33 / 1048576) }),
     get quality() { return qk; }, get Q() { return Q; }, fabric,
-    info: () => ({ quality: qk, pr: renderer.getPixelRatio(), post: !!composer, ao: !!aoPass, bloom: !!bloom, shadow: sun.castShadow ? Q.shadow : 0, S: Q.S }),
+    info: () => ({ quality: qk, pr: renderer.getPixelRatio(), post: !!composer, ao: !!aoPass, bloom: !!bloom, shadow: sun.castShadow ? sun.shadow.mapSize.x : 0, S: Q.S }),
   };
 }

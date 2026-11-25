@@ -6,6 +6,8 @@ const FILES = {
   mitt: 'audio/mitt.mp3', mitt2: 'audio/mitt2.mp3',
   roar: 'audio/roar.mp3', amb: 'audio/ambience.mp3', ooh: 'audio/ooh.mp3', cheer: 'audio/cheer.mp3', applause: 'audio/applause.mp3',
 };
+// 11/26 記憶: スマホ(タッチ)は音を小さく持つ(下の init)。?fullaudio=1 で前の形
+const LOWMEM = (() => { try { const q = location.search; return !/[?&]fullaudio=1/.test(q) && (/[?&]touch=1/.test(q) || (!/[?&]touch=0/.test(q) && (matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window))); } catch (e) { return false; } })();
 // manifest に無いときの代わり
 const FALLBACK = {
   bat_barrel: ['barrel', 'barrel3'], bat_solid: ['barrel2'], bat_jam: ['jam'], bat_foul: ['foultip'], bat_grounder: ['barrel2'],
@@ -54,10 +56,28 @@ export class Sound {
     if (this.streamDest) this.limiter.connect(this.streamDest);
     try { this.man = await (await fetch('audio/manifest.json', { cache: 'no-cache' })).json(); } catch (e) { this.man = null; }
     const urls = { ...FILES };
+    // 11/26 記憶(iOS で「重くて落ちる」): manifest に同じ役の音がある時は、控えの音(FILES の amb 60 秒・roar・cheer・applause、解くと 36MB)を読まない
+    if (this.man) {
+      const has = (k) => ['sfx', 'amb'].some((g) => [].concat((this.man[g] || {})[k] || []).some(Boolean));
+      if (has('crowd_loop')) delete urls.amb;
+      for (const [f, k] of [['roar', 'cheer_big'], ['cheer', 'cheer'], ['applause', 'applause']]) if (has(k)) delete urls[f];
+    }
     // 実況の声(voice)は数が多いので、ここでは読まない。使う時に少しずつ読む(vPrime・vFill。スマホのメモリを食わないように)
     if (this.man) for (const grp of ['sfx', 'amb', 'call', 'pa', 'vendor']) for (const [k, v] of Object.entries(this.man[grp] || {})) for (const u of [].concat(v || [])) if (u) urls[u] = u;
+    // 11/26 記憶: スマホ(タッチ)は、効果音(打球・捕球など sfx)のほかを 22.05kHz で解いて持つ(実況・応援歌と同じ。ループのざわめき・風・場内放送で 178MB → 約 75MB)。
+    // 効果音は今までどおり端末の速さのまま(高い音の切れ)。?fullaudio=1 で前の形
+    const sfxSet = new Set(); if (this.man) for (const v of Object.values(this.man.sfx || {})) for (const u of [].concat(v || [])) if (u) sfxSet.add(u);
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    let low = null;
+    try { if (OAC && LOWMEM) low = new OAC(1, 1, 22050); } catch (e) { low = null; }
+    const keepRate = (url) => sfxSet.has(url) || /^audio\/(crack_|foultip|tick|mitt)/.test(url);
     await Promise.all(Object.entries(urls).map(async ([k, url]) => {
-      try { const ab = await (await fetch(url)).arrayBuffer(); this.buf[k] = await new Promise((res, rej) => c.decodeAudioData(ab, res, rej)); } catch (e) { /* 無くても遊べる */ }
+      try {
+        const ab = await (await fetch(url)).arrayBuffer();
+        const dc = low && !keepRate(url) ? low : c;
+        try { this.buf[k] = await new Promise((res, rej) => { const r = dc.decodeAudioData(ab.slice(0), res, rej); if (r && r.catch) r.catch(rej); }); }
+        catch (e) { if (dc === c) throw e; this.buf[k] = await new Promise((res, rej) => c.decodeAudioData(ab, res, rej)); }   // 低い速さで解けない環境は前の形
+      } catch (e) { /* 無くても遊べる */ }
     }));
     this.ready = true;
     this.vPrime();
