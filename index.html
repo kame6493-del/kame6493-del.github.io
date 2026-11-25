@@ -7,6 +7,8 @@
 <meta name="description" content="1人でスマホアプリとゲームを作っています。音ゲーのビートぽん!と野球の守備ゲーム ぼくらのボールパークは、ブラウザでもそのまま遊べます。">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9843093495011329" crossorigin="anonymous"></script>
 <meta name="google-adsense-account" content="ca-pub-9843093495011329">
+<meta property="og:site_name" content="YURU Studio">
+<meta property="og:locale" content="ja_JP">
 <meta property="og:title" content="YURU Studio | ビートぽん!・ぼくらのボールパーク">
 <meta property="og:description" content="音ゲーのビートぽん!と、野球の守備ゲーム ぼくらのボールパーク。どちらもブラウザで遊べます。">
 <meta property="og:type" content="website">
@@ -14,95 +16,126 @@
 <meta property="og:image" content="https://yurustudio.github.io/img/top/og-top.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ビートぽん!と、ぼくらのボールパークのゲーム画面">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@apkderete">
+<meta name="twitter:title" content="YURU Studio | ビートぽん!・ぼくらのボールパーク">
+<meta name="twitter:description" content="音ゲーのビートぽん!と、野球の守備ゲーム ぼくらのボールパーク。どちらもブラウザで遊べます。">
 <meta name="twitter:image" content="https://yurustudio.github.io/img/top/og-top.jpg">
+<link rel="canonical" href="https://yurustudio.github.io/">
 <link rel="icon" href="img/top/bp-icon.webp">
-<link rel="preload" as="image" href="img/top/bp-title.webp">
+<link rel="preload" as="image" href="img/top/bp-loop.webp" fetchpriority="high">
 <style>
 :root{
-  --bp1:#ff2f92; --bp2:#7a2fd0; --bp-btn:#ffe14d;
-  --bk1:#07142f; --bk2:#0f2c5e; --bk-field:#1f7a3a; --bk-btn:#ff7a1a;
+  --bp1:#ff2f92; --bp2:#6b2bd0; --bp-btn:#ffe14d;
+  --bk1:#071330; --bk2:#0e2a5a; --bk-btn:#ff7a1a;
   --d9:#1747a6; --d9-2:#0d2f78;
-  --ink:#121826; --sub:#4a5568; --line:#dfe4ee; --soft:#f1f4fa;
-  --r:18px;
+  --ink:#121826; --sub:#4a5568; --line:#dfe4ee; --soft:#eef2f9;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;color:var(--ink);background:#fff;line-height:1.7;font-size:16px}
-img{max-width:100%;height:auto;display:block}
+body{margin:0;font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;color:var(--ink);background:#fff;line-height:1.7;font-size:16px;overflow-x:hidden}
+img,video{max-width:100%;display:block}
+img,video{height:auto}
 a{color:inherit}
 .wrap{max-width:1080px;margin:0 auto;padding:0 18px}
 
-/* 上の帯 */
-.bar{position:sticky;top:0;z-index:10;background:rgba(18,10,40,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff}
-.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:48px}
-.bar .logo{white-space:nowrap;font-weight:800;letter-spacing:.04em;text-decoration:none;font-size:15px}
+/* 上の帯(固定しない。最初の画面をゲームに使う) */
+.bar{background:#160b2e;color:#fff}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:44px}
+.bar h1{margin:0;font-size:15px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+.bar h1 a{text-decoration:none}
 .bar nav{display:flex;gap:14px;font-size:13px;white-space:nowrap}
-@media (max-width:480px){.bar nav .pc{display:none}}
-.bar nav a{text-decoration:none;opacity:.9}
+.bar nav a{text-decoration:none;opacity:.88}
 .bar nav a:hover{opacity:1;text-decoration:underline}
+@media (max-width:480px){.bar nav .pc{display:none}}
 
-/* 共通の部品 */
-.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:99px}
-.name{display:flex;align-items:center;gap:12px;margin:10px 0 6px}
-.name img{width:56px;height:56px;border-radius:14px;flex:none}
-.name h2{margin:0;font-size:26px;line-height:1.2;font-weight:900}
-.play{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:420px;min-height:64px;padding:14px 20px;border-radius:99px;font-size:21px;font-weight:900;text-decoration:none;letter-spacing:.04em;transition:transform .12s}
+/* 共通 */
+.kicker{margin:0;font-size:12.5px;font-weight:800;letter-spacing:.08em;opacity:.92}
+.title{display:flex;align-items:center;gap:12px;margin:6px 0 4px}
+.title img{width:52px;height:52px;border-radius:13px;flex:none}
+.title h2{margin:0;font-size:30px;line-height:1.15;font-weight:900;letter-spacing:.01em}
+.pitch{margin:4px 0 0;font-size:15.5px;line-height:1.65}
+.play{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:440px;min-height:60px;padding:12px 20px;border-radius:16px;font-size:20px;font-weight:900;text-decoration:none;letter-spacing:.04em;transition:transform .12s}
 .play:hover{transform:translateY(-2px)}
+.play:active{transform:translateY(2px)}
 .play svg{width:22px;height:22px;flex:none}
-.stores{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}
+.under{margin:8px 0 0;font-size:13.5px;opacity:.95}
+.stores{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px}
 .stores a img{height:44px;width:auto}
 .stores a.gp img{height:58px;margin:-7px -6px}
-.soon{font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px;border:1.5px solid currentColor;opacity:.92}
-.lead{margin:6px 0 18px;font-size:15.5px}
-.strip{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 16px;margin:0 -18px;scrollbar-width:thin}
-.strip figure{margin:0;flex:none;scroll-snap-align:center}
-.strip figcaption{font-size:13px;font-weight:700;margin-top:8px;text-align:center}
+.soon{font-size:13px;font-weight:700;opacity:.92}
+.voices{margin:22px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.voices li{font-size:14.5px;line-height:1.55;padding:9px 14px;border-radius:4px 14px 14px 14px;max-width:440px}
+.voices-h{font-size:12px;letter-spacing:.06em;margin:22px 0 -12px;opacity:.85}
+.cap{font-size:12px;opacity:.8;text-align:center;margin:8px 0 0}
 
 /* 1. ビートぽん! */
-.bp{background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.22) 0 2px,transparent 3px) 0 0/34px 34px,linear-gradient(160deg,var(--bp1) 0%,#e0289c 45%,var(--bp2) 100%);color:#fff;padding:26px 0 30px;overflow:hidden}
-.bp .tag{background:#fff;color:#d61f7d}
+.bp{background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.2) 0 2px,transparent 3px) 0 0/34px 34px,linear-gradient(165deg,var(--bp1) 0%,#dc2a9e 45%,var(--bp2) 100%);color:#fff;padding:18px 0 34px;overflow:hidden}
+.bp .grid{display:grid;grid-template-areas:"head" "stage" "act";gap:16px}
+.bp .head{grid-area:head}.bp .stage{grid-area:stage}.bp .act{grid-area:act}
+.bp .stage{position:relative;height:380px}
+.phone{position:absolute;top:0;border-radius:24px;border:5px solid #fff;overflow:hidden;background:#fff;box-shadow:0 12px 28px rgba(45,0,70,.4)}
+.phone video,.phone img{width:100%;height:100%;object-fit:cover}
+.phone.main{left:50%;width:216px;height:368px;margin-left:-108px;z-index:2}
+.phone.side{width:150px;height:256px;top:58px;opacity:.95}
+.phone.l{left:50%;margin-left:-196px;transform:rotate(-7deg)}
+.phone.r{left:50%;margin-left:46px;transform:rotate(7deg)}
 .bp .play{background:var(--bp-btn);color:#3a0a33;box-shadow:0 6px 0 #c79b00,0 10px 24px rgba(60,0,60,.35)}
-.bp .phone{width:200px;border-radius:22px;border:5px solid #fff;box-shadow:0 10px 26px rgba(50,0,70,.35);overflow:hidden;background:#fff}
-.bp .phone img{width:100%}
-.bp .facts{margin:18px 0 0;padding:0;list-style:none;font-size:14px;display:flex;flex-wrap:wrap;gap:6px 8px}
-.bp .facts li{background:rgba(255,255,255,.16);padding:4px 12px;border-radius:99px}
+.bp .voices li{background:rgba(255,255,255,.95);color:#4a1240}
 
 /* 2. ぼくらのボールパーク */
-.bk{background:linear-gradient(180deg,var(--bk1) 0%,var(--bk2) 70%,var(--bk-field) 100%);color:#fff;padding:30px 0 34px}
-.bk .tag{background:#ffcf3d;color:#2a1a00}
-.bk .hero-shot{border-radius:var(--r);overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.45);margin:14px 0 18px}
+.bk{background:linear-gradient(180deg,var(--bk1) 0%,var(--bk2) 75%,#174a39 100%);color:#fff;padding:30px 0 36px}
+.bk .grid{display:grid;grid-template-areas:"head" "stage" "act" "shots";gap:16px}
+.bk .head{grid-area:head}.bk .stage{grid-area:stage}.bk .act{grid-area:act}.bk .shots{grid-area:shots}
+.bk .title h2{font-size:27px}
+.bk .stage{margin:0 -18px}
+.bk .stage video{width:100%;aspect-ratio:800/396;object-fit:cover;background:#0b1d40}
 .bk .play{background:var(--bk-btn);color:#fff;box-shadow:0 6px 0 #b04a00,0 10px 24px rgba(0,0,0,.4)}
-.bk .note{font-size:14px;margin:12px 0 0;opacity:.95}
-.bk .strip figure{width:300px}
-.bk .strip img{border-radius:12px;border:2px solid rgba(255,255,255,.25)}
+.bk .voices li{background:#fff;color:#0e2a5a}
+.bk .shots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 0;padding:0;list-style:none}
+.bk .shots figure{margin:0}
+.bk .shots img{border-radius:8px;aspect-ratio:1000/460;object-fit:cover;width:100%}
+.bk .shots figcaption{font-size:12.5px;margin-top:4px;opacity:.9}
 
 /* 3. DIAMOND NINE */
 .d9{background:linear-gradient(135deg,var(--d9) 0%,var(--d9-2) 100%);color:#fff;padding:30px 0 34px}
-.d9 .tag{background:#fff;color:var(--d9)}
 .d9 .shots{display:flex;gap:12px;margin-top:20px}
 .d9 .shots img{width:50%;max-width:200px;border-radius:14px;border:3px solid rgba(255,255,255,.85)}
 .d9 .yt{display:inline-block;margin-top:12px;font-size:14px;font-weight:700}
 
-/* 4. 試験とアクション */
-.more{background:var(--soft);padding:34px 0 16px}
-.more h3.sec{font-size:13px;letter-spacing:.12em;color:var(--sub);margin:0 0 6px;font-weight:800}
-.app{display:grid;grid-template-columns:116px 1fr;gap:16px;align-items:start;background:#fff;border-radius:var(--r);padding:16px;margin:0 0 16px;border-left:6px solid var(--c)}
-.app .shot{border-radius:12px;overflow:hidden;border:1px solid var(--line)}
-.app.wide{grid-template-columns:1fr}
-.app h2{font-size:22px;margin:0;line-height:1.3;font-weight:900;display:flex;align-items:center;gap:8px}
-.app h2 img{width:32px;height:32px;border-radius:8px}
-.app p{margin:6px 0 8px;font-size:14.5px;color:var(--sub)}
-.app .stores{margin-top:6px}
-.app .stores a img{height:38px}
-.app .stores a.gp img{height:50px;margin:-6px -5px}
-.app .links{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;margin-top:8px}
-.app .links a{color:var(--c);font-weight:700}
-.app .browse{display:inline-block;margin-top:10px;background:var(--c);color:#fff;text-decoration:none;font-weight:800;padding:10px 20px;border-radius:99px;font-size:15px}
+/* 4. 試験の過去問 */
+.study{background:var(--soft);padding:32px 0 12px}
+.sec-h{font-size:13px;letter-spacing:.12em;color:var(--sub);margin:0 0 14px;font-weight:800}
+.row{display:grid;grid-template-columns:108px 1fr;gap:16px;align-items:start;padding:0 0 22px;margin:0 0 22px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .shot{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.row h2{font-size:22px;margin:0;line-height:1.3;font-weight:900;display:flex;align-items:center;gap:8px}
+.row h2 img{width:32px;height:32px;border-radius:8px}
+.row p{margin:6px 0 8px;font-size:14.5px;color:var(--sub)}
+.row .said{margin:8px 0;font-size:13.5px;color:var(--ink);border-left:3px solid var(--c);padding:2px 0 2px 10px}
+.row .stores a img{height:40px}
+.row .stores a.gp img{height:52px;margin:-6px -5px}
+.row .links{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;margin-top:8px}
+.row .links a{color:var(--c);font-weight:700}
 
-/* 5. ほかのアプリ */
-.others{background:#fff;padding:30px 0 20px}
+/* 5. ハルの冒険 */
+.haru{background:#2b1408;color:#fff;padding:30px 0 30px}
+.haru .shot{border-radius:12px;overflow:hidden;margin:12px 0 14px}
+.haru .browse{display:inline-flex;align-items:center;min-height:48px;margin-top:12px;background:#f0a020;color:#2b1408;text-decoration:none;font-weight:900;padding:10px 22px;border-radius:12px;font-size:16px}
+
+/* 6. もう一度遊ぶ */
+.again{background:#fff;padding:30px 0 8px}
+.again h2{font-size:20px;margin:0 0 12px}
+.again .two{display:grid;gap:10px}
+.again a{display:flex;align-items:center;gap:12px;min-height:64px;padding:8px 16px 8px 8px;border-radius:14px;text-decoration:none;font-weight:900;font-size:17px;color:#fff}
+.again a img{width:48px;height:48px;border-radius:11px;flex:none}
+.again a small{display:block;font-size:12.5px;font-weight:700;opacity:.9}
+.again .a-bp{background:linear-gradient(120deg,var(--bp1),var(--bp2))}
+.again .a-bk{background:linear-gradient(120deg,var(--bk2),#174a39)}
+
+/* 7. ほかのアプリ */
+.others{background:#fff;padding:26px 0 20px}
 .others h3{font-size:18px;margin:0 0 10px}
 .olist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr;gap:0}
 .olist li{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:start}
@@ -114,39 +147,52 @@ a{color:inherit}
 .guides{margin:18px 0 0;font-size:13.5px;display:flex;flex-wrap:wrap;gap:4px 14px}
 .guides a{color:#2350b8}
 
-/* 6. 自己紹介 */
-.about{background:#151024;color:#fff;padding:30px 0 22px}
+/* 8. 自己紹介 */
+.about{background:#160b2e;color:#fff;padding:30px 0 22px}
 .about h3{margin:0 0 8px;font-size:18px}
 .about p{margin:0 0 4px;font-size:15px}
-.about .x{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:#fff;color:#111;text-decoration:none;font-weight:800;padding:10px 20px;border-radius:99px}
+.about .x{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:#fff;color:#111;text-decoration:none;font-weight:800;padding:10px 20px;border-radius:99px;min-height:44px}
 .about .x svg{width:18px;height:18px}
 .about .mutual{margin-top:14px;font-size:14px;background:rgba(255,255,255,.1);display:inline-block;padding:6px 14px;border-radius:10px}
 .foot{font-size:12.5px;color:#b9b3cc;margin-top:24px;display:flex;flex-wrap:wrap;gap:4px 16px}
 .foot a{color:#d8d2ee}
 
 @media (min-width:860px){
-  .bp,.bk,.d9{padding:48px 0 52px}
-  .bp .wrap,.d9 .wrap{display:grid;grid-template-columns:380px 1fr;gap:36px;align-items:center}
-  .bp .strip{margin:0;padding:4px 4px 16px}
-  .name h2{font-size:38px}
-  .bk .wrap{display:grid;grid-template-columns:1fr 1.25fr;gap:36px;align-items:center}
-  .bk .hero-shot{margin:0}
-  .bk .strip{grid-column:1 / -1;margin:0;padding:4px 0 10px}
-  .bk .strip figure{width:calc((100% - 28px)/3)}
+  .bp{padding:40px 0 52px}
+  .bp .grid{grid-template-columns:1fr 1fr;grid-template-areas:"head stage" "act stage";column-gap:40px;align-items:start}
+  .bp .head{align-self:end}
+  .bp .stage{height:560px}
+  .phone.main{width:300px;height:500px;margin-left:-150px}
+  .phone.side{width:190px;height:316px;top:110px}
+  .phone.l{margin-left:-250px}.phone.r{margin-left:60px}
+  .title h2{font-size:42px}
+  .title img{width:64px;height:64px;border-radius:15px}
+  .pitch{font-size:17px}
+  .bk{padding:48px 0 52px}
+  .bk .grid{grid-template-columns:1fr 1.35fr;grid-template-areas:"head stage" "act stage" "shots shots";column-gap:40px;align-items:start}
+  .bk .head{align-self:end}
+  .bk .title h2{font-size:33px;word-break:keep-all}
+  .bk .stage{margin:0}
+  .bk .stage video{border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.45)}
+  .bk .shots{grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
+  .d9{padding:44px 0 48px}
+  .d9 .wrap{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center}
   .d9 .shots{margin:0;justify-content:center}
-  .app{grid-template-columns:150px 1fr;padding:20px}
-  .duo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .duo .app{margin:0}
-  .app.wide{grid-template-columns:1fr 1.1fr;margin-top:16px}
+  .study .pair{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+  .row{grid-template-columns:140px 1fr;border-bottom:0}
+  .haru .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:center}
+  .haru .shot{margin:0}
+  .again .two{grid-template-columns:1fr 1fr}
   .olist{grid-template-columns:1fr 1fr;column-gap:28px}
 }
+@media (prefers-reduced-motion:reduce){.play{transition:none}}
 </style>
 </head>
 <body>
 
 <header class="bar">
   <div class="wrap">
-    <a class="logo" href="./">YURU Studio</a>
+    <h1><a class="logo" href="./">YURU Studio</a></h1>
     <nav aria-label="サイト内">
       <a href="#beatpon">ビートぽん!</a>
       <a href="#bokura">ボールパーク</a>
@@ -158,48 +204,70 @@ a{color:inherit}
 
 <main>
 
-<!-- 1. ビートぽん! -->
+<!-- 1. ビートぽん!(最初の画面に、動く画面と「遊ぶ」を一緒に置く) -->
 <section class="bp" id="beatpon" aria-labelledby="bp-h">
-  <div class="wrap">
-    <div>
-      <span class="tag">音ゲー</span>
-      <div class="name"><img src="img/top/bp-icon.webp" alt="" width="56" height="56"><h2 id="bp-h">ビートぽん!</h2></div>
-      <p class="lead">リズムで ぽん! のミニゲーム集。画面を見て、その拍でたたくだけ。曲ごとに場面がまるごと変わります。</p>
+  <div class="wrap grid">
+    <div class="head">
+      <p class="kicker">音ゲー ・ iPhone とブラウザ</p>
+      <div class="title"><img src="img/top/bp-icon.webp" alt="" width="52" height="52"><h2 id="bp-h">ビートぽん!</h2></div>
+      <p class="pitch">画面を見て、その拍でたたくだけ。おにぎり工場、お祭りの太鼓、朝の電車。曲ごとに場面がまるごと変わるリズムのミニゲーム集です。</p>
+    </div>
+    <div class="stage">
+      <div class="phone side l"><img src="img/top/bp-yuubin.webp" alt="うちゅう郵便局の曲の画面" width="420" height="911" loading="lazy"></div>
+      <div class="phone main">
+        <video class="loop" autoplay muted loop playsinline preload="auto" poster="img/top/bp-loop.webp" width="360" height="598" aria-label="ビートぽん!の実際のプレイ画面(おにぎり工場・お祭りの太鼓・朝の電車)">
+          <source src="img/top/bp-loop.webm" type="video/webm">
+          <source src="img/top/bp-loop.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="phone side r"><img src="img/top/bp-result.webp" alt="点数と評価の画面" width="420" height="911" loading="lazy"></div>
+    </div>
+    <div class="act">
       <a class="play" href="/beatpon/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></svg>ブラウザで遊ぶ</a>
+      <p class="under">入れずにそのまま始まります(3曲)。アプリ版は全12曲、クリアで4コマ漫画。</p>
       <div class="stores">
         <a href="https://apps.apple.com/jp/app/id6835766594?pt=129523583&amp;ct=site_top_beatpon&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44"></a>
         <span class="soon">Android は近日公開</span>
       </div>
-      <ul class="facts">
-        <li>ブラウザでは3曲</li><li>アプリ版は全12曲</li><li>クリアで4コマ漫画</li>
+      <p class="voices-h">テスト版を遊んだ人の声(Discord より)</p>
+      <ul class="voices">
+        <li>「和風のリズムが楽しかった」</li>
+        <li>「曲もキャラも可愛い」</li>
       </ul>
-    </div>
-    <div class="strip" aria-label="ビートぽん!の画面">
-      <figure><div class="phone"><img src="img/top/bp-onigiri.webp" alt="おにぎり工場でのりを巻く曲の画面" width="420" height="911"></div><figcaption>見て、その拍でたたく</figcaption></figure>
-      <figure><div class="phone"><img src="img/top/bp-taiko.webp" alt="お祭りで師匠と太鼓をたたく画面" width="420" height="911" loading="lazy"></div><figcaption>師匠のリズムをまねる</figcaption></figure>
-      <figure><div class="phone"><img src="img/top/bp-yuubin.webp" alt="うちゅう郵便局の曲の画面" width="420" height="911" loading="lazy"></div><figcaption>サビで画面がにぎやかに</figcaption></figure>
-      <figure><div class="phone"><img src="img/top/bp-result.webp" alt="点数と評価の画面" width="420" height="911" loading="lazy"></div><figcaption>点数でベストをめざす</figcaption></figure>
-      <figure><div class="phone"><img src="img/top/bp-title.webp" alt="ビートぽん!のタイトル画面" width="420" height="908" loading="lazy"></div><figcaption>タイトル</figcaption></figure>
     </div>
   </div>
 </section>
 
 <!-- 2. ぼくらのボールパーク -->
 <section class="bk" id="bokura" aria-labelledby="bk-h">
-  <div class="wrap">
-    <div>
-      <span class="tag">3D 野球・守備</span>
-      <div class="name"><img src="img/shots/i-bokura.webp" alt="" width="56" height="56"><h2 id="bk-h">ぼくらのボールパーク</h2></div>
-      <p class="lead">野手の目で打球を追って守る野球ゲームです。試合を観ながら、球場の中を歩いて回ることもできます。</p>
+  <div class="wrap grid">
+    <div class="head">
+      <p class="kicker">3D 野球 ・ 守備が主役</p>
+      <div class="title"><img src="img/shots/i-bokura.webp" alt="" width="52" height="52"><h2 id="bk-h">ぼくらのボールパーク</h2></div>
+      <p class="pitch">打球を追って、捕って、投げる。野手の目で守る野球ゲームです。試合を観ながら、球場の中を歩いて回ることもできます。</p>
+    </div>
+    <div class="stage">
+      <video class="loop" autoplay muted loop playsinline preload="none" poster="img/top/bk-loop.webp" width="800" height="396" aria-label="ぼくらのボールパークの実際の画面(遊撃でゴロを捕ってゲッツー、球場の空からの眺め)">
+        <source data-src="img/top/bk-loop.webm" type="video/webm">
+        <source data-src="img/top/bk-loop.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="act">
       <a class="play" href="/bokuranoballpark/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></svg>ブラウザで遊ぶ</a>
-      <p class="note">ブラウザで遊べるのは浜風の球場です。iPhone 版も配信中、Android は近日公開。</p>
+      <p class="under">ブラウザで遊べるのは浜風の球場です。iPhone 版も配信中、Android は近日公開。</p>
+      <p class="voices-h">テスト版を遊んだ人の声(Discord より)</p>
+      <ul class="voices">
+        <li>「守備メインの野球は新鮮で面白い」</li>
+        <li>「3D と実況の声がすごいクオリティ」</li>
+        <li>「守備だけで遊べるのが面白い。選手の動きがコミカル」</li>
+      </ul>
     </div>
-    <div class="hero-shot"><img src="img/top/bk-dive.webp" alt="内野手が打球に飛び込む場面" width="1000" height="460" loading="lazy"></div>
-    <div class="strip" aria-label="ぼくらのボールパークの画面">
-      <figure><img src="img/top/bk-cf.webp" alt="外野でフライを待つ場面" width="1000" height="460" loading="lazy"><figcaption>フライは止まって「オーライ」</figcaption></figure>
-      <figure><img src="img/top/bk-stand.webp" alt="スタンドの客席から打球を見る場面" width="1000" height="460" loading="lazy"><figcaption>スタンドで捕る</figcaption></figure>
-      <figure><img src="img/top/bk-walk.webp" alt="球場の外の入場券売場" width="1000" height="460" loading="lazy"><figcaption>球場の外も歩ける</figcaption></figure>
-    </div>
+    <ul class="shots" aria-label="ぼくらのボールパークの画面">
+      <li><figure><img src="img/top/bk-dive.webp" alt="内野手が打球に飛び込む場面" width="1000" height="460" loading="lazy"><figcaption>打球に飛び込む</figcaption></figure></li>
+      <li><figure><img src="img/top/bk-cf.webp" alt="外野でフライを待つ場面" width="1000" height="460" loading="lazy"><figcaption>フライは止まって「オーライ」</figcaption></figure></li>
+      <li><figure><img src="img/top/bk-stand.webp" alt="スタンドの客席から打球を見る場面" width="1000" height="460" loading="lazy"><figcaption>スタンドで観る</figcaption></figure></li>
+      <li><figure><img src="img/top/bk-walk.webp" alt="球場の外の入場券売場" width="1000" height="460" loading="lazy"><figcaption>球場の外も歩ける</figcaption></figure></li>
+    </ul>
   </div>
 </section>
 
@@ -207,12 +275,12 @@ a{color:inherit}
 <section class="d9" id="diamond-nine" aria-labelledby="d9-h">
   <div class="wrap">
     <div>
-      <span class="tag">野球チーム育成</span>
-      <div class="name"><img src="img/shots/i-diamond-nine.webp" alt="" width="56" height="56"><h2 id="d9-h">DIAMOND NINE</h2></div>
-      <p class="lead">選手を集めて育てて、1年ずつシーズンを進める野球チームの育成ゲームです。</p>
+      <p class="kicker">野球チーム育成</p>
+      <div class="title"><img src="img/shots/i-diamond-nine.webp" alt="" width="52" height="52" loading="lazy"><h2 id="d9-h">DIAMOND NINE</h2></div>
+      <p class="pitch">選手を集めて育てて、1年ずつシーズンを進める野球チームの育成ゲームです。</p>
       <div class="stores">
-        <a href="https://apps.apple.com/jp/app/id6817347364?pt=129523583&amp;ct=site_top_d9&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44"></a>
-        <a class="gp" href="https://play.google.com/store/apps/details?id=com.diamondninebaseball.game"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="196" height="58"></a>
+        <a href="https://apps.apple.com/jp/app/id6817347364?pt=129523583&amp;ct=site_top_d9&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44" loading="lazy"></a>
+        <a class="gp" href="https://play.google.com/store/apps/details?id=com.diamondninebaseball.game"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="196" height="58" loading="lazy"></a>
       </div>
       <a class="yt" href="https://youtu.be/a96qBg5o2dY">予告編を YouTube で見る</a>
     </div>
@@ -223,19 +291,20 @@ a{color:inherit}
   </div>
 </section>
 
-<!-- 4. 試験の過去問とアクション -->
-<section class="more" aria-label="ほかの主なアプリ">
+<!-- 4. 試験の過去問 -->
+<section class="study" aria-label="国家試験・資格の過去問">
   <div class="wrap">
-    <h3 class="sec">国家試験・資格の過去問</h3>
-    <div class="duo">
-      <article class="app" id="nigatecho" style="--c:#c8323a">
+    <h3 class="sec-h">国家試験・資格の過去問</h3>
+    <div class="pair">
+      <article class="row" id="nigatecho" style="--c:#c8323a">
         <div class="shot"><img src="img/shots/ng-2.webp" alt="苦手ノートの画面" width="540" height="1170" loading="lazy"></div>
         <div>
           <h2><img src="img/shots/i-nigatecho.webp" alt="" width="32" height="32" loading="lazy">ニガテ帳</h2>
           <p>介護福祉士・社会福祉士・看護師の過去問。まちがえた問題は苦手ノートに残って、2回続けて正解すると消えます。</p>
+          <p class="said">テスターの声「正誤が見やすくて解説付きで分かりやすい。苦手が残るので勉強に良い」</p>
           <div class="stores">
-            <a href="https://apps.apple.com/jp/app/id6818535389?pt=129523583&amp;ct=site_top_matome&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="104" height="38" loading="lazy"></a>
-            <a class="gp" href="https://play.google.com/store/apps/details?id=jp.nigatecho.kanrieiyoushi"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="168" height="50" loading="lazy"></a>
+            <a href="https://apps.apple.com/jp/app/id6818535389?pt=129523583&amp;ct=site_top_matome&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="109" height="40" loading="lazy"></a>
+            <a class="gp" href="https://play.google.com/store/apps/details?id=jp.nigatecho.kanrieiyoushi"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="176" height="52" loading="lazy"></a>
           </div>
           <div class="links">
             <a href="https://apps.apple.com/jp/app/id6818536142?pt=129523583&amp;ct=site_top_rinsho&amp;mt=8">臨床検査技師版(App Store)</a>
@@ -244,36 +313,52 @@ a{color:inherit}
           </div>
         </div>
       </article>
-      <article class="app" id="pasudan" style="--c:#5b3fb8">
+      <article class="row" id="pasudan" style="--c:#5b3fb8">
         <div class="shot"><img src="img/shots/pd-1.webp" alt="パスダンの解説の画面" width="540" height="960" loading="lazy"></div>
         <div>
           <h2><img src="img/shots/i-pasudan.webp" alt="" width="32" height="32" loading="lazy">パスダン</h2>
           <p>IT パスポートの過去問を、解説を読みながら解いていくアプリです。</p>
+          <p class="said">テスターの声「答えると次の問題へ自動でスクロールするのが親切」</p>
           <div class="stores">
-            <a href="https://apps.apple.com/jp/app/id6821542540?pt=129523583&amp;ct=site_top_pasudan&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="104" height="38" loading="lazy"></a>
-            <a class="gp" href="https://play.google.com/store/apps/details?id=jp.pasudan.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="168" height="50" loading="lazy"></a>
+            <a href="https://apps.apple.com/jp/app/id6821542540?pt=129523583&amp;ct=site_top_pasudan&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="109" height="40" loading="lazy"></a>
+            <a class="gp" href="https://play.google.com/store/apps/details?id=jp.pasudan.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="176" height="52" loading="lazy"></a>
           </div>
           <div class="links"><a href="/pasudan/">サポート</a></div>
         </div>
       </article>
     </div>
-
-    <article class="app wide" id="haru" style="--c:#d2552a">
-      <div class="shot"><img src="img/shots/haru-a.webp" alt="ハルの冒険のステージ" width="960" height="540" loading="lazy"></div>
-      <div>
-        <h2><img src="img/shots/i-haru.webp" alt="" width="32" height="32" loading="lazy">ハルの冒険</h2>
-        <p>走って跳ぶ横スクロールアクション。ブラウザで体験版が遊べます。</p>
-        <div class="stores">
-          <a href="https://apps.apple.com/jp/app/id6823975997?pt=129523583&amp;ct=web_haru_top&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="104" height="38" loading="lazy"></a>
-          <a class="gp" href="https://play.google.com/store/apps/details?id=jp.harunobouken.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="168" height="50" loading="lazy"></a>
-        </div>
-        <a class="browse" href="/haru/">ブラウザで遊ぶ(体験版)</a>
-      </div>
-    </article>
   </div>
 </section>
 
-<!-- 5. ほかのアプリ -->
+<!-- 5. ハルの冒険 -->
+<section class="haru" id="haru" aria-labelledby="haru-h">
+  <div class="wrap">
+    <div class="shot"><img src="img/shots/haru-c.webp" alt="ハルの冒険のステージで、ハルがスライム大王と向き合う場面" width="960" height="540" loading="lazy"></div>
+    <div>
+      <p class="kicker">横スクロールアクション</p>
+      <div class="title"><img src="img/shots/i-haru.webp" alt="" width="52" height="52" loading="lazy"><h2 id="haru-h">ハルの冒険</h2></div>
+      <p class="pitch">走って跳んで、壁にしがみついて進む横スクロールアクション。ブラウザで体験版が遊べます。</p>
+      <a class="browse" href="/haru/">ブラウザで遊ぶ(体験版)</a>
+      <div class="stores">
+        <a href="https://apps.apple.com/jp/app/id6823975997?pt=129523583&amp;ct=web_haru_top&amp;mt=8"><img src="img/appstore-badge-ja.svg" alt="App Store からダウンロード" width="120" height="44" loading="lazy"></a>
+        <a class="gp" href="https://play.google.com/store/apps/details?id=jp.harunobouken.app"><img src="img/googleplay-badge-ja.webp" alt="Google Play で手に入れよう" width="196" height="58" loading="lazy"></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. 下まで読んだ人への、もう一度の「遊ぶ」 -->
+<section class="again" aria-labelledby="ag-h">
+  <div class="wrap">
+    <h2 id="ag-h">ブラウザですぐ遊べる2本</h2>
+    <div class="two">
+      <a class="a-bp" href="/beatpon/play/"><img src="img/top/bp-icon.webp" alt="" width="48" height="48" loading="lazy"><span>ビートぽん!を遊ぶ<small>見て、その拍でたたく音ゲー</small></span></a>
+      <a class="a-bk" href="/bokuranoballpark/play/"><img src="img/shots/i-bokura.webp" alt="" width="48" height="48" loading="lazy"><span>ぼくらのボールパークを遊ぶ<small>野手の目で守る 3D 野球</small></span></a>
+    </div>
+  </div>
+</section>
+
+<!-- 7. ほかのアプリ -->
 <section class="others" id="others" aria-labelledby="ot-h">
   <div class="wrap">
     <h3 id="ot-h">ほかのアプリ</h3>
@@ -314,7 +399,7 @@ a{color:inherit}
   </div>
 </section>
 
-<!-- 6. 自己紹介 -->
+<!-- 8. 自己紹介 -->
 <section class="about" id="about" aria-labelledby="ab-h">
   <div class="wrap">
     <h3 id="ab-h">作っている人</h3>
@@ -331,5 +416,31 @@ a{color:inherit}
 </section>
 
 </main>
+
+<script>
+/* 動画は画面に入った時だけ読み込んで再生し、外れたら止める */
+(function(){
+  var vids=[].slice.call(document.querySelectorAll('video.loop'));
+  var still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function load(v){
+    if(v.getAttribute('data-ld'))return;
+    v.setAttribute('data-ld','1');
+    var ss=v.querySelectorAll('source[data-src]');
+    if(!ss.length)return;
+    for(var i=0;i<ss.length;i++){ss[i].src=ss[i].getAttribute('data-src');}
+    v.load();
+  }
+  function play(v){if(still)return;var p=v.play();if(p&&p.catch)p.catch(function(){});}
+  if(still){vids.forEach(function(v){v.removeAttribute('autoplay');v.pause();});}
+  if(!('IntersectionObserver' in window)){vids.forEach(function(v){load(v);play(v);});return;}
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      var v=e.target;
+      if(e.isIntersecting){load(v);play(v);}else{v.pause();}
+    });
+  },{rootMargin:'300px 0px'});
+  vids.forEach(function(v){io.observe(v);});
+})();
+</script>
 </body>
 </html>
