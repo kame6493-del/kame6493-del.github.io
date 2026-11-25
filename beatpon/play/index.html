@@ -25,5 +25,20 @@
 </head>
 <body>
 <div id="root"></div>
+<!-- 11/25 タイトルの画面のリンクの並びに「配信・プレスの方へ」を足す(サイトの頁だけ。アプリには入れない) -->
+<script>
+(function(){
+  if(!/github\.io$/.test(location.hostname)&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))return;
+  function add(){
+    var box=document.querySelector('.title-links');
+    if(!box||box.querySelector('.press-link'))return;
+    var a=document.createElement('a');
+    a.className='link press-link';a.href='/beatpon/press/';a.textContent='配信・プレスの方へ';
+    box.appendChild(a);
+  }
+  new MutationObserver(add).observe(document.getElementById('root'),{childList:true,subtree:true});
+  add();
+})();
+</script>
 </body>
 </html>
