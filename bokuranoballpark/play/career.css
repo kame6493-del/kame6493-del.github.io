@@ -260,3 +260,24 @@ body.photo #carPops,body.replayOn #carPops{display:none}
 body.hud-off-carPop #carPops{display:none}
 .pcTable th{white-space:nowrap;letter-spacing:-.04em;font-size:clamp(9px,2.7vw,13px)}
 .cGo.blue{-webkit-text-stroke-color:#07306f}
+/* 11/26 UZR の注釈(押した時だけ出す)・守備位置を図で選ぶ・位置ごとの成績 */
+.cQ{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:5px;padding:0;border-radius:50%;border:1.5px solid currentColor;background:rgba(255,255,255,.14);color:inherit;font:900 12px/1 system-ui,sans-serif;vertical-align:middle;cursor:pointer;opacity:.85}
+.cQ.cQw{width:auto;height:auto;padding:2px 8px;border-radius:10px;font-size:11px}
+.pcTable th .cQ{width:15px;height:15px;font-size:10px;margin-left:2px}
+#carHelp{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(0,10,30,.55);padding:16px}
+#carHelp.hide{display:none}
+#carHelp .chBox{max-width:420px;width:100%;box-sizing:border-box;background:linear-gradient(180deg,#fff,#eef4ff);color:#0b2560;border:3px solid #ffd23a;border-radius:16px;padding:14px 16px 12px;box-shadow:0 8px 30px rgba(0,0,0,.45);font-weight:700;overflow-wrap:anywhere}
+#carHelp .chBox b{display:block;font-size:18px;font-weight:900;margin-bottom:6px}
+#carHelp .chBox p{margin:0 0 6px;font-size:14px;line-height:1.5}
+#carHelp .chBox .cBtn{display:block;margin:8px auto 0;min-width:120px}
+.pcField{position:relative;width:min(100%,340px);aspect-ratio:60/44;margin:6px auto 4px}
+.pcField svg{position:absolute;inset:0;width:100%;height:100%}
+.pcPosBtn{position:absolute;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;border:2.5px solid #fff;background:#123f9e;color:#fff;font:900 17px/1 system-ui,sans-serif;box-shadow:0 2px 0 rgba(0,0,0,.35);cursor:pointer;padding:0}
+.pcPosBtn.on{background:#ffd23a;color:#0b2560;border-color:#fff;transform:translate(-50%,-50%) scale(1.12)}
+.pcPickNow{text-align:center;color:#fff;font-weight:800;font-size:14px}
+.pcPickNow b{color:#ffd23a}
+.pcPick .cNote{text-align:center}
+.pcPick .pcSave{display:block;margin:8px auto 0}
+.pcTable tr.pcRowPos td,.pcTable tr.pcRowPos th{background:rgba(255,210,58,.12)}
+.pcTable td,.pcTable th{overflow-wrap:anywhere}
+.pcBestRow{margin-top:6px;font-size:12px;font-weight:700;color:#dbe8ff;text-align:center}

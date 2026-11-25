@@ -3,7 +3,7 @@
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1125t';
+import { CareerUI } from './career_ui.js?v=1126u';
 
 const KEY = 'r4walk.career.v1';
 const OFS = ['LF', 'CF', 'RF'];
@@ -12,9 +12,11 @@ export const AB_NAME = { arm: '肩', field: '守備', sure: 'エラー回避' };
 const AB_MIN = 30, AB_MAX = 99;
 // 段: evK 打球(ゴロ・ライナー)の速さの倍率、hard 難しい種類の打球を選ぶ割合、need 昇格の基準(評価がこれ以上 か UZR がこれ以上)
 // 11/25 夜 持ち主「全部いい感じに」: 1 試合で上がっていたのを、その段で min 試合以上・直近 3 試合のうち 2 試合で基準を超えたら上がる形に(各段 5〜10 試合ほど)
+// 11/26 持ち主「UZR は現実の基準に忠実に」: UZR の作りを本物(Lichtman の UZR。FanGraphs)に合わせたので、基準も決め直した(tools/uzr_1126.py で昇格の早さを比べて決めた)
+const UZR_NEED = [0.5, 0.4];
 export const STAGES = [
-  { key: 'hs', name: '高校', long: '高校野球', evK: 1.00, hard: 0.00, need: { rank: 'B', uzr: 1.0 }, min: 5 },
-  { key: 'corp', name: '社会人', long: '社会人野球', evK: 1.04, hard: 0.12, need: { rank: 'A', uzr: 0.8 }, min: 6 },
+  { key: 'hs', name: '高校', long: '高校野球', evK: 1.00, hard: 0.00, need: { rank: 'B', uzr: UZR_NEED[0] }, min: 5 },
+  { key: 'corp', name: '社会人', long: '社会人野球', evK: 1.04, hard: 0.12, need: { rank: 'A', uzr: UZR_NEED[1] }, min: 6 },
   { key: 'pro', name: 'プロ', long: 'プロ野球', evK: 1.08, hard: 0.22, need: null },
 ];
 export const FINAL_GAMES = 5;   // プロで 5 試合守ったら「キャリアの最終評価」を確定して出す(その後も続けられる)
@@ -54,7 +56,7 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 function fresh() {
   return { v: 1, stage: 0, pos: 'SS', ab: { arm: AB_MIN, field: AB_MIN, sure: AB_MIN }, xp: { arm: 0, field: 0, sure: 0 },
     stageGames: [0, 0, 0], tot: { games: 0, po: 0, a: 0, e: 0, uzr: 0, wins: 0 }, hist: [], final: null, made: Date.now(),
-    name: '', num: 6, pass: [[], [], []], best: null };
+    name: '', num: 6, pass: [[], [], []], best: null, byPos: {} };
 }
 
 // ------------------------------------------------------------ 「普通の野手なら何%でアウトにできたか」(UZR の基準)
@@ -84,7 +86,12 @@ export function outProb(d, pl) {
   if (!of && (ty === 'grounder' || ty === 'bunt') && first) {
     const thr = (bx, bz, runT) => sig((runT - (first.t + 0.75 + Math.hypot(first.x - bx, first.z - bz) / 31)) / 0.3);
     let pt = thr(19.07, -19.4, 4.45);
-    const g = d.g; if (g && g.bases && g.bases[0] && g.outs < 2) pt = Math.max(pt, thr(0, -38.8, 3.6));
+    const g = d.g; if (g && g.bases && g.bases[0] && g.outs < 2) {
+      const p2 = thr(0, -38.8, 3.6); pt = Math.max(pt, p2);
+      // 11/26 UZR の併殺(DPR): 普通の野手がこのゴロで併殺にする割合 = 二塁で先の走者を刺す × 二塁からの転送が打者より先に一塁へ(受けて投げるまで 0.6 秒・27.4 m を 31 m/s)
+      const t2 = first.t + 0.75 + Math.hypot(first.x, first.z + 38.8) / 31;
+      pl._carDpR = clamp(p2 * sig((4.45 - (t2 + 0.6 + 27.4 / 31)) / 0.3), 0, 0.98);
+    }
     p *= pt;
   }
   return clamp(p, 0.02, 0.98);
@@ -122,6 +129,8 @@ class Career {
       if (j && j.v === 1) {
         const D = Object.assign(fresh(), j);
         if (!Array.isArray(D.pass) || D.pass.length !== 3) D.pass = [[], [], []];
+        // 11/26 位置ごとの成績(試合・刺殺・補殺・失策・UZR)。前から遊んでいる人の記録は、今の位置の分として引き継ぐ
+        if (!j.byPos || typeof j.byPos !== 'object') { D.byPos = {}; const T = D.tot; if (T && T.games) D.byPos[D.pos] = { games: T.games, po: T.po, a: T.a, e: T.e, uzr: T.uzr }; }
         if (!D.best && D.hist.length) D.best = D.hist.reduce((b, h) => ((RANK_N[h.rank] || 0) > (RANK_N[b] || 0) ? h.rank : b), null);
         return D;
       }
@@ -129,6 +138,9 @@ class Career {
     return fresh();
   }
   setName(n) { this.data.name = String(n || '').replace(/[<>&"'`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 10); this.save(); }
+  // 11/26 守る位置を替える(能力・通算成績・段はそのまま。位置ごとの成績は分けて覚える)
+  setPos(p) { if (POS_NAME[p]) { this.data.pos = p; this.save(); } }
+  posStats(p) { return (this.data.byPos && this.data.byPos[p]) || { games: 0, po: 0, a: 0, e: 0, uzr: 0 }; }
   setNum(n) { n = Math.round(+n); if (Number.isFinite(n) && n >= 0 && n <= 99) { this.data.num = n; this.save(); } }
   save() { try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) { /* 残せなくても遊べる */ } }
   reset() { this.data = fresh(); this.save(); }
@@ -252,7 +264,7 @@ class Career {
       const t2 = to.clone(); t2.x += (-dz / L) * off; t2.z += (dx / L) * off;
       return { to: t2, speed: speed * EFFECT.arm(C.data.ab.arm) };
     };
-    this.game = { po: 0, a: 0, e: 0, uzr: 0, chances: 0, xp: { arm: 0, field: 0, sure: 0 }, xpPlay: { arm: 0, field: 0, sure: 0 }, ups: { arm: 0, field: 0, sure: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my };
+    this.game = { po: 0, a: 0, e: 0, uzr: 0, uzrOld: 0, parts: { rng: 0, dpr: 0, arm: 0, err: 0 }, chances: 0, xp: { arm: 0, field: 0, sure: 0 }, xpPlay: { arm: 0, field: 0, sure: 0 }, ups: { arm: 0, field: 0, sure: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my };
     const st = this.stage, n = this.data.stageGames[this.data.stage] + 1;
     this.ui.intro(`${st.long} 第${n}戦`, POS_NAME[d.my]);
   }
@@ -281,20 +293,34 @@ class Career {
     if (pl._carBob && (outs === 0 || pl.dropped)) err = 1;
     if (pl.dropped && mine) err = 1;   // 11/25 落球は、拾い直してほかの走者をアウトにしても失策
     G.e += err;
-    // UZR(簡易): 自分の打球は アウトにできれば +(1-p)、できなければ -p に、1 つのアウトの重み(内野 0.75 点・外野 0.85 点)を掛ける。
-    // 足し引き: 併殺 +0.25、失策 -0.25、外野の補殺 +0.4、自分の打球でない中継・カバーの補殺 +0.15
-    let du = 0;
+    // 11/26 持ち主「UZR は現実の基準に忠実に」: Lichtman の UZR(FanGraphs の UZR 入門)の作りに合わせた。?olduzr=1 で前の形
+    //  範囲(RngR): その打球を普通の野手がアウトにする割合 p と比べる。アウトにすれば +(1-p)、できなければ -p に、安打とアウトの差の点を掛ける
+    //    (入門: 外野の安打 約 .56 点・アウト 約 -.27 点 → 差 .83 点。内野の安打はほぼ単打で差 約 .75 点)
+    //  失策(ErrR): 失策した球は「普通はその野手が捕る球」として範囲には入れず、平均の失策の割合(内野 3%・外野 1.5%)と比べる
+    //    (失策で -(1-e)×差 ≒ -0.73(内野)/-0.82(外野)。失策しなければ +e×差 ≒ +0.02)。自分の打球でない送球・中継の失策は 1 つ進塁ぶん -0.3
+    //  併殺(DPR): 一塁に走者・2 アウト未満のゴロを捕った時、普通の野手の併殺の割合 r(outProb の _carDpR)と比べて ±、併殺とひとつのアウトの差 0.3 点
+    //  肩(ARM): 外野の補殺 +0.45(走者を刺す。ARM は外野だけ。内野の中継・カバーの補殺は UZR に入らない)
+    //  捕手の盗塁: UZR は捕手を数えないので、盗塁を刺した/許した点(rSB と同じ考え。盗塁 +0.2・盗塁死 -0.41、普通の阻止率 3 割)で ±
+    //  飛び込みの足し点は外した(難しさは p に入っている)
+    const RV = of ? 0.83 : 0.75, EAVG = of ? 0.015 : 0.03, part = { rng: 0, dpr: 0, arm: 0, err: 0 };
+    let du0 = 0;   // 前の形(比べるため・?olduzr=1 の時に使う)
     if (mine) {
       const p = pl._car.p, rv = of ? 0.85 : 0.75, ok = caught && outs > 0;
-      du += ok ? (1 - p) * rv : -p * rv;
-      if (ok && outs >= 2) du += 0.25;
-      if (caught && pl.special === 'dive') du += 0.2;   // 飛び込んで捕った(走っても届かない球)は少し足す
+      du0 += ok ? (1 - p) * rv : -p * rv;
+      if (ok && outs >= 2) du0 += 0.25;
+      if (caught && pl.special === 'dive') du0 += 0.2;
+      if (err) part.err -= (1 - EAVG) * RV;
+      else { part.rng += ok ? (1 - p) * RV : -p * RV; part.err += EAVG * RV; }
+      if (pl._carDpR != null && caught && !err) part.dpr += (outs >= 2 ? 1 - pl._carDpR : -pl._carDpR) * 0.3;
       G.chances++;
-    }
-    if (err) du -= 0.25;
-    // 11/25 捕手の盗塁: 普通の捕手の阻止率 3 割と比べる(1 つの盗塁の重み 0.5 点: 刺せば +0.35、許せば −0.15)
-    if (pl.stealC) { du += (pl.outs || 0) > 0 ? 0.35 : -0.15; G.chances++; }
-    else if (pl._carA && of) du += 0.4; else if (pl._carA && !mine) du += 0.15;
+    } else if (err) part.err -= 0.3;
+    if (err) du0 -= 0.25;
+    if (pl.stealC) { const cs = (pl.outs || 0) > 0; du0 += cs ? 0.35 : -0.15; part.arm += cs ? 0.43 : -0.18; G.chances++; }
+    else if (pl._carA && of) { du0 += 0.4; part.arm += 0.45; } else if (pl._carA && !mine) du0 += 0.15;
+    for (const k in part) G.parts[k] += part[k];
+    G.uzrOld += du0;
+    const OLDU = !!(d.ctx && d.ctx.params && d.ctx.params.has && d.ctx.params.has('olduzr'));
+    const du = OLDU ? du0 : part.rng + part.dpr + part.arm + part.err;
     G.uzr += du; G.plays++;
     // 経験値
     // 11/25 夜 そろえ直し: 前は補殺 1 つで肩 +5(外野 +10)入り、肩だけ 1 試合で 30 → 40 になった。3 つとも同じくらい入る数にし、1 試合の上限 XP_CAP を付けた
@@ -359,8 +385,10 @@ class Career {
     const won = r.g && r.g.score && r.g.score.us > r.g.score.them;
     D.stageGames[D.stage]++;
     const T = D.tot; T.games++; T.po += G.po; T.a += G.a; T.e += G.e; T.uzr += G.uzr; if (won) T.wins++;
+    if (!D.byPos) D.byPos = {};
+    { const B = D.byPos[G.pos] || (D.byPos[G.pos] = { games: 0, po: 0, a: 0, e: 0, uzr: 0 }); B.games++; B.po += G.po; B.a += G.a; B.e += G.e; B.uzr += G.uzr; }
     const res = { stage: D.stage, game: D.stageGames[D.stage], pos: G.pos, po: G.po, a: G.a, e: G.e, tc, uzr: G.uzr, chances: G.chances, rank, score: ev.n ? ev.score : null,
-      ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now() };
+      ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now(), parts: { ...G.parts }, uzrOld: G.uzrOld };
     D.hist.push({ stage: res.stage, pos: res.pos, po: res.po, a: res.a, e: res.e, uzr: Math.round(res.uzr * 100) / 100, rank, won, t: res.t });
     if (D.hist.length > 60) D.hist.shift();
     if (!promoted && need) res.prog = promoInfo(D);

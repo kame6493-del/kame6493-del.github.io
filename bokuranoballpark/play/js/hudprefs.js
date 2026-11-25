@@ -124,6 +124,12 @@ export class HudPrefs {
     o.querySelector('small').textContent = w === 'def' ? '押すと 出す/隠す が切り替わります。ガイドは 向き・合図・投げる先、落下点は 地面の輪'
       : w === 'free' ? (touch ? '押すと 出す/隠す が切り替わります。隠しても 下の「開く」から いつでも見られます' : '押すと 出す/隠す が切り替わります。隠しても I(持ち物)・J(目標)・G(道案内)・M(地図)で いつでも開けます')
         : '押すと 出す/隠す が切り替わります';
+    // 11/26 「プレーの札(UZR など)」の UZR の注釈: 守備の時だけ、説明の後ろに小さな「?」(押すと js/career_ui.js の注釈)
+    if (w === 'def' && list.some((x) => x.k === 'carPop')) {
+      const q = document.createElement('button'); q.type = 'button'; q.className = 'cQ cQw'; q.textContent = 'UZR とは'; q.setAttribute('aria-label', 'UZR とは');
+      q.addEventListener('click', (e) => { e.stopPropagation(); try { window.__career.ui.uzrHelp(); } catch (err) { /* キャリアが無い */ } });
+      const sm = o.querySelector('small'); sm.append(' ', q);
+    }
     o.classList.toggle('hide', !list.length);
   }
 }

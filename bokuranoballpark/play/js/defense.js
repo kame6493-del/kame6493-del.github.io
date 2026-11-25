@@ -653,7 +653,7 @@ export class Defense {
     if (type === 'grounder' && of) T.addScaledVector(fromHome, -8);
     if (type === 'liner' && !of) T.y = 0.8 + rng() * 1.2;
     T.x = THREE.MathUtils.clamp(T.x, -110, 110);
-    if (type === 'grounder' && !of && this.kind === 'game' && rng() < 0.06) return this.badHop(T)(p0);   // ときどきイレギュラー
+    if (type === 'grounder' && !of && this.kind === 'game' && rng() < 0.06 && this.oldHop()) return this.badHop(T)(p0);   // 11/26 イレギュラーは無くした(持ち主「理不尽なイレギュラーがあるのでこれは無くして」。?badhop=1 で前の形。rng は前と同じ数だけ引く)
     return this.makeBall(type, T, L, p0);
   }
   // ほかの野手の打球の打ち方(ballFor から)。打者の左右で引っぱる向き・切れる向きを変える。返す球には sub(名前)を付ける
@@ -3297,7 +3297,7 @@ export class Defense {
       const opts = star === 1 ? [['正面のゴロ', () => mk('grounder', T(sgn() * rng() * 0.6, 6))], ['正面のゴロ', () => mk('grounder', T(sgn() * rng() * 0.5, 6))], ['小フライ', () => mk('pop', T(sgn() * 1.5, -1))]]
         : star === 2 ? [['横のゴロ', () => mk('grounder', T(sgn() * (1.6 + rng() * 1.6), 6))], ['ライナー', () => { const t = T(sgn() * rng(), 0, 1.0 + rng() * 0.8); return mk('liner', t); }], ['横のゴロ', () => mk('grounder', T(sgn() * (1.5 + rng() * 1.5), 6))], ['高い内野フライ', () => mk('pop', T(sgn() * 3, -3))]]
           : [['深い所のゴロ(飛び込む)', () => mk('grounder', T(back * (4.6 + rng() * 1.0), 7), 0.85)], ['逆シングル', () => mk('grounder', T(-back * (3.4 + rng() * 0.8), 6), 0.9)], ['ショートバウンド', () => mk('grounder', T(sgn() * rng() * 0.6, 2), 1.0)],
-            ['頭の上のライナー(跳ぶ)', () => mk('liner', T(sgn() * rng() * 0.4, 0, 2.75 + rng() * 0.15), 0.8)], ...(this.ctx.indoor ? [['高い内野フライ', () => mk('pop', T(sgn() * 3, -4), 0.6)]] : [['風で流れる内野フライ', () => this.windBall('pop', T(sgn() * 5, -5), 0.6)]]), ['バウンドの変わるゴロ', () => this.badHop(T(sgn() * rng() * 1.2, 6))]];
+            ['頭の上のライナー(跳ぶ)', () => mk('liner', T(sgn() * rng() * 0.4, 0, 2.75 + rng() * 0.15), 0.8)], ...(this.ctx.indoor ? [['高い内野フライ', () => mk('pop', T(sgn() * 3, -4), 0.6)]] : [['風で流れる内野フライ', () => this.windBall('pop', T(sgn() * 5, -5), 0.6)]]), [this.oldHop() ? 'バウンドの変わるゴロ' : '正面寄りのゴロ', () => this.badHop(T(sgn() * rng() * 1.2, 6))]];
       if (star >= 2 && (my === '1B' || my === '3B')) opts.push(['ライン際(フェアかファウルか)', () => (p0) => this.makeFoul('foul_line', p0)]);
       const [label, f] = pick(opts);
       const type = /フライ/.test(label) ? 'pop' : /ライナー/.test(label) ? 'liner' : 'grounder';
@@ -3396,7 +3396,7 @@ export class Defense {
       ...(!corner ? [['charge', 'ground', (my === 'SS' ? '三遊間' : '一二塁間') + '寄りのボテボテ(前へ)', 2, () => mkO('bunt', T(-mid * (3.5 + rng() * 2), 8), 0.1, () => ({ stop: r2(30, 34) }))]] : []),
       ['hop', 'ground', 'ハーフバウンド', 3, () => mk('grounder', T(sgn() * rng() * 0.6, -3.5), 0.9)],
       ['hop', 'ground', '大きく跳ねるゴロ', 2, () => chop(T(sgn() * rng() * 1.0, -4), 30, 38, 26, 34)],
-      ['hop', 'ground', '芝の切れ目で跳ねるゴロ', 2, () => this.badHop(T(sgn() * (0.8 + rng() * 1.2), -6))],
+      ['hop', 'ground', this.oldHop() ? '芝の切れ目で跳ねるゴロ' : '芝から土へ転がるゴロ', 2, () => this.badHop(T(sgn() * (0.8 + rng() * 1.2), -6))],
       ['hard', 'air', '強烈なライナー', 2, () => mkO('liner', T(sgn() * rng() * 0.8, 0, 1.1 + rng() * 0.6), 1.0, () => ({ ev: r2(40, 45) }))],
       ['hard', 'ground', '足もとへの強いゴロ', 2, () => mk('grounder', T(sgn() * rng() * 0.5, -1.5), 1.0)],
       ['hard', 'air', '沈むライナー', 2, () => mkO('liner', T(sgn() * rng() * 0.8, 1, 0.6 + rng() * 0.4), 0.9, () => ({ top: -r2(700, 1300) }))],
@@ -3480,7 +3480,7 @@ export class Defense {
       ['run', 'ground', '逆シングル', 3, () => mk('grounder', T(-back * (5.5 + rng() * 2.5), -6), 0.9)],
       ['charge', 'ground', 'ボテボテのゴロ(前へ突っ込む)', 2, () => (my === 'SS' || my === '2B' ? mkO('bunt', T(-mid * (2 + rng() * 2), 8), 0.1, () => ({ stop: r2(31, 35) })) : mk('bunt', T(sgn() * rng() * 1.2, 12 + rng() * 3), 0.1))],   // 11/21 二塁・遊撃は前は投手の前(本塁から 20 m 余り)で止まり、ノックでは毎回投手が捕っていた: 投手から離れる側へ、本塁から 30 m 余りで止まる強さに(stop。球場の地面で転がり方が違うので道筋で合わせる)
       ['charge', 'air', 'ポテンヒット性(前へ)', 2, () => mk('pop', T(sgn() * rng() * 2, 6 + rng() * 3), 0.4)],
-      ['hop', 'ground', 'イレギュラー', 2, () => this.badHop(T(sgn() * rng() * 0.8, -6))],
+      ['hop', 'ground', this.oldHop() ? 'イレギュラー' : '速いゴロ', 2, () => this.badHop(T(sgn() * rng() * 0.8, -6))],
       ['hop', 'ground', 'ショートバウンド', 3, () => mk('grounder', T(sgn() * rng() * 0.6, -2), 1.0)],
       ['hard', 'ground', '強いゴロ', 2, () => mk('grounder', T(sgn() * rng() * 1.2, -6), 1.0)],
       ['back', 'air', '後ろへの飛球(背走)', 2, () => mk('pop', T(sgn() * rng() * 2, -(5 + rng() * 3)), 0.5)],
@@ -3603,9 +3603,12 @@ export class Defense {
     };
   }
   // バウンドの変わるゴロ: 跳ねるたびに少し横へそれる(土の荒れ)。道筋を 2 つつないで作る
+  // 11/26 持ち主「理不尽なイレギュラーがあるのでこれは無くしてください」: 跳ねても向き・高さは変えない素直なゴロにした(同じ的・同じ強さ)。?badhop=1 で前の形
+  oldHop() { return !!(this.ctx.params && this.ctx.params.has && this.ctx.params.has('badhop')); }
   badHop(T) {
     return (p0) => {
       const b = this.makeBall('grounder', T, 0.6, p0);
+      if (!this.oldHop()) return b;
       const ev = b.path.events.find((e) => e.type === 'bounce' && e.t > 0.25);
       if (!ev) return b;
       const pts = b.path.pts, i0 = Math.floor(ev.t / b.path.dt);
