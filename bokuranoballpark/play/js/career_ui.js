@@ -28,6 +28,12 @@ const TUT_KEY = 'r4walk.carTut';
 const tutSeen = () => { try { return !!localStorage.getItem(TUT_KEY); } catch (e) { return true; } };
 const ADJ_NOTE = '位置の補正あり: 守る位置で打球の数や難しさがちがうので、どの位置でも同じ物差しになるよう均した値です';
 
+// 11/26 着せ替え(js/cosmetics.js・js/locker.js): 選手カードの枠・ユニフォームの絵・称号。無い時(読み込み前)は今まで通り
+const cosFr = (id) => { try { return window.__bpCos.frameClass(id); } catch (e) { return ''; } };
+const cosTtl = () => { try { return window.__bpCos.titleText(); } catch (e) { return ''; } };
+const cosCap = (n) => { try { return Math.max(window.__bpCos.hofCap(), n); } catch (e) { return 50; } };
+const cosArt = () => { try { const u = window.__bpCos.eq().uni, m = window.__bpLocker && window.__bpLocker.artNow(u); return m ? ` style="background-image:url('${m}')"` : ''; } catch (e) { return ''; } };
+
 export class CareerUI {
   constructor(C) { this.C = C; this.built = false; }
   get K() { return this.C.K; }
@@ -206,6 +212,7 @@ export class CareerUI {
     e.stopPropagation();
     const a = b.dataset.act, ui = this.appUI;
     if (a === 'uzrq') { this.uzrHelp(); return; }
+    if (a === 'share') { try { window.__bpLocker.share(this.C.data.done || this.C.data); } catch (er) { /* なし */ } return; }
     if (a === 'next') { this.res.classList.add('hide'); this.C.start(); }
     else if (a === 'rank') this.openRank('pro5');
     else if (a === 'new') { ui.app.toTitle(); this.openHub(); this.startNew(); }
@@ -245,10 +252,10 @@ export class CareerUI {
     this.card.innerHTML = this.bg() + `<div class="carSheet pc">
       <div class="cTop"><button class="cBack" data-act="close">戻る</button><h1 class="cLogo">守備のキャリア</h1></div>
       <div class="pcHead">自分の選手カード</div>
-      <div class="pcCard"><div class="pcTag">PLAYER CARD</div>
-        <div class="pcArt"><span class="pcNum">${esc(D.num)}</span></div>
+      <div class="pcCard ${cosFr()}"><div class="pcTag">PLAYER CARD</div>
+        <div class="pcArt"${cosArt()}><span class="pcNum">${esc(D.num)}</span></div>
         <div class="pcInfo">
-          <div class="pcBox"><i>名前</i><b class="pcName">${esc(D.name || '(未設定)')}</b></div>
+          <div class="pcBox"><i>名前</i><b class="pcName">${esc(D.name || '(未設定)')}</b>${cosTtl() ? `<small class="pcTtl">${esc(cosTtl())}</small>` : ''}</div>
           <div class="pcBox dark"><i>守備位置</i><b class="pcPos">${esc(K.POS_NAME[D.pos] || D.pos)}</b>${DIAMOND.replace('class="cDot"', `class="cDot" cx="${dx}" cy="${dy}"`)}</div>
           <div class="pcBox"><i>今の段</i><b>${esc(C.stage.name)}</b></div>
         </div>
@@ -261,6 +268,7 @@ export class CareerUI {
         <div class="pcBestRow">最高評価 ${D.best ? `<b class="pcBest r${esc(D.best)}">${esc(D.best)}</b>` : '-'} ・ 上の行は 今の位置(${esc(K.POS_NAME[D.pos] || D.pos)})の分</div></div>
       ${D.done ? '<button class="cGo blue" data-act="close">キャリアの画面へ</button>' : `<button class="cGo" data-act="go"${ready && D.name ? '' : ' disabled'}>${D.name ? (ready ? '次の試合へ' : '読み込み中…') : '名前を決めてください'}</button>`}
       ${edit || D.done ? '' : '<div class="cRow2"><button class="cBtn" data-act="edit">名前を変える</button><button class="cBtn" data-act="pos">守備位置を変える</button></div>'}
+      ${edit ? '' : '<div class="cRow2"><button class="cBtn" data-act="locker">着せ替え(ロッカー)</button><button class="cBtn" data-act="share">カードの絵を X に出す</button></div>'}
     </div>`;
   }
   saveName() {
@@ -282,6 +290,8 @@ export class CareerUI {
     if (a === 'uzrq') { this.uzrHelp(); return; }
     if (a === 'pos') { this._pick = this.C.data.pos; this.renderCard('pos'); return; }
     if (a === 'savepos') { this.C.setPos(this._pick); this.renderCard(false); return; }
+    if (a === 'locker') { try { window.__bpLocker.open('frame', () => this.renderCard(false)); } catch (er) { /* なし */ } return; }
+    if (a === 'share') { try { window.__bpLocker.share(this.C.data.done || this.C.data); } catch (er) { /* なし */ } return; }
     if (a === 'close') this.closeCard();
     else if (a === 'edit') this.renderCard(true);
     else if (a === 'save') this.saveName();
@@ -310,7 +320,7 @@ export class CareerUI {
   // ------------------------------------------------ 11/26 キャリア完了・殿堂・ランキング・キャリアの説明
   miniCard(c) {
     const K = this.K;
-    return `<div class="cMini"><div class="cMiniArt"><span>${esc(c.num)}</span></div><div class="cMiniTx"><b>${esc(c.name || '(名前なし)')}</b>`
+    return `<div class="cMini ${cosFr(c.fr)}"><div class="cMiniArt"><span>${esc(c.num)}</span></div><div class="cMiniTx"><b>${esc(c.name || '(名前なし)')}</b>`
       + `<small>${esc(K.POS_NAME[c.pos] || c.pos)} ・ ${esc(c.title || '')}</small><small>プロ ${c.pro ? c.pro.games : 0} 試合 ・ UZR(位置の補正あり) <em class="${c.pro && c.pro.adj >= 0 ? 'pos' : 'neg'}">${K.uzrText(c.pro ? c.pro.adj : 0)}</em></small></div>`
       + `<div class="cStamp sm r${esc(c.grade || 'C')}"><span>${esc(c.grade || '-')}</span></div></div>`;
   }
@@ -331,7 +341,7 @@ export class CareerUI {
         ${this.table([['アウトを取った数(刺殺)', P.po], ['送球でアウト(補殺)', P.a], ['エラー(失策)', P.e], ['守備率', K.fpctText(P.po, P.a, P.e)], ['UZR', K.uzrText(P.uzr), P.uzr >= 0 ? 'pos' : 'neg'],
           ['UZR(位置の補正あり)', K.uzrText(P.adj), P.adj >= 0 ? 'pos' : 'neg']])}
         <div class="cNote dk">${esc(ADJ_NOTE)}</div></div>
-      <div class="cPanel cDark cDoneP"><div class="cDoneHead">殿堂入りした選手カード</div>${this.miniCard(c)}<div class="cRankSt" id="cSendSt">ランキングに送っています…</div></div>
+      <div class="cPanel cDark cDoneP"><div class="cDoneHead">殿堂入りした選手カード</div>${this.miniCard(c)}<div class="cRankSt" id="cSendSt">ランキングに送っています…</div><button class="cBtn cShareBtn" data-act="share">カードの絵を X に出す</button></div>
       <button class="cGo" data-act="rank">ランキングを見る</button>
       <div class="cRow2"><button class="cBtn" data-act="new">新しい選手で始める</button><button class="cBtn" data-act="title">タイトルへ</button></div>
       <div class="cConf">${Array.from({ length: 36 }, (_, i) => `<i style="--x:${(i * 37) % 100};--d:${(i % 7) * 0.12}s;--c:${['#ffd23a', '#ff4b4b', '#39d353', '#4fb3ff', '#fff'][i % 5]};--r:${(i * 53) % 360}deg"></i>`).join('')}</div>
@@ -397,13 +407,13 @@ export class CareerUI {
       const H = this.C.hof().slice().reverse();
       body = H.length ? `<div class="cHof">${H.map((c) => this.miniCard(c) + `<div class="cHofDay">${esc(new Date(c.t).toLocaleDateString('ja-JP'))}${c.migrated ? ' ・ 前の数え方' : ''}</div>`).join('')}</div>`
         : '<div class="cEmpty">まだいません。プロで 5 試合を終えた選手が、ここに残ります。</div>';
-      cap = 'この端末でキャリアを終えた選手';
+      cap = `この端末でキャリアを終えた選手(${H.length} / ${cosCap(H.length)} 人まで)`;
     } else if (!res) body = '<div class="cEmpty">読み込み中…</div>';
     else {
       const why = { closed: 'ランキングの準備中のため、自分の記録だけ出しています', busy: '混み合っているので、前に読んだ表を出しています', offline: 'ネットにつながらないので、自分の記録だけ出しています', limit: '読みすぎないよう、前に読んだ表を出しています' };
       const note = res.from === 'net' || res.from === 'cache' ? 'みんなの記録(30 分ごとに新しくなります)' : (res.from === 'stale' ? (why[res.why] || '前に読んだ表を出しています') : (why[res.why] || why.offline));
       const rows = res.rows || [];
-      body = `<div class="cRankNote">${esc(note)}</div>` + (rows.length ? `<table class="cRankT"><tr><th>順位</th><th>選手</th><th>位置</th><th>UZR</th><th>日付</th></tr>${rows.map((r, i) => `<tr class="${r.own ? 'own' : ''}"><td class="n">${r.local && res.from !== 'net' && res.from !== 'cache' ? '-' : i + 1}</td><td class="pl"><i>${esc(r.num)}</i>${esc(r.name)}${r.own ? '<em>あなた</em>' : ''}</td><td>${esc(POS_SHORT[r.pos] || '')}</td><td class="${r.val >= 0 ? 'pos' : 'neg'}">${K.uzrText(r.val)}</td><td class="d">${esc(String(r.day || '').slice(5).replace('-', '/'))}</td></tr>`).join('')}</table>`
+      body = `<div class="cRankNote">${esc(note)}</div>` + (rows.length ? `<table class="cRankT"><tr><th>順位</th><th>選手</th><th>位置</th><th>UZR</th><th>日付</th></tr>${rows.map((r, i) => `<tr class="${r.own ? 'own' : ''}"><td class="n">${r.local && res.from !== 'net' && res.from !== 'cache' ? '-' : i + 1}</td><td class="pl"><i class="${r.own ? cosFr() : ''}">${esc(r.num)}</i>${esc(r.name)}${r.own ? '<em>あなた</em>' : ''}</td><td>${esc(POS_SHORT[r.pos] || '')}</td><td class="${r.val >= 0 ? 'pos' : 'neg'}">${K.uzrText(r.val)}</td><td class="d">${esc(String(r.day || '').slice(5).replace('-', '/'))}</td></tr>`).join('')}</table>`
         : '<div class="cEmpty">まだ記録がありません。最初の 1 人になろう。</div>');
     }
     this.rankEl.innerHTML = this.bg() + `<div class="carSheet rk">

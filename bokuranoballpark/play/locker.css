@@ -1,0 +1,207 @@
+/* 11/26 ロッカー・コレクション・ショップ・シーズンパス・お得パック(js/locker.js・js/cosmetics.js、アプリ版は shop/shop.js も)。
+   見た目は ChatGPT イメージの案 _chatgpt_shop_1126/(紺の夜の球場・金の縁・緑の棚・緑のボタン)。飾りの絵は img/shop2_*.webp(案から切り出し)、字は HTML */
+.bpScreen{position:fixed;inset:0;z-index:60;overflow:hidden;color:#fff;
+  background:radial-gradient(ellipse at 50% 0%,rgba(90,150,255,.5),transparent 55%),radial-gradient(ellipse at 50% 120%,rgba(40,160,60,.55),transparent 55%),linear-gradient(180deg,#081a44 0%,#0b2a6a 50%,#0d3a2a 100%);
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
+.bpScreen.hide,#bpShare.hide,#bpOffer.hide{display:none}
+.bpSheet{position:relative;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;max-width:760px;margin:0 auto;
+  padding:calc(6px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+/* 頭: 緑の「戻る」・月桂樹の題・花火 */
+.bpHead{position:relative;display:flex;align-items:center;justify-content:center;min-height:86px;margin-bottom:6px}
+.bpFw{position:absolute;top:-6px;width:150px;height:100px;background:url("img/shop2_fwr.webp") center/contain no-repeat;opacity:.95;pointer-events:none;mix-blend-mode:screen;-webkit-mask:radial-gradient(closest-side,#000 55%,transparent);mask:radial-gradient(closest-side,#000 55%,transparent)}
+.bpFw.r{right:-10px}.bpFw.l{left:-10px;transform:scaleX(-1)}
+.bpBack{position:absolute;left:0;top:10px;z-index:2;display:flex;align-items:center;gap:6px;border:3px solid #fff;border-radius:999px;padding:6px 16px 6px 12px;
+  font:900 16px/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;background:linear-gradient(180deg,#2fae5a,#127a35);box-shadow:0 3px 0 #0a4a20,0 0 0 2px #0d5a28}
+.bpBack b{font-size:20px}
+.bpTitle{position:relative;display:flex;align-items:center;justify-content:center;gap:4px;flex-direction:row;flex-wrap:wrap;padding-top:14px}
+.bpTitle small{position:absolute;top:0;left:0;right:0;text-align:center;font:900 13px/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;text-shadow:0 2px 0 #0b2160}
+.bpTitle h1{margin:0;font:400 clamp(30px,8.5vw,44px)/1.1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;letter-spacing:.04em;
+  -webkit-text-stroke:2px #0b2a6a;paint-order:stroke fill;text-shadow:0 4px 0 #0b2160,0 0 16px rgba(120,180,255,.6)}
+.bpLaur{display:block;width:34px;height:48px;background:url("img/shop2_laurl.webp") center/contain no-repeat;mix-blend-mode:screen;-webkit-mask:radial-gradient(closest-side,#000 60%,transparent);mask:radial-gradient(closest-side,#000 60%,transparent)}.bpLaur.r{background-image:url("img/shop2_laurr.webp")}
+.bpShopBtn{position:absolute;right:0;top:10px;z-index:2;border:3px solid #fff;border-radius:999px;padding:6px 14px;font:900 15px/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;
+  background:linear-gradient(180deg,#2fae5a,#127a35);box-shadow:0 3px 0 #0a4a20}
+@media (max-width:420px){.bpHead{min-height:104px;align-items:flex-end}.bpTitle{padding-top:44px}.bpTitle small{top:30px}}
+/* 棚(緑の面・金と紺の縁・青い見出しの札) */
+.bpShelf{position:relative;margin:22px 0 12px;padding:22px 10px 10px;border-radius:18px;border:3px solid #f2c94c;
+  background:radial-gradient(ellipse at 50% 0%,rgba(80,200,110,.35),transparent 60%),linear-gradient(180deg,#14652f,#0b4520);box-shadow:0 0 0 3px #0b2a6a,0 6px 16px rgba(0,0,0,.45)}
+.bpShelf.tight{margin-top:20px}
+.bpShelfHead{position:absolute;left:-4px;top:-18px;display:flex;align-items:center;gap:6px;padding:5px 26px 5px 12px;border:2px solid #fff;border-radius:10px 4px 4px 10px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%);background:linear-gradient(180deg,#2f6bdc,#123c9a)}
+.bpShelfHead b{font:400 18px/1 var(--v5-head,"Dela Gothic One"),sans-serif;letter-spacing:.06em;text-shadow:0 2px 0 #0b2160}
+.bpIco{display:block;width:28px;height:24px;background:center/contain no-repeat}
+.bpCnt{position:absolute;right:10px;top:-15px;padding:4px 16px;border-radius:999px;border:2px solid #f2c94c;background:#0a1f4d;font:900 15px/1 "Arial Black",sans-serif;color:#fff}
+/* ロッカー */
+.lkTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 8px}
+.lkTabs button{border:3px solid #9fb6e8;border-radius:999px;padding:9px 6px;font:400 clamp(14px,4vw,18px)/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;
+  background:linear-gradient(180deg,#1c3f8e,#0b2160);box-shadow:0 3px 0 #06123a}
+.lkTabs button.on{border-color:#ffd23a;background:linear-gradient(180deg,#3b8cff,#1446c4);box-shadow:0 3px 0 #06123a,0 0 14px rgba(255,210,58,.6)}
+.lkStage{position:relative;height:clamp(210px,36vh,320px);border-radius:16px;overflow:hidden;background:center/cover no-repeat}
+.lkStage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;z-index:2}
+.lkRays{position:absolute;inset:-20%;background:conic-gradient(from 0deg at 50% 60%,rgba(255,220,120,.0),rgba(255,220,120,.28) 6deg,rgba(255,220,120,0) 14deg,rgba(255,220,120,.22) 24deg,rgba(255,220,120,0) 34deg,rgba(255,220,120,.25) 46deg,rgba(255,220,120,0) 58deg,rgba(255,220,120,.2) 300deg,rgba(255,220,120,0) 312deg,rgba(255,220,120,.25) 330deg,rgba(255,220,120,0) 345deg);
+  -webkit-mask:radial-gradient(circle at 50% 60%,#000 20%,transparent 62%);mask:radial-gradient(circle at 50% 60%,#000 20%,transparent 62%)}
+.lkPed{position:absolute;left:8%;right:8%;bottom:2%;height:30%;background:url("img/shop2_pedestal.webp") center bottom/100% auto no-repeat;z-index:1}
+.lkEye{position:absolute;left:8px;bottom:6px;z-index:3;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:8px}
+.lkStage.card{display:flex;align-items:center;justify-content:center}
+.lkCard{position:relative;z-index:2;height:94%;aspect-ratio:3/4.1;max-width:70%;border-radius:20px;border:6px solid #f6c437;background:linear-gradient(180deg,#1b4fb4,#082a72);display:flex;flex-direction:column;padding:6px;box-shadow:0 8px 22px rgba(0,0,0,.5)}
+.lkArt{position:relative;flex:1;border-radius:12px;background:url("img/career_card_back.webp") center top/cover no-repeat}
+.lkArt span{position:absolute;left:56%;top:47%;transform:translate(-50%,-50%);font:900 40px/1 "Arial Black",sans-serif;color:#253a68;-webkit-text-stroke:2px #e8eef8;paint-order:stroke fill}
+.lkCardTx{padding:4px 2px 0;text-align:center}.lkCardTx b{display:block;font-size:16px}.lkCardTx small{display:block;color:#ffd23a;font-size:12px}
+.lkCols{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.lkC{position:relative;border:0;background:none;padding:2px;border-radius:50%}
+.lkDot{display:block;width:100%;aspect-ratio:1;border-radius:50%;border:3px solid rgba(0,0,0,.35);
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.75),transparent 34%),radial-gradient(circle at 50% 60%,var(--c),color-mix(in srgb,var(--c) 60%,#000));box-shadow:0 3px 6px rgba(0,0,0,.45)}
+.lkC.sel .lkDot{border-color:#ffd23a;box-shadow:0 0 0 3px #fff4b0,0 0 14px #ffd23a}
+.lkCname{text-align:center;font-weight:900;font-size:13px;margin-top:4px}
+.lkPats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.lkP{position:relative;display:flex;flex-direction:column;align-items:stretch;padding:0;border-radius:12px;overflow:hidden;border:3px solid #c9d4e8;background:#f4f6fa;color:#10204a}
+.lkP b{padding:4px 2px;font:900 13px/1.2 "Hiragino Sans","Yu Gothic UI",sans-serif;text-align:center}
+.lkP em{position:absolute;right:4px;top:4px;font-style:normal;font-size:10px;font-weight:900;padding:1px 5px;border-radius:6px;background:#c8102e;color:#fff}
+.lkP.big em{position:static;background:none;color:#1a7a35;padding:0 0 4px;text-align:center}
+.lkPat{display:block;width:100%;aspect-ratio:3/2;background:center/cover no-repeat}
+.lkPat.sm{width:64px}
+.lkP.sel{border-color:#ffd23a;box-shadow:0 0 0 2px #ffd23a,0 0 14px rgba(255,210,58,.7)}
+.lkP.big .lkSw{margin:8px auto 2px}
+.lkC.lock::after,.lkP.lock::after{content:"";position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);width:28px;height:32px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 28'%3E%3Cpath d='M6.5 12V8.5a5.5 5.5 0 0 1 11 0V12' fill='none' stroke='%23eef1f6' stroke-width='3.2'/%3E%3Crect x='2' y='11.5' width='20' height='15.5' rx='3.5' fill='%23eef1f6' stroke='%23778' stroke-width='1'/%3E%3Ccircle cx='12' cy='18.5' r='2.6' fill='%23556'/%3E%3Crect x='11' y='19' width='2' height='4.5' fill='%23556'/%3E%3C/svg%3E") center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.lkC.lock::after{width:18px;height:20px;top:50%}
+.lkP.lock .lkPat,.lkP.lock .lkSw{filter:saturate(.75) brightness(.8)}
+.lkNote{font-size:11px;opacity:.8;margin:10px 2px 0}.lkNote a{color:#9fd0ff}
+.lkNote2{margin:10px 2px 0;font-size:13px;font-weight:700}
+.lkLink{border:0;background:none;color:#9fd0ff;text-decoration:underline;font-weight:700;font-size:13px;padding:0}
+.lkBar{position:sticky;bottom:0;z-index:5;display:grid;grid-template-columns:1fr 1.25fr;gap:10px;margin-top:10px;padding:8px 0 calc(4px + env(safe-area-inset-bottom))}
+.lkTry,.lkBuy{display:flex;align-items:center;justify-content:center;min-height:56px;border:4px solid #fff;border-radius:999px;padding:6px 12px;
+  font:400 clamp(17px,5vw,24px)/1.1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;text-decoration:none;text-align:center;letter-spacing:.02em}
+.lkTry{background:linear-gradient(180deg,#3b8cff,#1446c4);box-shadow:0 4px 0 #0b2160,0 0 0 2px #0b2a6a}
+.lkTry.on{background:linear-gradient(180deg,#ffb020,#e06a00)}
+.lkBuy{background:linear-gradient(180deg,#5fe06a,#1a9a32 55%,#127a28);box-shadow:0 4px 0 #0b4a18,0 0 0 2px #0b3a18;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.lkBuy[disabled]{filter:grayscale(.6) brightness(.8)}
+.bpMini{border:2px solid #fff;border-radius:999px;padding:4px 10px;margin-left:4px;font-weight:900;font-size:12px;color:#fff;background:linear-gradient(180deg,#2fae5a,#127a35)}
+.lkSw{display:block;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.7);box-shadow:inset 0 -6px 10px rgba(0,0,0,.35)}
+.lkSw.uni{position:relative;border-radius:10px;background:var(--j);overflow:hidden;width:56px;height:56px}
+.lkSw.uni s{position:absolute;left:0;right:0;bottom:0;height:34%;background:var(--p);border-top:4px solid var(--u)}
+.lkSw.uni.team{background:linear-gradient(180deg,#eef0ee,#c9ccd2);color:#1c2b4a;display:flex;align-items:center;justify-content:center}.lkSw.uni.team b{font-size:12px}
+.lkSw.frame{border-radius:10px;width:44px;height:58px;border:5px solid transparent}
+.lkSw.title{display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:900;color:#3a2600;background:linear-gradient(180deg,#ffe08a,#e0a820)}
+/* コレクション */
+.clBanner{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 6px;padding:10px 16px;border-radius:999px;border:3px solid #fff3b0;
+  background:linear-gradient(180deg,#ffe58a,#e0a820 55%,#b07a10);box-shadow:0 4px 0 #6a4800,0 0 18px rgba(255,210,58,.5);color:#3a2600}
+.clBanner b{font:400 clamp(17px,5vw,24px)/1 var(--v5-head,"Dela Gothic One"),sans-serif}.clBanner em{font-style:normal;font-size:1.4em;color:#1446c4;-webkit-text-stroke:1px #fff}
+.clTrophy{display:block;width:54px;height:40px;background:url("img/shop2_trophy.webp") center/contain no-repeat}
+.clRow{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 6px;scroll-snap-type:x proximity}
+.clCell{position:relative;flex:0 0 auto;width:84px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 6px;border-radius:12px;border:3px solid #f2c94c;
+  background:radial-gradient(circle at 50% 35%,#5ab0ff,#1446c4 70%);text-align:center;scroll-snap-align:start}
+.clCell small{font-size:10px;line-height:1.2;font-weight:700;text-shadow:0 1px 0 #0b2160;min-height:2.4em}
+.clCell.shadow{border-color:#a9b3c2;background:radial-gradient(circle at 50% 35%,#9aa6b6,#4a5566 70%)}
+.clCell.shadow>i{filter:brightness(0) opacity(.75)}
+.clQ{position:absolute;left:0;right:0;top:18px;text-align:center;font:900 30px/1 "Arial Black",sans-serif;color:#fff;text-shadow:0 2px 4px #000}
+.clGl{display:block;width:52px;height:46px;border-radius:46% 46% 40% 40%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.6),transparent 35%),var(--c);border:2px solid rgba(0,0,0,.3);outline:2px dashed rgba(255,255,255,.7);outline-offset:-7px}
+.clBall{display:block;width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#e6e2d8 60%,#b9b3a6)}
+.clBall::before{content:"";display:block;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at -10% 50%,transparent 58%,#c8102e 59% 62%,transparent 63%),radial-gradient(circle at 110% 50%,transparent 58%,#c8102e 59% 62%,transparent 63%)}
+.clBall.hr{box-shadow:0 0 0 3px #ffd23a,0 0 12px #ffd23a}
+.clMini{position:relative;display:block;width:48px;height:64px;border-radius:10px;border:4px solid #f6c437;background:url("img/career_card_back.webp") center top/cover}
+.clMini span{position:absolute;left:0;right:0;top:40%;text-align:center;font:900 18px/1 "Arial Black",sans-serif;color:#253a68;-webkit-text-stroke:1px #fff}
+.clHint{font-size:11px;opacity:.9;margin:4px 2px}
+.clRw{font-size:12px;font-weight:700;color:#ffe08a;margin:2px}
+.clFoot{display:flex;justify-content:center;margin:12px 0}.clFoot .lkTry{min-width:220px}
+/* 選手カードの枠(career.css の .pcCard・.cMini とロッカーの .lkCard に重ねる) */
+.bpFr{--fg:linear-gradient(135deg,#f6c437,#fff3b0 45%,#b07a10);--b1:#1b4fb4;--b2:#082a72}
+.pcCard.bpFr,.cMini.bpFr,.lkCard.bpFr,.lkSw.bpFr,.clMini.bpFr{border-color:transparent!important;
+  background:linear-gradient(180deg,var(--b1),var(--b2)) padding-box,var(--fg) border-box!important}
+.clMini.bpFr{background:url("img/career_card_back.webp") center top/cover padding-box,var(--fg) border-box!important}
+.pcCard.bpFr{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 18px var(--glow,transparent)!important}
+.cRankT .pl i.bpFr{border:2px solid transparent;background:linear-gradient(var(--b2),var(--b2)) padding-box,var(--fg) border-box}
+.bpFr-wood{--fg:repeating-linear-gradient(100deg,#8a5a2b 0 7px,#a8703a 7px 11px,#c98f55 11px 14px);--b1:#5a3a22;--b2:#2a1a10}
+.bpFr-silver{--fg:linear-gradient(135deg,#6d7684,#f4f7fb 30%,#8d97a5 55%,#ffffff 75%,#6d7684);--b1:#3a4658;--b2:#1a2230;--glow:rgba(220,235,255,.5)}
+.bpFr-gold{--fg:linear-gradient(135deg,#a8761a,#ffe08a 30%,#c9971f 55%,#fff6c8 75%,#a8761a);--b1:#5a3a08;--b2:#2a1a02;--glow:rgba(255,210,80,.6)}
+.bpFr-night{--fg:linear-gradient(180deg,#ffe9a3,#3a7bff 35%,#0b1630);--b1:#0b1630;--b2:#050a18;--glow:rgba(60,140,255,.6)}
+.bpFr-field{--fg:repeating-linear-gradient(90deg,#2f7d32 0 9px,#4caf50 9px 18px);--b1:#2f7d32;--b2:#7a4a22}
+.bpFr-rainbow{--fg:linear-gradient(135deg,#ff4b4b,#ffd23a,#39d353,#4fb3ff,#b05cff,#ff4b4b);--b1:#25145a;--b2:#0b0a30;--glow:rgba(255,120,220,.5)}
+.bpFr-snow{--fg:linear-gradient(160deg,#ffffff,#bcd7ff 40%,#6f9ad8 70%,#ffffff);--b1:#0e2348;--b2:#061430;--glow:rgba(200,225,255,.6)}
+.bpFr-newyear{--fg:linear-gradient(135deg,#c7202c 0 30%,#e9b923 30% 40%,#ffffff 40% 60%,#e9b923 60% 70%,#c7202c 70%);--b1:#7a0f18;--b2:#3a0508;--glow:rgba(255,200,60,.5)}
+.bpFr-camp{--fg:linear-gradient(180deg,#9fd0ff,#ffffff 40%,#7ea84a 60%,#4e7a2a);--b1:#2e6a8a;--b2:#1f4a20}
+.bpFr-pass{--fg:linear-gradient(135deg,#4b1f7a,#e9b923 25%,#b48cff 50%,#e9b923 75%,#4b1f7a);--b1:#3a1660;--b2:#160828;--glow:rgba(180,140,255,.7)}
+.bpFr-ball{--fg:repeating-linear-gradient(45deg,#ffffff 0 8px,#c8102e 8px 10px,#ffffff 10px 18px);--b1:#1b3f96;--b2:#0b2160}
+.bpFr-hof{--fg:linear-gradient(135deg,#1a1a1a,#e9b923 35%,#5a4510 65%,#e9b923);--b1:#262016;--b2:#0a0806;--glow:rgba(233,185,35,.5)}
+.pcTtl{display:block;margin-top:2px;font-size:12px;font-weight:900;color:#ffd23a}
+.cShareBtn{margin-top:8px}
+/* タイトルの小さなボタン */
+#bpDock{position:absolute;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));display:flex;gap:8px;z-index:5}
+#bpDock button{display:flex;align-items:center;gap:6px;white-space:nowrap;border:3px solid #fff;border-radius:999px;padding:5px 14px 5px 6px;font:400 14px/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;
+  background:linear-gradient(180deg,#3b8cff,#1446c4);box-shadow:0 3px 0 #0b2160}
+#bpDock button[data-act="shop"]{background:linear-gradient(180deg,#5fe06a,#127a28);box-shadow:0 3px 0 #0b4a18}
+#bpDock i{display:block;width:30px;height:26px;border-radius:6px;background:center/cover no-repeat}
+body.touch #bpDock button{font-size:12px;padding:4px 10px 4px 5px}
+@media (max-aspect-ratio:1/1){#bpDock{left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom))}#bpDock button{font-size:12px;padding:4px 10px 4px 5px}#bpDock i{width:24px;height:22px}}
+#bpToast{position:fixed;left:50%;top:14px;transform:translate(-50%,-160%);z-index:9999;padding:10px 16px;border-radius:12px;background:rgba(5,15,40,.92);border:2px solid #ffd23a;color:#fff;font-weight:700;transition:transform .3s}
+#bpToast.on{transform:translate(-50%,0)}
+#bpShare{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:12px}
+#bpShare .shBox{max-width:min(92vw,720px);padding:12px;border-radius:16px;background:#0a1f4d;border:3px solid #ffd23a;color:#fff;text-align:center}
+#bpShare img{width:100%;border-radius:10px}#bpShare p{font-size:13px}.shRow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.shRow .lkTry,.shRow .lkBuy{min-height:44px;font-size:16px;padding:6px 16px}
+/* ショップ(アプリ版 shop/shop.js。案 1_shop.png・1_shop_alt_orange.png。値段のボタンは緑) */
+.shBanner{position:relative;display:grid;grid-template-columns:38% 1fr;align-items:center;gap:6px;margin:8px 0 12px;padding:10px;border-radius:18px;border:4px solid #f2c94c;
+  background:radial-gradient(ellipse at 70% 40%,rgba(90,160,255,.45),transparent 60%),linear-gradient(180deg,#1a4fb0,#0a2466);box-shadow:0 0 0 3px #0b2a6a,0 6px 16px rgba(0,0,0,.45);text-align:left;color:#fff;width:100%}
+.shBanner .shArt{display:block;width:100%;aspect-ratio:1.35;background:center/contain no-repeat}
+.shBanner h2{margin:0 0 4px;font:400 clamp(19px,5.6vw,28px)/1.15 var(--v5-head,"Dela Gothic One"),sans-serif;color:#ffe08a;-webkit-text-stroke:1px #5a3a00;paint-order:stroke fill;text-shadow:0 3px 0 #3a2600}
+.shBanner h2 small{font-size:.62em}
+.shBanner p{margin:0 0 8px;font-size:12.5px;font-weight:700;line-height:1.45}
+.shBuy{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:110px;border:3px solid #fff;border-radius:999px;padding:4px 14px;
+  font:400 17px/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;background:linear-gradient(180deg,#5fe06a,#1a9a32 55%,#127a28);box-shadow:0 3px 0 #0b4a18;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.shBuy[disabled]{filter:grayscale(.7) brightness(.8)}
+.shBuy.sub{background:linear-gradient(180deg,#3b8cff,#1446c4);box-shadow:0 3px 0 #0b2160}
+.shOn{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.15);font-weight:900;font-size:13px}
+.shWas{display:block;font-size:11px;opacity:.85;margin:0 0 4px}
+.shShelf{display:grid;grid-template-columns:27% 1fr 1fr 1fr;gap:6px;align-items:stretch}
+.shShelf.two{grid-template-columns:27% 1fr 1fr}
+.shBig{display:block;background:center/contain no-repeat;min-height:90px}
+.shTier{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 4px 8px;border-radius:12px;border:3px solid #cfe9d6;
+  background:linear-gradient(180deg,#e9f6ee 0 24px,#2a9a4a 24px,#12652c);text-align:center;color:#fff}
+.shTier>b{display:block;width:100%;margin-top:-2px;font:400 15px/18px var(--v5-head,"Dela Gothic One"),sans-serif;color:#10204a}
+.shTier .shTi{display:block;width:100%;aspect-ratio:1.4;background:center/contain no-repeat}
+.shTier small{font-size:10.5px;font-weight:700;line-height:1.3}
+.shTier .shBuy{min-width:0;width:100%;font-size:15px;min-height:38px;padding:2px 6px}
+.shTier.best{border-color:#ffd23a;background:linear-gradient(180deg,#fff3c0 0 24px,#f0b829 24px,#a86e08);box-shadow:0 0 14px rgba(255,210,58,.6)}
+.shBest{position:absolute;left:50%;top:-14px;transform:translateX(-50%);white-space:nowrap;padding:3px 10px;font:400 12px/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;
+  background:linear-gradient(180deg,#e8323c,#a8101a);border:2px solid #ffd23a;border-radius:4px;clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%)}
+.shSets{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.shSet{padding:8px;border-radius:12px;background:rgba(0,0,0,.22);border:2px solid rgba(255,255,255,.25)}
+.shSet b{display:block;font-size:14px}.shSet .shChips{margin:4px 0 6px}
+.shChips{display:flex;flex-wrap:wrap;gap:4px}.shChips span{font-size:10.5px;padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.18)}.shChips span.own{background:#2fae5a}
+.shSmall{font-size:11px;opacity:.88;line-height:1.5;margin:6px 2px}
+.shLegal{font-size:11px;line-height:1.6;opacity:.92;margin:8px 2px;text-align:center}.shLegal a,.shLinks a,.shLinks button{color:#cfe3ff;text-decoration:underline;font-weight:700;background:none;border:0;font-size:12px;padding:0 4px}
+.shLinks{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:6px 0}
+.shMsg{min-height:1.2em;margin:8px 0 0;font-size:13px;text-align:center;color:#d8f23a;font-weight:700}
+/* シーズンパス(案 4_pass.png) */
+.psHero{position:relative;margin:24px 0 12px;padding:30px 10px 10px;border-radius:20px;border:4px solid #f2c94c;background:radial-gradient(ellipse at 50% 50%,rgba(255,220,120,.35),transparent 60%),linear-gradient(180deg,#123a8a,#0a2060);box-shadow:0 0 0 3px #0b2a6a}
+.psRib{position:absolute;left:50%;top:-20px;transform:translateX(-50%);white-space:nowrap;padding:6px 26px;border-radius:999px;border:3px solid #fff3b0;background:linear-gradient(180deg,#ffe58a,#c9971f);color:#2a1a00;
+  font:400 20px/1 var(--v5-head,"Dela Gothic One"),sans-serif}
+.psStage{position:relative;height:clamp(170px,30vh,240px)}
+.psStage canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+.psGift{text-align:center;font-weight:900;font-size:14px;color:#ffe08a}
+.psList{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.psList li{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;border:2px solid #f2c94c;background:linear-gradient(180deg,#1446c4,#0b2a6a)}
+.psList i{display:block;width:70px;height:46px;background:center/contain no-repeat;border-radius:8px}
+.psList b{display:block;font:400 16px/1.2 var(--v5-head,"Dela Gothic One"),sans-serif;color:#ffd23a}.psList small{display:block;font-size:11.5px;line-height:1.4}
+.psJoin{display:flex;width:100%;min-height:62px;margin-top:12px;font-size:clamp(20px,6vw,28px)}
+/* お得パックの案内(案 5_pack.png) */
+#bpOffer{position:fixed;inset:0;z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.6)}
+.ofBox{position:relative;width:min(440px,100%);padding:56px 14px 14px;border-radius:22px;border:5px solid #f2c94c;background:radial-gradient(ellipse at 50% 30%,rgba(90,150,255,.45),transparent 60%),linear-gradient(180deg,#123a8a,#0a1f4d);
+  box-shadow:0 0 0 3px #6a4800,0 0 40px rgba(255,210,58,.5);color:#fff;text-align:center}
+.ofTitle{position:absolute;left:50%;top:-44px;transform:translateX(-50%);white-space:nowrap;display:flex;flex-direction:column;align-items:center}
+.ofTitle b{font:400 clamp(30px,9vw,42px)/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;-webkit-text-stroke:3px #0b2a6a;paint-order:stroke fill;text-shadow:0 4px 0 #0b2160,0 0 20px rgba(255,210,58,.8)}
+.ofTitle em{margin-top:4px;padding:4px 22px;font:400 18px/1 var(--v5-head,"Dela Gothic One"),sans-serif;font-style:normal;color:#fff;background:linear-gradient(180deg,#e8323c,#a8101a);border:2px solid #ffd23a;
+  clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%)}
+.ofX{position:absolute;right:-14px;top:-14px;width:44px;height:44px;border-radius:50%;border:3px solid #fff;background:linear-gradient(180deg,#2f6bdc,#123c9a);color:#fff;font:900 24px/1 sans-serif}
+.ofItems{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
+.ofItems div{display:flex;flex-direction:column;align-items:center;gap:4px}.ofItems i{display:block;width:100%;aspect-ratio:1.1;background:center/contain no-repeat}
+.ofItems span{padding:3px 10px;border-radius:999px;border:2px solid #9fb6e8;background:#0a1f4d;font-weight:900;font-size:12px}
+.ofBox p{font-size:12px;line-height:1.5;margin:4px 0 8px}
+.ofBox .lkBuy{width:100%}.ofLater{margin-top:8px;min-width:60%;border:3px solid #fff;border-radius:999px;padding:8px 20px;font:400 16px/1 var(--v5-head,"Dela Gothic One"),sans-serif;color:#fff;background:linear-gradient(180deg,#2f6bdc,#123c9a)}
+/* 横向きのスマホ(アプリの遊ぶ向き): ロッカーは左に台、右に色と柄 */
+@media (min-aspect-ratio:3/2) and (max-height:560px){
+  .bpHead{min-height:58px}.bpTitle h1{font-size:30px}.bpFw{height:70px}
+  .bpSheet.lk{max-width:980px;display:grid;grid-template-columns:42% 1fr;column-gap:12px;align-content:start}
+  .bpSheet.lk>.bpHead,.bpSheet.lk>.lkTabs,.bpSheet.lk>.lkNote,.bpSheet.lk>.lkNote2,.bpSheet.lk>.lkBar{grid-column:1/-1}
+  .bpSheet.lk>.lkStage{grid-column:1;grid-row:3/span 2;height:min(250px,calc(100vh - 150px));position:sticky;top:0}
+  .bpSheet.lk>.bpShelf{grid-column:2}
+  .lkTry,.lkBuy{min-height:46px}
+  .bpSheet.sh,.bpSheet.cl{max-width:900px}
+}

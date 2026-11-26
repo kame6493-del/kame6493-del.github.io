@@ -129,13 +129,17 @@ export function finalEval(D) {
 export const fpctText = (po, a, e) => { const c = po + a + e; return c ? ((po + a) / c).toFixed(3).replace(/^0/, '') : '-'; };
 export const uzrText = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(1);
 
+// 11/26 着せ替え(js/cosmetics.js): 殿堂のカードに、その時の枠・グラブ・ユニフォーム・称号を残す(見た目だけ)
+const cosOf = () => { try { const e = window.__bpCos.eq(); return { fr: e.frame, gc: e.gcolor, gp: e.gpat, uni: e.uni, ttl: e.title }; } catch (e) { return {}; } };
+// 殿堂に残せる数(シーズンパスの間は増える)。パスが切れても、もう残した選手は消さない
+const hofCapNow = (n) => { let c = 50; try { c = window.__bpCos.hofCap(); } catch (e) { /* なし */ } return Math.max(c, n || 0); };
 // 11/26 終えたキャリアの選手カード(殿堂に残す形)
 function makeCard(D, f) {
   const S = D.stageTot[2], r2 = (x) => Math.round(x * 100) / 100;
   let id = ''; try { id = Rank.deviceId().slice(0, 6) + '-'; } catch (e) { /* */ }
   return { id: id + Date.now().toString(36), name: D.name, num: D.num, pos: mainPos(S, D.pos), posAll: { ...S.pos }, grade: f.grade, title: f.title, score: f.score,
     pro: { games: S.games, po: S.po, a: S.a, e: S.e, uzr: r2(S.uzr), adj: r2(S.adj), ch: S.ch },
-    tot: { ...D.tot }, ab: { ...D.ab }, best: D.best, seasons: D.stageTot.map((x) => ({ games: x.games, uzr: r2(x.uzr), adj: r2(x.adj) })), t: Date.now() };
+    tot: { ...D.tot }, ab: { ...D.ab }, best: D.best, seasons: D.stageTot.map((x) => ({ games: x.games, uzr: r2(x.uzr), adj: r2(x.adj) })), t: Date.now(), ...cosOf() };
 }
 
 // ------------------------------------------------------------ 本体
@@ -185,7 +189,7 @@ class Career {
   // 11/26 キャリアを終えた後、新しい選手で始め直す(殿堂の記録は残す)
   newCareer() { this.data = fresh(); this.save(); }
   hof() { try { const a = JSON.parse(localStorage.getItem(HOF_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
-  saveHof(a) { try { localStorage.setItem(HOF_KEY, JSON.stringify(a.slice(-50))); } catch (e) { /* 残せなくても遊べる */ } }
+  saveHof(a, cap) { try { localStorage.setItem(HOF_KEY, JSON.stringify(a.slice(-(cap || 50)))); } catch (e) { /* 残せなくても遊べる */ } }
   get stage() { return STAGES[this.data.stage]; }
 
   wait() {
@@ -452,7 +456,8 @@ class Career {
     const D = this.data, S = D.stageTot[2];
     const card = makeCard(D, f), pos = card.pos;
     D.done = card;
-    const H = this.hof(); H.push(card); this.saveHof(H);
+    const H = this.hof(), cap = hofCapNow(H.length); H.push(card); this.saveHof(H, cap);
+    try { window.dispatchEvent(new CustomEvent('bp:careerdone', { detail: { first: H.length === 1 } })); } catch (e) { /* 無くても動く */ }
     const e = { name: D.name, num: D.num, pos, val: S.adj, games: S.games, t: card.t };
     this.lastSend = Promise.all([Rank.submit('pro5', e), Rank.submit('pos_' + pos, e), Rank.submit('season_pro', e)]).catch(() => null);
     return card;

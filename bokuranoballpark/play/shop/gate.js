@@ -13,7 +13,9 @@
     if (!k || k === 'koshien') return true;
     if (C.mode !== 'shop') return false;
     var o = window.__ippomeOwned || {};
-    return !!(o.all || o[k]);
+    if (o.all || o[k]) return true;
+    // 11/26 新しい球場を先に遊べる(シーズンパス・全部パック。shop.js の __bpEarly、起動の前は shop.js が残した bp.early)
+    try { if (window.__bpEarly) return !!window.__bpEarly(k); return (JSON.parse(localStorage.getItem('bp.early') || '[]') || []).indexOf(k) >= 0; } catch (e) { return false; }
   };
   window.__ippomeOpen = ok;
   try {

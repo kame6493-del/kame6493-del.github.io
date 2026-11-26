@@ -59,6 +59,8 @@ class StandCatch {
     this.ring = null;
     this.bv = null;
     this.tix = ls.get('r4walk.sc.tix', { n: 0, day: '', bought: 0 });
+    // 11/26 アプリで買った券(5・15・40 枚のまとめ売り。shop/shop.js が addPaid で足す)。ゲームの中のお金の券(1 日 3 枚・3 枚まで)とは別に数え、持てる数の上限は無い
+    this.ptix = Math.max(0, Math.floor(+ls.get('r4walk.sc.ptix', 0) || 0));
     // 11/26 持ち主「ファールフライの打球取ったらボール袋にしまえるようにして」: 客席で捕った球(試合のファウル・券のファウル/ホームラン・席に飛んでくるファウル)を
     // ボール袋に入れて、いつ・どの球場で・どんな打球かを端末に覚える(r4walk.ballbag)。持ち物の窓の「ボール袋」で見る
     this.bag = ls.get('r4walk.ballbag', []);
@@ -438,18 +440,24 @@ class StandCatch {
   tixRow() {
     this.tixDay();
     const left = TIX.perDay - this.tix.bought, full = this.tix.n >= TIX.carry;
-    return { label: 'ボールが飛んでくる券', sub: `持っている ${this.tix.n} 枚${left <= 0 ? '・今日は売り切れ' : full ? '・これ以上持てない' : ''}`, price: TIX.price, off: left <= 0 || full, run: () => this.fp.confirmBuy('ボールが飛んでくる券', TIX.price, () => this.buyTix()) };
+    return { label: 'ボールが飛んでくる券', sub: `持っている ${this.tix.n} 枚${this.ptix ? `(ほかに買った券 ${this.ptix} 枚)` : ''}${left <= 0 ? '・今日は売り切れ' : full ? '・これ以上持てない' : ''}`, price: TIX.price, off: left <= 0 || full, run: () => this.fp.confirmBuy('ボールが飛んでくる券', TIX.price, () => this.buyTix()) };
   }
+  tixAll() { return this.tix.n + this.ptix; }
+  // 11/26 アプリで買った券を足す(shop/shop.js。購入の記録は shop.js が持ち、同じ購入で二度足さない)
+  addPaid(k) { k = Math.floor(+k || 0); if (k <= 0) return this.ptix; this.ptix += k; ls.set('r4walk.sc.ptix', this.ptix); return this.ptix; }
+  // アプリ版のまとめ売りの行(チケット売り場の窓。ブラウザ版には出さない)
+  packRow() { const S = window.__bpStore; return S && S.openShop ? { label: 'ボールが飛んでくる券のまとめ売り', sub: '5 枚・15 枚・40 枚(1 日の枚数の決まりの外)', tag: '›', run: () => { this.fp.closeSheet(); S.openShop('tix'); } } : null; }
   canUseTix() {
-    const W = this.W; return !!(W && W.on && !this.mode && this.tix.n > 0 && !this.want && !this.cur && /^(walk|sit)$/.test(this.mmode()) && this.inStands(this.a.player.pos));
+    const W = this.W; return !!(W && W.on && !this.mode && this.tixAll() > 0 && !this.want && !this.cur && /^(walk|sit)$/.test(this.mmode()) && this.inStands(this.a.player.pos));
   }
   useTix() {
-    if (!this.canUseTix()) { if (this.fp && this.tix.n > 0 && this.W && this.W.on && !this.inStands(this.a.player.pos)) this.fp.say('券は客席で使えます', null, { must: true }); return false; }
+    if (!this.canUseTix()) { if (this.fp && this.tixAll() > 0 && this.W && this.W.on && !this.inStands(this.a.player.pos)) this.fp.say('券は客席で使えます', null, { must: true }); return false; }
     // 今いる所に飛ばせるかを先に確かめる(屋根の下・ネットの裏などは飛ばせない。その時は券を減らさない)
     if (!this.planNear(this.a.player.pos, this.zoneByPos(this.a.player.pos), [0.8, 4.5])) { if (this.fp) this.fp.say('ここには飛ばせません(屋根やネットの陰)', '少し動いてから使ってください', { must: true }); return false; }
     this.patchWatch();
-    this.tix.n--; ls.set('r4walk.sc.tix', this.tix);
-    this.want = { why: 'ticket' };
+    let paid = false;
+    if (this.tix.n > 0) { this.tix.n--; ls.set('r4walk.sc.tix', this.tix); } else { this.ptix--; paid = true; ls.set('r4walk.sc.ptix', this.ptix); }   // ゲームの中のお金の券から先に使う
+    this.want = { why: 'ticket', paid };
     if (this.fp) this.fp.say('券を使った', '次の打球があなたの方へ', { must: true, ms: 2400 });
     try { this.a.sound.crowd('chime'); } catch (e) { /* 音なし */ }
     return true;
@@ -464,12 +472,12 @@ class StandCatch {
     const self = this, oTicket = fp.openTicket, oSheet = fp.sheet, oBag = fp.openBagSimple;
     // チケット売り場の窓に「ボールが飛んでくる券」の行を足す(入場のチケットを持っている時も売る)
     fp.sheet = function (title, rows, note) {
-      if (self._inject) { self._inject = false; const i = rows.findIndex((r) => /やめる/.test(r.label || '')); const add = [self.tixRow()]; if (i >= 0) rows.splice(i, 0, ...add); else rows.push(...add); }
+      if (self._inject) { self._inject = false; const i = rows.findIndex((r) => /やめる/.test(r.label || '')); const add = [self.tixRow(), self.packRow()].filter(Boolean); if (i >= 0) rows.splice(i, 0, ...add); else rows.push(...add); }
       if (self._injectBag) {
         self._injectBag = false;
-        if (self.tix.n > 0 || self.kinenN > 0 || self.bag.length) {
+        if (self.tixAll() > 0 || self.kinenN > 0 || self.bag.length) {
           rows = rows.filter((r) => !/^空です/.test(r.label || ''));
-          if (self.tix.n > 0) { rows.push({ head: '券' }); rows.push({ label: `ボールが飛んでくる券 ×${self.tix.n}`, acts: [{ t: '使う', main: true, run: () => { fp.closeSheet(); self.useTix(); } }], run: () => { fp.closeSheet(); self.useTix(); } }); }
+          if (self.tixAll() > 0) { rows.push({ head: '券' }); rows.push({ label: `ボールが飛んでくる券 ×${self.tixAll()}`, acts: [{ t: '使う', main: true, run: () => { fp.closeSheet(); self.useTix(); } }], run: () => { fp.closeSheet(); self.useTix(); } }); }
           // 11/26 ボール袋(捕った球)。前の「捕った記念ボール N 個」の行はボール袋の中へ
           rows.push({ head: 'ボール袋' }, { label: `捕った球 ${self.bag.length + (self.bag.length ? 0 : self.kinenN)} 球`, tag: '›', run: () => self.openBallBag() });
         }
@@ -477,7 +485,7 @@ class StandCatch {
       return oSheet.call(this, title, rows, note);
     };
     fp.openTicket = function () {
-      if (this.simple && this.ticket) { this.sheet('チケット売り場', [{ label: '入場チケット(持っています)', tag: '', off: true, run: () => {} }, self.tixRow(), { label: 'やめる', tag: '', run: () => this.closeSheet() }], `券は客席で使うと、次の打球が自分の方へ飛んできます(1日 ${TIX.perDay} 枚まで)`); return; }
+      if (this.simple && this.ticket) { this.sheet('チケット売り場', [{ label: '入場チケット(持っています)', tag: '', off: true, run: () => {} }, self.tixRow(), ...[self.packRow()].filter(Boolean), { label: 'やめる', tag: '', run: () => this.closeSheet() }], `券は客席で使うと、次の打球が自分の方へ飛んできます(1日 ${TIX.perDay} 枚まで)`); return; }
       self._inject = true; try { return oTicket.call(this); } finally { self._inject = false; }
     };
     // 11/26 席・試合のファウルを捕った(freeplay.js の realFoul・席に飛んでくる球): 手に持たせずにボール袋へ入れる。知らせはお金の小さな札に「ボール袋へ」を足すだけ
@@ -645,14 +653,14 @@ class StandCatch {
       const W = this.W;
       if (this.mode && !(W && W.on)) { this.stopMode(); }   // タイトルへ戻った・別のモードを始めた
       if (!this.mode && this.cur && !(W && W.on)) { this.cur = null; if (this.bv) this.bv.show(false); if (this.ring) this.ring.visible = false; }
-      if (this.want && !(W && W.on)) { if (this.want.why === 'ticket') { this.tix.n++; ls.set('r4walk.sc.tix', this.tix); } this.want = null; }   // 使う前に観戦をやめた: 券を返す
+      if (this.want && !(W && W.on)) { if (this.want.why === 'ticket') { if (this.want.paid) { this.ptix++; ls.set('r4walk.sc.ptix', this.ptix); } else { this.tix.n++; ls.set('r4walk.sc.tix', this.tix); } } this.want = null; }   // 使う前に観戦をやめた: 券を返す
       if (((this._k = (this._k || 0) + 1) % 15) === 0) {
-        const can = !this.mode && this.tix.n > 0 && W && W.on && !a.overlay && !(this.fp && this.fp.sheetOn);
+        const can = !this.mode && this.tixAll() > 0 && W && W.on && !a.overlay && !(this.fp && this.fp.sheetOn);
         const show = can && this.canUseTix(), wait = !!(this.want && this.want.why === 'ticket') || !!(this.cur && this.cur.why === 'ticket');
         this.elTix.classList.toggle('hide', !(show || wait));
         this.elTix.classList.toggle('wait', wait);
         const sm = this.elTix.querySelector('small'), b = this.elTix.querySelector('b');
-        const bt = wait ? '次の打球が来ます' : '券を使う', st = wait ? '' : `×${this.tix.n}${!document.body.classList.contains('touch') ? ' ・ B' : ''}`;
+        const bt = wait ? '次の打球が来ます' : '券を使う', st = wait ? '' : `×${this.tixAll()}${!document.body.classList.contains('touch') ? ' ・ B' : ''}`;
         if (b.textContent !== bt) b.textContent = bt; if (sm.textContent !== st) sm.textContent = st;
       }
     };

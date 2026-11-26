@@ -210,6 +210,8 @@ export function schoolOf(kit) {
 }
 // 体の色: 学校の色。帽子だけ別の色(自分の印のオレンジ)はそのまま
 export function uniformKit(kit) {
+  // 11/26 着せ替え(js/cosmetics.js): 自分の選手だけ、選んだユニフォームの色にする(帽子は学校の帽子・自分の印のまま)
+  if (kit && kit.ownUni) { const { ownUni, ...k0 } = kit; const r = uniformKit(k0); const { stripe, pipe, ...cols } = ownUni; return { ...r, ...cols }; }
   if (OFF || !kit || kit.plain || !kit.side) return kit;   // 学校の印(side)の無い服(審判など)はそのまま
   const { side, S } = schoolOf(kit);
   const base = KIT[side] || KIT.home;
@@ -488,6 +490,8 @@ export function dressUniform(a) {
     if (U.uStripe) { const c = new THREE.Color(S.stripe ?? 0); U.uStripe.value.set(c.r, c.g, c.b, !plain && S.stripe != null ? 1 : 0); }
     U.uDirt.value = plain ? 0 : dirtOf(a);
     U.uCatch.value = !plain && a.opt && a.opt.mitt ? 1 : 0;
+    const OU = a.kit && a.kit.ownUni;   // 11/26 着せ替え: 自分の選手の縦じま・パイピング
+    if (OU) { if (OU.pipe != null) U.uPipe.value.setHex(OU.pipe); if (U.uStripe) { const c = new THREE.Color(OU.stripe ?? 0); U.uStripe.value.set(c.r, c.g, c.b, OU.stripe != null ? 1 : 0); } }
   }
   // 胸の文字
   const ch = r.uni.chest;
