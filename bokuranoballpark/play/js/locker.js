@@ -301,21 +301,25 @@ const Coll = {
 };
 
 // ---------------------------------------------------------------- 選手カードの絵を X に出す(枠・ユニフォーム・グラブ・名前・UZR)
-async function shareCard(src) {
-  const D = src || (window.__career && window.__career.data) || {};
-  const e = COS.eq(), fr = FR[frKey(D.fr || e.frame)] || FR.basic, W = 1200, H = 675;
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
-  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0a1f4d'); bg.addColorStop(0.62, '#123a7a'); bg.addColorStop(0.63, '#1f6b2c'); bg.addColorStop(1, '#14501f'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
-  const cx = 60, cy = 50, cw = 420, ch = 575, rr = 28;
+// 11/27 カードの面(枠・ユニフォームの絵・背番号)だけを描く所を分けた(js/share_x.js のキャリア完了の絵でも使う)
+async function drawCard(g, D, cx, cy, cw, ch) {
+  const e = COS.eq(), fr = FR[frKey(D.fr || e.frame)] || FR.basic, k = cw / 420, rr = 28 * k, m = 14 * k;
   const rect = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
   const fg = g.createLinearGradient(cx, cy, cx + cw, cy + ch); fr.forEach((c, i) => fg.addColorStop(i / Math.max(1, fr.length - 1), c));
   rect(cx, cy, cw, ch, rr); g.fillStyle = fg; g.fill();
-  rect(cx + 14, cy + 14, cw - 28, ch - 28, rr - 10); g.save(); g.clip();
+  rect(cx + m, cy + m, cw - 2 * m, ch - 2 * m, rr - 10 * k); g.save(); g.clip();
   const art = await COS.uniArt(D.uni || e.uni);
-  await new Promise((res) => { const im = new Image(); im.onload = () => { const s = Math.max((cw - 28) / im.width, (ch - 28) / im.height); g.drawImage(im, cx + 14 + ((cw - 28) - im.width * s) / 2, cy + 14, im.width * s, im.height * s); res(); }; im.onerror = res; im.src = art || 'img/career_card_back.webp'; });
-  g.font = '900 120px "Arial Black",sans-serif'; g.textAlign = 'center'; g.fillStyle = 'rgba(37,58,104,.92)'; g.strokeStyle = '#e8eef8'; g.lineWidth = 5;
+  await new Promise((res) => { const im = new Image(); im.onload = () => { const s = Math.max((cw - 2 * m) / im.width, (ch - 2 * m) / im.height); g.drawImage(im, cx + m + ((cw - 2 * m) - im.width * s) / 2, cy + m, im.width * s, im.height * s); res(); }; im.onerror = res; im.src = art || 'img/career_card_back.webp'; });
+  g.font = `900 ${Math.round(120 * k)}px "Arial Black",sans-serif`; g.textAlign = 'center'; g.fillStyle = 'rgba(37,58,104,.92)'; g.strokeStyle = '#e8eef8'; g.lineWidth = 5 * k;
   g.strokeText(String(D.num ?? ''), cx + cw * 0.56, cy + ch * 0.5); g.fillText(String(D.num ?? ''), cx + cw * 0.56, cy + ch * 0.5);
   g.restore();
+}
+async function shareCard(src) {
+  const D = src || (window.__career && window.__career.data) || {};
+  const e = COS.eq(), W = 1200, H = 675;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0a1f4d'); bg.addColorStop(0.62, '#123a7a'); bg.addColorStop(0.63, '#1f6b2c'); bg.addColorStop(1, '#14501f'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  await drawCard(g, D, 60, 50, 420, 575);
   try {
     const gc = document.createElement('canvas'); gc.width = 420; gc.height = 360; gc.style.cssText = 'position:fixed;left:-9999px;top:0;width:420px;height:360px'; document.body.appendChild(gc);
     const v = new GloveView(gc, { keep: true, still: true }); v.color = D.gc || e.gcolor; v.pat = D.gp || e.gpat; await v.ready; v.frame();
@@ -335,6 +339,8 @@ async function shareCard(src) {
   const blob = await new Promise((r) => cv.toBlob(r, 'image/png'));
   const text = `${D.name || ''}の選手カード #ぼくらのボールパーク`;
   const file = blob && new File([blob], 'bokura_card.png', { type: 'image/png' });
+  // 11/27 共有の出し方(アプリの部品・スマホの共有・PC の X の投稿画面)は js/share_x.js にまとめた。無い時は前の形
+  if (window.__bpShareX && blob) { window.__bpShareX.sheet({ blob, name: 'bokura_card.png', text: window.__bpShareX.withTags(`${D.name || ''}の選手カード`), alt: '選手カードの絵' }); return 'sheet'; }
   try { if (file && matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], text }).catch(() => {}); return 'shared'; } } catch (er) { /* 下へ */ }
   showShare(cv.toDataURL('image/png'), text);
   return 'shown';
@@ -369,6 +375,6 @@ setInterval(() => {
   el.textContent = `コレクションのごほうび: ${n.map((c) => c.name).join('・')} が使えます(ロッカー)`; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 4200);
 }, 3000);
 
-window.__bpLocker = { open: (t, after) => L.open(t, after), close: () => L.close(), coll: () => Coll.open(), share: shareCard, artNow, head, shelf, patSwatch, GloveView,
+window.__bpLocker = { open: (t, after) => L.open(t, after), close: () => L.close(), coll: () => Coll.open(), share: shareCard, drawCard, artNow, head, shelf, patSwatch, GloveView,
   render: () => { if (L.el && !L.el.classList.contains('hide')) L.render(); if (Coll.el && !Coll.el.classList.contains('hide')) Coll.render(); }, FR };
 COS.onChange(() => { try { const C = window.__career; if (C && C.ui && C.ui.card && !C.ui.card.classList.contains('hide')) C.ui.renderCard(false); } catch (e) { /* なし */ } });

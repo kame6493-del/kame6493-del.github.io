@@ -3,8 +3,8 @@
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1126r';
-import * as Rank from './ranking.js?v=1126r';
+import { CareerUI } from './career_ui.js?v=1127b';
+import * as Rank from './ranking.js?v=1127b';
 
 const KEY = 'r4walk.career.v1';
 const OFS = ['LF', 'CF', 'RF'];
@@ -17,7 +17,8 @@ const AB_MIN = 30, AB_MAX = 99;
 const UZR_NEED = [0.5, 0.4];
 export const STAGES = [
   { key: 'hs', name: '高校', long: '高校野球', evK: 1.00, hard: 0.00, need: { rank: 'B', uzr: UZR_NEED[0] }, min: 5 },
-  { key: 'corp', name: '社会人', long: '社会人野球', evK: 1.04, hard: 0.12, need: { rank: 'A', uzr: UZR_NEED[1] }, min: 6 },
+  // 11/27 持ち主「課金したら良い感じに能力上がりやすい」「最速でプロ」: 社会人は 能力の平均が abAvg 以上なら、評価の基準が rankAb に下がる(能力を伸ばすほど早く上がれる)
+  { key: 'corp', name: '社会人', long: '社会人野球', evK: 1.04, hard: 0.12, need: { rank: 'A', uzr: UZR_NEED[1], abAvg: 60, rankAb: 'B' }, min: 6 },
   { key: 'pro', name: 'プロ', long: 'プロ野球', evK: 1.08, hard: 0.22, need: null },
 ];
 export const FINAL_GAMES = 5;   // プロで 5 試合守ったら「キャリア完了」(11/26 持ち主「5試合くらいでいいよ」。前は最終評価の後も続けられた)
@@ -31,7 +32,28 @@ export const POS_BASE = { P: 0.0197, C: 0.109, '1B': 0.0037, '2B': -0.0122, '3B'
 export const POS_ADJ = { P: 2.358, C: 0.938, '1B': 1.334, '2B': 1.017, '3B': 1.153, SS: 1.423, LF: 0.769, CF: 0.927, RF: 0.547 };
 export const POS_CH = { P: 10.4, C: 15.2, '1B': 14.7, '2B': 12.6, '3B': 15.3, SS: 12.7, LF: 17.2, CF: 13.8, RF: 16.2 };   // 1 試合の平均の機会(機会の数が無い前の記録に使う)
 export const adjUZR = (pos, u, ch) => (u - (POS_BASE[pos] || 0) * (ch ?? POS_CH[pos] ?? 14)) * (POS_ADJ[pos] || 1);
-const HOF_KEY = 'r4walk.career.hof.v1';   // 終えたキャリアの選手カード(殿堂)
+const HOF_KEY = 'r4walk.career.hof.v1';
+// 11/27 成長(アプリの課金。持ち主「課金したら良い感じに能力上がりやすいみたいなの付けて」。売り物は bokura_app_2026-11-18/store/iap_boost_1127.md)
+//   成長ブースト(買い切り): キャリアの経験値がずっと 1.5 倍。持っているかはアプリの shop.js(window.__bpStore.boostOn)
+//   特訓チケット(消耗): 1 枚で次の 1 試合の経験値 2 倍(ブーストと重ねて 3 倍)。試合を始めた時に 1 枚使う
+//   能力アップの特訓(消耗): 選んだ能力がすぐ +3(70 から +2)。99 まで
+//   枚数は r4walk.boost.v1(選手を新しくしても消えない)。shop.js が買った分を足す。ブラウザ版には売り場が無いので、倍率は 1 のまま
+export const BOOST = { mult: 1.5, train: 2, abUp: (v) => (v < 70 ? 3 : 2) };
+const BKEY = 'r4walk.boost.v1';
+export function boostState() {
+  const d = { train: 0, abup: 0, useTrain: true, nudge: -99 };
+  try { const j = JSON.parse(localStorage.getItem(BKEY) || 'null'); return j && typeof j === 'object' ? { ...d, ...j } : d; } catch (e) { return d; }
+}
+export function boostSave(s) { try { localStorage.setItem(BKEY, JSON.stringify(s)); } catch (e) { /* 残せなくても遊べる */ } try { window.dispatchEvent(new CustomEvent('bp:boost')); } catch (e) { /* */ } }
+export const storeOn = () => { try { return !!(window.__bpStore && window.__bpStore.grow); } catch (e) { return false; } };
+export const boostOwned = () => { try { return !!(window.__bpStore && window.__bpStore.boostOn && window.__bpStore.boostOn()); } catch (e) { return false; } };
+export const abAvg = (ab) => Math.round((ab.arm + ab.field + ab.sure) / 3);
+// 経験値を足した時に、何ずつ上がるか(試合の始めの能力と経験値から。足す順番によらず同じ)
+export function upsFrom(ab0, xp0, add) {
+  const out = { arm: 0, field: 0, sure: 0 };
+  for (const k of ['arm', 'field', 'sure']) { let v = ab0[k], x = (xp0[k] || 0) + (add[k] || 0); while (v < AB_MAX && x >= xpNeed(v)) { x -= xpNeed(v); v++; out[k]++; } }
+  return out;
+}   // 終えたキャリアの選手カード(殿堂)
 const RANK_N = { S: 5, A: 4, B: 3, C: 2, D: 1 };
 
 // 能力の効き方(t は 0 = 最初の 30、1 = 最高の 99)
@@ -69,7 +91,7 @@ function fresh() {
   return { v: 1, stage: 0, pos: 'SS', ab: { arm: AB_MIN, field: AB_MIN, sure: AB_MIN }, xp: { arm: 0, field: 0, sure: 0 },
     stageGames: [0, 0, 0], tot: { games: 0, po: 0, a: 0, e: 0, uzr: 0, wins: 0 }, hist: [], final: null, made: Date.now(),
     name: '', num: 6, pass: [[], [], []], best: null, byPos: {},
-    stageTot: [zt(), zt(), zt()], done: null };
+    stageTot: [zt(), zt(), zt()], done: null, toPro: null };
 }
 // 11/26 段ごとの成績(1 シーズン = その段で守った試合。adj は位置の補正ありの UZR、ch は打球の機会)
 function zt() { return { games: 0, po: 0, a: 0, e: 0, uzr: 0, adj: 0, ch: 0, pos: {} }; }
@@ -133,13 +155,16 @@ export const uzrText = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(1);
 const cosOf = () => { try { const e = window.__bpCos.eq(); return { fr: e.frame, gc: e.gcolor, gp: e.gpat, uni: e.uni, ttl: e.title }; } catch (e) { return {}; } };
 // 殿堂に残せる数(シーズンパスの間は増える)。パスが切れても、もう残した選手は消さない
 const hofCapNow = (n) => { let c = 50; try { c = window.__bpCos.hofCap(); } catch (e) { /* なし */ } return Math.max(c, n || 0); };
+// 11/27 プロに上がるまでの試合数(高校 + 社会人)。ランキングの「早さ」
+const toProOf = (D) => D.toPro || ((D.stageGames[0] || 0) + (D.stageGames[1] || 0));
 // 11/26 終えたキャリアの選手カード(殿堂に残す形)
 function makeCard(D, f) {
   const S = D.stageTot[2], r2 = (x) => Math.round(x * 100) / 100;
   let id = ''; try { id = Rank.deviceId().slice(0, 6) + '-'; } catch (e) { /* */ }
   return { id: id + Date.now().toString(36), name: D.name, num: D.num, pos: mainPos(S, D.pos), posAll: { ...S.pos }, grade: f.grade, title: f.title, score: f.score,
     pro: { games: S.games, po: S.po, a: S.a, e: S.e, uzr: r2(S.uzr), adj: r2(S.adj), ch: S.ch },
-    tot: { ...D.tot }, ab: { ...D.ab }, best: D.best, seasons: D.stageTot.map((x) => ({ games: x.games, uzr: r2(x.uzr), adj: r2(x.adj) })), t: Date.now(), ...cosOf() };
+    tot: { ...D.tot }, ab: { ...D.ab }, best: D.best, seasons: D.stageTot.map((x) => ({ games: x.games, uzr: r2(x.uzr), adj: r2(x.adj) })), t: Date.now(), ...cosOf(),
+    toPro: toProOf(D), pts: Rank.rankPts(toProOf(D), r2(S.adj)) };
 }
 
 // ------------------------------------------------------------ 本体
@@ -149,9 +174,19 @@ class Career {
     this.active = false;   // キャリアの画面から試合を始めた(タイトルへ戻るまで)
     this.game = null;      // いまの試合の記録(キャリアの試合の間だけ)
     this.cnt = 0;          // tagBase・tagRunner で数えたアウト(onCatch の中のアウトと重ねて数えないため)
-    this.K = { POS_NAME, AB_NAME, STAGES, FINAL_GAMES, EFFECT, xpNeed, finalEval, fpctText, uzrText, AB_MAX, promoInfo, POS_ADJ, POS_BASE, adjUZR, mainPos, Rank };
+    this.K = { POS_NAME, AB_NAME, STAGES, FINAL_GAMES, EFFECT, xpNeed, finalEval, fpctText, uzrText, AB_MAX, promoInfo, POS_ADJ, POS_BASE, adjUZR, mainPos, Rank,
+      BOOST, boostState, boostSave, storeOn, boostOwned, abAvg, upsFrom };
     this.ui = new CareerUI(this);
     this.wait();
+    // 11/27 ランキングの点が「早さ+守備」に変わった: 前の形(UZR だけ)の自分の記録は ranking.js が消すので、殿堂のカードから作り直す(端末の中だけ。送らない)
+    try {
+      for (const c of this.hof()) {
+        if (c.migrated || !c.seasons || !c.pro || c.pro.games < FINAL_GAMES) continue;
+        const tp = c.toPro || ((c.seasons[0].games || 0) + (c.seasons[1].games || 0)), pt = Rank.rankPts(tp, c.pro.adj);
+        const e = { name: c.name, num: c.num, pos: c.pos, val: pt.total, uzr: c.pro.adj, toPro: tp, games: c.pro.games, t: c.t };
+        Rank.keepLocal('pro5', e); Rank.keepLocal('pos_' + c.pos, e);
+      }
+    } catch (e) { /* 無くても遊べる */ }
   }
   load() {
     try {
@@ -167,6 +202,7 @@ class Career {
           D.stageTot = [zt(), zt(), zt()];
           for (const h of D.hist) { const S = D.stageTot[h.stage]; if (!S || (h.stage === 2 && S.games >= FINAL_GAMES)) continue; S.games++; S.po += h.po; S.a += h.a; S.e += h.e; S.uzr += h.uzr; S.adj += adjUZR(h.pos, h.uzr, h.ch); S.pos[h.pos] = (S.pos[h.pos] || 0) + 1; }
         }
+        if (D.stage === 2 && !D.toPro) D.toPro = (D.stageGames[0] || 0) + (D.stageGames[1] || 0);
         // 前の作りでプロ 5 試合を超えて続けていた人は、5 試合で終えた形にする(続きの試合は通算にだけ入っている)
         //   (殿堂には入れる。ランキングへは送らない: UZR の数え方が 11/26 に変わる前の試合のため)
         if (D.stage === 2 && D.stageGames[2] >= FINAL_GAMES && !D.done) {
@@ -311,11 +347,18 @@ class Career {
       const t2 = to.clone(); t2.x += (-dz / L) * off; t2.z += (dx / L) * off;
       return { to: t2, speed: speed * EFFECT.arm(C.data.ab.arm) };
     };
-    this.game = { po: 0, a: 0, e: 0, uzr: 0, uzrOld: 0, parts: { rng: 0, dpr: 0, arm: 0, err: 0 }, chances: 0, xp: { arm: 0, field: 0, sure: 0 }, xpPlay: { arm: 0, field: 0, sure: 0 }, ups: { arm: 0, field: 0, sure: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my };
+    // 11/27 成長: ブースト 1.5 倍・特訓チケット 2 倍(試合を始めた時に 1 枚使う。途中でやめても戻らない)
+    const owned = boostOwned(), bs = boostState();
+    let train = false;
+    if (bs.useTrain && bs.train > 0) { bs.train--; train = true; boostSave(bs); }
+    const mult = (owned ? BOOST.mult : 1) * (train ? BOOST.train : 1);
+    this.game = { po: 0, a: 0, e: 0, uzr: 0, uzrOld: 0, parts: { rng: 0, dpr: 0, arm: 0, err: 0 }, chances: 0, xp: { arm: 0, field: 0, sure: 0 }, xpPlay: { arm: 0, field: 0, sure: 0 }, ups: { arm: 0, field: 0, sure: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my,
+      mult, owned, train, xp0: { ...this.data.xp }, base: { arm: 0, field: 0, sure: 0 } };
     const st = this.stage, n = this.data.stageGames[this.data.stage] + 1;
     // 11/26 プロの 4 試合目は「優勝のかかった試合」、5 試合目は「最終戦」
     const tag = this.data.stage === 2 ? (n === FINAL_GAMES - 1 ? '優勝のかかった試合' : n >= FINAL_GAMES ? '最終戦' : '') : '';
-    this.ui.intro(`${st.long} 第${n}戦`, tag ? `${tag} ・ ${POS_NAME[d.my]}` : POS_NAME[d.my], tag ? 3400 : 2200);
+    const xb = mult > 1 ? ` ・ 経験値 ×${mult}` : '';
+    this.ui.intro(`${st.long} 第${n}戦`, (tag ? `${tag} ・ ${POS_NAME[d.my]}` : POS_NAME[d.my]) + xb, tag ? 3400 : 2200);
   }
   // お手玉: 捕った後、投げられるまで 0.6 秒遅れる(アウトにできなければ失策)
   bobRoll(d, pl) {
@@ -390,15 +433,18 @@ class Career {
     if (Math.abs(du) >= 0.05) this.ui.pop(`UZR ${uzrText(du)}`, du >= 0 ? 'good' : 'bad');
     if (pl.evalKind === 'fine' && mine) { try { d.ctx.sound.crowdEvent('fine', 1); } catch (e) { /* 音なし */ } }
   }
-  addXP(X, end) {
-    const D = this.data, G = this.game;
+  addXP(X, end, G0) {
+    const D = this.data, G = G0 || this.game, m = (G && G.mult) || 1;
     for (const k of ['arm', 'field', 'sure']) {
       if (!X[k]) continue;
-      if (G) G.xp[k] += X[k];
-      D.xp[k] += X[k];
+      if (G && G.base) G.base[k] += X[k];   // 倍率の前(「ブーストがあれば」の計算に使う)
+      const x = Math.round(X[k] * m * 10) / 10;
+      if (G) G.xp[k] += x;
+      D.xp[k] += x;
       let up = 0;
       while (D.ab[k] < AB_MAX && D.xp[k] >= xpNeed(D.ab[k])) { D.xp[k] -= xpNeed(D.ab[k]); D.ab[k]++; up++; }
       if (D.ab[k] >= AB_MAX) D.xp[k] = 0;
+      D.xp[k] = Math.round(D.xp[k] * 10) / 10;
       if (up) { if (G) G.ups[k] += up; if (!end) this.ui.pop(`${AB_NAME[k]} +${up}`, 'up'); this.applyAbilities(); }
     }
     this.save();
@@ -420,9 +466,10 @@ class Career {
     const rank = ev.n ? ev.rank : 'C';
     const tc = G.po + G.a + G.e;
     // 試合の終わりの経験値: 出た分(3 つとも 2)+ 評価(S 6・A 4・B 3・C 1)+ 無失策(エラー回避 +3)
-    { const rb = { S: 6, A: 4, B: 3, C: 1 }[rank] || 0, g = (tc > 0 || (ev.n || 0) > 0) ? 2 + rb : 1; this.addXP({ arm: g, field: g, sure: g + (G.e === 0 && tc >= 3 ? 3 : 0) }, true); }
+    { const rb = { S: 6, A: 4, B: 3, C: 1 }[rank] || 0, g = (tc > 0 || (ev.n || 0) > 0) ? 2 + rb : 1; this.addXP({ arm: g, field: g, sure: g + (G.e === 0 && tc >= 3 ? 3 : 0) }, true, G); }
     const need = st.need;
-    const rankOK = need && (RANK_N[rank] || 0) >= RANK_N[need.rank];
+    const avg = abAvg(D.ab), needRank = need ? (need.abAvg && avg >= need.abAvg ? need.rankAb : need.rank) : null;
+    const rankOK = need && (RANK_N[rank] || 0) >= RANK_N[needRank];
     const uzrOK = need && G.uzr >= need.uzr;
     const enough = tc >= 2 || (ev.n || 0) >= 3;
     const passed = !!(need && enough && (rankOK || uzrOK));
@@ -439,11 +486,12 @@ class Career {
     if (!D.byPos) D.byPos = {};
     { const B = D.byPos[G.pos] || (D.byPos[G.pos] = { games: 0, po: 0, a: 0, e: 0, uzr: 0 }); B.games++; B.po += G.po; B.a += G.a; B.e += G.e; B.uzr += G.uzr; }
     const res = { stage: D.stage, game: D.stageGames[D.stage], pos: G.pos, po: G.po, a: G.a, e: G.e, tc, uzr: G.uzr, chances: G.chances, rank, score: ev.n ? ev.score : null,
-      ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now(), parts: { ...G.parts }, uzrOld: G.uzrOld };
+      ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now(), parts: { ...G.parts }, uzrOld: G.uzrOld,
+      needRank, abAvg: avg, boost: this.boostRes(G) };
     D.hist.push({ stage: res.stage, pos: res.pos, po: res.po, a: res.a, e: res.e, uzr: Math.round(res.uzr * 100) / 100, rank, won, t: res.t, ch: G.chances });
     if (D.hist.length > 60) D.hist.shift();
     if (!promoted && need) res.prog = promoInfo(D);
-    if (promoted) { this.sendSeason(st0); D.stage = Math.min(STAGES.length - 1, D.stage + 1); }
+    if (promoted) { this.sendSeason(st0); D.stage = Math.min(STAGES.length - 1, D.stage + 1); if (D.stage === 2) D.toPro = D.stageGames[0] + D.stageGames[1]; }
     if (st0 === 2) { res.proGame = D.stageGames[2]; res.proLeft = Math.max(0, FINAL_GAMES - D.stageGames[2]); }
     if (st0 === 2 && D.stageGames[2] >= FINAL_GAMES) { const f = finalEval(D); res.final = f; res.finalFirst = !D.final; D.final = f; res.done = this.complete(f); }
     this.save();
@@ -458,8 +506,10 @@ class Career {
     D.done = card;
     const H = this.hof(), cap = hofCapNow(H.length); H.push(card); this.saveHof(H, cap);
     try { window.dispatchEvent(new CustomEvent('bp:careerdone', { detail: { first: H.length === 1 } })); } catch (e) { /* 無くても動く */ }
-    const e = { name: D.name, num: D.num, pos, val: S.adj, games: S.games, t: card.t };
-    this.lastSend = Promise.all([Rank.submit('pro5', e), Rank.submit('pos_' + pos, e), Rank.submit('season_pro', e)]).catch(() => null);
+    // 11/27 持ち主「最速でプロ、プロでスコアを競う」: プロ 5 試合・守備位置の板は「早さ+守備」の点(ranking.js の rankPts)。1 シーズンの板は今まで通り UZR
+    const e = { name: D.name, num: D.num, pos, val: card.pts.total, uzr: Math.round(S.adj * 100) / 100, toPro: card.toPro, games: S.games, t: card.t };
+    const es = { name: D.name, num: D.num, pos, val: S.adj, games: S.games, t: card.t };
+    this.lastSend = Promise.all([Rank.submit('pro5', e), Rank.submit('pos_' + pos, e), Rank.submit('season_pro', es)]).catch(() => null);
     return card;
   }
   // 高校・社会人を上がった時、その段(1 シーズン)の UZR をランキングへ
@@ -468,6 +518,23 @@ class Career {
     const board = ['season_hs', 'season_corp'][si]; if (!board) return;
     this.lastSend = Rank.submit(board, { name: D.name, num: D.num, pos: mainPos(S, D.pos), val: S.adj, games: S.games, t: Date.now() }).catch(() => null);
   }
+  // 11/27 成長: 結果の画面に出す数(この試合の倍率・ブースト/特訓チケットがあれば何ずつ上がったか)
+  boostRes(G) {
+    if (!G || !G.base) return null;
+    const b = G.base, m = G.mult || 1, w = (k) => { const o = {}; for (const a of ['arm', 'field', 'sure']) o[a] = Math.round(b[a] * k * 10) / 10; return upsFrom(G.ab0, G.xp0, o); };
+    return { mult: m, owned: !!G.owned, train: !!G.train, base: { ...b },
+      ifBoost: G.owned ? null : w(m * BOOST.mult), ifTrain: G.train ? null : w(m * BOOST.train) };
+  }
+  // 能力アップの特訓を 1 回使う(キャリアの画面から。試合の外だけ)
+  useAbUp(k) {
+    const D = this.data, bs = boostState();
+    if (!AB_NAME[k] || bs.abup <= 0 || D.done || this.game || D.ab[k] >= AB_MAX) return 0;
+    const add = Math.min(AB_MAX - D.ab[k], BOOST.abUp(D.ab[k]));
+    D.ab[k] += add; if (D.ab[k] >= AB_MAX) D.xp[k] = 0;
+    bs.abup--; boostSave(bs); this.save();
+    return add;
+  }
+  setUseTrain(on) { const bs = boostState(); bs.useTrain = !!on; boostSave(bs); }
   cheer(res) {
     const s = window.__app && window.__app.sound; if (!s) return;
     try {

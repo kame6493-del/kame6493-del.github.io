@@ -4,23 +4,29 @@
 // 2) 前の起動が、遊んでいる途中で(閉じる・裏へ回すをせずに)終わっていたら、落ちたと見て、自動の段の天井を下げる(起動して 6.5 秒で決める)
 //    (1 回目 段 3 = 画面の細かさ 1.5 まで・2 回目 段 2 = 1.25・3 回目から 段 1 = 1.0)。20 分落ちずに遊べたら次の起動で 1 つ戻す。
 // 3) 球場を替える(ページの読み直し)前に、描く所と音を先に片付ける(前の球場の絵・形・音を持ったまま次を読まない)。
+// 11/27 iOS のアプリ(Capacitor の iOS)は「試合に入るとタイトルに戻される」(WKWebView の記憶あふれ)の星 1 が 3 件: 初めての起動から落ちにくい側で始める。
+//    記録(r4walk.memSafe)が無い時は 2(段 2 = 画面の細かさ 1.25)から。20 分落ちずに遊べたら 1 つ戻すのは同じだが、1 より下(天井 3 より上)へは戻さない。PC・Android・ブラウザ版は前のまま。
 // ?nomemguard=1 で 1)2) を入れない。試験は window.__memGuard。
 const K_ALIVE = 'r4walk.alive', K_SAFE = 'r4walk.memSafe';
 const CEIL = [4, 3, 2, 1];   // memSafe 0〜3 → 自動の段の天井(gfx.js の AUTO_LV)
+const IOS_SAFE0 = 2, IOS_FLOOR = 1;   // 11/27 iOS のアプリ: 記録が無い時の始まり・戻す下限
+const isIosApp = () => { try { const C = window.Capacitor; return !!(C && C.getPlatform && C.getPlatform() === 'ios'); } catch (e) { return false; } };
 
 export function memGuard({ renderer, gfx, touch, getSound, getQuality, setQuality, store, load }) {
   const off = /[?&]nomemguard=1/.test(location.search);
   const canvas = renderer.domElement;
-  const api = { safe: 0, crashed: false, lost: 0, restored: 0, leaving: false, release, info: () => ({ safe: api.safe, crashed: api.crashed, lost: api.lost, restored: api.restored, ceil: gfx.ceil, lv: gfx.lv }) };
+  const ios = isIosApp();
+  const api = { ios, safe: 0, crashed: false, lost: 0, restored: 0, leaving: false, release, info: () => ({ safe: api.safe, crashed: api.crashed, lost: api.lost, restored: api.restored, ceil: gfx.ceil, lv: gfx.lv }) };
   window.__memGuard = api;
   if (off) return api;
 
   // ---------------------------------------------------------------- 2) 前の起動が落ちていたか
   const now = () => Date.now();
   let safe = +load(K_SAFE, 0) || 0;
+  if (ios) { const raw = load(K_SAFE, null); safe = raw == null ? IOS_SAFE0 : Math.min(3, Math.max(IOS_FLOOR, +raw || 0)); }   // 11/27 iOS のアプリは落ちにくい側から
   api.safe = safe;
   const applySafe = () => {
-    if (!touch || safe <= 0) return;
+    if ((!touch && !ios) || safe <= 0) return;
     gfx.setCeil(CEIL[safe]);
     // 「標準」で落ちた時は「自動」に戻す(自動は記憶の天井の中で動く)
     if (getQuality() === 'std') setTimeout(() => { try { setQuality('auto'); } catch (e) { /* 前のまま */ } }, 0);
@@ -37,7 +43,7 @@ export function memGuard({ renderer, gfx, touch, getSound, getQuality, setQualit
   let eased = false;
   const startBeat = () => { if (beat || api.leaving || checking) return; alive(); beat = setInterval(() => {
     alive();
-    if (!eased && safe > 0 && now() - t0 > 20 * 60 * 1000) { eased = true; store(K_SAFE, safe - 1); }   // 落ちずに 20 分: 次の起動で 1 つ戻す(今の起動はそのまま)
+    if (!eased && safe > (ios ? IOS_FLOOR : 0) && now() - t0 > 20 * 60 * 1000) { eased = true; store(K_SAFE, safe - 1); }   // 落ちずに 20 分: 次の起動で 1 つ戻す(今の起動はそのまま)。iOS のアプリは 1 まで
   }, 5000); };
   const stopBeat = () => { if (beat) { clearInterval(beat); beat = null; } if (!checking) bye(); };
   if (raw0) setTimeout(() => {
@@ -87,7 +93,7 @@ export function memGuard({ renderer, gfx, touch, getSound, getQuality, setQualit
     clearTimeout(waitT);
     api.restored++;
     // 記憶が足りなくて失われたと見て、1 段下げる(スマホ)。「標準」は「自動」へ
-    if (touch) {
+    if (touch || ios) {
       safe = Math.max(safe, 1); api.safe = safe; store(K_SAFE, safe);
       gfx.setCeil(Math.min(gfx.ceil, Math.max(0, gfx.lv - 1)));
       if (getQuality() === 'std') try { setQuality('auto'); } catch (e) { }

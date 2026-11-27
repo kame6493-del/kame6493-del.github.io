@@ -556,6 +556,7 @@ body.photo #callBanner{display:none}@media (max-height:460px){ #callBanner{top:2
       body.innerHTML = `<div class="resSub">相手(先攻) ${g.score.them} - ${g.score.us} 自分(後攻) ・ ${dd > 0 ? dd + '点差で勝ち' : dd < 0 ? -dd + '点差で負け' : '同点'} ・ ${POS_LABEL[r.pos]}</div>` + t + evalHTML(r.ev) + `<div class="tiles">${tile(s.caught, '捕った')}${tile(s.outs, 'アウトにした')}${tile(`${s.correct}/${s.decisions}`, '正しい塁の判断')}${tile(s.cover, 'カバー成功')}${tile(s.errors, 'エラー')}${tile(sec(s.transfer), '捕って投げるまで')}</div>`;
     }
     $('resPos').classList.toggle('hide', false);
+    this.lastResult = { ...r, posLabel: POS_LABEL[r.pos] };   // 11/27 X でシェアの絵と文(js/share_x.js)
     this.show('result', true);
     animateEval(body);
   }

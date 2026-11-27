@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="./hype.css?v=202611231530">
 <link rel="stylesheet" href="./load.css?v=202611231530">
 <link rel="stylesheet" href="./standcatch.css?v=1125"><!-- 11/25 スタンドで捕る -->
-<link rel="stylesheet" href="./career.css?v=1126s"><!-- 11/25 守備のキャリア -->
+<link rel="stylesheet" href="./career.css?v=1127b"><!-- 11/25 守備のキャリア -->
 <link rel="stylesheet" href="./locker.css?v=1126s"><!-- 11/26 着せ替え(ロッカー・コレクション・選手カードの枠) -->
 </head>
 <body>
@@ -120,6 +120,7 @@
     <div class="opt"><div class="lab"><i class="li li-eye"></i>画質</div><div class="seg" id="quals"></div></div>
     <div class="opt walkOnly"><div class="lab">ワープ</div><div class="grid" id="warps"></div></div>
     <button id="credBtn" class="link">クレジット</button>
+    <button id="supportLink" class="link" type="button">不具合・要望を送る</button><!-- 11/27 js/review_ask.js(https://yurustudio.github.io/support/) -->
   </div>
 </section>
 
@@ -131,6 +132,7 @@
     <div id="resBody"></div>
     <button id="resAgain" class="go">もう一度</button>
     <div class="row2"><button id="resPos" class="btn">守る所を変える</button><button id="resClose" class="btn">タイトルへ</button></div>
+    <button id="resShare" class="btn xShareBtn">X でシェア</button><!-- 11/27 js/share_x.js -->
   </div>
 </section>
 
@@ -177,11 +179,13 @@
 } }
 </script>
 <script src="./shop/config.js"></script><script src="./shop/gate.js"></script>
-<script type="module" src="./main.js?v=202611261200"></script>
+<script type="module" src="./main.js?v=202611271930"></script>
 <script type="module" src="./shop/web.js"></script>
 <script type="module" src="./js/hype.js?v=202611231530"></script>
 <script type="module" src="./js/standcatch.js?v=1126s"></script><!-- 11/25 スタンドで捕る・ボールが飛んでくる券(js/standcatch.js) -->
-<script type="module" src="./js/career.js?v=1126s"></script><!-- 11/25 守備のキャリア(js/career.js・js/career_ui.js) -->
-<script type="module" src="./js/locker.js?v=1126L"></script><!-- 11/26 着せ替え(js/cosmetics.js・js/locker.js) -->
+<script type="module" src="./js/career.js?v=1127b"></script><!-- 11/25 守備のキャリア(js/career.js・js/career_ui.js) -->
+<script type="module" src="./js/locker.js?v=1127x"></script><!-- 11/26 着せ替え(js/cosmetics.js・js/locker.js) -->
+<script type="module" src="./js/share_x.js?v=1127x"></script><!-- 11/27 X でシェア(結果・キャリア完了・リプレイの絵と動画) -->
+<script type="module" src="./js/review_ask.js?v=1127r"></script><!-- 11/27 アプリだけ OS 標準のレビューの窓(昇格・キャリア完了・ファインプレーのある勝ち)・不具合・要望を送る -->
 </body>
 </html>

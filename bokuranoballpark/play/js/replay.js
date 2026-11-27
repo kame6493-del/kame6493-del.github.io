@@ -140,6 +140,7 @@ export class Replay {
     const cam = this.h.camera;
     for (const a of this.h.athletes()) if (a && a.rig && a._fadeNear && a.root.visible) { try { a._fadeNear(cam, a.root.getWorldPosition(V())); } catch (e) { } }
     this.h.render(dt);
+    if (this.onFrame) this.onFrame();   // 11/27 X でシェアの動画を録る間だけ(js/share_x.js)。描いた直後に写す
     if (this.bar && !this.dragging) this.bar.value = String(Math.round(this.t / Math.max(0.01, this.dur) * 1000));
     if (this.tm) this.tm.textContent = this.t.toFixed(1) + ' / ' + this.dur.toFixed(1) + ' 秒';
   }
@@ -183,20 +184,20 @@ export class Replay {
   }
   // ---------------------------------------------------------------- 画面
   buildUI() {
-    const css = `body.replayOn>*:not(#rpUI):not(#view):not(script):not(style):not(link){visibility:hidden!important}
+    const css = `body.replayOn>*:not(#rpUI):not(#view):not(#bpXShare):not(script):not(style):not(link){visibility:hidden!important}
 #rpUI{position:fixed;inset:0;z-index:9000;touch-action:none;user-select:none;-webkit-user-select:none;font-family:system-ui,sans-serif}
 #rpUI .rpTop{position:absolute;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 #rpUI .rpTag{background:#d62828;color:#fff;font-weight:900;padding:5px 10px;border-radius:6px;letter-spacing:.1em;font-size:14px}
 #rpUI button{font:700 14px system-ui,sans-serif;color:#fff;background:rgba(10,16,40,.72);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 11px;cursor:pointer}
 #rpUI button.on{background:#ffb703;color:#10162e;border-color:#ffb703}
-#rpUI .rpClose{margin-left:auto}
+#rpUI .rpShare{margin-left:auto;background:#000;border-color:#fff}
 #rpUI .rpBot{position:absolute;left:10px;right:10px;bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;background:rgba(10,16,40,.6);border-radius:10px;padding:8px 10px}
 #rpUI .rpBot input{flex:1;accent-color:#ffb703;height:28px}
 #rpUI .rpTm{color:#fff;font:600 13px system-ui;min-width:86px;text-align:right}
 #rpUI .rpPlay{min-width:48px;font-size:18px}
 #rpUI .rpHint{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);color:#fff;background:rgba(10,16,40,.55);padding:4px 10px;border-radius:6px;font-size:12px;pointer-events:none}`;
     const ui = document.createElement('div'); ui.id = 'rpUI';
-    ui.innerHTML = `<style>${css}</style><div class="rpTop"><span class="rpTag">REPLAY</span>${VIEWS.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('')}<button class="rpClose">とじる</button></div>
+    ui.innerHTML = `<style>${css}</style><div class="rpTop"><span class="rpTag">REPLAY</span>${VIEWS.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('')}<button class="rpShare xShareBtn">X でシェア</button><button class="rpClose">とじる</button></div>
 <div class="rpBot"><button class="rpPlay"></button><button class="rpBack" aria-label="最初から">⏮</button><input type="range" min="0" max="1000" value="0"><span class="rpTm"></span>${[0.25, 0.5, 1].map((s) => `<button data-s="${s}">${s === 1 ? '等速' : s === 0.5 ? '1/2' : '1/4'}</button>`).join('')}</div>`;
     document.body.appendChild(ui); this.ui = ui;
     const stop = (e) => e.stopPropagation();
@@ -204,6 +205,8 @@ export class Replay {
     ui.querySelectorAll('[data-v]').forEach((b) => b.addEventListener('click', () => { this.view = b.dataset.v; this.snapCam = true; this.paintBtns(); }));
     ui.querySelectorAll('[data-s]').forEach((b) => b.addEventListener('click', () => { this.speed = +b.dataset.s; this.paintBtns(); }));
     ui.querySelector('.rpClose').addEventListener('click', () => this.close());
+    // 11/27 X でシェア: 押した時だけリプレイを流しながら数秒を録る(録れない所は今の場面の絵)。js/share_x.js
+    { const sb = ui.querySelector('.rpShare'); sb.addEventListener('click', () => { const S = window.__bpShareX; if (S && !this.recording) S.replay(this, sb); }); if (!window.__bpShareX) sb.remove(); }
     ui.querySelector('.rpPlay').addEventListener('click', () => { if (!this.playing && this.t >= this.dur - 0.01) this.t = 0; this.playing = !this.playing; this.paintBtns(); });
     ui.querySelector('.rpBack').addEventListener('click', () => { this.t = 0; this.playing = true; this.snapCam = true; this.paintBtns(); });
     const bar = this.bar = ui.querySelector('input'); this.tm = ui.querySelector('.rpTm');

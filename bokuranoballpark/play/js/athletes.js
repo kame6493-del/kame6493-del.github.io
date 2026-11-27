@@ -382,11 +382,11 @@ export class Athlete {
     if (!this.rig) return;
     this.rig.model.visible = useRig;
     if (useRig) this._fadeNear(cam, wp);
-    if (!useRig || dt <= 0) return;
+    if (!useRig || dt <= 0) { if (useRig && this.groundY != null) this._groundClamp(); return; }
     // 遠い人ほど動きの計算を間引く(25 m より先は 2 回に 1 回、50 m より先は 3 回に 1 回)
     this.acc = (this.acc || 0) + dt; this.tick = (this.tick || 0) + 1;
     const every = dist > 50 ? 3 : dist > 25 ? 2 : 1;
-    if (this.tick % every !== 0 && this.rig.cur) return;
+    if (this.tick % every !== 0 && this.rig.cur) { if (this.groundY != null) this._groundClamp(); return; }
     dt = this.acc; this.acc = 0;
     const r = this.rig;
     let spec = pick(this.kind, this.popt, this);
@@ -445,6 +445,16 @@ export class Athlete {
     this._hands(spec);
     if (this.lean) this._applyLean();   // 11/21 整列の礼・握手・ハイタッチ(js/seiretsu.js)
     if (this.reach) this._applyReach(this.reach);   // 11/26 正面の飛び込み: 両腕を頭の先へまっすぐ伸ばす(main.js の frontDivePose が 0〜1 を入れる)
+    if (this.groundY != null) this._groundClamp();   // 11/27 飛び込みで体が地面に埋まらないように(main.js の frontDivePose が地面の高さを入れる)
+  }
+  // 11/27 持ち主「ダイビングキャッチですが埋まってる」: 頭・胴・膝・足・手の骨の位置から体の厚み(半径)を引いた一番低い所が地面(groundY)より下なら、その分だけ体を持ち上げる。下げはしない
+  _groundClamp() {
+    const r = this.rig; if (!r) return; const B = r.bones;
+    this.root.updateMatrixWorld(true);
+    let lo = Infinity;
+    for (const [n, rad] of GROUND_PTS) { const b = B[n]; if (!b) continue; const y = b.getWorldPosition(_v2).y - rad; if (y < lo) lo = y; }
+    const up = this.groundY - lo;
+    if (up > 0 && up < 1.5) { this.root.position.y += up; this.root.updateMatrixWorld(true); }
   }
   // 腕(上腕 → 前腕)を、背骨の上の向き(頭の方)へ向ける。w は効き具合。グラブの左腕はまっすぐ、右腕は少し低く・内へ
   _applyReach(w) {
@@ -470,6 +480,14 @@ export class Athlete {
       const dir = up.clone().addScaledVector(fwdDown, k ? 0.28 : 0.12).addScaledVector(right, (s === 'l' ? -1 : 1) * 0.1).normalize();
       aim(B['upperarm_' + s], B['lowerarm_' + s], dir);
       aim(B['lowerarm_' + s], B['hand_' + s], dir);
+    }
+    // 11/27 脚も頭と反対へまっすぐ伸ばす(捕る形の踏み出した脚・曲げた膝のままだと、前へ倒した時に膝と足先が地面にもぐる)。つま先は後ろへ(甲が下)
+    const down = up.clone().negate();
+    for (const s of ['l', 'r']) {
+      const ld = down.clone().addScaledVector(right, (s === 'l' ? -1 : 1) * 0.12).normalize();
+      aim(B['thigh_' + s], B['calf_' + s], ld);
+      aim(B['calf_' + s], B['foot_' + s], ld);
+      aim(B['foot_' + s], B['ball_' + s], down.clone().addScaledVector(fwdDown, -0.25).normalize());
     }
   }
   // 体を前へ倒す(礼)・右腕を前/上へ上げる(握手・ハイタッチ)。動きの後に骨を回して足す。lean = { bow: 倒す角度(rad), arm: 右腕を上げる角度(rad) }
@@ -584,6 +602,9 @@ export class Athlete {
   }
 }
 const _v = V();
+// 11/27 飛び込みで地面に着く骨と、その骨から体の表面までの厚み(m)。_groundClamp で使う
+const GROUND_PTS = [['Head', 0.13], ['neck_01', 0.1], ['spine_03', 0.16], ['spine_02', 0.15], ['spine_01', 0.14], ['pelvis', 0.13], ['thigh_l', 0.09], ['thigh_r', 0.09], ['calf_l', 0.08], ['calf_r', 0.08], ['foot_l', 0.07], ['foot_r', 0.07], ['ball_l', 0.04], ['ball_r', 0.04], ['hand_l', 0.06], ['hand_r', 0.06], ['lowerarm_l', 0.06], ['lowerarm_r', 0.06]];
+const _v2 = new THREE.Vector3();
 const _lq = new THREE.Quaternion(), _lqp = new THREE.Quaternion(), _lqw = new THREE.Quaternion(), _lqt = new THREE.Quaternion(), _lax = V();
 const LOWER_BONES = new Set(['root', 'pelvis', 'spine_01', 'thigh_l', 'calf_l', 'foot_l', 'ball_l', 'thigh_r', 'calf_r', 'foot_r', 'ball_r'].flatMap((n) => [n, BONE_MAP[n]]));
 // 歩き・走りの元の速さ(m/s)。表(docs動きの一覧_v3.md)の値ではなく、実測の表(11/18 作り直し)

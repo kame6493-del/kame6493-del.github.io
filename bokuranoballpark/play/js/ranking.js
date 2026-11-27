@@ -6,6 +6,11 @@
 // 読みの節約: 上位 20 件を板ごとに 30 分覚える。1 回の遊び(ページを開いている間)でサーバーへ読みに行くのは 8 回まで。
 //   混み合い(429)の時は 5 分サーバーへ行かず古い覚えを出す。ルールが無い・権限が無い(403)時は 6 時間行かず、自分の記録だけ出す。
 // ページを開いただけではネットに出ない(ランキングを開いた時・キャリアを終えた時だけ)。
+// 11/27 持ち主「ランキングは最速でプロでスコアを競うみたいな感じで」: pro5 と pos_<位置> の値(val)は「早さ+守備」の点(rankPts)。
+//   早さ = 100 − 5 ×(プロに上がるまでの試合数 − 11)(11 は高校 5 + 社会人 6 の最短。31 試合以上で 0)
+//   守備 = 50 + 20 × プロ 5 試合の UZR(位置の補正あり)(0 より下は 0)
+//   送る物に toPro(プロまでの試合数)・uzr(位置の補正ありの UZR)を足した(v: 2)。1 シーズンの板(season_*)は今まで通り UZR(v: 1)
+//   前の形(UZR だけ)の自分の記録・送り待ちは、読み込んだ時に消す(ルールは公開前なので、サーバーには前の形の記録は無い)
 const API_KEY = 'AIzaSyC4yXnCeOvQZarFHz-0KKk5_szykky3yJk';   // 公開してよい識別子(らくがき運動会の online.js と同じ)
 const PROJECT = 'oekakirace';
 const AUTH_URL = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + API_KEY;
@@ -20,6 +25,13 @@ export const BOARDS = ['pro5', 'season_hs', 'season_corp', 'season_pro', ...POSS
 const GAMES = { pro5: [5, 5], season_hs: [5, 60], season_corp: [6, 60], season_pro: [5, 5] };
 const gamesRange = (b) => GAMES[b] || [5, 5];
 export const MAX_PER_GAME = 3;   // 1 試合あたり ±3 を超える平均は送らない
+export const TO_PRO_MIN = 11, TO_PRO_MAX = 120;   // プロまでの試合数(career.js の STAGES の min の和 = 11。高校・社会人は 60 試合まで)
+const ptsBoard = (b) => b === 'pro5' || b.startsWith('pos_');
+export function rankPts(toPro, uzr) {
+  const speed = Math.max(0, 100 - 5 * Math.max(0, Math.round(toPro) - TO_PRO_MIN));
+  const def = Math.max(0, Math.round(50 + 20 * uzr));
+  return { speed, def, total: speed + def };
+}
 const K = { auth: 'r4walk.rank.auth', cache: 'r4walk.rank.cache', mine: 'r4walk.rank.mine', pend: 'r4walk.rank.pend', busy: 'r4walk.rank.busy', closed: 'r4walk.rank.closed', dev: 'r4walk.rank.dev' };
 const LS = {
   get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
@@ -49,10 +61,15 @@ export function plausible(board, e) {
   if (!BOARDS.includes(board) || !e) return false;
   const [g0, g1] = gamesRange(board.startsWith('pos_') ? 'pro5' : board);
   if (!Number.isInteger(e.games) || e.games < g0 || e.games > g1) return false;
-  if (!Number.isFinite(e.val) || Math.abs(e.val) > MAX_PER_GAME * e.games) return false;
+  if (!Number.isFinite(e.val) || (!ptsBoard(board) && Math.abs(e.val) > MAX_PER_GAME * e.games)) return false;   // 点の板は下で式と比べる
   if (!POSS.includes(e.pos)) return false;
   if (board.startsWith('pos_') && board !== 'pos_' + e.pos) return false;
   if (!Number.isInteger(e.num) || e.num < 0 || e.num > 99) return false;
+  if (ptsBoard(board)) {
+    if (!Number.isInteger(e.toPro) || e.toPro < TO_PRO_MIN || e.toPro > TO_PRO_MAX) return false;
+    if (!Number.isFinite(e.uzr) || Math.abs(e.uzr) > MAX_PER_GAME * e.games) return false;
+    if (Math.abs(e.val - rankPts(e.toPro, e.uzr).total) > 1) return false;
+  }
   return true;
 }
 
@@ -96,13 +113,24 @@ export const myUid = () => (LS.get(K.auth) || {}).uid || null;
 const fv = (f) => (!f ? null : 'stringValue' in f ? f.stringValue : 'integerValue' in f ? +f.integerValue : 'doubleValue' in f ? +f.doubleValue : 'timestampValue' in f ? f.timestampValue : null);
 function rowOf(doc) {
   const F = doc.fields || {}, uid = String(doc.name || '').split('/').pop();
-  return { uid, name: cleanName(fv(F.name)), num: fv(F.num), pos: fv(F.pos), val: +fv(F.val), games: fv(F.games), day: fv(F.day) };
+  return { uid, name: cleanName(fv(F.name)), num: fv(F.num), pos: fv(F.pos), val: +fv(F.val), games: fv(F.games), day: fv(F.day), toPro: fv(F.toPro), uzr: F.uzr ? +fv(F.uzr) : null };
 }
 
 // 自分の記録(この端末で終えたキャリアの最高。ネットが無くても出せる)
 export function mine() { return LS.get(K.mine) || {}; }
 function better(board, e) { const m = mine()[board]; return !m || e.val > m.val + 1e-9; }
 function keepMine(board, e) { const m = mine(); if (better(board, e)) { m[board] = { ...e, own: true }; LS.set(K.mine, m); } }
+// 端末の中だけに残す(送らない。殿堂のカードから作り直す時)
+export function keepLocal(board, e0) {
+  const e = { name: cleanName(e0.name), num: Math.round(+e0.num) || 0, pos: e0.pos, val: e0.val, games: e0.games, day: e0.day || day(e0.t), toPro: e0.toPro, uzr: e0.uzr };
+  if (plausible(board, e)) keepMine(board, e);
+}
+// 11/27 前の形(pro5・pos_* の値が UZR だけ)の自分の記録・送り待ち・覚えた表を消す
+(function migrate() {
+  const old = (x) => x && typeof x === 'object' && !Number.isInteger(x.toPro);
+  for (const key of [K.mine, K.pend]) { const m = LS.get(key); if (!m) continue; let ch = false; for (const b of Object.keys(m)) if (ptsBoard(b) && old(m[b])) { delete m[b]; ch = true; } if (ch) LS.set(key, m); }
+  const C = LS.get(K.cache); if (C) { let ch = false; for (const b of Object.keys(C)) if (ptsBoard(b) && (C[b].rows || []).some(old)) { delete C[b]; ch = true; } if (ch) LS.set(K.cache, C); }
+})();
 
 // 上位 20 件を読む。{rows, from: 'net'|'cache'|'stale'|'mine', why}
 export async function top(board, opt = {}) {
@@ -134,7 +162,9 @@ function merge(rows, board) {
 
 // 送る。良くなった時だけ。送れない時は端末に残して、次にランキングを開いた時に送る
 export async function submit(board, e0) {
-  const e = { name: cleanName(e0.name), num: Math.round(+e0.num) || 0, pos: e0.pos, val: Math.round(e0.val * 100) / 100, games: e0.games, day: e0.day || day(e0.t) };
+  const pts = ptsBoard(board);
+  const e = { name: cleanName(e0.name), num: Math.round(+e0.num) || 0, pos: e0.pos, val: Math.round(e0.val * 100) / 100, games: e0.games, day: e0.day || day(e0.t),
+    ...(pts ? { toPro: e0.toPro, uzr: Math.round(+e0.uzr * 100) / 100 } : {}) };
   if (!plausible(board, e)) return { ok: false, why: 'implausible' };
   const isBetter = better(board, e);
   keepMine(board, e);
@@ -144,7 +174,8 @@ export async function submit(board, e0) {
   try {
     const a = await token();
     const name = `projects/${PROJECT}/databases/(default)/documents/${ROOT}/${board}/entries/${a.uid}`;
-    const fields = { name: { stringValue: e.name }, num: { integerValue: String(e.num) }, pos: { stringValue: e.pos }, val: { doubleValue: e.val }, games: { integerValue: String(e.games) }, day: { stringValue: e.day }, v: { integerValue: '1' } };
+    const fields = { name: { stringValue: e.name }, num: { integerValue: String(e.num) }, pos: { stringValue: e.pos }, val: { doubleValue: e.val }, games: { integerValue: String(e.games) }, day: { stringValue: e.day }, v: { integerValue: pts ? '2' : '1' } };
+    if (pts) { fields.toPro = { integerValue: String(e.toPro) }; fields.uzr = { doubleValue: e.uzr }; }
     await http(`${DOCS}:commit`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + a.idToken },
       body: JSON.stringify({ writes: [{ update: { name, fields }, updateTransforms: [{ fieldPath: 'at', setToServerValue: 'REQUEST_TIME' }] }] }) }, true);
     stats.writes++;

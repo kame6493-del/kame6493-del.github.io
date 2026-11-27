@@ -17,6 +17,9 @@ const UZR_HELP = ['同じ打球を「平均的な守備の選手」が守った�
   '守備範囲・併殺・肩・失策の 4 つを合わせた数です(捕手は盗塁を刺した分)。',
   '目安(1 シーズン): +10 で上手い、0 で平均、−10 で下手。',
   '1 試合では小さな数になります(難しい打球を捕って +0.3〜0.8 ほど)。'];
+// 11/27 ランキングの点(早さ+守備)の「?」。式は ranking.js の rankPts
+const PQ = '<button type="button" class="cQ" data-act="ptsq" aria-label="点の出し方">?</button>';
+const noPrice = () => { try { return new URLSearchParams(location.search).has('noprice'); } catch (e) { return false; } };   // ストアの写真を撮る時は値段を出さない
 // 能力の文字(S 90〜・A 80〜・B 70〜・C 60〜・D 50〜・E 40〜・F 20〜・G 1〜)。色は career.css の .cLetter.gS〜gG
 export const GRADE = (v) => (v >= 90 ? 'S' : v >= 80 ? 'A' : v >= 70 ? 'B' : v >= 60 ? 'C' : v >= 50 ? 'D' : v >= 40 ? 'E' : v >= 20 ? 'F' : 'G');
 // 試合の中の小さな札を出すか(一時停止の「画面に出すもの」の「プレーの札」。初めは出さない。js/hudprefs.js と同じ r4walk.hud)
@@ -62,6 +65,8 @@ export class CareerUI {
     res.addEventListener('click', (e) => this.onResClick(e));
     for (const el of [hub, res]) { el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true }); el.addEventListener('mousedown', (e) => e.stopPropagation()); }
     addEventListener('keydown', (e) => { if (e.code === 'Escape' && !this.hub.classList.contains('hide')) { e.stopPropagation(); this.backToTitle(); } }, true);
+    // 11/27 成長の品を買った・使った時(js/career.js の boostSave、アプリの shop.js)は、キャリアの画面を描き直す
+    addEventListener('bp:boost', () => { if (this.hub && !this.hub.classList.contains('hide')) this.renderHub(); });
     const tick = () => { try { this.placePops(); } catch (e) { /* 飾り */ } requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
   }
@@ -82,7 +87,7 @@ export class CareerUI {
     const K = this.K;
     return ['arm', 'field', 'sure'].map((k) => {
       const v = ab[k], w = Math.round(100 * v / K.AB_MAX), up = ups && ups[k];
-      const nx = xp ? (v >= K.AB_MAX ? '最高' : `次まで ${K.xpNeed(v) - xp[k]}`) : '';
+      const nx = xp ? (v >= K.AB_MAX ? '最高' : `次まで ${Math.max(1, Math.ceil(K.xpNeed(v) - xp[k] - 1e-6))}`) : '';
       const g = GRADE(v);
       return `<div class="cAb${up ? ' upd' : ''}"><span class="cAbName">${ICON[k]}${esc(K.AB_NAME[k])}</span><span class="cBar"><i style="--w:${w}%"></i></span>`
         + `<span class="cAbG"><b class="cLetter g${g}">${g}</b><small class="cAbV">${v}</small></span>${up ? `<span class="cPlus">+${up}</span>` : '<span class="cPlus none"></span>'}${nx ? `<small class="cNext">${nx}</small>` : ''}</div>`;
@@ -106,9 +111,11 @@ export class CareerUI {
     const nextName = need ? K.STAGES[D.stage + 1].name : '';
     const left = K.FINAL_GAMES - D.stageGames[2];
     const fe = K.finalEval(D);
+    const abN = need && need.abAvg ? `(能力の平均 ${need.abAvg} 以上なら ${need.rankAb} 以上。いま ${K.abAvg(D.ab)})` : '';
+    const tp = D.toPro || (D.stageGames[0] + D.stageGames[1]), sp = K.Rank.rankPts(tp, 0).speed;
     const goal = need
-      ? `<div class="cGoal"><b>${esc(nextName)}へ上がる条件</b><span>評価 ${need.rank} 以上 か UZR${Q} ${K.uzrText(need.uzr)} 以上を、直近 3 試合のうち 2 試合(${esc(st.name)}で ${st.min} 試合以上)</span>${this.progress(K.promoInfo(D))}</div>`
-      : D.done ? '' : `<div class="cGoal"><b>キャリア完了まで</b><span>プロで あと ${Math.max(0, left)} 試合${left === 2 ? '(次は 優勝のかかった試合)' : left === 1 ? '(次が 最終戦)' : ''}</span><small class="cProg">プロ 5 試合を終えた時の UZR でランキングを競います</small></div>`;
+      ? `<div class="cGoal"><b>${esc(nextName)}へ上がる条件</b><span>評価 ${need.rank} 以上${abN} か UZR${Q} ${K.uzrText(need.uzr)} 以上を、直近 3 試合のうち 2 試合(${esc(st.name)}で ${st.min} 試合以上)</span>${this.progress(K.promoInfo(D))}</div>`
+      : D.done ? '' : `<div class="cGoal"><b>キャリア完了まで</b><span>プロで あと ${Math.max(0, left)} 試合${left === 2 ? '(次は 優勝のかかった試合)' : left === 1 ? '(次が 最終戦)' : ''}</span><small class="cProg">プロまで ${tp} 試合(早さ ${sp} 点)。プロ 5 試合の UZR と合わせた点で ランキングを競います${PQ}</small></div>`;
     const fin = T.games ? `<div class="cPanel cLight cFinal${D.final ? ' fixed' : ''}"><div class="cRibbon">${D.final ? 'キャリアの最終評価' : 'いまの守備の評価(通算)'}</div>`
       + `<div class="cFinRow"><div class="cStamp sm r${fe.grade}"><span>${fe.grade}</span></div><div><div class="cFinTitle">${esc(fe.title)}</div><div class="cFinSub">${fe.score}/100 ・ 1 試合あたり UZR ${K.uzrText(fe.uzrPG)} ・ 守備率 ${K.fpctText(T.po, T.a, T.e)}</div></div></div></div>` : '';
     const ready = !!(window.__app && window.__app.ready);
@@ -124,6 +131,7 @@ export class CareerUI {
       <button class="cCardBtn" data-act="card"><span class="cCardNo">${esc(D.num)}</span><span class="cCardTx"><b>${esc(D.name || '名前を決める')}</b><small>自分の選手カード</small></span></button>
       <div class="cPanel cLight"><div class="cRibbon">能力</div>${this.abRows(D.ab, null, D.xp)}
         <div class="cNote">肩: 送球の速さ・届く距離 / 守備: 走る速さ・グラブの届く幅 / エラー回避: お手玉・送球のそれ</div></div>
+      ${this.growHtml()}
       <div class="cPanel cLight"><div class="cRibbon">通算成績</div>${this.table([
         ['試合', `${T.games}<small> (高校 ${D.stageGames[0]} ・ 社会人 ${D.stageGames[1]} ・ プロ ${D.stageGames[2]})</small>`],
         ['刺殺', T.po], ['補殺', T.a], ['失策', T.e], ['守備機会', T.po + T.a + T.e], ['守備率', K.fpctText(T.po, T.a, T.e)],
@@ -150,8 +158,13 @@ export class CareerUI {
     const b = e.target.closest('button'); if (!b) return;
     e.stopPropagation();
     if (b.dataset.pos) { this.C.setPos(b.dataset.pos); this.renderHub(); return; }
+    // 11/27 成長: 能力アップの特訓を使う・特訓チケットを使うか・ショップ
+    if (b.dataset.abup) { const k = b.dataset.abup, n = this.C.useAbUp(k); this._abMsg = n ? `能力アップの特訓: ${this.K.AB_NAME[k]} +${n}` : ''; this.renderHub(); return; }
     const a = b.dataset.act;
     if (a === 'uzrq') { this.uzrHelp(); return; }
+    if (a === 'ptsq') { this.ptsHelp(); return; }
+    if (a === 'usetrain') { this.C.setUseTrain(!this.K.boostState().useTrain); this.renderHub(); return; }
+    if (a === 'growshop') { this.openGrowShop(); return; }
     if (a === 'back') this.backToTitle();
     else if (a === 'card') this.openCard();
     else if (a === 'rank') this.openRank('pro5');
@@ -172,12 +185,14 @@ export class CareerUI {
   // ------------------------------------------------ 試合の終わりの画面
   result(r) {
     const K = this.K, C = this.C, D = C.data;
+    this.lastRes = r;   // 11/27 X でシェアの絵と文
     const cur = r.stage, nextName = r.promoted ? K.STAGES[cur + 1].name : '';
     const vs = r.score2 ? `${r.won ? '勝ち' : r.score2.us === r.score2.them ? '引き分け' : '負け'} ${r.score2.us}-${r.score2.them}` : '';
     let band;
     if (r.promoted) band = `<div class="cBand promo"><i class="lw"></i><b>${esc(nextName)}へ昇格!</b><i class="lw r"></i></div>`;
     else if (r.need) {
-      const why = !r.enough ? '守る機会が少なかった' : r.passed ? 'この試合は基準クリア' : `基準は 評価 ${r.need.rank} 以上 か UZR ${K.uzrText(r.need.uzr)} 以上`;
+      const abS = r.need.abAvg && r.abAvg < r.need.abAvg ? `(能力の平均 ${r.need.abAvg} で 評価 ${r.need.rankAb} でも可。いま ${r.abAvg})` : '';
+      const why = !r.enough ? '守る機会が少なかった' : r.passed ? 'この試合は基準クリア' : `基準は 評価 ${r.needRank || r.need.rank} 以上 か UZR ${K.uzrText(r.need.uzr)} 以上${abS}`;
       band = `<div class="cBand stay"><b>${esc(K.STAGES[cur].name)}で続ける</b><small>${esc(why)}</small>${this.progress(r.prog)}</div>`;
     } else band = `<div class="cBand stay pro"><b>プロ ${r.game} 試合目</b><small>${r.final ? '' : r.proLeft === 2 ? '次は 優勝のかかった試合' : r.proLeft === 1 ? '次が 最終戦' : `キャリア完了まで あと ${Math.max(0, K.FINAL_GAMES - D.stageGames[2])} 試合`}</small></div>`;
     if (r.done) { this.doneScreen(r); return; }
@@ -192,10 +207,11 @@ export class CareerUI {
           <div class="cScore">${r.score != null ? `<b data-to="${r.score}">0</b><small>/ 100</small>` : '<small>守る機会がありませんでした</small>'}</div></div>
         ${this.table([['刺殺', r.po], ['補殺', r.a], ['失策', r.e], ['守備率', K.fpctText(r.po, r.a, r.e)], ['UZR', K.uzrText(r.uzr), r.uzr >= 0 ? 'pos' : 'neg']])}
       </div>
-      <div class="cPanel cLight cAbP"><div class="cAbs">${this.abRows(r.ab, r.ups, null)}${anyUp ? '' : '<div class="cNote">能力は上がらなかった(経験は少しずつたまっています)</div>'}</div></div>
-      ${band}${fin}
+      <div class="cPanel cLight cAbP"><div class="cAbs">${this.abRows(r.ab, r.ups, null)}${anyUp ? '' : '<div class="cNote">能力は上がらなかった(経験は少しずつたまっています)</div>'}${this.xpBadge(r)}</div></div>
+      ${this.nudge(r)}${band}${fin}
       <button class="cGo" data-act="next">次の試合へ</button>
       <div class="cRow2"><button class="cBtn" data-act="hub">キャリアの画面へ</button><button class="cBtn" data-act="title">タイトルへ</button></div>
+      ${window.__bpShareX ? '<button class="cBtn cShareBtn xShareBtn" data-act="xgame">X でシェア</button>' : ''}
       ${r.promoted ? '<div class="cConf">' + Array.from({ length: 36 }, (_, i) => `<i style="--x:${(i * 37) % 100};--d:${(i % 7) * 0.12}s;--c:${['#ffd23a', '#ff4b4b', '#39d353', '#4fb3ff', '#fff'][i % 5]};--r:${(i * 53) % 360}deg"></i>`).join('') + '</div>' : ''}
     </div>`;
     this.hub.classList.add('hide');
@@ -212,7 +228,13 @@ export class CareerUI {
     e.stopPropagation();
     const a = b.dataset.act, ui = this.appUI;
     if (a === 'uzrq') { this.uzrHelp(); return; }
+    if (a === 'ptsq') { this.ptsHelp(); return; }
+    if (a === 'nudgex') { const n = b.closest('.cNudge'); if (n) n.remove(); return; }
+    if (a === 'growshop') { this.openGrowShop(); return; }
     if (a === 'share') { try { window.__bpLocker.share(this.C.data.done || this.C.data); } catch (er) { /* なし */ } return; }
+    // 11/27 X でシェア(js/share_x.js): 試合の結果の絵・キャリア完了の絵(最終評価・称号・UZR・選手カード)
+    if (a === 'xgame') { try { window.__bpShareX.careerGame(this.lastRes); } catch (er) { /* なし */ } return; }
+    if (a === 'xdone') { try { window.__bpShareX.careerDone(this.C.data.done || (this.lastRes && this.lastRes.done)); } catch (er) { /* なし */ } return; }
     if (a === 'next') { this.res.classList.add('hide'); this.C.start(); }
     else if (a === 'rank') this.openRank('pro5');
     else if (a === 'new') { ui.app.toTitle(); this.openHub(); this.startNew(); }
@@ -305,23 +327,78 @@ export class CareerUI {
       + POS7.map((p) => { const [x, y] = DOT[p]; return `<button type="button" class="pcPosBtn${p === cur ? ' on' : ''}" data-pick="${p}" style="left:${(x / 60 * 100).toFixed(1)}%;top:${(y / 44 * 100).toFixed(1)}%" aria-label="${esc(K.POS_NAME[p])}">${POS_SHORT[p]}</button>`; }).join('')
       + `</div><div class="pcPickNow">選んだ位置: <b class="pcPickName">${esc(K.POS_NAME[cur] || cur)}</b></div>`;
   }
-  uzrHelp() {
+  uzrHelp() { this.help('UZR とは', UZR_HELP); }
+  // 11/27 ランキングの点の出し方(式は ranking.js の rankPts)
+  ptsHelp() {
+    const R = this.K.Rank, co = this.K.STAGES[1].need, ex = R.rankPts(R.TO_PRO_MIN + 2, 1.5);
+    this.help('ランキングの点', ['点 = 早さ + 守備 の合計です。',
+      `早さ: プロに上がるまでの試合(高校と社会人)が少ないほど高い点。最短の ${R.TO_PRO_MIN} 試合で 100 点、1 試合多いごとに −5 点(${R.TO_PRO_MIN + 20} 試合以上で 0 点)。`,
+      '守備: 50 + プロ 5 試合の UZR(位置の補正あり)× 20。UZR +1.0 で 70 点、−1.0 で 30 点。',
+      `能力が高いほど 守れる範囲が広がり、評価と UZR が上がりやすくなります。社会人は 能力の平均 ${co.abAvg} 以上で 評価 ${co.rankAb} でも基準を超えます。`,
+      `れい: プロまで ${R.TO_PRO_MIN + 2} 試合・UZR +1.5 → 早さ ${ex.speed} + 守備 ${ex.def} = ${ex.total} 点`]);
+  }
+  help(title, lines) {
     let el = $('carHelp');
     if (!el) {
       el = document.createElement('div'); el.id = 'carHelp'; el.className = 'hide';
-      el.innerHTML = `<div class="chBox" role="dialog" aria-label="UZR とは"><b>UZR とは</b>${UZR_HELP.map((t) => `<p>${esc(t)}</p>`).join('')}<button type="button" class="cBtn" data-x="1">閉じる</button></div>`;
       el.addEventListener('click', (e) => { e.stopPropagation(); if (e.target === el || e.target.closest('[data-x]')) el.classList.add('hide'); });
       for (const t of ['touchstart', 'mousedown', 'keydown']) el.addEventListener(t, (e) => e.stopPropagation(), { passive: true });
       document.body.appendChild(el);
     }
+    el.innerHTML = `<div class="chBox" role="dialog" aria-label="${esc(title)}"><b>${esc(title)}</b>${lines.map((t) => `<p>${esc(t)}</p>`).join('')}<button type="button" class="cBtn" data-x="1">閉じる</button></div>`;
     el.classList.remove('hide');
+  }
+
+  // ------------------------------------------------ 11/27 成長(アプリの課金: 成長ブースト・特訓チケット・能力アップの特訓)
+  openGrowShop() { try { window.__bpStore.openShop('grow'); } catch (e) { /* ブラウザ版には売り場が無い */ } }
+  // キャリアの画面の「成長」の枠(アプリ版か、持っている品がある時だけ)
+  growHtml() {
+    const K = this.K, D = this.C.data, bs = K.boostState(), store = K.storeOn();
+    if (!store && !bs.train && !bs.abup) return '';
+    const own = K.boostOwned();
+    const abBtns = bs.abup > 0 && !D.done ? `<div class="cAbUp">${['arm', 'field', 'sure'].map((k) => { const v = D.ab[k], full = v >= K.AB_MAX; return `<button class="cBtn" data-abup="${k}"${full ? ' disabled' : ''}>${esc(K.AB_NAME[k])} ${full ? '最高' : '+' + Math.min(K.AB_MAX - v, K.BOOST.abUp(v))}</button>`; }).join('')}</div>` : '';
+    const msg = this._abMsg; this._abMsg = '';
+    return `<div class="cPanel cDark cGrow"><div class="cGrowHead">成長</div>
+      <div class="cGrowRow"><b>成長ブースト</b><span>${own ? '経験値 ずっと ×1.5' : 'キャリアの経験値が ずっと ×1.5'}</span>${own ? '<em class="cOn">有効</em>' : ''}</div>
+      <div class="cGrowRow"><b>特訓チケット ${bs.train} 枚</b><span>1 枚で 次の 1 試合の経験値 ×2${own ? '(ブーストと重ねて ×3)' : ''}</span>${bs.train > 0 && !D.done ? `<button class="cTog${bs.useTrain ? ' on' : ''}" data-act="usetrain">${bs.useTrain ? '次の試合で使う' : '使わない'}</button>` : ''}</div>
+      <div class="cGrowRow"><b>能力アップの特訓 ${bs.abup} 回</b><span>選んだ能力が すぐ +3(70 から +2)</span></div>${abBtns}
+      ${msg ? `<div class="cGrowMsg">${esc(msg)}</div>` : ''}${store ? '<button class="cBtn cGrowShop" data-act="growshop">成長の品を見る</button>' : ''}</div>`;
+  }
+  // 結果の画面: この試合の経験値の倍率
+  xpBadge(r) {
+    const B = r.boost; if (!B || B.mult <= 1) return '';
+    return `<div class="cXpMul">経験値 ×${B.mult}<small>${[B.owned ? '成長ブースト' : '', B.train ? '特訓チケット' : ''].filter(Boolean).join('・')}</small></div>`;
+  }
+  // 結果の画面の案内(アプリ版だけ・3 試合に 1 回まで・× で閉じる・試合の後だけ)。「ブーストがあれば +◯ だった」を数で出す
+  nudge(r) {
+    const K = this.K, S = window.__bpStore, B = r.boost;
+    if (!S || !S.grow || !B || r.final || r.done) return '';
+    const bs = K.boostState(), g = this.C.data.tot.games;
+    if (g < 2 || g - (bs.nudge ?? -99) < 3) return '';
+    const sum = (o) => (o ? o.arm + o.field + o.sure : 0), got = sum(r.ups);
+    let what = '', alt = null, pid = '';
+    if (!B.owned) { what = '成長ブースト'; alt = B.ifBoost; pid = 'bp_boost_xp'; }
+    else if (!B.train) { what = '特訓チケット'; alt = B.ifTrain; pid = 'bp_train_1'; }
+    const near = !!(r.need && !r.promoted && r.prog && r.prog.left <= 2);
+    const abShort = !!(r.need && r.need.abAvg && r.abAvg < r.need.abAvg);
+    const slump = got <= 1, more = alt ? sum(alt) - got : 0;
+    if (!(near || slump || more >= 2)) return '';
+    if (!alt || more <= 0) { if (!slump) return ''; what = '能力アップの特訓'; alt = null; pid = 'bp_abup_1'; }
+    bs.nudge = g; K.boostSave(bs);
+    const line = alt ? `${esc(what)}があれば この試合の伸び ${['arm', 'field', 'sure'].map((k) => `${esc(K.AB_NAME[k])} +${r.ups[k]}→<b>+${alt[k]}</b>`).join(' ・ ')}` : '選んだ能力が すぐ +3(70 から +2)';
+    const why = near && abShort ? `社会人は 能力の平均 ${r.need.abAvg} 以上なら 評価 ${r.need.rankAb} でも基準クリア(いま ${r.abAvg})`
+      : near ? `昇格まで 最短 あと ${r.prog.left} 試合。能力が高いほど 評価と UZR が上がりやすくなります`
+      : slump ? `この試合の伸びは 合計 +${got}。能力は 高くなるほど 次の 1 に経験が要ります`
+      : '早くプロに上がるほど ランキングの点(早さ)が高くなります';
+    let price = ''; try { price = noPrice() ? '' : (S.price && S.price(pid)) || ''; } catch (e) { /* */ }
+    return `<div class="cNudge" role="note"><button type="button" class="cNudgeX" data-act="nudgex" aria-label="閉じる">×</button><b class="cNudgeH">${esc(what)}</b><p>${line}</p><small>${esc(why)}</small><button type="button" class="cBtn cNudgeGo" data-act="growshop">ショップで見る${price ? ` <i>${esc(price)}</i>` : ''}</button></div>`;
   }
 
   // ------------------------------------------------ 11/26 キャリア完了・殿堂・ランキング・キャリアの説明
   miniCard(c) {
     const K = this.K;
     return `<div class="cMini ${cosFr(c.fr)}"><div class="cMiniArt"><span>${esc(c.num)}</span></div><div class="cMiniTx"><b>${esc(c.name || '(名前なし)')}</b>`
-      + `<small>${esc(K.POS_NAME[c.pos] || c.pos)} ・ ${esc(c.title || '')}</small><small>プロ ${c.pro ? c.pro.games : 0} 試合 ・ UZR(位置の補正あり) <em class="${c.pro && c.pro.adj >= 0 ? 'pos' : 'neg'}">${K.uzrText(c.pro ? c.pro.adj : 0)}</em></small></div>`
+      + `<small>${esc(K.POS_NAME[c.pos] || c.pos)} ・ ${esc(c.title || '')}</small><small>プロ ${c.pro ? c.pro.games : 0} 試合 ・ UZR(位置の補正あり) <em class="${c.pro && c.pro.adj >= 0 ? 'pos' : 'neg'}">${K.uzrText(c.pro ? c.pro.adj : 0)}</em></small>${c.pts ? `<small>プロまで ${esc(c.toPro)} 試合 ・ ランキングの点 <em class="pts">${esc(c.pts.total)}</em></small>` : ''}</div>`
       + `<div class="cStamp sm r${esc(c.grade || 'C')}"><span>${esc(c.grade || '-')}</span></div></div>`;
   }
   startNew() {
@@ -340,8 +417,9 @@ export class CareerUI {
         <div class="cSubHead">プロ通算(${P.games} 試合)</div>
         ${this.table([['アウトを取った数(刺殺)', P.po], ['送球でアウト(補殺)', P.a], ['エラー(失策)', P.e], ['守備率', K.fpctText(P.po, P.a, P.e)], ['UZR', K.uzrText(P.uzr), P.uzr >= 0 ? 'pos' : 'neg'],
           ['UZR(位置の補正あり)', K.uzrText(P.adj), P.adj >= 0 ? 'pos' : 'neg']])}
-        <div class="cNote dk">${esc(ADJ_NOTE)}</div></div>
-      <div class="cPanel cDark cDoneP"><div class="cDoneHead">殿堂入りした選手カード</div>${this.miniCard(c)}<div class="cRankSt" id="cSendSt">ランキングに送っています…</div><button class="cBtn cShareBtn" data-act="share">カードの絵を X に出す</button></div>
+        <div class="cNote dk">${esc(ADJ_NOTE)}</div>
+        ${c.pts ? `<div class="cPts"><b>ランキングの点 ${esc(c.pts.total)}${PQ}</b><small>早さ ${esc(c.pts.speed)}(プロまで ${esc(c.toPro)} 試合)+ 守備 ${esc(c.pts.def)}(UZR ${K.uzrText(P.adj)})</small></div>` : ''}</div>
+      <div class="cPanel cDark cDoneP"><div class="cDoneHead">殿堂入りした選手カード</div>${this.miniCard(c)}<div class="cRankSt" id="cSendSt">ランキングに送っています…</div><button class="cBtn cShareBtn${window.__bpShareX ? ' xShareBtn' : ''}" data-act="${window.__bpShareX ? 'xdone' : 'share'}">${window.__bpShareX ? 'X でシェア' : 'カードの絵を X に出す'}</button></div>
       <button class="cGo" data-act="rank">ランキングを見る</button>
       <div class="cRow2"><button class="cBtn" data-act="new">新しい選手で始める</button><button class="cBtn" data-act="title">タイトルへ</button></div>
       <div class="cConf">${Array.from({ length: 36 }, (_, i) => `<i style="--x:${(i * 37) % 100};--d:${(i % 7) * 0.12}s;--c:${['#ffd23a', '#ff4b4b', '#39d353', '#4fb3ff', '#fff'][i % 5]};--r:${(i * 53) % 360}deg"></i>`).join('')}</div>
@@ -356,7 +434,7 @@ export class CareerUI {
     Promise.resolve(this.C.lastSend).then((R) => {
       const a = Array.isArray(R) ? R[0] : R;
       if (!a) st('この端末の記録に残しました');
-      else if (a.ok) st('ランキングに載せました(位置の補正ありの UZR)');
+      else if (a.ok) st('ランキングに載せました(早さ+守備の点)');
       else if (a.why === 'implausible') st('ありえない値だったので、ランキングには送りませんでした');
       else st('いまはランキングに送れないので、この端末に残しました(あとで送ります)');
     });
@@ -401,7 +479,9 @@ export class CareerUI {
     } else if (tab === 'pos') {
       sub = `<div class="cChips pos">${POSL.map((p) => `<button class="${'pos_' + p === b ? 'on' : ''}" data-board="pos_${p}" aria-label="${esc(K.POS_NAME[p])}">${POS_SHORT[p]}</button>`).join('')}</div>`;
       cap = `${esc(K.POS_NAME[b.slice(4)] || '')}で プロ 5 試合を終えた時の UZR`;
-    } else if (tab === 'pro5') cap = 'プロ 5 試合を終えた時の 通算 UZR';
+    } else if (tab === 'pro5') cap = '最速でプロへ・プロ 5 試合の守備で競う点';
+    if (tab === 'pos') cap = `${esc(K.POS_NAME[b.slice(4)] || '')}で キャリアを終えた時の点(早さ+守備)`;
+    const pts = tab === 'pro5' || tab === 'pos';
     let body;
     if (tab === 'hof') {
       const H = this.C.hof().slice().reverse();
@@ -413,20 +493,26 @@ export class CareerUI {
       const why = { closed: 'ランキングの準備中のため、自分の記録だけ出しています', busy: '混み合っているので、前に読んだ表を出しています', offline: 'ネットにつながらないので、自分の記録だけ出しています', limit: '読みすぎないよう、前に読んだ表を出しています' };
       const note = res.from === 'net' || res.from === 'cache' ? 'みんなの記録(30 分ごとに新しくなります)' : (res.from === 'stale' ? (why[res.why] || '前に読んだ表を出しています') : (why[res.why] || why.offline));
       const rows = res.rows || [];
-      body = `<div class="cRankNote">${esc(note)}</div>` + (rows.length ? `<table class="cRankT"><tr><th>順位</th><th>選手</th><th>位置</th><th>UZR</th><th>日付</th></tr>${rows.map((r, i) => `<tr class="${r.own ? 'own' : ''}"><td class="n">${r.local && res.from !== 'net' && res.from !== 'cache' ? '-' : i + 1}</td><td class="pl"><i class="${r.own ? cosFr() : ''}">${esc(r.num)}</i>${esc(r.name)}${r.own ? '<em>あなた</em>' : ''}</td><td>${esc(POS_SHORT[r.pos] || '')}</td><td class="${r.val >= 0 ? 'pos' : 'neg'}">${K.uzrText(r.val)}</td><td class="d">${esc(String(r.day || '').slice(5).replace('-', '/'))}</td></tr>`).join('')}</table>`
+      // 11/27 プロ 5 試合・守備位置の表は「点」(早さ+守備)。名前の下に プロまでの試合数と UZR
+      const sub2 = (r) => (pts ? `<small class="cRkSub">プロまで ${r.toPro != null ? esc(r.toPro) : '-'} 試合 ・ UZR ${r.uzr != null && Number.isFinite(+r.uzr) ? K.uzrText(+r.uzr) : '-'}</small>` : '');
+      const valTd = (r) => (pts ? `<td class="pts">${esc(Math.round(r.val))}</td>` : `<td class="${r.val >= 0 ? 'pos' : 'neg'}">${K.uzrText(r.val)}</td>`);
+      body = `<div class="cRankNote">${esc(note)}</div>` + (rows.length ? `<table class="cRankT${pts ? ' pts' : ''}"><tr><th>順位</th><th>選手</th><th>位置</th><th>${pts ? '点' : 'UZR'}</th><th>日付</th></tr>${rows.map((r, i) => `<tr class="${r.own ? 'own' : ''}"><td class="n">${r.local && res.from !== 'net' && res.from !== 'cache' ? '-' : i + 1}</td><td class="pl"><i class="${r.own ? cosFr() : ''}">${esc(r.num)}</i>${esc(r.name)}${r.own ? '<em>あなた</em>' : ''}${sub2(r)}</td><td>${esc(POS_SHORT[r.pos] || '')}</td>${valTd(r)}<td class="d">${esc(String(r.day || '').slice(5).replace('-', '/'))}</td></tr>`).join('')}</table>`
         : '<div class="cEmpty">まだ記録がありません。最初の 1 人になろう。</div>');
     }
     this.rankEl.innerHTML = this.bg() + `<div class="carSheet rk">
       <div class="cTop"><button class="cBack" data-act="close">戻る</button><h1 class="cLogo">ランキング</h1></div>
       <div class="cTabs">${tabs}</div>${sub}
-      <div class="cPanel cLight cRankP"><div class="cRankCap">${cap}${tab === 'hof' ? '' : `<small>UZR(位置の補正あり)${Q}</small>`}</div>${body}</div>
-      ${tab === 'hof' ? '' : `<div class="cNote">${esc(ADJ_NOTE)}。名前・背番号・守備位置・値・日付だけを送ります。</div>`}
+      <div class="cPanel cLight cRankP"><div class="cRankCap">${cap}${tab === 'hof' ? '' : pts ? `<small>点 = 早さ + 守備${PQ}</small>` : `<small>UZR(位置の補正あり)${Q}</small>`}</div>${body}</div>
+      ${pts ? `<div class="cNote cRkBoost">能力が高いほど 早く上がれて、UZR も上がりやすくなります。${K.storeOn() ? ' 成長ブースト・特訓で 能力を早く伸ばせます。<button class="cBtn cRkGo" data-act="growshop">成長の品を見る</button>' : ''}</div>` : ''}
+      ${tab === 'hof' ? '' : `<div class="cNote">${esc(ADJ_NOTE)}。名前・背番号・守備位置・${pts ? '点・プロまでの試合数・UZR' : '値'}・日付だけを送ります。</div>`}
     </div>`;
   }
   onRankClick(e) {
     const b = e.target.closest('button'); if (!b) return;
     e.stopPropagation();
     if (b.dataset.act === 'uzrq') { this.uzrHelp(); return; }
+    if (b.dataset.act === 'ptsq') { this.ptsHelp(); return; }
+    if (b.dataset.act === 'growshop') { this.openGrowShop(); return; }
     if (b.dataset.act === 'close') { this.closeRank(); return; }
     const t = b.dataset.tab, bd = b.dataset.board;
     const next = bd || (t === 'pro5' ? 'pro5' : t === 'season' ? 'season_pro' : t === 'pos' ? 'pos_' + (this.C.data.pos || 'SS') : t === 'hof' ? 'hof' : null);
@@ -446,16 +532,16 @@ export class CareerUI {
         t: ['高校 → 社会人 → プロ と上がっていきます。', 'プロで 5 試合を終えると キャリア完了。', 'その時の UZR(守備の上手さの数)で ランキングを競います。'] },
       { h: '守る位置は 自由', pic: `<div class="tutField">${fieldPic}</div>`,
         t: ['投手から右翼まで、9 つの位置から 好きに選べます。', '途中で替えても大丈夫。能力と成績は そのまま続きます。', 'どこを守っても、その位置の「平均の選手」と比べます。'] },
-      { h: '上がる条件', pic: `<div class="tutPromo"><div><b>${esc(hs.name)}</b><span>${hs.min} 試合以上</span><span>評価 ${hs.need.rank} 以上 か UZR ${K.uzrText(hs.need.uzr)} 以上</span></div><i></i><div><b>${esc(co.name)}</b><span>${co.min} 試合以上</span><span>評価 ${co.need.rank} 以上 か UZR ${K.uzrText(co.need.uzr)} 以上</span></div><i></i><div class="pro"><b>プロ</b><span>${K.FINAL_GAMES} 試合で 完了</span></div></div>`,
-        t: [`${hs.name}は ${hs.min} 試合以上、${co.name}は ${co.min} 試合以上 守ります。`, '最近の 3 試合のうち 2 試合で 上の基準を超えたら、次へ上がります。', '評価は 試合ごとの守備の点(S が一番上、A・B・C・D と下がる)です。'] },
+      { h: '上がる条件', pic: `<div class="tutPromo"><div><b>${esc(hs.name)}</b><span>${hs.min} 試合以上</span><span>評価 ${hs.need.rank} 以上 か UZR ${K.uzrText(hs.need.uzr)} 以上</span></div><i></i><div><b>${esc(co.name)}</b><span>${co.min} 試合以上</span><span>評価 ${co.need.rank} 以上 か UZR ${K.uzrText(co.need.uzr)} 以上</span><span>能力の平均 ${co.need.abAvg} 以上なら 評価 ${co.need.rankAb} でも可</span></div><i></i><div class="pro"><b>プロ</b><span>${K.FINAL_GAMES} 試合で 完了</span></div></div>`,
+        t: [`${hs.name}は ${hs.min} 試合以上、${co.name}は ${co.min} 試合以上 守ります。`, '最近の 3 試合のうち 2 試合で 上の基準を超えたら、次へ上がります(評価は S が一番上、A・B・C・D)。', `${co.name}は 能力の平均が ${co.need.abAvg} 以上になると、評価 ${co.need.rankAb} でも基準を超えます。`] },
       { h: '能力と S〜G', pic: abPic,
-        t: ['肩は 送球の速さ、守備は 走る速さと 届く幅、エラー回避は ミスの少なさ。', '強さは S(一番上)から G までの文字で出ます。', '試合で守るほど 経験がたまって 伸びていきます。'] },
+        t: ['肩は 送球の速さ、守備は 走る速さと 届く幅、エラー回避は ミスの少なさ。', '強さは S(一番上)から G までの文字で出ます。', `試合で守るほど 経験がたまって 伸びていきます。${K.storeOn() ? '成長ブースト・特訓でも 早く伸ばせます。' : ''}`] },
       { h: '成績の言葉', pic: `<div class="tutWords"><div><b>刺殺</b><span>自分で捕ったり タッチしたりして アウトにした数</span></div><div><b>補殺</b><span>送球して アウトを 手伝った数</span></div><div><b>失策</b><span>エラー(捕り損ね・悪い送球)</span></div><div><b>守備率</b><span>エラーをしなかった割合</span></div></div>`,
         t: ['結果の画面に出る言葉です。', '覚えなくても大丈夫。いちばん大事なのは 次のページの UZR です。'] },
       { h: 'UZR とは', pic: `<div class="tutUzr"><div><span>平均の選手</span><i style="--w:50%"></i><b>0</b></div><div class="me"><span>あなた</span><i style="--w:72%"></i><b>+0.6</b></div></div>`,
         t: ['同じ打球を 平均の選手が守った時と比べて、何点ぶん 失点を防いだかの数です。', 'プラスなら 平均より上手、マイナスなら 平均より下。', '1 試合では 小さな数です(難しい打球を捕って +0.3〜0.8 ほど)。'] },
-      { h: 'プロ 5 試合と ランキング', pic: `<div class="tutPro">${[1, 2, 3, 4, 5].map((n) => `<span class="${n === 4 ? 'v' : n === 5 ? 'f' : ''}">${n}<small>${n === 4 ? '優勝が<br>かかる' : n === 5 ? '最終戦' : '試合'}</small></span>`).join('')}</div>`,
-        t: ['プロは 5 試合。4 試合目は 優勝のかかった試合、5 試合目が 最終戦です。', '終えると 選手カードが 殿堂に残り、新しい選手で 始め直せます。', 'ランキングは UZR(位置の補正あり)。位置ごとの差を均すので、どこを守っても 上を狙えます。'] },
+      { h: 'プロ 5 試合と ランキング', pic: `<div class="tutPro">${[1, 2, 3, 4, 5].map((n) => `<span class="${n === 4 ? 'v' : n === 5 ? 'f' : ''}">${n}<small>${n === 4 ? '優勝が<br>かかる' : n === 5 ? '最終戦' : '試合'}</small></span>`).join('')}</div><div class="tutPts">点 = 早さ(プロまで 最短 ${K.Rank.TO_PRO_MIN} 試合で 100)+ 守備(50 + UZR × 20)</div>`,
+        t: ['プロは 5 試合。4 試合目は 優勝のかかった試合、5 試合目が 最終戦です。', '終えると 選手カードが 殿堂に残り、新しい選手で 始め直せます。', 'ランキングは「早さ+守備」の点。早くプロに上がるほど、プロ 5 試合の UZR(位置の補正あり)が高いほど 上へ。'] },
     ];
   }
   openTut(first) {

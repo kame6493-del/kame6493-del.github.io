@@ -1515,7 +1515,9 @@ function setBackNumber(n) {
 let mePhase = 0;
 // 11/26 正面への飛び込みの体: 腕を頭の上へ伸ばした形(athletes.js の dive → fly_catch の捕る所)を、足もとを軸に前へ倒す。
 // 踏み切りで浮き(0.3 m)、宙で水平に近づき、腹から着地して滑り、起き上がる。グラブの先が当たり判定の帯の先(defense.js の diveTip)に来るよう、体を後ろへずらす
-const FD = { pitch: 1.5, prone: 1.6, lift: 0.3, belly: 0.03, back: 0.5 };
+// 11/27 持ち主「埋まってる」: 前は 1.6 rad(92 度)倒して腹の高さ 0.03 m だったので、胴の厚みと頭・踏み出した足が地面に 0.35 m もぐっていた。
+//   倒すのは 90 度まで、脚もまっすぐ後ろへ伸ばし(athletes.js の _applyReach)、骨から体の厚みを引いた一番低い所が地面に乗るよう持ち上げる(athletes.js の _groundClamp。groundY を入れる)
+const FD = { pitch: 1.45, prone: 1.57, lift: 0.3, belly: 0, back: 0.5 };
 function frontDivePose(act) {
   const lt = act.lt ?? act.t, sm = (x) => x * x * (3 - 2 * Math.max(0, Math.min(1, x)));
   if (lt < 0) return;
@@ -1528,6 +1530,7 @@ function frontDivePose(act) {
   me.root.rotation.x = -ph;
   me.reach = lt < 0.95 ? Math.min(1, lt / 0.1) : Math.max(0, 1 - (lt - 0.95) / 0.3);   // 両腕を頭の先へ(athletes.js の _applyReach)
   me.root.position.y += y;
+  me.groundY = player.pos.y;   // 11/27 体の一番低い所をここより下へ入れない(athletes.js の _groundClamp)
   const bk = FD.back * Math.sin(ph);
   me.root.position.x -= act.dir.x * bk; me.root.position.z -= act.dir.z * bk;
 }
@@ -1547,6 +1550,7 @@ function updateMe(dt) {
   me.root.position.copy(player.pos);
   if (me.root.rotation.x) me.root.rotation.x = 0;   // 11/26 飛び込みの前へ倒した分を戻す
   if (me.reach) me.reach = 0;
+  if (me.groundY != null) me.groundY = null;
   const mv = player.mv || { x: 0, z: 0 };
   const sp = Math.hypot(mv.x, mv.z);
   let want = player.yaw;
