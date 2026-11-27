@@ -14,9 +14,11 @@ const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 // 見た目の向きが π − 決めた向き(左右の鏡)になっていた(逆向きで走る・逆向きで構える)。同じ回りの (x − π, π − y, z − π) に直して、
 // x・z を 0 に近い形へ戻す。
 const PI = Math.PI, wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-const OLD = typeof location !== 'undefined' && /[?&]oldreplay=1/.test(location.search);   // 試験で直す前の形を見る
+const OLD0 = typeof location !== 'undefined' && /[?&]oldreplay=1/.test(location.search);   // 試験で直す前の形を見る(11/26 の向きの直しも 11/28 の直しも外す)
+// 11/28 の直し(腰の位置・足・球の見え方・視点)だけを外す: ?oldreplayfeet=1(11/26 の向きの直しは残す)
+const OLD = OLD0 || (typeof location !== 'undefined' && /[?&]oldreplayfeet=1/.test(location.search));
 export function tidyEuler(o) {
-  if (OLD) return;
+  if (OLD0) return;
   const r = o.rotation;
   if (Math.abs(r.x) > PI / 2 && Math.abs(r.z) > PI / 2) r.set(wrap(r.x - Math.sign(r.x) * PI), wrap(PI - r.y), wrap(r.z - Math.sign(r.z) * PI));
 }
