@@ -163,6 +163,7 @@ const L = {
   close() {
     if (!this.el) return;
     this.el.classList.add('hide'); this.sel = {};
+    this._vtok = (this._vtok || 0) + 1;
     if (this.view) { this.view.dispose(); this.view = null; }
     const f = this.after; this.after = null; if (f) try { f(); } catch (e) { /* なし */ }
   },
@@ -226,9 +227,14 @@ const L = {
       ${this.barHtml()}</div>`;
     if (keep) { const cv = this.view.c; cv.remove(); this.el.innerHTML = html; $('.lkStage canvas', this.el).replaceWith(cv); }
     else {
+      this._vtok = (this._vtok || 0) + 1;
       if (this.view) { this.view.dispose(); this.view = null; }
       this.el.innerHTML = html;
-      if (this.tab === 'glove') { const cv = $('.lkGl', this.el); if (cv) this.view = new GloveView(cv, { fp: this.fp }); }
+      // 11/26 サクサク: グラブの 3D(描く所を新しく作る・模型と光を読む)は、ロッカーの画面を先に出してから作る(押してから画面が出るまで、スマホ相当で 0.5 秒かかっていた)
+      if (this.tab === 'glove') { const cv = $('.lkGl', this.el); if (cv) { const tok = this._vtok, fp = this.fp; requestAnimationFrame(() => setTimeout(() => {
+        if (tok !== this._vtok || this.view || !this.el.contains(cv) || this.el.classList.contains('hide')) return;
+        this.view = new GloveView(cv, { fp }); this.view.set(this.cur('gcolor'), this.cur('gpat'));
+      }, 0)); } }
     }
     const sh = $('.bpSheet', this.el); if (sh) sh.scrollTop = sc;
     if (this.view) this.view.set(this.cur('gcolor'), this.cur('gpat'));

@@ -1461,7 +1461,11 @@ function placeCamera(dt = 1 / 60) {
     camera.position.set(player.pos.x, player.pos.y + P.eye, player.pos.z);
     // 11/25 飛び込みの間は目が下がって少し前へ流れ、少し下を向く(酔わない程度。dip は defense.js の updateAct)
     const dva = mode === 'defense' && defense && defense.meAct && defense.meAct.kind === 'dive' && defense.meAct.dip ? defense.meAct : null;
-    if (dva) { camera.position.y -= 0.85 * dva.dip; camera.position.x += dva.dir.x * 0.45 * dva.dip; camera.position.z += dva.dir.z * 0.45 * dva.dip; }
+    // 11/26 正面の飛び込み: 向き直る間は目線も打球の方へ回り、踏み切ると目線が前へ低く滑り込む(腹ばいの頭の高さ・前)
+    const fdv = mode === 'defense' && defense && defense.meAct && defense.meAct.kind === 'dive' && defense.meAct.front ? defense.meAct : null;
+    if (fdv && Number.isFinite(fdv.yawNow)) player.yaw = fdv.yawNow;
+    if (fdv) { camera.position.y -= 1.2 * fdv.dip; camera.position.x += fdv.dir.x * 1.05 * fdv.dip; camera.position.z += fdv.dir.z * 1.05 * fdv.dip; }
+    else if (dva) { camera.position.y -= 0.85 * dva.dip; camera.position.x += dva.dir.x * 0.45 * dva.dip; camera.position.z += dva.dir.z * 0.45 * dva.dip; }
     camera.rotation.set(player.pitch - (dva ? 0.12 * dva.dip : 0), player.yaw, 0);
     setFov(70);
     if (cam.blend > 0) blendFrom(dt);
@@ -1509,6 +1513,24 @@ function setBackNumber(n) {
   meNum.tex.needsUpdate = true; meNum.shown = n;
 }
 let mePhase = 0;
+// 11/26 正面への飛び込みの体: 腕を頭の上へ伸ばした形(athletes.js の dive → fly_catch の捕る所)を、足もとを軸に前へ倒す。
+// 踏み切りで浮き(0.3 m)、宙で水平に近づき、腹から着地して滑り、起き上がる。グラブの先が当たり判定の帯の先(defense.js の diveTip)に来るよう、体を後ろへずらす
+const FD = { pitch: 1.5, prone: 1.6, lift: 0.3, belly: 0.03, back: 0.5 };
+function frontDivePose(act) {
+  const lt = act.lt ?? act.t, sm = (x) => x * x * (3 - 2 * Math.max(0, Math.min(1, x)));
+  if (lt < 0) return;
+  let ph, y;
+  if (lt < 0.14) { ph = sm(lt / 0.14) * (FD.pitch - 0.08); y = sm(lt / 0.14) * FD.lift; }
+  else if (lt < 0.42) { const u = (lt - 0.14) / 0.28; ph = FD.pitch - 0.08 * (1 - u) + (FD.prone - FD.pitch) * sm(u); y = FD.lift + (FD.belly - FD.lift) * sm(u); }
+  else if (lt < 0.95) { ph = FD.prone; y = FD.belly; }
+  else { const u = sm((lt - 0.95) / 0.4); ph = FD.prone * (1 - u); y = FD.belly * (1 - u); }
+  me.root.rotation.order = 'YXZ';
+  me.root.rotation.x = -ph;
+  me.reach = lt < 0.95 ? Math.min(1, lt / 0.1) : Math.max(0, 1 - (lt - 0.95) / 0.3);   // 両腕を頭の先へ(athletes.js の _applyReach)
+  me.root.position.y += y;
+  const bk = FD.back * Math.sin(ph);
+  me.root.position.x -= act.dir.x * bk; me.root.position.z -= act.dir.z * bk;
+}
 function updateMe(dt) {
   if (!me) return;
   const vis = started && !overlayOn && (mode === 'walk' || mode === 'defense') && activeView() !== '1p';
@@ -1516,12 +1538,15 @@ function updateMe(dt) {
   const ghost = !vis && started && !overlayOn && mode === 'defense' && activeView() === '1p';
   if (!!me._ghost !== ghost) { me._ghost = ghost; me.root.traverse((o) => o.layers.set(ghost ? 31 : 0)); }
   if (replay && replay.on) return;
+  player.faceYaw = activeView() === '1p' ? player.yaw : meYaw;   // 11/26 飛び込む向き(一人称はカメラの前、三人称は体の前。defense.js の dive)
   me.root.visible = vis || ghost;
   if (!vis && !ghost) return;
   // 11/21 攻略組の声「客として回る時もグローブをはめている」: 歩く時はグラブを外す(守備の時だけ付ける)
   if (me.parts && me.parts.Glove) { const g = mode === 'defense'; if (me._gloveOn !== g) { me.parts.Glove.forEach((m) => (m.visible = g)); me._gloveOn = g; } }
   setBackNumber(mode === 'defense' && defense.my ? POS_NUM[defense.my] : null);
   me.root.position.copy(player.pos);
+  if (me.root.rotation.x) me.root.rotation.x = 0;   // 11/26 飛び込みの前へ倒した分を戻す
+  if (me.reach) me.reach = 0;
   const mv = player.mv || { x: 0, z: 0 };
   const sp = Math.hypot(mv.x, mv.z);
   let want = player.yaw;
@@ -1535,8 +1560,10 @@ function updateMe(dt) {
   if (me.setHolding) me.setHolding(mode === 'defense' && defense.holding && defense.holding());
   const prep = mode === 'defense' && defense.prep && defense.play && defense.play.t < defense.prep.until ? defense.prep : null;
   if (act) {
-    if (act.kind === 'dive') { meYaw = Math.atan2(-act.dir.x, -act.dir.z) + (act.yawOff || 0); me.root.rotation.y = meYaw; }   // 11/25 yawOff: 頭が飛ぶ向きを向くように(defense.js の DV)
-    me.set(act.kind, { u: act.t / act.dur, t: act.animT ?? act.t });
+    if (act.kind === 'dive' && act.front) { meYaw = act.yawNow; me.root.rotation.y = meYaw; frontDivePose(act, dt); }   // 11/26 正面へ頭から(体を前へ倒す。下の frontDivePose)
+    else if (act.kind === 'dive') { meYaw = Math.atan2(-act.dir.x, -act.dir.z) + (act.yawOff || 0); me.root.rotation.y = meYaw; }   // 11/25 yawOff: 頭が飛ぶ向きを向くように(defense.js の DV)
+    if (act.kind === 'dive' && act.front && act.lt < 0) { mePhase += dt * 10; me.set('run', { phase: mePhase, speed: 0.6, v: 4 }); }   // 向き直る間は足を運ぶ
+    else me.set(act.kind, { u: act.t / act.dur, t: act.animT ?? act.t, front: !!act.front, lt: act.lt });
   } else if (prep && !(anim && anim.kind === 'throw' && anim.t > 0)) {
     if (anim && anim.t > 0) anim.t -= dt;
     me.set('catch', { clip: prep.clip, start: prep.start, id: prep.id });
@@ -1988,9 +2015,12 @@ async function prebuildPlay(alive = () => true) {
   const t0 = performance.now();
   if (watch && watch.on && freeplay && freeplay.freeMode && freeplay.freeMode() && freeplay.prepare) { try { await freeplay.prepare(); } catch (e) { console.warn('外の物の準備', e); } }
   if (!alive()) return;
-  await finishWalkers(alive);
+  // 11/26 サクサク(持ち主「徹底的に軽く」): 歩く人の道は「ボールパークで過ごす」でしか使わないので、守備の試合・ノックの読み込みでは仕上げない(タイトルの間に少しずつ作るのは前のまま)
+  const defPlay = !!(defense && defense.active && (defense.kind === 'game' || defense.kind === 'knock'));
+  if (!defPlay || (watch && watch.on)) await finishWalkers(alive);
   if (!alive()) return;
-  if (bench && !bench.built && !bench.failed && watch && watch.on) { try { await bench.build(); } catch (e) { console.warn('ベンチの準備', e); } }
+  // 11/26 ベンチ(光線で置き場所を探す。スマホ相当で 0.4〜0.5 秒)を、守備の試合・ノックでも読み込みの画面の間に済ませる。前は始めて 3 秒ほどの所で 0.9 秒止まっていた
+  if (bench && !bench.built && !bench.failed && ((watch && watch.on) || defPlay)) { try { await bench.build(); } catch (e) { console.warn('ベンチの準備', e); } }
   try { (window.__loadMarks || (window.__loadMarks = [])).push(['prebuild', Math.round(performance.now() - t0)]); } catch (e) { /* 試験の印 */ }
 }
 async function finishWalkers(alive = () => true) {
@@ -2319,7 +2349,9 @@ function updateFpGlove(dt = 1 / 60) {
   if (anim && anim !== FPG.anim) { FPG.anim = anim; if (anim.kind === 'catch' && d.holderFig === 'me') { FPG.t = 0; FPG.h = anim.h || 0; fpGloveAim(port); } }
   if (anim && anim.kind === 'throw' && FPG.t >= 0 && FPG.t < 0.45) FPG.t = 0.45;   // 投げ始めたら下げる
   let u;
+  const fdg = d && d.meAct && d.meAct.kind === 'dive' && d.meAct.front ? d.meAct : null, flt = fdg ? fdg.t - fdg.turn : -1;
   if (FPG.hold != null) { u = FPG.hold; if (!FPG.tgt || FPG.aimPort !== port) { FPG.aimPort = port; fpGloveAim(port); } }
+  else if (FPG.t < 0 && fdg && flt > 0.02 && flt < 0.8) { fpGloveAim(port); if (FPG.rawN && FPG.rawN[0] === 0 && FPG.rawN[1] === -0.15) FPG.tgt.y *= 2.2; u = Math.min(0.089, flt * 0.55); }   // 球が見えない時は画面の下寄りに   // 11/26 正面の飛び込み: 踏み切ったらグラブを前へ伸ばす(球が見えればその方へ)。捕ったら捕る動きへ
   else if (FPG.t >= 0) { FPG.t += (dt || 1 / 60) / FPG.dur; u = FPG.t; if (u >= 1) { FPG.t = -1; fpGlove.visible = false; return; } }
   else { fpGlove.visible = false; return; }
   if (!FPG.tgt) fpGloveAim(port);
@@ -2505,6 +2537,8 @@ function idleBuild() {
   }
   if (bench && !bench.built && !bench.failed && !bench.building) { try { bench.build(); } catch (e) { /* 遊ぶ時に作る */ } }
 }
+// 11/26 サクサク(持ち主「徹底的に軽く」): ボールパークで過ごすの売店・看板・ごみ箱などの小物(後から作る)も、スマホの「自動」では球場の小物と同じく遠くでは描かない(gfx.cullDyn)。?nocullfp=1 で前の形
+if (IS_TOUCH && !params.has('nocullfp')) setInterval(() => { try { if (freeplay && freeplay.group) gfx.cullDyn(freeplay.group); } catch (e) { /* 描き方の飾り */ } }, 2000);
 loadAll().then(() => {
   loadBusy = false; fastRay = LOADFIX;
   warp(0, true);

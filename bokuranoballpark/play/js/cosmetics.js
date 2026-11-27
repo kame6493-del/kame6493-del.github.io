@@ -95,7 +95,16 @@ export function released(c) {
   return y > first[0] || (y === first[0] && m >= first[1]);
 }
 export const inSeason = (c) => !!c.season && c.season.m === nowMonth();
+// 11/26 サクサク: 持っているかの答えを少しの間(0.5 秒)覚える。ロッカー・コレクションを描くたびに、ボール袋・殿堂・受け取った物の記録を何十回も読み直していた。
+// 着せ替えが変わった時(fire)・ストアの答えが来た時は忘れる
+const OWN = new Map(); let ownT = 0;
+export function forgetOwned() { OWN.clear(); }
 export function owned(id) {
+  const now = Date.now(); if (now - ownT > 500) { OWN.clear(); ownT = now; }
+  if (OWN.has(id)) return OWN.get(id);
+  const v = ownedNow(id); OWN.set(id, v); return v;
+}
+function ownedNow(id) {
   const c = BY[id]; if (!c) return false;
   if (c.free) return true;
   if (c.comp) return compDone(c.comp);
@@ -131,7 +140,7 @@ export function equip(id) {
 }
 const LIS = new Set();
 export function onChange(cb) { LIS.add(cb); }
-export function fire() { for (const cb of LIS) { try { cb(); } catch (e) { console.warn(e); } } applyAll(); }
+export function fire() { OWN.clear(); for (const cb of LIS) { try { cb(); } catch (e) { console.warn(e); } } applyAll(); }
 export const get = (id) => BY[id];
 export const items = (kind) => CAT.filter((c) => c.kind === kind);
 export const frameClass = (id) => `bpFr bpFr-${(id || eq().frame).replace(/^frame_/, '')}`;

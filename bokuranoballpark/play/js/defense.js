@@ -52,7 +52,11 @@ const HELP_K = [0.9, 0.9, 0.9, 0.9, 0.9, 0.7, 0.5, 0.3];
 //   走り続けた時より約 1 m 先まで届く(球の 0.14〜0.2 秒前に飛べば +0.9〜1.0 m)。守備の能力(career.js の diveK)で体の伸び・グラブの先が少し伸びる
 const LOOSE_OFF = typeof location !== 'undefined' && /[?&]noloose=1/.test(location.search);   // 11/25 抜けた球を拾う速さの直し(looseSteer・視点の振り向き・自動の外野手)を使わない
 const NEWDIVE = !(typeof location !== 'undefined' && /[?&]olddive=1/.test(location.search));
-const DV = { v0: 9.5, stop: 0.62, tipMax: 1.8, tipT: 0.14, rr: 0.6, win0: 0.05, win1: 0.5, yawOff: -1.83 };   // yawOff: 飛び込みの動き(Mixamo)は体の左へ倒れるので、頭が飛ぶ向きを向くよう体を回す(実測で 105 度)
+// 11/26 持ち主「正面から飛び込んで取る感じに … 正面からまっすぐに飛ぶ感じです 向き方向に」: 今向いている向き(一人称はカメラの前、三人称は体の前)へ、頭から腹ばいでまっすぐ飛ぶ。
+//   横の打球は、先に打球の方へ向き直ってから(DV.turnW の速さ)正面へ飛ぶ。捕れる所は前と同じグラブの帯(体の前、グラブの先まで)。?sidedive=1 で 11/25 の形(体を横にして飛ぶ)
+const FRONTDIVE = NEWDIVE && !(typeof location !== 'undefined' && /[?&]sidedive=1/.test(location.search));
+const angDiff = (a, b) => { const d = a - b; return Math.atan2(Math.sin(d), Math.cos(d)); };
+const DV = { v0: 9.5, stop: 0.62, tipMax: 1.8, tipT: 0.14, rr: 0.6, win0: 0.05, win1: 0.5, yawOff: -1.83, turnW: 15, turnMin: 0.12, turnMax: 2.0 };   // turnW: 向き直る速さ(rad/秒、90 度で 0.1 秒)。turnMin より小さいずれは向き直らずに飛ぶ。turnMax(115 度)より後ろへは向き直らない   // yawOff: 飛び込みの動き(Mixamo)は体の左へ倒れるので、頭が飛ぶ向きを向くよう体を回す(実測で 105 度)
 const diveTip = (t) => 0.3 + (DV.tipMax - 0.3) * Math.min(1, t / DV.tipT) - (t > 0.55 ? Math.min(0.3, t - 0.55) : 0);   // グラブの先(体の中心から前へ m)
 const diveGloveH = (t) => (t < 0.1 ? 0.9 : t < 0.42 ? 0.9 - (t - 0.1) / 0.32 * 0.78 : 0.12);   // グラブの高さ(足もとから m)。宙では胸の高さ、着地で地面すれすれ
 const diveHi = (t) => (t < 0.3 ? 1.35 : diveGloveH(t) + 0.6);   // 届く高さの上(宙にいる間は横のライナーにも手が届く)
@@ -197,14 +201,19 @@ export class Defense {
     return true;
   }
   // 11/25 飛び込む向き: これからの打球の道筋で、飛び込んだ体とグラブの先が届く一番早い所。届く所が無ければ一番惜しい所。後ろへは飛ばない
-  diveAim() {
+  diveAim(face) {
     const c = this.ctx, P = c.player.pos, b = this.ball, pl = this.play;
     if (!b || !pl || !b.path) return null;
     const path = b.path, tb = pl.t - b.t0, k = this.diveK || 1, rr = DV.rr * (this.D.reach / 1.4);
+    const front = FRONTDIVE && face != null;
     let best = null, bestLack = 1e9;
     for (let i = Math.max(0, Math.floor(tb / path.dt)); i < path.n; i++) {
-      const tau = i * path.dt - tb; if (tau < DV.win0) continue; if (tau > DV.win1) break;
+      const tau0 = i * path.dt - tb;
       const x = path.pts[i * 4], y = path.pts[i * 4 + 1], z = path.pts[i * 4 + 2];
+      // 11/26 正面へ飛ぶ: その所の向きまで向き直る時間を引いた時刻で、体が飛んで届くかを見る
+      let tau = tau0;
+      if (front) { const da = Math.abs(angDiff(Math.atan2(-(x - P.x), -(z - P.z)), face)); if (da > DV.turnMax) continue; if (da > DV.turnMin) tau = tau0 - da / DV.turnW; }
+      if (tau < DV.win0) continue; if (tau > DV.win1) break;
       const hy = y - P.y; if (hy < -0.15 || hy > diveHi(tau)) continue;   // グラブは宙からでも地面まで下ろせる
       const dist = Math.hypot(x - P.x, z - P.z), reach = diveTravel(tau, k) + diveTip(tau) * k;
       const lack = dist - reach;
@@ -227,6 +236,21 @@ export class Defense {
     const c = this.ctx;
     if (!this.canAct()) return false;
     let d = dir ? dir.clone() : null;
+    if (FRONTDIVE) {
+      // 11/26 今向いている向き(main.js が player.faceYaw に入れる: 一人称はカメラ、三人称は体)。捕れる所が横なら、そちらへ向き直ってから正面へ飛ぶ
+      const P = c.player, face = Number.isFinite(P.faceYaw) ? P.faceYaw : P.yaw;
+      const aim = this.diveAim(face);
+      let yaw1 = face;
+      if (aim) yaw1 = Math.atan2(-aim.x, -aim.z);
+      else if (d && d.lengthSq() > 1e-6) { const yd = Math.atan2(-d.x, -d.z); if (Math.abs(angDiff(yd, face)) <= DV.turnMax) yaw1 = yd; }   // 自動の選手が向きを渡した時(捕れる所が見つからない時も、打球の方へ向いてから)
+      const da = angDiff(yaw1, face), turn = Math.abs(da) > DV.turnMin ? Math.abs(da) / DV.turnW : 0;
+      if (!turn) yaw1 = face;
+      const dd = V(-Math.sin(yaw1), 0, -Math.cos(yaw1));
+      const mv = c.player.mv, carry = mv ? V(mv.x, 0, mv.z) : V(); if (carry.length() > 7) carry.setLength(7);
+      this.meAct = { kind: 'dive', front: true, t: 0, turn, dur: 1.35 + turn, dir: dd, yaw0: face, yaw1, yawNow: face, carry, lt: -turn, animT: 0, dip: 0, minD: 99, p0: c.player.pos.clone() };
+      c.sound.sfx('slide', { gain: 0.45 });
+      return true;
+    }
     if (NEWDIVE) { const aim = this.diveAim(); if (aim) d = aim; }   // 11/25 捕れる所へ向かって飛ぶ(自動の選手が向きを渡しても、捕れる所が見つかればそちら)
     const mv = c.player.mv;
     if (!d && mv && Math.hypot(mv.x, mv.z) > 0.5) d = V(mv.x, 0, mv.z);
@@ -244,7 +268,8 @@ export class Defense {
     const dh = Math.hypot(p.x - me.x, p.z - me.z), hb = p.y - me.y;
     // 11/25 テスター「センターフライを捕り損ねたのにアウト」: 飛び込んでいる間(踏み切った後)は、立って構えた時の届く輪(体のまわり 1.4 m・どの向きも)では捕らない。
     // 前は宙を飛ぶ間・腹ばいで滑る間・逆の向きへ飛んだ時も、体の横や後ろに落ちた球を捕ってアウトにしていた。捕れるのはグラブの帯(下の NEWDIVE)だけ
-    const diving = NEWDIVE && a && a.kind === 'dive' && a.t >= DV.win0;
+    const alt = a && a.kind === 'dive' ? a.t - (a.turn || 0) : 0;   // 11/26 踏み切ってからの時刻(向き直る間は足で立っている)
+    const diving = NEWDIVE && a && a.kind === 'dive' && alt >= DV.win0;
     if (!diving && dh < R && hb > -0.1 && hb < 2.4) return { how: null, dh };
     const easy = this.sel.diff === 'easy' ? 1 : this.sel.diff === 'std' ? 0.92 : this.sel.diff === 'normal' ? 0.85 : 0.72;
     // フェンス際(1.4 m 以内)では、フェンスに手をかけて体を引き上げ、フェンスの上へグラブを伸ばせる
@@ -252,11 +277,12 @@ export class Defense {
     if (a && a.kind === 'jump' && a.t < 0.62 * easy + 0.05 && dh < R && hb > 0.3 && hb < 2.4 + up && (up < 1 || p.y < 3.95)) return { how: 'jump', dh, hard: p.y > 2.5 };   // フェンス際でも地面から 3.95 m まで   // フェンス際でも地面から 3.95 m まで
     if (NEWDIVE && a && a.kind === 'dive') {
       // 11/25 体からグラブの先までの細い帯で捕る(ぎりぎりはグラブの先に入る)。帯の外を近くで過ぎたら「かすめた」(a.minD)
-      if (a.t < DV.win0 || a.t > DV.win1) return null;
-      const k = this.diveK || 1, tip = diveTip(a.t) * k, rr = DV.rr * (R / 1.4), hy = p.y - me.y;
+      if (alt < DV.win0) { if (dh < R && hb > -0.1 && hb < 2.4) return { how: null, dh }; return null; }   // 向き直っている間は、立って構えた時と同じ
+      if (alt > DV.win1) return null;
+      const k = this.diveK || 1, tip = diveTip(alt) * k, rr = DV.rr * (R / 1.4), hy = p.y - me.y;
       const rx = p.x - me.x, rz = p.z - me.z, f = rx * a.dir.x + rz * a.dir.z, s = Math.abs(-rx * a.dir.z + rz * a.dir.x);
       const fc = Math.max(0.5, Math.min(tip, f)), d2 = Math.hypot(f - fc, s);
-      if (hy > -0.15 && hy < diveHi(a.t)) { a.minD = Math.min(a.minD ?? 99, d2 - rr); if (d2 < rr) return { how: 'dive', dh, hard: Math.hypot(p.x - a.p0.x, p.z - a.p0.z) > R * 1.05 }; }
+      if (hy > -0.15 && hy < diveHi(alt)) { a.minD = Math.min(a.minD ?? 99, d2 - rr); if (d2 < rr) return { how: 'dive', dh, hard: Math.hypot(p.x - a.p0.x, p.z - a.p0.z) > R * 1.05 }; }
       return null;
     }
     if (a && a.kind === 'dive' && a.t > 0.04 && a.t < 0.62 * easy) {
@@ -303,6 +329,19 @@ export class Defense {
   updateAct(dt) {
     const a = this.meAct; if (!a) return;
     a.t += dt;
+    if (FRONTDIVE && a.kind === 'dive' && a.front) {
+      // 11/26 向き直る(勢いは少し残す) → 正面へ踏み切り、宙で体が伸びる → 腹から着地して滑る → 起き上がる。動きの時刻は踏み切りから(lt)
+      const P = this.ctx.player.pos, k = this.diveK || 1, lt = a.t - a.turn; a.lt = lt;
+      if (lt < 0) { const u = a.t / a.turn, e = u * u * (3 - 2 * u); a.yawNow = a.yaw0 + angDiff(a.yaw1, a.yaw0) * e; P.x += a.carry.x * dt * (1 - 0.5 * u); P.z += a.carry.z * dt * (1 - 0.5 * u); }
+      else { a.yawNow = a.yaw1; if (lt < DV.stop) { const sp = DV.v0 * k * Math.max(0, 1 - lt / DV.stop); P.x += a.dir.x * sp * dt; P.z += a.dir.z * sp * dt; } }
+      const sm = (x) => x * x * (3 - 2 * x);
+      a.animT = Math.max(0, lt);
+      a.dip = lt <= 0 ? 0 : lt < 0.3 ? sm(lt / 0.3) : lt < 0.95 ? 1 : Math.max(0, 1 - sm(Math.min(1, (lt - 0.95) / 0.4)));
+      const pl = this.play;
+      if (!a.grazed && lt > DV.win1 && pl && pl.holder !== 'me' && pl.fieldedBy !== 'me' && a.minD < 0.45) { a.grazed = true; pl._graze = true; if (this.ctx.ui && this.ctx.ui.evalPop && !this.dg) this.ctx.ui.evalPop('グラブの先をかすめた', 'miss'); }
+      if (a.t >= a.dur) this.meAct = null;
+      return;
+    }
     if (NEWDIVE && a.kind === 'dive') {
       // 11/25 踏み切りで速く前へ、宙を飛び、腹から着地して滑って止まる(DV.stop 秒)。動きの再生の時刻(animT)と、一人称の目の下がり(dip)
       const P = this.ctx.player.pos, k = this.diveK || 1;
@@ -1252,7 +1291,7 @@ export class Defense {
         this.ballPos = p;
         if (!pl.thrown && !pl.holder && pl.batted && b.path === pl.batted.path) {
           const me = c.player.pos, dh = Math.hypot(p.x - me.x, p.z - me.z), hb = p.y - me.y;
-          const ma = this.meAct, prone = NEWDIVE && ma && ma.kind === 'dive' && ma.t > DV.win1;
+          const ma = this.meAct, prone = NEWDIVE && ma && ma.kind === 'dive' && ma.t - (ma.turn || 0) > DV.win1;
           if (prone) {
             // 11/25 飛び込んで倒れている間に、体の近くを球が過ぎた(飛ぶのが早すぎた): 捕球のミスには数えず、札で知らせる
             if (hb > -0.2 && hb < 2.2 && dh < this.D.reach && !ma.early && !pl.dropped) { ma.early = true; if (c.ui && c.ui.evalPop && !this.dg) c.ui.evalPop('飛び込みが早かった', 'miss'); }
@@ -2332,7 +2371,7 @@ export class Defense {
     if (who === 'me') {
       // 飛び込んで捕ったら、起き上がるまで(約 1 秒)投げられない
       const a = this.meAct;
-      if (a && a.kind === 'dive' && a.t < 1.05) pl.choiceAt = pl.t + (1.05 - a.t);
+      if (a && a.kind === 'dive' && a.t < 1.05 + (a.turn || 0)) pl.choiceAt = pl.t + (1.05 + (a.turn || 0) - a.t);
       else this.offerChoice(pl);
     }
     this.updatePad();

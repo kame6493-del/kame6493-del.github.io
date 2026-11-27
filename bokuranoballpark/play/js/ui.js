@@ -12,6 +12,8 @@ export const GAME_TITLE = { name: 'ぼくらのボールパーク', sub: '守っ
 export const MENU_MODES = ['game', 'knock', 'watch'];   // 11/22 持ち主「球場を歩くのモードいらない、3つでいい」(walk のコードは残す。戻す時は 'walk' を足す)   // 11/18 夜 観戦(試合を見ながら歩く。js/watch.js)を足した
 
 const $ = (id) => document.getElementById(id);
+// 11/26 サクサク: 画面の大きさの印(大きさが変わった時だけ更新。毎こま innerWidth を読まない)
+{ const f = () => { window.__vwh = innerWidth + 'x' + innerHeight; }; f(); addEventListener('resize', f); addEventListener('orientationchange', f); }
 // 文字の題: 狭い画面で折り返す時は「ぼくらの / ボールパーク」の切れ目で(語の途中で切れないように)
 function textLogo(h, name) {
   h.textContent = '';
@@ -269,8 +271,13 @@ body.photo #callBanner{display:none}@media (max-height:460px){ #callBanner{top:2
       && board && !board.classList.contains('hide') && !this.isOpen());
     el.classList.toggle('hide', !on);
     if (!on) { if (this.mapDots.size) { this.mapRun.innerHTML = ''; this.mapDots.clear(); } return; }
-    const br = board.getBoundingClientRect();
-    el.style.left = Math.round(br.left) + 'px'; el.style.top = Math.round(br.bottom + 6) + 'px';
+    // 11/26 サクサク: 点数板の位置は、中身・画面の大きさが変わった時と 0.5 秒ごとだけ読む(毎こま読むと、そのたびに配置の計算が走っていた)
+    const now0 = performance.now(), bkey = (window.__vwh || '') + '|' + this._bk + '|' + board.className;
+    if (bkey !== this._mapBK || now0 - (this._mapBT || 0) > 500) {
+      this._mapBK = bkey; this._mapBT = now0;
+      const br = board.getBoundingClientRect(), L = Math.round(br.left) + 'px', T = Math.round(br.bottom + 6) + 'px';
+      if (el.style.left !== L) el.style.left = L; if (el.style.top !== T) el.style.top = T;
+    }
     const g = d.g;
     // 攻める側の色: 表は相手(えんじ)、裏は自分(白に紺の縁)。ノックは相手の色
     const atk = d.kind === 'game' && g.half !== 'top' ? 'home' : 'away';
@@ -326,6 +333,14 @@ body.photo #callBanner{display:none}@media (max-height:460px){ #callBanner{top:2
   //   本塁打の題字(#hrBanner)は画面の真ん中(css)。札より下になるよう、札の下端より上には出さない
   layoutHud() {
     if (!document.body.classList.contains('playing')) return;
+    // 11/26 サクサク: 札の置き場所は、札・点数板・ボタンの中身や出し入れ・画面の大きさが変わった時と 0.4 秒ごとだけ計算する(毎こま計算すると配置の計算が毎回走る)
+    {
+      const ids = ['board', 'sit', 'evalPop', 'viewBtn', 'pauseBtn'], now = performance.now();
+      let key = (window.__vwh || '') + '|' + (this.mapEl ? this.mapEl.className : '') + '|' + (this.callEl ? this.callEl.className : '') + '|' + (this.hrEl ? this.hrEl.className : '');
+      for (const id of ids) { const e = $(id); key += '|' + (e ? e.className + ':' + e.textContent.length : '-'); }
+      if (key === this._hudK && now - (this._hudT || 0) < 400) return;
+      this._hudK = key; this._hudT = now;
+    }
     const W = innerWidth, gap = 8;
     const vis = (el) => el && !el.classList.contains('hide') && el.offsetWidth > 0;
     const board = $('board'), map = this.mapEl, sit = $('sit'), ev = $('evalPop');

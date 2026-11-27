@@ -71,12 +71,15 @@ function makeBallTexture() {
 // 11/20 夜 持ち主「だいぶ小さくて見えづらくなった…見えて認知できるくらいのサイズに」: 画面の上で直径が 6.5 px(CSS の px)より小さくならないだけ大きくする。
 // 上限は最初の作り(距離 × 0.0045 / r: 40 m で 4.9 倍・100 m で 12 倍)の 1.5 倍。近くは本物の大きさ。
 // 例(試験の撮影): PC(高さ 720)は直径 6.5 px を保つ、スマホ縦(844)は 5〜6.5 px、スマホ横(390)は遠くで 3.7 px(画素の細かい本物のスマホでは 7〜11 画素)
+// 11/26 サクサク: 画面の高さは大きさが変わった時だけ読む(毎こま window.innerHeight を読むと、そのたびに配置の計算が走ることがあった)
+let _vh = 0;
+if (typeof window !== 'undefined') { const f = () => { _vh = window.innerHeight || 0; }; f(); window.addEventListener('resize', f); window.addEventListener('orientationchange', f); }
 export const BALL_MIN_PX = 6.5;
 export const BALL_MAX_SCALE = 8;   // 球の見た目は本物の 8 倍まで(調整役の決まり)
-function screenH() { return (typeof window !== 'undefined' && window.innerHeight) || 720; }
+function screenH() { return _vh || 720; }   // 11/26 サクサク: 大きさが変わった時に覚えた値(下の _vh)
 export function ballVisScale(dist, cam) {
   if (dist <= 0.5) return 1;
-  const H = (typeof window !== 'undefined' && window.innerHeight) || 720, fov = (cam && cam.fov) || 60;
+  const H = _vh || 720, fov = (cam && cam.fov) || 60;
   const px = 2 * PHYS.r * H / (2 * dist * Math.tan(fov * Math.PI / 360));   // 本物の大きさの時の直径(px)
   return Math.max(1, Math.min(BALL_MIN_PX / px, BALL_MAX_SCALE));   // 11/20 夜 球そのものは本物の 8 倍まで。それでも 6.5 px に届かない時(スマホの横画面の遠く)は、下の BallView の「点」で 6.5 px にする
 }

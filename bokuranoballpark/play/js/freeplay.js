@@ -572,7 +572,7 @@ export class FreePlay {
   }
   refreshWallet(show) {
     this.elWallet.classList.toggle('hide', !show || this.noPrice);
-    const v = this.elWallet.querySelector('.v'); const s = yen(this.yenV);
+    const v = this.elWallet.querySelector('.v'); if (this._wyV !== this.yenV) { this._wyV = this.yenV; this._wyS = yen(this.yenV); } const s = this._wyS;   // 11/26 サクサク: 金額の字は額が変わった時だけ作る(毎こま toLocaleString していた)
     if (v.textContent !== s) v.textContent = s;
     const tk = this.elWallet.querySelector('.tk'), ts = this.tktOn && !this.simple ? (this.ticket ? `チケット: ${this.ticket.name}` : 'チケット: なし') : ''; if (tk.textContent !== ts) tk.textContent = ts;
   }

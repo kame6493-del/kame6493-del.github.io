@@ -191,7 +191,10 @@ function pick(kind, o, me) {
       return { clip: c, mode: 'once', start: Math.max(0, ct - 0.08), catchT: ct };
     }
     case 'jump': return { clip: 'jump_catch', mode: 'scrub', time: Math.min(1.19, 0.12 + (o.t || 0)) };
-    case 'dive': return { clip: 'dive_forward', mode: 'scrub', time: Math.min(2.09, 0.3 + (o.t || 0)) };
+    case 'dive':
+      // 11/26 正面へ頭から飛ぶ(main.js の frontDivePose が体を前へ倒す): 腕を頭の上へ伸ばした形(fly_catch の捕る所)。起き上がる時は構えの形へ
+      if (o.front) { const ct = (base.motions.fly_catch && base.motions.fly_catch.events && base.motions.fly_catch.events.catch && base.motions.fly_catch.events.catch.t) || 0.7; return (o.lt ?? 0) < 1.0 ? { clip: 'fly_catch', mode: 'scrub', time: ct } : { clip: 'fld_ready_idle', mode: 'loop' }; }
+      return { clip: 'dive_forward', mode: 'scrub', time: Math.min(2.09, 0.3 + (o.t || 0)) };
     case 'slide': { const ev = base.motions.slide_feet && base.motions.slide_feet.events, d0 = ev && ev.drop ? ev.drop.t : 0.33; return { clip: 'slide_feet', mode: 'scrub', time: Math.min(base.clips.slide_feet.duration - 0.01, d0 + (o.t ?? 0.5)) }; }   // 倒れ込む時刻から(動きを替えても合うように)
     case 'ump_out': return { clip: 'ump_out', mode: 'once', start: 0.15 };
     case 'ump_safe': return { clip: 'ump_safe', mode: 'once', start: 0.15 };
@@ -441,6 +444,33 @@ export class Athlete {
     r.mixer.update(dt);
     this._hands(spec);
     if (this.lean) this._applyLean();   // 11/21 整列の礼・握手・ハイタッチ(js/seiretsu.js)
+    if (this.reach) this._applyReach(this.reach);   // 11/26 正面の飛び込み: 両腕を頭の先へまっすぐ伸ばす(main.js の frontDivePose が 0〜1 を入れる)
+  }
+  // 腕(上腕 → 前腕)を、背骨の上の向き(頭の方)へ向ける。w は効き具合。グラブの左腕はまっすぐ、右腕は少し低く・内へ
+  _applyReach(w) {
+    const r = this.rig; if (!r) return; const B = r.bones;
+    if (!B.spine_03 || !B.Head) return;
+    r.model.updateMatrixWorld(true);
+    const s0 = B.spine_03.getWorldPosition(new THREE.Vector3()), h0 = B.Head.getWorldPosition(new THREE.Vector3());
+    const up = h0.sub(s0).normalize();
+    this.root.getWorldQuaternion(_lq); const right = new THREE.Vector3(1, 0, 0).applyQuaternion(_lq);
+    const fwdDown = new THREE.Vector3().crossVectors(right, up).normalize();   // 体の前(腹)の向き
+    const aim = (bone, child, dir) => {
+      if (!bone || !child || !bone.parent) return;
+      const a = bone.getWorldPosition(new THREE.Vector3()), b = child.getWorldPosition(new THREE.Vector3());
+      const cur = b.sub(a).normalize();
+      const q = new THREE.Quaternion().setFromUnitVectors(cur, dir);
+      q.slerp(new THREE.Quaternion(), 1 - w);
+      bone.parent.getWorldQuaternion(_lqp);
+      _lqt.copy(_lqp).invert().multiply(q).multiply(_lqp);
+      bone.quaternion.premultiply(_lqt);
+      bone.updateMatrixWorld(true);
+    };
+    for (const [s, k] of [['l', 0], ['r', 1]]) {
+      const dir = up.clone().addScaledVector(fwdDown, k ? 0.28 : 0.12).addScaledVector(right, (s === 'l' ? -1 : 1) * 0.1).normalize();
+      aim(B['upperarm_' + s], B['lowerarm_' + s], dir);
+      aim(B['lowerarm_' + s], B['hand_' + s], dir);
+    }
   }
   // 体を前へ倒す(礼)・右腕を前/上へ上げる(握手・ハイタッチ)。動きの後に骨を回して足す。lean = { bow: 倒す角度(rad), arm: 右腕を上げる角度(rad) }
   _applyLean() {

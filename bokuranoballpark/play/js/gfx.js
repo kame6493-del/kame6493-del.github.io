@@ -303,7 +303,7 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
   const culls = [];
   const _s = new THREE.Sphere();
   // indoor: 屋内の物(コンコース・売店・裏の部屋。main.js の indoorMeshes)は大きさによらず、席から遠い所を描かない(壁の向こうで見えない「遠くの店の中身」)
-  function addCull(o, indoor) {
+  function addCull(o, indoor, dyn) {
     const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
     if (!g.boundingSphere) return;
     o.updateMatrixWorld(true);
@@ -312,7 +312,7 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
     if (old) { if (indoor) old.indoor = true; return; }
     if (!indoor && !(_s.radius <= 2.5)) return;
     const d = Object.getOwnPropertyDescriptor(o, 'visible'); if (!d || !('value' in d)) return;
-    let want = d.value; const c = { o, x: _s.center.x, y: _s.center.y, z: _s.center.z, r: _s.radius, far: false, indoor: !!indoor, max: o.userData.cullMax || 0 };   // max: その物だけの描く距離の上限(11/21 スマホの interior.glb の区切り)
+    let want = d.value; const c = { o, x: _s.center.x, y: _s.center.y, z: _s.center.z, r: _s.radius, far: false, indoor: !!indoor, max: o.userData.cullMax || 0, dyn: !!dyn };   // max: その物だけの描く距離の上限(11/21 スマホの interior.glb の区切り)
     Object.defineProperty(o, 'visible', { configurable: true, enumerable: true, get() { return want && !c.far; }, set(v) { want = v; } });
     culls.push(c);
   }
@@ -486,7 +486,8 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
     if (!D && !DI) { if (cullOn) { for (const c of culls) c.far = false; cullOn = false; } return; }
     cullOn = true;
     const p = camera.position;
-    for (const c of culls) { const d0 = c.indoor ? Math.min(DI || 1e9, D || 1e9, c.max || 1e9) : D; if (!d0 || d0 >= 1e9) { c.far = false; continue; } const dx = c.x - p.x, dy = c.y - p.y, dz = c.z - p.z, R = d0 + c.r; c.far = dx * dx + dy * dy + dz * dz > R * R; }
+    for (const c of culls) { if (c.dyn) { const g = c.o.geometry; if (g && g.boundingSphere) { _s.copy(g.boundingSphere).applyMatrix4(c.o.matrixWorld); c.x = _s.center.x; c.y = _s.center.y; c.z = _s.center.z; } }   // 11/26 動くかもしれない物(球場の外・売店の小物)は今の場所で
+      const d0 = c.indoor ? Math.min(DI || 1e9, D || 1e9, c.max || 1e9) : D; if (!d0 || d0 >= 1e9) { c.far = false; continue; } const dx = c.x - p.x, dy = c.y - p.y, dz = c.z - p.z, R = d0 + c.r; c.far = dx * dx + dy * dy + dz * dz > R * R; }
   }
 
   function setQuality(q) {
@@ -570,6 +571,8 @@ export function createGfx({ renderer, scene, camera, sun, hemi, dome, touch, sho
   return {
     sky, setQuality, setTime, update, render, patchModel, resize, autoTick, setLv, restore, setCeil,
     get lv() { return autoLv; }, get ceil() { return memCeil; },
+    // 11/26 サクサク: 後から足す小さな物(ボールパークで過ごすの売店・看板・ごみ箱など。半径 2.5m まで)も、球場の模型の小物と同じ決まりで遠くでは描かない(スマホの「自動」だけ。PC・ほかの画質は前のまま)
+    cullDyn: (root) => { if (!touch || !root) return 0; let n = 0; root.traverse((o) => { if (o.isMesh && !o.isInstancedMesh && !o.isSkinnedMesh && o.geometry && !o.userData.cullK && !o.userData.noCull) { o.userData.cullK = 1; addCull(o, false, true); n++; } }); if (n) cullTick(true); return n; },
     cullIndoor: (list) => { if (!touch) return; for (const o of list) if (o.isMesh && !o.isInstancedMesh && !o.isSkinnedMesh && o.geometry) addCull(o, true); cullTick(true); },
     autoInfo: () => (qk === 'auto' ? { lv: autoLv, ceil: autoCeil, memCeil, fps: Math.round(autoFps), log: autoLog.slice(-8), culled: culls.reduce((n, c) => n + (c.far ? 1 : 0), 0), culls: culls.length, mute: shadowMute } : null),
     texInfo: () => ({ max: TEX_MAX, savedMB: Math.round(texSaved * 4 * 1.33 / 1048576) }),
