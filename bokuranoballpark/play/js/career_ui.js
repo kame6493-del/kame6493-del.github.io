@@ -6,7 +6,6 @@ const $ = (id) => document.getElementById(id);
 const ICON = {
   arm: '<svg viewBox="0 0 24 24"><path d="M5 19c1-5 3-8 6-9l1-4c.3-1.2 2-1.4 2.6-.3l.9 1.8c1.6.3 3 1.5 3.5 3.2.6 2.3-.6 4.6-2.8 5.6L11 19z" fill="currentColor"/></svg>',
   field: '<svg viewBox="0 0 24 24"><path d="M6 20c-2-2-2.5-6-1.5-9L6 6c.4-1.3 2.2-1.2 2.4.1L9 9l.7-5.2c.2-1.3 2-1.3 2.2 0l.4 4.7.9-4c.3-1.2 2-1.1 2.1.2l.2 4.6 1.4-2.6c.6-1.1 2.3-.6 2.1.7L18 14c-.6 3.6-3 6.4-6.5 6.8z" fill="currentColor"/></svg>',
-  sure: '<svg viewBox="0 0 24 24"><path d="M12 2 20 5v6c0 5-3.4 9.3-8 11-4.6-1.7-8-6-8-11V5z" fill="currentColor"/><path d="m8 12 3 3 5-6" fill="none" stroke="#0b3a7a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 const DIAMOND = '<svg class="cDia" viewBox="0 0 60 44"><path d="M30 41 4 17A36 36 0 0 1 56 17Z" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M30 38 18 26 30 14 42 26Z" fill="none" stroke="#fff" stroke-width="2"/><circle class="cDot" r="3.6" fill="#ffd23a"/></svg>';
 const DOT = { '1B': [42, 26], '2B': [36, 15], SS: [24, 15], '3B': [18, 26], LF: [12, 9], CF: [30, 5], RF: [48, 9], P: [30, 26.5], C: [30, 38.5] };   // 11/26 投手・捕手の点も
@@ -85,7 +84,7 @@ export class CareerUI {
   }
   abRows(ab, ups, xp) {
     const K = this.K;
-    return ['arm', 'field', 'sure'].map((k) => {
+    return K.AB_KEYS.map((k) => {   // 11/27 肩・守備の 2 つ(エラー回避は外した)
       const v = ab[k], w = Math.round(100 * v / K.AB_MAX), up = ups && ups[k];
       const nx = xp ? (v >= K.AB_MAX ? '最高' : `次まで ${Math.max(1, Math.ceil(K.xpNeed(v) - xp[k] - 1e-6))}`) : '';
       const g = GRADE(v);
@@ -130,7 +129,7 @@ export class CareerUI {
       ${menu}
       <button class="cCardBtn" data-act="card"><span class="cCardNo">${esc(D.num)}</span><span class="cCardTx"><b>${esc(D.name || '名前を決める')}</b><small>自分の選手カード</small></span></button>
       <div class="cPanel cLight"><div class="cRibbon">能力</div>${this.abRows(D.ab, null, D.xp)}
-        <div class="cNote">肩: 送球の速さ・届く距離 / 守備: 走る速さ・グラブの届く幅 / エラー回避: お手玉・送球のそれ</div></div>
+        <div class="cNote">肩: 送球の速さ・正確さ / 守備: 一歩目・走る速さ・グラブの届く幅・飛び込み。段が上がるほど動きが良くなります</div></div>
       ${this.growHtml()}
       <div class="cPanel cLight"><div class="cRibbon">通算成績</div>${this.table([
         ['試合', `${T.games}<small> (高校 ${D.stageGames[0]} ・ 社会人 ${D.stageGames[1]} ・ プロ ${D.stageGames[2]})</small>`],
@@ -356,7 +355,7 @@ export class CareerUI {
     const K = this.K, D = this.C.data, bs = K.boostState(), store = K.storeOn();
     if (!store && !bs.train && !bs.abup) return '';
     const own = K.boostOwned();
-    const abBtns = bs.abup > 0 && !D.done ? `<div class="cAbUp">${['arm', 'field', 'sure'].map((k) => { const v = D.ab[k], full = v >= K.AB_MAX; return `<button class="cBtn" data-abup="${k}"${full ? ' disabled' : ''}>${esc(K.AB_NAME[k])} ${full ? '最高' : '+' + Math.min(K.AB_MAX - v, K.BOOST.abUp(v))}</button>`; }).join('')}</div>` : '';
+    const abBtns = bs.abup > 0 && !D.done ? `<div class="cAbUp">${K.AB_KEYS.map((k) => { const v = D.ab[k], full = v >= K.AB_MAX; return `<button class="cBtn" data-abup="${k}"${full ? ' disabled' : ''}>${esc(K.AB_NAME[k])} ${full ? '最高' : '+' + Math.min(K.AB_MAX - v, K.BOOST.abUp(v))}</button>`; }).join('')}</div>` : '';
     const msg = this._abMsg; this._abMsg = '';
     return `<div class="cPanel cDark cGrow"><div class="cGrowHead">成長</div>
       <div class="cGrowRow"><b>成長ブースト</b><span>${own ? '経験値 ずっと ×1.5' : 'キャリアの経験値が ずっと ×1.5'}</span>${own ? '<em class="cOn">有効</em>' : ''}</div>
@@ -375,7 +374,7 @@ export class CareerUI {
     if (!S || !S.grow || !B || r.final || r.done) return '';
     const bs = K.boostState(), g = this.C.data.tot.games;
     if (g < 2 || g - (bs.nudge ?? -99) < 3) return '';
-    const sum = (o) => (o ? o.arm + o.field + o.sure : 0), got = sum(r.ups);
+    const sum = (o) => (o ? o.arm + o.field : 0), got = sum(r.ups);
     let what = '', alt = null, pid = '';
     if (!B.owned) { what = '成長ブースト'; alt = B.ifBoost; pid = 'bp_boost_xp'; }
     else if (!B.train) { what = '特訓チケット'; alt = B.ifTrain; pid = 'bp_train_1'; }
@@ -385,7 +384,7 @@ export class CareerUI {
     if (!(near || slump || more >= 2)) return '';
     if (!alt || more <= 0) { if (!slump) return ''; what = '能力アップの特訓'; alt = null; pid = 'bp_abup_1'; }
     bs.nudge = g; K.boostSave(bs);
-    const line = alt ? `${esc(what)}があれば この試合の伸び ${['arm', 'field', 'sure'].map((k) => `${esc(K.AB_NAME[k])} +${r.ups[k]}→<b>+${alt[k]}</b>`).join(' ・ ')}` : '選んだ能力が すぐ +3(70 から +2)';
+    const line = alt ? `${esc(what)}があれば この試合の伸び ${K.AB_KEYS.map((k) => `${esc(K.AB_NAME[k])} +${r.ups[k]}→<b>+${alt[k]}</b>`).join(' ・ ')}` : '選んだ能力が すぐ +3(70 から +2)';
     const why = near && abShort ? `社会人は 能力の平均 ${r.need.abAvg} 以上なら 評価 ${r.need.rankAb} でも基準クリア(いま ${r.abAvg})`
       : near ? `昇格まで 最短 あと ${r.prog.left} 試合。能力が高いほど 評価と UZR が上がりやすくなります`
       : slump ? `この試合の伸びは 合計 +${got}。能力は 高くなるほど 次の 1 に経験が要ります`
@@ -524,7 +523,7 @@ export class CareerUI {
   // キャリアの説明(初めてカードを作った時・キャリアの画面の「キャリアの説明」から)
   tutPages() {
     const K = this.K, S = K.STAGES, [hs, co] = S, fieldPic = this.posPicker(this.C.data.pos || 'SS').replace(/<button /g, '<span ').replace(/<\/button>/g, '</span>').replace(/data-pick=/g, 'data-p=');
-    const abPic = `<div class="cAbs tutAb">${this.abRows({ arm: 72, field: 84, sure: 93 }, null, null)}</div>`;
+    const abPic = `<div class="cAbs tutAb">${this.abRows({ arm: 72, field: 93 }, null, null)}</div>`;
     const D = this.C.data;
     const card = `<div class="tutCard"><div class="pcArt"><span class="pcNum">${esc(D.num ?? 6)}</span></div><div><b>${esc(D.name || 'あなた')}</b><small>${esc(K.POS_NAME[D.pos] || '')}</small></div></div>`;
     return [
@@ -535,7 +534,7 @@ export class CareerUI {
       { h: '上がる条件', pic: `<div class="tutPromo"><div><b>${esc(hs.name)}</b><span>${hs.min} 試合以上</span><span>評価 ${hs.need.rank} 以上 か UZR ${K.uzrText(hs.need.uzr)} 以上</span></div><i></i><div><b>${esc(co.name)}</b><span>${co.min} 試合以上</span><span>評価 ${co.need.rank} 以上 か UZR ${K.uzrText(co.need.uzr)} 以上</span><span>能力の平均 ${co.need.abAvg} 以上なら 評価 ${co.need.rankAb} でも可</span></div><i></i><div class="pro"><b>プロ</b><span>${K.FINAL_GAMES} 試合で 完了</span></div></div>`,
         t: [`${hs.name}は ${hs.min} 試合以上、${co.name}は ${co.min} 試合以上 守ります。`, '最近の 3 試合のうち 2 試合で 上の基準を超えたら、次へ上がります(評価は S が一番上、A・B・C・D)。', `${co.name}は 能力の平均が ${co.need.abAvg} 以上になると、評価 ${co.need.rankAb} でも基準を超えます。`] },
       { h: '能力と S〜G', pic: abPic,
-        t: ['肩は 送球の速さ、守備は 走る速さと 届く幅、エラー回避は ミスの少なさ。', '強さは S(一番上)から G までの文字で出ます。', `試合で守るほど 経験がたまって 伸びていきます。${K.storeOn() ? '成長ブースト・特訓でも 早く伸ばせます。' : ''}`] },
+        t: ['肩は 送球の速さと正確さ、守備は 一歩目・走る速さ・届く幅。', '強さは S(一番上)から G までの文字で出ます。段が上がるほど 動きが目に見えて良くなります。', `試合で守るほど 経験がたまって 伸びていきます。${K.storeOn() ? '成長ブースト・特訓でも 早く伸ばせます。' : ''}`] },
       { h: '成績の言葉', pic: `<div class="tutWords"><div><b>刺殺</b><span>自分で捕ったり タッチしたりして アウトにした数</span></div><div><b>補殺</b><span>送球して アウトを 手伝った数</span></div><div><b>失策</b><span>エラー(捕り損ね・悪い送球)</span></div><div><b>守備率</b><span>エラーをしなかった割合</span></div></div>`,
         t: ['結果の画面に出る言葉です。', '覚えなくても大丈夫。いちばん大事なのは 次のページの UZR です。'] },
       { h: 'UZR とは', pic: `<div class="tutUzr"><div><span>平均の選手</span><i style="--w:50%"></i><b>0</b></div><div class="me"><span>あなた</span><i style="--w:72%"></i><b>+0.6</b></div></div>`,

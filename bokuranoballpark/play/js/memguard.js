@@ -53,6 +53,8 @@ export function memGuard({ renderer, gfx, touch, getSound, getQuality, setQualit
     if (!document.hidden) startBeat();
   }, 6500);
   addEventListener('pagehide', stopBeat);
+  // 11/27 片付けた(release)後のページが「戻る」の cache から戻ってきたら(描く所も音も止めてあるので黒い画面になる)、読み直す
+  addEventListener('pageshow', (e) => { if (e.persisted && api.leaving) { try { location.reload(); } catch (err) { } } });
   addEventListener('beforeunload', stopBeat);
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopBeat(); else startBeat(); });
   if (!document.hidden) startBeat();

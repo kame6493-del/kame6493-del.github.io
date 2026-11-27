@@ -2468,7 +2468,12 @@ const ctx = {
 ui = new UI({
   IS_TOUCH, load, store, stadium: STADIUM, stadiumNames: STADIUM_NAMES, stadiumIndoor: INDOOR_ST, stadiums: STADIUMS,
   // 球場を替える: 選んだ物を残して読み直す(モデルが大きく違うので)
-  setStadium: (k) => { if (k === STADIUM) return; const u = new URL(location.href); u.searchParams.set('stadium', k); memg.release(); location.href = u.toString(); },   // 11/26 読み直す前に描く所と音を片付ける
+  // 11/26 読み直す前に描く所と音を片付ける。11/27 location.href への移動だと、iOS の WKWebView は前の球場のページを丸ごと「戻る」用に残し(back-forward cache)、
+  // 球場を替えるたびに記憶が積み上がった(シミュレーターで WebContent が 1 つ目 650MB → 2 つ目 1.1GB → 3 つ目 1.5GB → 2.1GB。実機は 1.5〜2GB で落ちてタイトルに戻る)。
+  // URL を replaceState で書き換えてから読み直す(読み直しは back-forward cache に入らない)。?hrefswitch=1 で前の形
+  setStadium: (k) => { if (k === STADIUM) return; const u = new URL(location.href); u.searchParams.set('stadium', k); memg.release();
+    if (params.has('hrefswitch')) { location.href = u.toString(); return; }
+    try { history.replaceState(history.state, '', u.toString()); location.reload(); } catch (e) { location.replace(u.toString()); } },
   get mode() { return mode; }, get view() { return activeView() === '1p' && mode !== 'defense' && mode !== 'walk' ? view : view; },
   get voiceOn() { return sound.voiceOn !== false; },
   setTime: (k) => setTime(k), setView: (v) => setView(v, true), cycleView,

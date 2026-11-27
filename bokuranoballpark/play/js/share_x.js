@@ -6,8 +6,15 @@
 // - 出し方: アプリ(Capacitor)は @capacitor/share + @capacitor/filesystem があれば共有シートへ。無ければ navigator.share(ファイル付き)、
 //   それも無ければ X の投稿画面(x.com/intent/post)を開き、絵・動画は「保存」から付けてもらう。PC は X の投稿画面を新しいタブで。
 // 遊んでいる最中の毎こまの処理は足していない(defense-eval の出来事で、どのプレーがファインプレーかを覚えるだけ)。
+// 11/27 夜 持ち主「X でシェアは動画がシェアできるようにしてください。ハッシュタグ付けて」:
+// - 試合・ノック・キャリアの試合の結果でも、押した時にその試合の一番よいプレー(飛び込み・ジャンプ・ゲッツー・ファインプレー、無ければ最後のアウト)の
+//   リプレイをその場で流して録る(録る間だけ「動画を作っています」)。その試合の覚え(replay.keep)は 1 つだけ持つ(印を付けた時に差し替えるだけ)。
+// - キャリア完了は選手カードが寄る・数が数え上がる・判子が押される数秒の動画(2D の canvas)。
+// - 録れない所(MediaRecorder・captureStream が無い・iOS とアプリで mp4 が無い)は今までの絵。
+// - ハッシュタグは 5 つ(飛び込みの動画は #ダイビングキャッチ を足して 6 つ)。
 
-const TAGS = '#ぼくらのボールパーク #野球ゲーム #守備';
+const TAGS = '#ぼくらのボールパーク #野球ゲーム #守備 #野球好きと繋がりたい #インディーゲーム';
+const TAG_DIVE = '#ダイビングキャッチ';
 const URL_IOS = 'https://apps.apple.com/jp/app/id6837152603';
 const URL_WEB = 'https://yurustudio.github.io/bokuranoballpark/play/';
 const cap = () => window.Capacitor;
@@ -15,7 +22,9 @@ const platform = () => { try { const C = cap(); return C && C.getPlatform ? C.ge
 const isNative = () => { try { const C = cap(); return !!(C && (C.isNativePlatform ? C.isNativePlatform() : platform() !== 'web')); } catch (e) { return false; } };
 const coarse = () => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } };
 export const shareUrl = () => (platform() === 'ios' ? URL_IOS : URL_WEB);   // Android は一般公開の前なので Play の URL は入れない
-export const withTags = (body) => `${body}\n${TAGS}\n${shareUrl()}`;
+// 11/27 夜 持ち主「X でシェアは URL アイフォンも貼れるようにして」: どこから出しても iPhone(App Store)とブラウザ版の両方を貼る(Play はまだ貼らない)
+export const shareUrls = () => `iPhone ${URL_IOS}\nブラウザ ${URL_WEB}`;
+export const withTags = (body, dive) => `${body}\n${TAGS}${dive ? ' ' + TAG_DIVE : ''}\n${shareUrls()}`;
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sgn = (x) => (x >= 0 ? '+' : '−') + Math.abs(+x || 0).toFixed(1);
 const FONT = '"Dela Gothic One",sans-serif';
@@ -87,7 +96,7 @@ async function gameImage(r) {
     const G = r.g, us = G.score.us, them = G.score.them, word = r.stopped ? '途中まで' : us > them ? '勝ち' : us < them ? '負け' : '引き分け';
     body = `守備の試合、${r.stopped ? `${us}対${them}まで守った` : `${us}対${them}で${word}`}!${r.posLabel || ''}でアウト ${s.outs ?? 0}${fine ? `・ファインプレー ${fine}` : ''}${ev.rank && ev.rank !== '—' ? `・守備の評価 ${ev.rank}` : ''} ⚾`;
   }
-  return { canvas: cv, text: withTags(body), name: 'bokura_game.png' };
+  return { canvas: cv, body, text: withTags(body), name: 'bokura_game.png' };
 }
 // 守備のキャリアの試合の結果(js/career_ui.js の result の r)
 async function careerGameImage(r, K, D) {
@@ -101,37 +110,116 @@ async function careerGameImage(r, K, D) {
   stamp(g, 1000, 300, 120, r.rank); g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = '700 26px sans-serif'; g.fillText('守備評価', 1000, 150);
   if (r.score != null) { g.font = `900 40px ${FONT}`; g.fillText(`${r.score} 点`, 1000, 476); }
   const body = `守備のキャリア ${st.name || ''} 第${r.game}戦、守備評価 ${r.rank}・UZR ${K.uzrText(r.uzr)}${next ? `。${next}へ昇格!` : ''} ⚾ 最高の守備職人を目指せ`;
-  return { canvas: cv, text: withTags(body), name: 'bokura_career.png' };
+  return { canvas: cv, body, text: withTags(body), name: 'bokura_career.png' };
 }
 // キャリア完了(最終評価・称号・UZR・選手カード)。c は殿堂のカード(career.js の makeCard)
-async function careerDoneImage(c, K) {
-  await fonts();
-  const cv = newCanvas(), g = cv.getContext('2d'), W = cv.width, H = cv.height; ground(g, W, H);
-  const L = window.__bpLocker;
-  try { if (L && L.drawCard) await L.drawCard(g, c, 40, 40, 400, 548); } catch (e) { /* カードなしで */ }
+// 選手カードは 1 回だけ別の canvas に描いておき、絵・動画のどちらでも貼る
+async function cardCanvas(c) {
+  const L = window.__bpLocker; if (!L || !L.drawCard) return null;
+  try { const cc = newCanvas(400, 548); await L.drawCard(cc.getContext('2d'), c, 0, 0, 400, 548); return cc; } catch (e) { return null; }
+}
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const easeOut = (u) => 1 - Math.pow(1 - u, 3);
+const easeBack = (u) => { const k = 1.6; return 1 + (k + 1) * Math.pow(u - 1, 3) + k * Math.pow(u - 1, 2); };
+// T 秒目の絵(T を大きくすれば止まった絵)。0〜0.8 秒 カードが左から寄る・0.4〜 文字・0.9〜2.4 数が数え上がる・2.5〜 判子・3.1〜 カードに光
+const DONE_SECS = 4.6;
+function drawDone(g, c, K, card, T = 99) {
+  const W = 1200, H = 630; ground(g, W, H);
   const P = c.pro || { games: 0, po: 0, a: 0, e: 0, uzr: 0, adj: 0 };
+  const uc = easeBack(clamp01(T / 0.8)), uh = clamp01((T - 0.4) / 0.5), un = easeOut(clamp01((T - 0.9) / 1.5)), us = clamp01((T - 2.5) / 0.35);
+  if (card) {
+    g.save(); g.translate(-460 * (1 - uc) + 40 + 200, 40 + 274); g.rotate(-0.1 * (1 - uc)); g.scale(0.86 + 0.14 * uc, 0.86 + 0.14 * uc);
+    g.drawImage(card, -200, -274, 400, 548);
+    const sh = clamp01((T - 3.1) / 0.7);
+    if (sh > 0 && sh < 1) { const x = -320 + 640 * sh, gr = g.createLinearGradient(x - 60, 0, x + 60, 0); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,.38)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.beginPath(); g.rect(-200, -274, 400, 548); g.fill(); }
+    g.restore();
+  }
+  g.save(); g.globalAlpha = uh; g.translate(30 * (1 - uh), 0);
   g.textAlign = 'left'; g.fillStyle = '#ffe08a'; g.font = `900 30px ${FONT}`; g.fillText('ぼくらのボールパーク', 480, 84);
   g.fillStyle = '#fff'; g.font = `900 64px ${FONT}`; g.fillText('キャリア完了!', 476, 166);
-  g.fillStyle = '#cfe0ff'; fitText(g, `${c.name || ''} ・ 背番号 ${c.num ?? ''} ・ ${K.POS_NAME[c.pos] || c.pos || ''}`, 460, 30); g.fillText(`${c.name || ''} ・ 背番号 ${c.num ?? ''} ・ ${K.POS_NAME[c.pos] || c.pos || ''}`, 480, 214);
+  const who = `${c.name || ''} ・ 背番号 ${c.num ?? ''} ・ ${K.POS_NAME[c.pos] || c.pos || ''}`;
+  g.fillStyle = '#cfe0ff'; fitText(g, who, 460, 30); g.fillText(who, 480, 214);
   g.fillStyle = '#ffcf33'; fitText(g, `〈${c.title || ''}〉`, 470, 38, '900'); g.fillText(`〈${c.title || ''}〉`, 474, 268);
-  stamp(g, 1056, 172, 100, c.grade); g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = '700 22px sans-serif'; g.fillText('最終評価', 1056, 52); g.font = `900 30px ${FONT}`; g.fillText(`${c.score ?? 0} 点`, 1056, 312);
-  g.textAlign = 'left'; g.fillStyle = 'rgba(255,255,255,.85)'; g.font = '700 22px sans-serif'; g.fillText(`プロ通算 ${P.games} 試合`, 480, 330);
-  tiles(g, 476, 350, 690, [[sgn(P.adj), 'UZR(補正あり)', P.adj >= 0 ? '#7dff9e' : '#ff9a8a'], [K.fpctText(P.po, P.a, P.e), '守備率'], [P.po, '刺殺'], [P.a, '補殺'], [P.e, '失策']], 112);
+  g.restore();
+  if (us > 0) { g.save(); g.globalAlpha = us; g.translate(1056, 172); const k = 2.2 - 1.2 * easeOut(us); g.scale(k, k); g.translate(-1056, -172); stamp(g, 1056, 172, 100, c.grade); g.restore(); }
+  g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = '700 22px sans-serif'; g.fillText('最終評価', 1056, 52); g.font = `900 30px ${FONT}`; g.fillText(`${Math.round((c.score ?? 0) * un)} 点`, 1056, 312);
+  g.textAlign = 'left'; g.fillStyle = 'rgba(255,255,255,.85)'; g.font = '700 22px sans-serif'; g.fillText(`プロ通算 ${Math.round(P.games * un)} 試合`, 480, 330);
+  const n = (v) => Math.round((+v || 0) * un);
+  tiles(g, 476, 350, 690, [[sgn(P.adj * un), 'UZR(補正あり)', P.adj >= 0 ? '#7dff9e' : '#ff9a8a'], [un >= 1 ? K.fpctText(P.po, P.a, P.e) : '…', '守備率'], [n(P.po), '刺殺'], [n(P.a), '補殺'], [n(P.e), '失策']], 112);
   g.textAlign = 'left'; g.fillStyle = 'rgba(255,255,255,.85)'; g.font = '700 24px sans-serif'; g.fillText('殿堂入り ・ 最高の守備職人を目指せ', 480, 520);
+}
+async function careerDoneImage(c, K) {
+  await fonts();
+  const cv = newCanvas(), card = await cardCanvas(c);
+  drawDone(cv.getContext('2d'), c, K, card);
+  const P = c.pro || { adj: 0 };
   const body = `守備のキャリア完了!最終評価 ${c.grade}・UZR ${sgn(P.adj)}「${c.title || ''}」⚾ 最高の守備職人を目指せ`;
-  return { canvas: cv, text: withTags(body), name: 'bokura_career_done.png' };
+  return { canvas: cv, card, body, text: withTags(body), name: 'bokura_career_done.png' };
+}
+// 2D の canvas に draw(T) を描きながら secs 秒を録る(キャリア完了の動画)
+async function recordCanvas(cv, draw, secs, onProgress) {
+  const mime = videoMime(); if (!mime) return null;
+  const g = cv.getContext('2d');
+  draw(g, 0);
+  const stream = cv.captureStream(30);
+  let rec; try { rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3000000 }); } catch (e) { try { rec = new MediaRecorder(stream); } catch (e2) { stream.getTracks().forEach((t) => t.stop()); return null; } }
+  const chunks = []; rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  const done = new Promise((res) => { rec.onstop = res; });
+  let frames = 0, stopped = false;
+  const fin = () => { if (stopped) return; stopped = true; draw(g, 99); if (rec.state !== 'inactive') { try { rec.requestData(); } catch (e) { /* なし */ } rec.stop(); } };
+  rec.start(250);
+  const t0 = performance.now();
+  const step = () => {
+    if (stopped) return;
+    const T = (performance.now() - t0) / 1000;
+    draw(g, Math.min(T, secs)); frames++;
+    if (onProgress) onProgress(Math.min(1, T / secs));
+    if (T >= secs) { setTimeout(fin, 120); return; }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+  const guard = setTimeout(fin, (secs + 4) * 1000);
+  await done; clearTimeout(guard);
+  stream.getTracks().forEach((t) => t.stop());
+  const type = (rec.mimeType || mime).split(';')[0], blob = new Blob(chunks, { type });
+  if (!blob.size || frames < 10) return null;
+  return { blob, type, ext: type === 'video/mp4' ? 'mp4' : 'webm', secs, frames, w: cv.width, h: cv.height };
 }
 
 // ---------------------------------------------------------------- リプレイ(動画・録れない時は今の場面の絵)
 const PLAY_WORD = (f) => (!f ? '' : f.special === 'dive' ? 'ダイビングキャッチ!' : f.special === 'jump' ? 'ジャンピングキャッチ!' : f.outs >= 2 ? 'ゲッツー!' : f.kind === 'fine' ? 'ファインプレー!' : '');
 // どのプレーがファインプレーだったか(リプレイの覚えに印を付けるだけ。毎こまの処理はなし)
+// 11/27 夜: その試合の一番よいプレーの覚えを rp.keep に 1 つだけ残す(飛び込み 5・ジャンプ 4・ゲッツー 3・ファインプレー 2・アウト 1。同じ点なら後の方 = 最後のアウト)。
+// R.gid はその試合の defense.stats(守備を始めるたびに作り直される)。別の試合の覚えは使わない。
+let hlSeq = 0;
 window.addEventListener('defense-eval', (e) => {
   try {
-    const d = e.detail || {}, rp = window.__app && window.__app.replay, R = rp && rp.cur;
+    const d = e.detail || {}, A = window.__app, rp = A && A.replay, R = rp && rp.cur, D = A && A.defense;
     if (!R || rp.on) return;
     if (d.kind === 'fine' || d.special === 'dive' || d.special === 'jump' || (d.outs || 0) >= 2) R.fine = { kind: d.kind, special: d.special, outs: d.outs || 0, t: R.t };
+    const knock = D && D.kind === 'knock';
+    const rank = d.special === 'dive' ? 5 : d.special === 'jump' ? 4 : (d.outs || 0) >= 2 ? 3 : d.kind === 'fine' ? 2
+      : ((d.outs || 0) >= 1 && d.kind !== 'miss') || (knock && /^(ok|nice|judge)$/.test(d.kind || '')) ? 1 : 0;
+    if (!rank || (R.hl && R.hl.rank > rank)) return;
+    const pl = D && D.play, ct = pl && pl.caughtT != null && pl.t != null ? R.t - Math.max(0, pl.t - pl.caughtT) : null;   // 捕った時(リプレイの覚えの時刻)
+    const h = { rank, kind: d.kind, special: d.special || null, outs: d.outs || 0, t: R.t, ct, seq: ++hlSeq };
+    h.word = PLAY_WORD(h) || (d.kind === 'nice' ? 'ナイスプレー!' : knock ? 'ナイスキャッチ!' : 'アウト!');
+    R.hl = h; R.gid = D && D.stats;
+    const K = rp.keep;
+    if (!K || K === R || K.gid !== R.gid || !K.hl || rank >= K.hl.rank) rp.keep = R;
   } catch (er) { /* なし */ }
 });
+// 結果の画面で使う覚え: 今の試合(defense.stats が同じ)の印つきの中で一番よい物。無ければ null(絵にする)
+function bestRec(rp) {
+  const D = window.__app && window.__app.defense, gid = D && D.stats;
+  if (!rp || !gid) return null;
+  let best = null;
+  for (const R of [rp.keep, rp.last, rp.cur]) {
+    if (!R || !R.hl || R.gid !== gid || !R.frames || R.frames.length <= 10) continue;
+    if (!best || R.hl.rank > best.hl.rank || (R.hl.rank === best.hl.rank && R.hl.seq > best.hl.seq)) best = R;
+  }
+  return best;
+}
 const MIMES = ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
 export function videoMime() {
   try {
@@ -170,12 +258,13 @@ async function replayStill(rp) {
 export async function recordReplay(rp, opts = {}) {
   const mime = videoMime(); if (!mime) return null;
   await fonts();
-  const R = rp.rec, F = R.frames, dur = rp.dur, f = R.fine, maxS = opts.max || 8;
-  const fineT = f ? f.t - F[0].t : null;
-  const t1 = fineT != null ? Math.min(dur, fineT + 1.2) : Math.min(dur, maxS), t0 = Math.max(0, t1 - maxS);
+  const R = rp.rec, F = R.frames, dur = rp.dur, f = opts.hl || R.fine, maxS = opts.max || 8;
+  const fineT = f ? f.t - F[0].t : null, ctR = f && f.ct != null ? f.ct - F[0].t : null;
+  let t1 = fineT != null ? Math.min(dur, fineT + 1.2) : Math.min(dur, maxS), t0 = Math.max(0, t1 - maxS);
+  if (ctR != null) { t0 = Math.max(0, ctR - 4.5); t1 = Math.min(dur, Math.max(ctR + 2, fineT + 0.8), t0 + maxS); }   // 結果の動画: 捕る 4.5 秒前から、捕って 2 秒(送球のアウトまで)
   const src = window.__app.renderer.domElement, S = recSize(src);
   const cv = newCanvas(S.w, S.h), g = cv.getContext('2d', { alpha: false });
-  const word = PLAY_WORD(f) || 'リプレイ';
+  const word = (opts.hl && opts.hl.word) || PLAY_WORD(f) || 'リプレイ';
   g.fillStyle = '#000'; g.fillRect(0, 0, S.w, S.sh); drawBand(g, S.w, S.sh, S.band, word);
   const stream = cv.captureStream(30);
   let rec; try { rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4000000 }); } catch (e) { try { rec = new MediaRecorder(stream); } catch (e2) { return null; } }
@@ -208,7 +297,7 @@ async function replayShare(rp, btn) {
   if (!rp || !rp.on || rp.recording) return;
   const f = rp.rec && rp.rec.fine, word = PLAY_WORD(f);
   const body = word ? `${word.replace(/!$/, '')}を決めた!⚾ 自分の守備をいろんな視点から見返せる` : '自分の守備をリプレイで ⚾ いろんな視点から見返せる';
-  const text = withTags(body);
+  const text = withTags(body, f && f.special === 'dive');
   const lab = btn ? btn.textContent : '';
   let out = null;
   if (videoMime()) {
@@ -274,17 +363,22 @@ const CSS = `#bpXShare{position:fixed;inset:0;z-index:9500;display:flex;align-it
 #bpXShare .xsRow>*{flex:1;min-width:110px;text-align:center;text-decoration:none;font:800 15px system-ui,sans-serif;border-radius:10px;padding:11px 10px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff}
 #bpXShare .xsGo{background:#000;border-color:#fff}
 #bpXShare .xsNote{font-size:12px;color:#cfe0ff;margin:0}
+#bpXShare.busy{background:rgba(4,8,24,.25);align-items:flex-end;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+#bpXShare .xsBusy{min-width:min(300px,90%);text-align:center;font:800 17px system-ui,sans-serif}
+#bpXShare .xsBar{height:8px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden}
+#bpXShare .xsBar i{display:block;height:100%;width:0;background:#ffb703;transition:width .2s}
 #result #resShare{grid-column:1 / -1;justify-self:center;min-height:38px;height:38px;margin-top:8px;padding:0 24px;border:1px solid rgba(255,255,255,.75);border-image:none;background:#000;color:#fff;border-radius:19px;font:800 15px system-ui,sans-serif;-webkit-text-stroke:0;text-shadow:none;box-shadow:none}
 #result #resShare::before,#result #resShare::after{display:none}
 #carRes .xShareBtn{display:block;margin:8px auto 0;min-height:38px;padding:0 24px;background:#000;color:#fff;border:1px solid rgba(255,255,255,.75);border-radius:19px;font:800 15px system-ui,sans-serif;box-shadow:none;text-shadow:none}`;
 function ensureCss() { if (document.getElementById('bpXShareCss')) return; const s = document.createElement('style'); s.id = 'bpXShareCss'; s.textContent = CSS; document.head.appendChild(s); }
+function ensureSheet() {
+  if (sheetEl) return;
+  sheetEl = document.createElement('div'); sheetEl.id = 'bpXShare'; document.body.appendChild(sheetEl);
+  for (const ev of ['pointerdown', 'click', 'touchstart', 'keydown']) sheetEl.addEventListener(ev, (e) => e.stopPropagation());
+  sheetEl.addEventListener('click', (e) => { if (sheetEl.classList.contains('busy')) return; if (e.target === sheetEl || e.target.closest('[data-xs="close"]')) close(); });
+}
 export function sheet(o) {
-  ensureCss();
-  if (!sheetEl) {
-    sheetEl = document.createElement('div'); sheetEl.id = 'bpXShare'; document.body.appendChild(sheetEl);
-    for (const ev of ['pointerdown', 'click', 'touchstart', 'keydown']) sheetEl.addEventListener(ev, (e) => e.stopPropagation());
-    sheetEl.addEventListener('click', (e) => { if (e.target === sheetEl || e.target.closest('[data-xs="close"]')) close(); });
-  }
+  ensureCss(); ensureSheet();
   if (sheetUrl) URL.revokeObjectURL(sheetUrl);
   sheetUrl = o.blob ? URL.createObjectURL(o.blob) : '';
   const native = isNative(), mobile = native || coarse();
@@ -314,12 +408,89 @@ async function fromCanvas(kind, p) {
 }
 let busy = false;
 const once = (fn) => async (...a) => { if (busy) return null; busy = true; try { return await fn(...a); } catch (e) { console.warn('share', e); return null; } finally { busy = false; } };
-export const game = once(async (r) => fromCanvas(r.kind === 'knock' ? 'knock' : 'game', await gameImage(r)));
-export const careerGame = once(async (r) => { const C = window.__career; return fromCanvas('career', await careerGameImage(r, C.K, C.data)); });
-export const careerDone = once(async (c) => { const C = window.__career; return fromCanvas('careerDone', await careerDoneImage(c, C.K)); });
+// 録る間だけの「動画を作っています」(共有の確かめの画面と同じ #bpXShare の中。リプレイの画面より上)
+function busyShow(msg) {
+  ensureCss(); ensureSheet();
+  sheetEl.innerHTML = `<div class="xsBox xsBusy" role="status"><b>${esc(msg)}</b><div class="xsBar"><i></i></div><p class="xsNote">数秒で終わります</p></div>`;
+  sheetEl.classList.remove('hide'); sheetEl.classList.add('busy');
+  const bar = sheetEl.querySelector('.xsBar i');
+  window.__bpShareBusy = true;
+  return { set: (u) => { if (bar) bar.style.width = `${Math.round(clamp01(u) * 100)}%`; }, done: () => { window.__bpShareBusy = false; if (sheetEl) { sheetEl.classList.remove('busy'); sheetEl.classList.add('hide'); sheetEl.innerHTML = ''; } } };
+}
+function showVideo(kind, out, text, alt) {
+  window.__bpShareLast = { kind, text, video: { type: out.type, size: out.blob.size, secs: out.secs, frames: out.frames, w: out.w, h: out.h }, poster: out.poster ? out.poster.toDataURL('image/jpeg', 0.85) : null };
+  window.__bpShareLastVideo = out.blob;
+  return sheet({ blob: out.blob, name: `bokura_${kind}.${out.ext}`, text, alt, poster: out.poster, video: true });
+}
+// 文に「名場面は〇〇!」を ⚾ の前へ足す
+function addScene(body, word) {
+  const i = body.indexOf(' ⚾'), w = `名場面は${word.replace(/!$/, '')}!`;
+  if (i < 0) return `${body} ${w}`;
+  const head = body.slice(0, i), sep = /[!!。]$/.test(head) ? '' : '。';
+  return `${head}${sep}${w}${body.slice(i)}`;
+}
+// 録る間のカメラの向き: 捕る 0.3 秒前の、自分から球への向き(球が近すぎる・見えない時は体の向き)。録る間に回り込まないように固定する
+function catchDir(rp, R) {
+  try {
+    const F = R.frames, h = R.hl, at = (h.ct != null ? h.ct : h.t) - 0.3;
+    rp._seek(Math.max(F[0].t, at));
+    const me = rp.h.me(), ball = rp.h.ball(); me.root.updateMatrixWorld(true);
+    const mp = me.root.getWorldPosition(me.root.position.clone());
+    let d = null;
+    if (ball && ball.visible) { const bp = ball.getWorldPosition(mp.clone()); d = bp.sub(mp); d.y = 0; if (d.length() < 0.6) d = null; }
+    if (!d) { const y = me.root.rotation.y; d = mp.clone().set(-Math.sin(y), 0, -Math.cos(y)); }
+    rp._seek(F[0].t);
+    return d.normalize();
+  } catch (e) { return null; }
+}
+// 試合・ノック・キャリアの試合の結果: その試合の一番よいプレーのリプレイを、押した時にその場で流して録る。録れない・覚えが無い時は絵
+async function withPlayVideo(kind, p) {
+  const A = window.__app, rp = A && A.replay, R = bestRec(rp);
+  if (!R || !videoMime() || rp.on || !A.renderer) return fromCanvas(kind, p);
+  const B = busyShow('動画を作っています');
+  const cam = A.camera, camSave = cam ? { p: cam.position.clone(), q: cam.quaternion.clone(), up: cam.up.clone() } : null;
+  const view = rp.view, speed = rp.speed;
+  let out = null;
+  try {
+    rp.view = R.hl.special === 'dive' || R.hl.special === 'jump' ? 'side' : 'behind';
+    rp.open(R, null);
+    if (rp.ui) rp.ui.style.display = 'none';   // 録る間はリプレイのボタンを出さない(押せないので)
+    rp.recDir = catchDir(rp, R);
+    out = await recordReplay(rp, { hl: R.hl, max: 8, onProgress: B.set });
+  } catch (e) { console.warn('share video', e); out = null; }
+  finally {
+    rp.recDir = null;
+    try { if (rp.on) rp.close(); } catch (e) { /* なし */ }
+    rp.view = view; rp.speed = speed;
+    if (camSave) { cam.position.copy(camSave.p); cam.quaternion.copy(camSave.q); cam.up.copy(camSave.up); cam.updateMatrixWorld(true); }
+    B.done();
+  }
+  if (!out) return fromCanvas(kind, p);
+  const dive = R.hl.special === 'dive';
+  const text = withTags(R.hl.rank >= 2 ? addScene(p.body, R.hl.word) : p.body, dive);
+  return showVideo(kind, out, text, '名場面のリプレイの動画');
+}
+// キャリア完了: カードが寄る・数が数え上がる・判子の数秒の動画。録れない時は絵
+async function doneVideo(c, K) {
+  const p = await careerDoneImage(c, K);
+  if (!videoMime()) return fromCanvas('careerDone', p);
+  const B = busyShow('動画を作っています');
+  let out = null;
+  try {
+    const cv = newCanvas();
+    out = await recordCanvas(cv, (g, T) => drawDone(g, c, K, p.card, T), DONE_SECS, B.set);
+    if (out) out.poster = p.canvas;
+  } catch (e) { console.warn('share video', e); out = null; }
+  finally { B.done(); }
+  if (!out) return fromCanvas('careerDone', p);
+  return showVideo('careerDone', out, p.text, 'キャリア完了の動画');
+}
+export const game = once(async (r) => { const p = await gameImage(r); return withPlayVideo(r.kind === 'knock' ? 'knock' : 'game', p); });
+export const careerGame = once(async (r) => { const C = window.__career; return withPlayVideo('career', await careerGameImage(r, C.K, C.data)); });
+export const careerDone = once(async (c) => { const C = window.__career; return doneVideo(c, C.K); });
 export const replay = once(async (rp, btn) => replayShare(rp, btn));
 
 // 守備の試合・ノックの結果の画面のボタン(index.html の #resShare)。中身は js/ui.js の result が覚えた lastResult
 ensureCss();
 { const b = document.getElementById('resShare'); if (b) b.addEventListener('click', (e) => { e.stopPropagation(); const ui = window.__app && window.__app.ui; if (ui && ui.lastResult) game(ui.lastResult); }); }
-window.__bpShareX = { game, careerGame, careerDone, replay, send, sheet, close, withTags, shareUrl, videoMime, recordReplay, TAGS };
+window.__bpShareX = { game, careerGame, careerDone, replay, send, sheet, close, withTags, shareUrl, videoMime, recordReplay, bestRec, TAGS, TAG_DIVE };

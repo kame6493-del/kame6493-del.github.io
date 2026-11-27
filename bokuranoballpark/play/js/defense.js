@@ -77,6 +77,11 @@ const REACT = 0.25;         // 打った瞬間から動き出すまで(秒)
 // 11/26 守備・走塁の直し(持ち主「外野フライでまだ外野のチャージ甘くて…ベースカバー異常に遅かったり…ファーストとかがベース離れる…ランナーが詰まっているのに全速力で走って」)。
 // ?oldai=1 で前の形(試験の前後比べ用)
 const COVFIX_OFF = typeof location !== 'undefined' && /[?&]oldai=1/.test(location.search);
+// 11/27 夜 持ち主の直し(fix1127b): ?oldiff=1 インフィールドフライの走者を前の形に / ?oldpick=1 止まった球を拾い直した時の「直接捕球」の判定を前の形に / ?oldtalk=1 実況の「抜けた」「セーフ」を前の形に
+const OLDIFF = typeof location !== 'undefined' && /[?&]oldiff=1/.test(location.search);
+const OLDPICK = typeof location !== 'undefined' && /[?&]oldpick=1/.test(location.search);
+const OLDCAM = typeof location !== 'undefined' && /[?&]oldcam=1/.test(location.search);   // 11/27 フライを追う時の視点の回り方を前の形に
+const OLDTALK = typeof location !== 'undefined' && /[?&]oldtalk=1/.test(location.search);
 const ACC_COV = COVFIX_OFF ? 6.5 : 8.5;   // 塁に入る人の走り出しの加速(m/s²)
 // フェアかファウルか(原点は本塁の後ろの頂点、ファウルラインは 45 度)
 const TAG_R = 1.1;   // 走者に触れられる距離(グラブを伸ばして、m)
@@ -143,7 +148,8 @@ export class Defense {
   }
 
   // ------------------------------------------------------------ 外から見る口
-  fullSpeed() { return (this.D || DIFF.easy).speed; }
+  // 11/27 守備のキャリアの一歩目(career.js の EFFECT.start → startK): 打ってから 0.6 秒の間は速さに足す(初めに startK 倍を足し、0.6 秒で 0 へ)。キャリアの外は 0
+  fullSpeed() { const s = (this.D || DIFF.easy).speed, k = this.startK || 0, pl = this.play; if (k > 0 && pl && pl.contactT != null && pl.phase !== 'pre') { const u = pl.t - pl.contactT; if (u >= 0 && u < 0.6) return s * (1 + k * (1 - u / 0.6)); } return s; }
   holding() { return !!(this.play && this.play.holder === 'me'); }
   inDigest() { return !!this.dg; }
   frozen() { return !!this.dg || !!(this.meAct && this.meAct.kind === 'dive'); }
@@ -1008,6 +1014,9 @@ export class Defense {
         // インフィールドフライ: 打者は捕る前からアウト。走者はフォースでなくなる(進むのは自分の責任)
         this.batterRunner.out = true; this.batterRunner.run = false; this.batterRunner.done = true; this.batterRunner.flyOut = true; pl.outs++;
         for (const r of this.runners) r.forced = false;
+        // 11/27 持ち主「インフィールドフライで走者が飛び出すことがある」: 走者は捕るか落ちるかまで塁に戻って構える(前はリードのまま止まり、一死では
+        // 打者アウトで「2 アウト」と見て打った瞬間に走り出していた)。?oldiff=1 で前の形
+        if (!OLDIFF) for (const r of this.runners) { if (r.out) continue; this.runDecide(pl, r, false, r.base, 'インフィールドフライ: 塁に戻る', 0); r.half = false; if (r.dist > 0.3) { r.returning = true; r.done = false; } }
         const apex = Math.max(0.6, pl.batted.v.y / 9.8 * 0.9);
         this.later(apex, () => { this.hush('インフィールドフライ', '打者アウト', { ms: 1300 }); if (this.kind === 'game') { this.umpCall('out', 0); this.say('infield_fly', { cut: true }); } });
       } else {
@@ -1316,11 +1325,15 @@ export class Defense {
         if (this.g && pl.fly && !pl.foulCalled && pl.fairKnown && !pl.flyDropped && !pl.thrown && b.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll') && e.t <= t1)) {
           pl.flyDropped = true;
           const of = POS[pl.opt.fielder].of;
-          for (const r of this.runners) { if (r.out) continue; r.half = false; r.run = true; r.done = false; r.startAt = pl.t; r.to = Math.min(4, r.base + (of && r.base >= 2 ? 2 : 1)); }
-          if (!pl.said.drop && this.kind === 'game') { pl.said.drop = true; this.say(of ? (pl.opt.fielder === 'CF' ? (this.rng() < 0.5 ? 'gap_left' : 'gap_right') : 'through') : 'safe', { maxWait: 1 }); this.ctx.sound.crowdEvent(of ? 'longhit' : 'hit', 0.8); }
+          // 11/27 インフィールドフライが落ちた: 走者はフォースでない(進むのは自分の責任)。一斉に走らせず、毎こまの判断(brain.js)に任せる
+          for (const r of this.runners) { if (r.out) continue; if (pl.iff && !OLDIFF) continue; r.half = false; r.run = true; r.done = false; r.startAt = pl.t; r.to = Math.min(4, r.base + (of && r.base >= 2 ? 2 : 1)); }
+          // 11/27 持ち主「内野に抜けた時にセーフとか言ってる」: 内野の飛球が落ちただけでは「セーフ」と言わない(この後に拾って投げてアウトになることがある。本当のセーフは塁の判定 tagBase の時に言う)
+          if (!pl.said.drop && this.kind === 'game') { pl.said.drop = true; this.say(of ? (pl.opt.fielder === 'CF' ? (this.rng() < 0.5 ? 'gap_left' : 'gap_right') : 'through') : OLDTALK ? 'safe' : null, { maxWait: 1 }); this.ctx.sound.crowdEvent(of ? 'longhit' : 'hit', 0.8); }
         }
         // ゴロが内野を抜けた
-        if (this.kind === 'game' && !pl.fly && !pl.thrown && !pl.said.through && !POS[pl.opt.fielder].of && Math.hypot(p.x, p.z) > 46) { pl.said.through = true; this.say('through', { maxWait: 1 }); c.sound.crowdEvent('hit', 0.6); }
+        // 11/27 持ち主「内野に抜けた時に『抜けた』と言ってることがある」: 本塁から 46 m を越えただけでは言わない。内野手の誰もそばにいない(4 m より遠い)・
+        // 止まる所が内野の後ろ(本塁から 44 m 超)の時だけ。内野手が深い所で捕るゴロ・内野の後ろで止まるゴロには言わない(?oldtalk=1 で前の形)
+        if (this.kind === 'game' && !pl.fly && !pl.thrown && !pl.holder && !pl.said.through && !POS[pl.opt.fielder].of && Math.hypot(p.x, p.z) > 46 && (OLDTALK || this.passedInfield(b.path, p))) { pl.said.through = true; this.say('through', { maxWait: 1 }); c.sound.crowdEvent('hit', 0.6); }
       }
     } else if (this.holderFig) {
       const hp = this.holderFig === 'me' ? c.myHandPos() : this.holderFig.root.position.clone().add(V(0, 1.2, 0));
@@ -1558,6 +1571,7 @@ export class Defense {
     const p = this.ballPos;
     const airborne = pl.fly && !pl.flyDropped && !pl.fieldedBy && this.ball && this.ball.path === (pl.batted && pl.batted.path) && p && p.y > 0.4;
     if (airborne && g.outs + (pl.outs || 0) < 2) return;   // フライは捕られるか落ちるかまで(打った瞬間の構えのまま)
+    if (airborne && pl.iff && !OLDIFF) return;   // 11/27 インフィールドフライの打者アウトは「2 アウト目」に数えない(一死で打者アウトになっても、走者は捕るまで塁にとどまる)
     if (pl.foulCalled) return;
     const late = g.inning >= 7 && Math.abs(g.score.us - g.score.them) <= 1;
     const all = [this.batterRunner, ...this.runners].filter((r) => r && !r.out && !r.scored);
@@ -2134,6 +2148,15 @@ export class Defense {
     }
   }
   inInfield(p) { return Math.hypot(p.x, p.z + 19) < 33 || p.z > -6; }
+  // 11/27 ゴロが内野手の間を本当に抜けたか(実況の「抜けた!」に使う): 止まる所が本塁から 44 m より先で、内野手(自分が内野手なら自分も)が球から 4 m より遠い
+  passedInfield(path, p) {
+    const j = (path.n - 1) * 4; if (Math.hypot(path.pts[j], path.pts[j + 2]) < 44) return false;
+    for (const k of ['P', 'C', '1B', '2B', '3B', 'SS']) {
+      const q = k === this.my ? this.ctx.player.pos : this.fig[k] && this.fig[k].root.visible ? this.fig[k].root.position : null;
+      if (q && Math.hypot(q.x - p.x, q.z - p.z) < 4) return false;
+    }
+    return true;
+  }
   // 外野にある球は外野手だけが拾う(内野手は内野にある球だけ)
   looseTo(p, skip = []) {
     if (this.inInfield(p)) {
@@ -2278,7 +2301,9 @@ export class Defense {
   onCatch(pl, who, p, tt) {
     const c = this.ctx;
     const firstTouch = !pl.thrown;
-    const onFly = firstTouch && !pl.dropped && this.ball && !this.ball.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll' || e.type === 'wall') && e.t <= tt);   // 11/25 落とした球を拾い直したのはアウトでない
+    // 11/27 持ち主「外野に抜けたゴロを取りに行くと謎アウトになることがある」: 止まった球(ballDead)は道筋を作り直すので、拾い直した最初のこま(tt 0)には
+    // 地面に着いた印が無く「直接捕った」扱いで打者アウトになっていた。打球の道筋そのもので、地面に着く前に捕った時だけ直接捕球にする(?oldpick=1 で前の形)
+    const onFly = firstTouch && !pl.dropped && this.ball && (OLDPICK || (!pl.groundStop && pl.batted && this.ball.path === pl.batted.path)) && !this.ball.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll' || e.type === 'wall') && e.t <= tt);   // 11/25 落とした球を拾い直したのはアウトでない
     this.ball = null;
     pl.holder = who;
     this.holderFig = who === 'me' ? 'me' : this.fig[who];
@@ -2520,7 +2545,7 @@ export class Defense {
     const pl = this.play;
     // 球を持ってから指で視点を動かしたら、その回は送球先へ向けない(aimThrow)
     if (pl && pl.dpAim && pl.dpAim.key === pl.caughtT && pl.holder === 'me' && c.lookIdle() < Math.min(0.8, pl.t - pl.caughtT)) pl.dpAim.off = true;
-    if (c.fixedView || c.lookIdle() < 0.8 || this.dg) return;
+    if (c.fixedView || c.lookIdle() < 0.8 || this.dg) { this._yawV = 0; return; }
     let t = null;
     if (pl && pl.holder === 'me' && this.aimThrow(pl, dt)) return;
     if (pl && pl.holder === 'me') {
@@ -2543,14 +2568,32 @@ export class Defense {
     if (!t) return;
     const P = c.player, eyeY = P.pos.y + 1.6;
     const dx = t.x - P.pos.x, dz = t.z - P.pos.z;
-    if (Math.hypot(dx, dz) < 1.5) return;
+    if (Math.hypot(dx, dz) < 1.5) { if (this._yawV) { this._yawV *= Math.exp(-8 * dt); P.yaw += this._yawV * dt; } return; }   // 11/27 回っている途中なら、すっと止める
     // 球が画面の真ん中より少し上に入るように(少し下を向く)
     const yaw = Math.atan2(-dx, -dz), pitch = THREE.MathUtils.clamp(Math.atan2(t.y - eyeY, Math.hypot(dx, dz)) - 0.07, -0.6, 0.85);
     let d = yaw - P.yaw; d = Math.atan2(Math.sin(d), Math.cos(d));
     // 11/25 球を追う間で、球が横から後ろ(35 度より外)にある時は速く振り向く(真後ろで約 2.6 倍。180 度を 0.3 秒ほどで 30 度以内へ)。球を持った後・投げる前は今までどおり
-    const boost = !LOOSE_OFF && pl && !pl.holder && this.ball && t === this.ballPos ? 1 + 1.6 * THREE.MathUtils.clamp((Math.abs(d) - 0.6) / 1.4, 0, 1) : 1;
+    // 11/27 テスター tipsy さん「フライを追う時、少しずれたり行きすぎるとカメラが急に回ってキャッチが難しい」:
+    // 宙の球は、真上・すぐ横に近いほど横の向きが少しのずれで大きく変わる(行きすぎると真後ろへ反転する)。
+    //  - 横の距離が近いほど横に回す強さを弱める(2 m 以内は回さない・8 m で元どおり)。真上の球は上を見上げる(縦の向き)だけで追う
+    //  - 後ろへ速く振り向く(boost)は地面の球だけ。宙の球は回す速さに上限(1 秒に 140 度。スマホ 120 度)
+    //  ?oldcam=1 で前の形
+    //  (宙の球 = 打球がまだ地面に着いていない間。高さでは分けない: 前に高さで分けた形では、行きすぎて横 2 m を落ちてくる球で 1 秒に 400 度回っていた)
+    const air = !OLDCAM && pl && !pl.holder && this.ball && t === this.ballPos && pl.batted && this.ball.path === pl.batted.path && !pl.thrown
+      && !this.ball.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll' || e.type === 'wall') && e.t <= pl.t - this.ball.t0);
+    const boost = !LOOSE_OFF && !air && pl && !pl.holder && this.ball && t === this.ballPos ? 1 + 1.6 * THREE.MathUtils.clamp((Math.abs(d) - 0.6) / 1.4, 0, 1) : 1;
     const k = 1 - Math.exp((c.IS_TOUCH ? -2.2 : -2.6) * boost * dt);
-    P.yaw += d * k;
+    const chase = !OLDCAM && pl && !pl.holder && this.ball && t === this.ballPos;
+    if (chase) {
+      // 球を追う間は、回る速さ(宙 140 度/秒・スマホ 120、地面の球 300 度/秒)と、回り始め・止まりの速さの変わり(1 秒に 900 度/秒まで)に上限を付けて、なめらかに回す。
+      // 捕り損ねて球がすぐ横・後ろに落ちた時も、いきなり反転しない(前は 1 秒に 700〜800 度で回っていた)
+      let step = d * k;
+      if (air) { const near = THREE.MathUtils.clamp((Math.hypot(dx, dz) - 2) / 6, 0, 1); step *= near * near * (3 - 2 * near); }
+      const vMax = air ? (c.IS_TOUCH ? 2.1 : 2.45) : 5.2, want = THREE.MathUtils.clamp(step / Math.max(dt, 1e-4), -vMax, vMax);
+      const v0 = this._yawV || 0, acc = 15.7 * dt;
+      this._yawV = v0 + THREE.MathUtils.clamp(want - v0, -acc, acc);
+      P.yaw += this._yawV * dt;
+    } else { this._yawV = 0; P.yaw += d * k; }
     P.pitch += (pitch - P.pitch) * k * 0.7;
   }
   // 11/22 持ち主「スマホ画面でゲッツーを取る時二塁手の方にカメラが向くように良い感じに視点動く感じに ただし状況次第で」:
@@ -2968,6 +3011,7 @@ export class Defense {
     }
     b.path = predict(this.world, end, V(), V(), 0.1, { dt: DT });
     b.t0 = pl.t; b.tPrev = 0;
+    if (!pl.thrown) pl.groundStop = true;   // 11/27 打球は地面で止まった(この後に拾っても直接捕球ではない)
   }
   finishPlay(pl, label) {
     if (pl.endT != null) return;

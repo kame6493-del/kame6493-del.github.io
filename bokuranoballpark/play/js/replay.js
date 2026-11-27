@@ -156,6 +156,7 @@ export class Replay {
     const tgt = bp || this.lastBall || mp.clone().add(fwd.clone().multiplyScalar(10)).setY(1);
     let P, L;
     const toB = V(tgt.x - mp.x, 0, tgt.z - mp.z); if (toB.lengthSq() < 0.01) toB.copy(fwd); toB.normalize();
+    if (this.recDir) toB.copy(this.recDir);   // 11/27 X でシェアの結果の動画を録る間だけ: 向きを捕った時の向きに決めて、カメラが回り込まないように(js/share_x.js)
     switch (this.view) {
       case 'fp': {
         P = mp.clone().setY(mp.y + 1.62).addScaledVector(fwd, 0.18);

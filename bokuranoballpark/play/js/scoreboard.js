@@ -15,6 +15,8 @@ const RE_ERR = /エラー|失策/;
 const RE_PA_END = /三振|四球|死球|ヒット|安打|二塁打|三塁打|本塁打|ホームラン|ツーベース|ポテン|ゴロ|フライ|ライナー|飛球|エラー|振り逃げ|併殺|犠|バント/;
 // 時間帯ごとの試合の時刻(時計はここから、遊び始めてからの本当の経過で進む)
 const CLOCK_BASE = { day: 13 * 60, night: 19 * 60 };
+// 11/27 スマホ(タッチ)はスコアボードの絵を小さく持つ(attach の CW)。?fullsb=1 で前の形
+const SB_SMALL = (() => { try { const q = location.search; return !/[?&]fullsb=1/.test(q) && (/[?&]touch=1/.test(q) || (!/[?&]touch=0/.test(q) && (matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window))); } catch (e) { return false; } })();
 
 export class Scoreboard {
   constructor({ THREE, scene, stadium, getMode, getDefense, getPlay, getTime, getUI }) {
@@ -91,9 +93,12 @@ export class Scoreboard {
       }
       if (!strips.length) continue;
       // 絵: 横 2048、画面ごとの帯を縦に積む(帯の高さは画面の縦横の比のまま。合わせて 4096 を越えたら縮める)
-      const CW = 2048;
-      let tot = 0; for (const s of strips) { s.ph = Math.max(160, Math.round(CW * s.hr / s.wr)); tot += s.ph; }
-      const kH = Math.min(1, 4096 / tot); let y = 0;
+      // 11/27 スマホ(タッチ)は横 1024・縦 2048 まで(絵の中身は帯の大きさに合わせて縮めて描くので同じ見た目)。2048x4096 の絵は canvas 32MB + 絵 43MB(下の段まで)になり、
+      // 描き直すたびに全部を送り直す。iOS の WKWebView の記憶あふれ(試合に入るとタイトルに戻される)の対策。?fullsb=1 で前の大きさ
+      const CW = SB_SMALL ? 1024 : 2048, CHMAX = SB_SMALL ? 2048 : 4096;
+      // 11/27 縦に細長い切れ端(下の 'blank'。暗く塗るだけ)は高さ 8 だけ持つ。前は縦横の比のまま高さを取り、観覧車の丘では絵の 3/4 が黒い切れ端だった
+      let tot = 0; for (const s of strips) { s.kind = s.wr / s.hr < 0.8 ? 'blank' : null; s.ph = s.kind === 'blank' ? 8 : Math.max(SB_SMALL ? 80 : 160, Math.round(CW * s.hr / s.wr)); tot += s.ph; }
+      const kH = Math.min(1, CHMAX / tot); let y = 0;
       for (const s of strips) { s.ph = Math.floor(s.ph * kH); s.y = y; y += s.ph; }
       const CH = Math.max(64, y);
       const cv = document.createElement('canvas'); cv.width = CW; cv.height = CH;
@@ -129,7 +134,7 @@ export class Scoreboard {
       }
       const rects = strips.map((s) => ({ x: 0, y: s.y, w: CW, h: s.ph }));
       // 縦に細長い切れ端(折れた画面の脇の面)は暗いまま(中身を詰め込むと読めない)
-      const kinds = rects.map((r) => { const A = r.w / r.h; return A < 0.8 ? 'blank' : A >= 4.6 ? 'ribbon' : A >= 2.9 ? 'board' : 'vision'; });
+      const kinds = rects.map((r, i) => { if (strips[i].kind === 'blank') return 'blank'; const A = r.w / r.h; return A < 0.8 ? 'blank' : A >= 4.6 ? 'ribbon' : A >= 2.9 ? 'board' : 'vision'; });
       this.faces.push({ kind: kinds[0], kinds, rects, mat, cv, g, base: null, tex, mesh: meshes[0], meshes, size: strips.map((s) => [+s.wr.toFixed(1), +s.hr.toFixed(1)]) });
     }
     this.key = null;

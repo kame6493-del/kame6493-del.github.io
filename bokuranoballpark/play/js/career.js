@@ -1,15 +1,16 @@
 // 11/25 守備のキャリア: 高校 → 社会人 → プロ。1 試合ごとに守備の評価(S〜D)と個人の UZR を出し、基準を超えたら次の段へ。
-// 能力は 肩・守備・エラー回避 の 3 つ。試合の中のプレーで経験値が入って上がり、プレーに少しだけ効く(効き方の数は下の EFFECT)。
+// 能力は 肩・守備 の 2 つ(11/27 持ち主「エラー回避の能力は要らない」で外した)。試合の中のプレーで経験値が入って上がり、段(G〜S)が上がるほど動きがはっきり良くなる(効き方の数は下の EFFECT)。
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1127b';
+import { CareerUI } from './career_ui.js?v=1127f';
 import * as Rank from './ranking.js?v=1127b';
 
 const KEY = 'r4walk.career.v1';
 const OFS = ['LF', 'CF', 'RF'];
 export const POS_NAME = { P: '投手', C: '捕手', '1B': '一塁手', '2B': '二塁手', '3B': '三塁手', SS: '遊撃手', LF: '左翼手', CF: '中堅手', RF: '右翼手' };
-export const AB_NAME = { arm: '肩', field: '守備', sure: 'エラー回避' };
+export const AB_NAME = { arm: '肩', field: '守備' };
+export const AB_KEYS = ['arm', 'field'];   // 11/27 前の記録に残るエラー回避(sure)は読み込みで捨てる(守備・肩に振り分けない)
 const AB_MIN = 30, AB_MAX = 99;
 // 段: evK 打球(ゴロ・ライナー)の速さの倍率、hard 難しい種類の打球を選ぶ割合、need 昇格の基準(評価がこれ以上 か UZR がこれ以上)
 // 11/25 夜 持ち主「全部いい感じに」: 1 試合で上がっていたのを、その段で min 試合以上・直近 3 試合のうち 2 試合で基準を超えたら上がる形に(各段 5〜10 試合ほど)
@@ -47,27 +48,32 @@ export function boostState() {
 export function boostSave(s) { try { localStorage.setItem(BKEY, JSON.stringify(s)); } catch (e) { /* 残せなくても遊べる */ } try { window.dispatchEvent(new CustomEvent('bp:boost')); } catch (e) { /* */ } }
 export const storeOn = () => { try { return !!(window.__bpStore && window.__bpStore.grow); } catch (e) { return false; } };
 export const boostOwned = () => { try { return !!(window.__bpStore && window.__bpStore.boostOn && window.__bpStore.boostOn()); } catch (e) { return false; } };
-export const abAvg = (ab) => Math.round((ab.arm + ab.field + ab.sure) / 3);
+export const abAvg = (ab) => Math.round((ab.arm + ab.field) / 2);
 // 経験値を足した時に、何ずつ上がるか(試合の始めの能力と経験値から。足す順番によらず同じ)
 export function upsFrom(ab0, xp0, add) {
-  const out = { arm: 0, field: 0, sure: 0 };
-  for (const k of ['arm', 'field', 'sure']) { let v = ab0[k], x = (xp0[k] || 0) + (add[k] || 0); while (v < AB_MAX && x >= xpNeed(v)) { x -= xpNeed(v); v++; out[k]++; } }
+  const out = { arm: 0, field: 0 };
+  for (const k of AB_KEYS) { let v = ab0[k], x = (xp0[k] || 0) + (add[k] || 0); while (v < AB_MAX && x >= xpNeed(v)) { x -= xpNeed(v); v++; out[k]++; } }
   return out;
 }   // 終えたキャリアの選手カード(殿堂)
 const RANK_N = { S: 5, A: 4, B: 3, C: 2, D: 1 };
 
 // 能力の効き方(t は 0 = 最初の 30、1 = 最高の 99)
+// 11/27 持ち主「肩・守備の強さは上がっていくにつれて動きが良くなっていく感じで。S はかなり動き良い感じで」: 前は「少しだけ効く」幅(速さ ±3〜7%)だったのを広げ、
+//   上の段ほど 1 段で伸びる幅が大きくなる曲がり(f = 0.6t + 0.4t²)にした。段ごとの数は docs/アプリ化の引き継ぎ.md の 11/27 夜 fix1127b の節の表
+//   エラー回避を外したので、お手玉は守備、送球のそれは肩で決まる
 const tOf = (v) => Math.max(0, Math.min(1, (v - AB_MIN) / (AB_MAX - AB_MIN)));
 const lerp = (a, b, t) => a + (b - a) * t;
+const fOf = (v) => { const t = tOf(v); return 0.6 * t + 0.4 * t * t; };
 export const EFFECT = {
-  reach: (v) => lerp(0.96, 1.12, tOf(v)),      // 守備: グローブの届く幅(標準 1.4 m → 1.34〜1.57 m)
-  speed: (v) => lerp(0.97, 1.07, tOf(v)),      // 守備: 全力の速さ(標準 8.3 m/s → 8.05〜8.88 m/s)
-  dive: (v) => lerp(1.0, 1.1, tOf(v)),         // 守備: 飛び込みで体が進む距離とグラブの先(標準で走るより約 1 m 先 → 最高で約 +0.35 m 伸びる)
-  arm: (v) => lerp(0.95, 1.12, tOf(v)),        // 肩: 送球の初速(届く距離も伸びる)
-  bobHard: (v) => lerp(0.045, 0.008, tOf(v)),  // エラー回避: 難しい捕球でお手玉する確率
-  bobEasy: (v) => lerp(0.015, 0.002, tOf(v)),  // エラー回避: 普通の捕球でお手玉する確率
-  sigma: (v) => lerp(0.55, 0.18, tOf(v)),      // エラー回避: 送球の横のそれ(m、標準偏差)
-  wild: (v) => lerp(0.018, 0.003, tOf(v)),     // エラー回避: 大きくそれる(受け手が捕れない)送球の確率
+  reach: (v) => lerp(0.95, 1.22, fOf(v)),      // 守備: グローブの届く幅(標準 1.4 m → 1.33〜1.71 m)
+  speed: (v) => lerp(0.95, 1.14, fOf(v)),      // 守備: 全力の速さ(標準 8.3 m/s → 7.9〜9.5 m/s)
+  start: (v) => lerp(0.0, 0.30, fOf(v)),       // 守備: 一歩目(打ってから 0.6 秒の間だけ速さに足す割合。初めに足して 0.6 秒で 0 へ)
+  dive: (v) => lerp(1.0, 1.25, fOf(v)),        // 守備: 飛び込みで体が進む距離とグラブの先(標準で走るより約 1 m 先 → 最高で約 +0.8 m 伸びる)
+  bobHard: (v) => lerp(0.05, 0.006, fOf(v)),   // 守備: 難しい捕球でお手玉する確率
+  bobEasy: (v) => lerp(0.016, 0.001, fOf(v)),  // 守備: 普通の捕球でお手玉する確率
+  arm: (v) => lerp(0.93, 1.25, fOf(v)),        // 肩: 送球の初速(届く距離も伸びる)
+  sigma: (v) => lerp(0.6, 0.12, fOf(v)),       // 肩: 送球の横のそれ(m、標準偏差)
+  wild: (v) => lerp(0.02, 0.002, fOf(v)),      // 肩: 大きくそれる(受け手が捕れない)送球の確率
 };
 // 次の 1 を上げるのに要る経験値(11/25 夜 そろえ直し: 1 試合の経験値は 3 つとも 10〜25 ほど。30 のころは 1 試合で 3〜5、
 // 60 で 2 前後、80 を超えると 1 前後。30 → 99 は全部で約 1,050 で、プロに入ってから数十試合で届く)
@@ -88,7 +94,7 @@ const sig = (x) => 1 / (1 + Math.exp(-x));
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
 function fresh() {
-  return { v: 1, stage: 0, pos: 'SS', ab: { arm: AB_MIN, field: AB_MIN, sure: AB_MIN }, xp: { arm: 0, field: 0, sure: 0 },
+  return { v: 1, stage: 0, pos: 'SS', ab: { arm: AB_MIN, field: AB_MIN }, xp: { arm: 0, field: 0 },
     stageGames: [0, 0, 0], tot: { games: 0, po: 0, a: 0, e: 0, uzr: 0, wins: 0 }, hist: [], final: null, made: Date.now(),
     name: '', num: 6, pass: [[], [], []], best: null, byPos: {},
     stageTot: [zt(), zt(), zt()], done: null, toPro: null };
@@ -174,7 +180,7 @@ class Career {
     this.active = false;   // キャリアの画面から試合を始めた(タイトルへ戻るまで)
     this.game = null;      // いまの試合の記録(キャリアの試合の間だけ)
     this.cnt = 0;          // tagBase・tagRunner で数えたアウト(onCatch の中のアウトと重ねて数えないため)
-    this.K = { POS_NAME, AB_NAME, STAGES, FINAL_GAMES, EFFECT, xpNeed, finalEval, fpctText, uzrText, AB_MAX, promoInfo, POS_ADJ, POS_BASE, adjUZR, mainPos, Rank,
+    this.K = { POS_NAME, AB_NAME, AB_KEYS, STAGES, FINAL_GAMES, EFFECT, xpNeed, finalEval, fpctText, uzrText, AB_MAX, promoInfo, POS_ADJ, POS_BASE, adjUZR, mainPos, Rank,
       BOOST, boostState, boostSave, storeOn, boostOwned, abAvg, upsFrom };
     this.ui = new CareerUI(this);
     this.wait();
@@ -193,6 +199,8 @@ class Career {
       const j = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (j && j.v === 1) {
         const D = Object.assign(fresh(), j);
+        // 11/27 エラー回避を外した: 前の記録の値と経験値は捨てる(守備・肩には足さない)。肩・守備が無い・壊れている時は最初の 30
+        { const ab = {}, xp = {}; for (const k of AB_KEYS) { const v = Math.round(+((j.ab || {})[k])); ab[k] = Number.isFinite(v) ? Math.max(AB_MIN, Math.min(AB_MAX, v)) : AB_MIN; const x = +((j.xp || {})[k]); xp[k] = Number.isFinite(x) && x > 0 ? x : 0; } D.ab = ab; D.xp = xp; }
         if (!Array.isArray(D.pass) || D.pass.length !== 3) D.pass = [[], [], []];
         // 11/26 位置ごとの成績(試合・刺殺・補殺・失策・UZR)。前から遊んでいる人の記録は、今の位置の分として引き継ぐ
         if (!j.byPos || typeof j.byPos !== 'object') { D.byPos = {}; const T = D.tot; if (T && T.games) D.byPos[D.pos] = { games: T.games, po: T.po, a: T.a, e: T.e, uzr: T.uzr }; }
@@ -262,7 +270,7 @@ class Career {
     d.begin = function (sel) {
       const car = C.active && sel && sel.mode === 'game' && !sel.keepDiff;
       if (car) sel = { ...sel, pos: C.data.pos };
-      C.game = null; this.throwMod = null; this.diveK = 1;
+      C.game = null; this.throwMod = null; this.diveK = 1; this.startK = 0;
       const r = ob.call(this, sel);
       if (car && this.kind === 'game' && !this.tut) C.onBegin(this);
       return r;
@@ -296,7 +304,7 @@ class Career {
       const o0 = pl.outs || 0, c0 = C.cnt, first = !pl.thrown, wild = pl._carWild;
       // 11/25 テスター「捕り損ねたのにアウト」: フライ・ライナーを宙で捕ってお手玉したら落球(アウトにしない。球は落ちて走者は進む)。前は札だけ「お手玉!」でアウトのままだった
       try {
-        const onFly = first && who === 'me' && !pl.dropped && pl.fly && this.ball && !this.ball.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll' || e.type === 'wall') && e.t <= tt);
+        const onFly = first && who === 'me' && !pl.dropped && pl.fly && this.ball && !pl.groundStop && pl.batted && this.ball.path === pl.batted.path && !this.ball.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll' || e.type === 'wall') && e.t <= tt);
         if (onFly && C.bobRoll(this, pl)) { pl._carBob = true; this.dropBall(pl, p, 'お手玉で落球'); return; }
       } catch (e) { console.warn(e); }
       const r = oc.call(this, pl, who, p, tt);
@@ -335,11 +343,11 @@ class Career {
     const ab = this.data.ab;
     this.baseD = d.D;
     d.D = { ...d.D, reach: d.D.reach * EFFECT.reach(ab.field), speed: d.D.speed * EFFECT.speed(ab.field) };
-    d.diveK = EFFECT.dive(ab.field);
+    d.diveK = EFFECT.dive(ab.field); d.startK = EFFECT.start(ab.field);
     const C = this;
     d.throwMod = function (to, from, speed, rk, pl) {
       if (!C.game) return null;
-      const s = C.data.ab.sure, rng = this.rng;
+      const s = C.data.ab.arm, rng = this.rng;
       const dx = to.x - from.x, dz = to.z - from.z, L = Math.hypot(dx, dz) || 1;
       const g = (rng() + rng() + rng() - 1.5) * 2;   // ほぼ正規分布
       let off = g * EFFECT.sigma(s);
@@ -352,8 +360,8 @@ class Career {
     let train = false;
     if (bs.useTrain && bs.train > 0) { bs.train--; train = true; boostSave(bs); }
     const mult = (owned ? BOOST.mult : 1) * (train ? BOOST.train : 1);
-    this.game = { po: 0, a: 0, e: 0, uzr: 0, uzrOld: 0, parts: { rng: 0, dpr: 0, arm: 0, err: 0 }, chances: 0, xp: { arm: 0, field: 0, sure: 0 }, xpPlay: { arm: 0, field: 0, sure: 0 }, ups: { arm: 0, field: 0, sure: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my,
-      mult, owned, train, xp0: { ...this.data.xp }, base: { arm: 0, field: 0, sure: 0 } };
+    this.game = { po: 0, a: 0, e: 0, uzr: 0, uzrOld: 0, parts: { rng: 0, dpr: 0, arm: 0, err: 0 }, chances: 0, xp: { arm: 0, field: 0 }, xpPlay: { arm: 0, field: 0 }, ups: { arm: 0, field: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my,
+      mult, owned, train, xp0: { ...this.data.xp }, base: { arm: 0, field: 0 } };
     const st = this.stage, n = this.data.stageGames[this.data.stage] + 1;
     // 11/26 プロの 4 試合目は「優勝のかかった試合」、5 試合目は「最終戦」
     const tag = this.data.stage === 2 ? (n === FINAL_GAMES - 1 ? '優勝のかかった試合' : n >= FINAL_GAMES ? '最終戦' : '') : '';
@@ -362,7 +370,7 @@ class Career {
   }
   // お手玉: 捕った後、投げられるまで 0.6 秒遅れる(アウトにできなければ失策)
   bobRoll(d, pl) {
-    const s = this.data.ab.sure, hard = (pl._car && pl._car.p < 0.75) || (pl.myReach || 0) > 0.75 || (pl.star || 0) >= 2;
+    const s = this.data.ab.field, hard = (pl._car && pl._car.p < 0.75) || (pl.myReach || 0) > 0.75 || (pl.star || 0) >= 2;
     return d.rng() < (hard ? EFFECT.bobHard(s) : EFFECT.bobEasy(s));
   }
   bobble(d, pl) {
@@ -416,7 +424,7 @@ class Career {
     G.uzr += du; G.plays++;
     // 経験値
     // 11/25 夜 そろえ直し: 前は補殺 1 つで肩 +5(外野 +10)入り、肩だけ 1 試合で 30 → 40 になった。3 つとも同じくらい入る数にし、1 試合の上限 XP_CAP を付けた
-    const X = { arm: 0, field: 0, sure: 0 };
+    const X = { arm: 0, field: 0 };
     if (lt && !lt.self) { X.arm += 2; if (lt.transfer && lt.transfer < (of ? 1.1 : 0.8)) X.arm += 1; }
     if (pl._carA) X.arm += of ? 5 : 2;
     if (pl.evalKind === 'nice' && lt && !lt.self) X.arm += 2;
@@ -425,17 +433,15 @@ class Career {
     if (pl.evalKind === 'fine') X.field += 4;
     if (caught && pl.special === 'dive') X.field += 3;
     if (du > 0 && mine) X.field += Math.min(4, Math.round(du * 5));
-    if (mine && !err) X.sure += 2;
-    if (lt && !lt.self && !err) X.sure += 1;
-    if (caught && mine && !err && pl._car.p < 0.7) X.sure += 2;   // 難しい球をきれいに捕った
-    for (const k in X) X[k] = Math.max(0, Math.min(X[k], XP_CAP - G.xpPlay[k])), G.xpPlay[k] += X[k];
+    // 11/27 エラー回避を外した(前はミス無く捕る・投げると +2・+1・難しい球 +2 がエラー回避に入っていた。肩・守備の入り方は変えない)
+    for (const k of AB_KEYS) X[k] = Math.max(0, Math.min(X[k], XP_CAP - G.xpPlay[k])), G.xpPlay[k] += X[k];
     this.addXP(X);
     if (Math.abs(du) >= 0.05) this.ui.pop(`UZR ${uzrText(du)}`, du >= 0 ? 'good' : 'bad');
     if (pl.evalKind === 'fine' && mine) { try { d.ctx.sound.crowdEvent('fine', 1); } catch (e) { /* 音なし */ } }
   }
   addXP(X, end, G0) {
     const D = this.data, G = G0 || this.game, m = (G && G.mult) || 1;
-    for (const k of ['arm', 'field', 'sure']) {
+    for (const k of AB_KEYS) {
       if (!X[k]) continue;
       if (G && G.base) G.base[k] += X[k];   // 倍率の前(「ブーストがあれば」の計算に使う)
       const x = Math.round(X[k] * m * 10) / 10;
@@ -454,7 +460,7 @@ class Career {
     const d = window.__app && window.__app.defense; if (!d || !this.game || !this.baseD) return;
     const ab = this.data.ab;
     d.D = { ...this.baseD, reach: this.baseD.reach * EFFECT.reach(ab.field), speed: this.baseD.speed * EFFECT.speed(ab.field) };
-    d.diveK = EFFECT.dive(ab.field);
+    d.diveK = EFFECT.dive(ab.field); d.startK = EFFECT.start(ab.field);
   }
   // ------------------------------------------------ 試合の終わり
   onResult(r) {
@@ -465,8 +471,8 @@ class Career {
     const D = this.data, st = this.stage, ev = r.ev || {}, st0 = D.stage;
     const rank = ev.n ? ev.rank : 'C';
     const tc = G.po + G.a + G.e;
-    // 試合の終わりの経験値: 出た分(3 つとも 2)+ 評価(S 6・A 4・B 3・C 1)+ 無失策(エラー回避 +3)
-    { const rb = { S: 6, A: 4, B: 3, C: 1 }[rank] || 0, g = (tc > 0 || (ev.n || 0) > 0) ? 2 + rb : 1; this.addXP({ arm: g, field: g, sure: g + (G.e === 0 && tc >= 3 ? 3 : 0) }, true, G); }
+    // 試合の終わりの経験値: 出た分(2 つとも 2)+ 評価(S 6・A 4・B 3・C 1)。11/27 エラー回避を外したので、前の無失策の +3(エラー回避)は無い
+    { const rb = { S: 6, A: 4, B: 3, C: 1 }[rank] || 0, g = (tc > 0 || (ev.n || 0) > 0) ? 2 + rb : 1; this.addXP({ arm: g, field: g }, true, G); }
     const need = st.need;
     const avg = abAvg(D.ab), needRank = need ? (need.abAvg && avg >= need.abAvg ? need.rankAb : need.rank) : null;
     const rankOK = need && (RANK_N[rank] || 0) >= RANK_N[needRank];
@@ -521,7 +527,7 @@ class Career {
   // 11/27 成長: 結果の画面に出す数(この試合の倍率・ブースト/特訓チケットがあれば何ずつ上がったか)
   boostRes(G) {
     if (!G || !G.base) return null;
-    const b = G.base, m = G.mult || 1, w = (k) => { const o = {}; for (const a of ['arm', 'field', 'sure']) o[a] = Math.round(b[a] * k * 10) / 10; return upsFrom(G.ab0, G.xp0, o); };
+    const b = G.base, m = G.mult || 1, w = (k) => { const o = {}; for (const a of AB_KEYS) o[a] = Math.round(b[a] * k * 10) / 10; return upsFrom(G.ab0, G.xp0, o); };
     return { mult: m, owned: !!G.owned, train: !!G.train, base: { ...b },
       ifBoost: G.owned ? null : w(m * BOOST.mult), ifTrain: G.train ? null : w(m * BOOST.train) };
   }
