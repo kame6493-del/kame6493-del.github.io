@@ -417,3 +417,23 @@ body.hud-off-carPop #carPops{display:none}
 .cRkBoost{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 8px}
 .cRkGo{min-height:36px;padding:0 14px;font-size:13px}
 .tutPts{margin-top:8px;padding:5px 8px;border-radius:10px;background:rgba(0,0,0,.25);font-size:12px;font-weight:800;text-align:center}
+/* 11/28 課金の誘い: キャリアの画面の案内(小さく)・ブラウザ版のアプリへの誘い(値段なし)・昇格までの数 */
+.cNudge.hub,.cNudge.web{padding:8px 40px 8px 12px;gap:3px}
+.cNudge.hub p,.cNudge p.sm{font-size:12px;font-weight:700}
+.cNudge.web{border-color:#7fc8ff;background:linear-gradient(180deg,rgba(6,24,52,.92),rgba(14,10,40,.92))}
+.cNudge.web .cNudgeH{color:#9fd8ff}
+a.cNudgeGo{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;box-sizing:border-box}
+.cNudge.web a.cNudgeGo{background:linear-gradient(180deg,#5ab8ff,#1f7fe0 45%,#1359a8)}
+.cNudge .cNudgeSoon{font-size:12.5px;color:#fff;background:rgba(255,255,255,.12);border-radius:8px;padding:4px 10px;align-self:flex-start}
+.cNudge.sim p b{color:#ffd23a;font-size:17px}
+/* 11/28 守った記録(キャリアの画面の「通算成績」の下のボタン → 窓) */
+.cRecBtn{display:block;margin:10px auto 2px;min-height:44px;padding:0 22px;font-size:15px}
+#carHelp .chBox .cRecSub{font-size:13px;font-weight:900;color:#2a4a8a;margin:8px 0 4px}
+#carHelp .cRecT{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px}
+#carHelp .cRecT th,#carHelp .cRecT td{padding:4px 4px;border-bottom:1px solid #c9d6f0;text-align:center;white-space:nowrap}
+#carHelp .cRecT tr:first-child th{background:#0b3a9c;color:#fff;font-size:12px}
+#carHelp .cRecT.park tr:first-child th{background:none;color:#0b2560;font-size:13px}
+#carHelp .cRecT.park th{text-align:left}
+#carHelp .cRecT td.pos{color:#138a2a}#carHelp .cRecT td.neg{color:#c0392b}
+#carHelp .chBox p.cRecNote{font-size:11.5px;color:#55688f;margin-top:4px}
+#carHelp .chBox{max-height:calc(100vh - 32px);overflow:auto}

@@ -4,6 +4,7 @@
 // 一時停止の画面の「リプレイ」で、動画のように(再生・止める・巻き戻し・遅く)いろいろな視点から見る。
 // 覚えるのは今のプレーと 1 つ前のプレーだけ(スマホのメモリを食わないように)。
 import * as THREE from 'three';
+import { ballVisScale } from './ball.js';
 
 const FPS = 20, MAXT = 15;
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
@@ -19,6 +20,11 @@ export function tidyEuler(o) {
   const r = o.rotation;
   if (Math.abs(r.x) > PI / 2 && Math.abs(r.z) > PI / 2) r.set(wrap(r.x - Math.sign(r.x) * PI), wrap(PI - r.y), wrap(r.z - Math.sign(r.z) * PI));
 }
+// 11/28 足の骨と、骨から足の裏・つま先の表面までの厚み(m)。athletes.js の GROUND_PTS の足の分と同じ
+const FEET = [['foot_l', 0.07], ['foot_r', 0.07], ['ball_l', 0.04], ['ball_r', 0.04]];
+// 骨から引いた厚みは少し厚め: 立った形(体の網の足の裏がちょうど地面)で、骨から引いた一番低い所は地面の 0.025 m 下になる(11/28 測った)。その分は許す
+const SOLE = 0.025;
+const _fv = new THREE.Vector3(), _fw = new THREE.Vector3();
 const VIEWS = [
   ['fp', '自分の目'], ['behind', '後ろから'], ['side', '横から'], ['high', '上から'], ['tv', 'バックネット裏'], ['ball', '球を追う'], ['free', '自由'],
 ];
@@ -38,7 +44,13 @@ export class Replay {
     if (this.cur && this.cur.frames.length > 4) this.last = this.cur;
     const nodes = [], bones = [];
     for (const r of this.h.roots()) if (r) r.traverse((o) => { if (o.isBone && o.parent && o.parent.isBone) bones.push(o); else nodes.push(o); });
-    this.cur = { nodes, bones, frames: [], acc: 1 / FPS, t: 0, done: false };
+    // 11/28 持ち主「リプレイ見たとき足が埋まっていることある」「6 秒くらいの時 人間の感じがおかしくなる」:
+    // 骨は回りだけ覚えていて、腰の骨(体の根元の骨の子。Mixamo の Hips)の位置を覚えていなかった。動き(しゃがむ・飛び込む・止まる・投げる)の
+    // 腰の上下・前後が、リプレイでは開いた時(止めた時)の位置のままになり、しゃがんだ形で腰が高いと足が地面の下へ、
+    // 止まる・投げる動きで腰が前後へずれていると体が根元からずれて崩れて見えた。腰の骨の位置も覚える(?oldreplay=1 で前の形)
+    const pbones = OLD ? [] : bones.filter((o) => !(o.parent.parent && o.parent.parent.isBone));
+    const bm = this.h.ball && this.h.ball();
+    this.cur = { nodes, bones, pbones, bi: bm ? nodes.indexOf(bm) : -1, frames: [], acc: 1 / FPS, t: 0, done: false };
   }
   capture(dt) {
     const R = this.cur;
@@ -63,7 +75,10 @@ export class Replay {
       Q[k] = q.x * 32767; Q[k + 1] = q.y * 32767; Q[k + 2] = q.z * 32767; Q[k + 3] = q.w * 32767;
       Vis[nN + j] = o.visible ? 1 : 0;
     }
-    return { t, P, Q, Vis };
+    const pb = R.pbones || [], BP = new Float32Array(pb.length * 3);
+    for (let j = 0; j < pb.length; j++) { const p = pb[j].position; BP[j * 3] = p.x; BP[j * 3 + 1] = p.y; BP[j * 3 + 2] = p.z; }
+    const fly = this.h.ballFly ? !!this.h.ballFly() : true;   // 11/28 打球が飛んでいる・転がっている間(持っている球は残像を出さない)
+    return { t, P, Q, Vis, BP, fly };
   }
   // 見せる物: 今のプレーが終わっていれば今の、まだなら 1 つ前の
   pick(playEnded) {
@@ -93,6 +108,63 @@ export class Replay {
       o.quaternion.copy(q0).slerp(q1, u);
       o.visible = !!(u < 0.5 ? F0.Vis[nN + j] : F1.Vis[nN + j]);
     }
+    const pb = R.pbones || [];
+    if (F0.BP && F1.BP) for (let j = 0, a = 0; j < pb.length; j++, a += 3) pb[j].position.set(F0.BP[a] + (F1.BP[a] - F0.BP[a]) * u, F0.BP[a + 1] + (F1.BP[a + 1] - F0.BP[a + 1]) * u, F0.BP[a + 2] + (F1.BP[a + 2] - F0.BP[a + 2]) * u);
+  }
+  // 11/28 足が地面に埋まらないように: 選手ごとに、足・つま先の骨から厚みを引いた一番低い所が、その所の地面より下なら、その分だけ体を持ち上げる。
+  // 下げはしない(飛び込み・跳ぶ形はそのまま)。体の位置は毎こま覚えた値から当て直すので、持ち上げは積もらない
+  _feet() {
+    if (OLD || !this.h.groundAt || !this.h.athletes) return;
+    for (const a of this.h.athletes()) {
+      const r = a && a.rig; if (!r || !r.bones || !a.root || !a.root.visible || !r.model.visible) continue;
+      let vis = true; for (let q = a.root; q; q = q.parent) if (!q.visible) { vis = false; break; }
+      if (!vis) continue;
+      a.root.updateMatrixWorld(true);
+      let lo = Infinity, fx = 0, fz = 0;
+      for (const [n, rad] of FEET) { const b = r.bones[n]; if (!b) continue; b.getWorldPosition(_fv); if (_fv.y - rad < lo) { lo = _fv.y - rad; fx = _fv.x; fz = _fv.z; } }
+      if (lo === Infinity) continue;
+      a.root.getWorldPosition(_fw);
+      const g = this.h.groundAt(fx, fz, _fw.y + 1.2);
+      if (g == null || !isFinite(g)) continue;
+      const up = g - lo - SOLE;
+      if (up > 0.002 && up < 0.6) { a.root.position.y += up; a.root.updateMatrixWorld(true); }
+    }
+  }
+  // 11/28 持ち主「リプレイこれ打球映ってないことある」: 球の見た目の大きさ(遠くは大きく・画面で 6.5 px の点)と残像は、遊んでいる間の
+  // カメラで毎こま決めていて、リプレイでは止めた時の大きさのまま(遠い球は 1〜2 px、1 人称で手元の球は 0.001 倍)・点と残像は出なかった。
+  // リプレイのカメラで決め直し、飛んでいる球には覚えた位置から残像(遊んでいる時と同じ薄い線)を描く
+  _ballLook() {
+    if (OLD) return;
+    const bv = this.h.ballView && this.h.ballView(), R = this.rec; if (!bv || !R || R.bi < 0) return;
+    const m = bv.mesh, cam = this.h.camera;
+    if (!m.visible) { bv.trail.visible = false; if (bv.dot) bv.dot.visible = false; return; }
+    const F = R.frames, t = F[0].t + this.t, fr = this._frameAt(t);
+    const fly = fr ? fr.fly !== false : true;
+    m.updateMatrixWorld(true);
+    const pos = m.getWorldPosition(V()), dist = pos.distanceTo(cam.position);
+    if (fly) {
+      // 残像: 0.6 秒前までの覚えた位置(1/60 秒ごと)。飛んでいない(持っている・止まった)こまより前へは伸ばさない
+      const hist = [];
+      for (let k = 1; k < bv.N; k++) { const tt = t - k / 60; if (tt < F[0].t) break; const f2 = this._frameAt(tt); if (!f2 || f2.fly === false) break; const p = this._ballAt(tt); if (!p) break; hist.push(p); }
+      bv.hist = hist;
+      const sp = bv.spin.clone(); bv.spin.set(0, 0, 0);
+      bv.update(pos, 0, cam, 0.022, 0.25);
+      bv.spin.copy(sp);
+    } else {
+      bv.clearTrail();
+      const s = Math.min(2.5, ballVisScale(dist, cam)); m.scale.setScalar(s); bv.fitDot(pos, dist, s, cam);
+    }
+  }
+  _frameAt(t) { const F = this.rec.frames; let i = Math.min(F.length - 1, Math.max(0, Math.round((t - F[0].t) * FPS))); while (i > 0 && F[i].t > t + 0.5 / FPS) i--; while (i < F.length - 1 && F[i + 1].t <= t + 0.5 / FPS) i++; return F[i]; }
+  _ballAt(t) {
+    const R = this.rec, F = R.frames, a = R.bi * 3; if (R.bi < 0) return null;
+    let i = Math.min(F.length - 2, Math.max(0, Math.floor((t - F[0].t) * FPS)));
+    while (i > 0 && F[i].t > t) i--;
+    while (i < F.length - 2 && F[i + 1].t < t) i++;
+    const A = F[i], B = F[i + 1] || A, u = B.t > A.t ? Math.max(0, Math.min(1, (t - A.t) / (B.t - A.t))) : 0;
+    if (!A.Vis[R.bi] && !B.Vis[R.bi]) return null;
+    // 球は scene の直の子なので、位置がそのまま世界の位置
+    return V(A.P[a] + (B.P[a] - A.P[a]) * u, A.P[a + 1] + (B.P[a + 1] - A.P[a + 1]) * u, A.P[a + 2] + (B.P[a + 2] - A.P[a + 2]) * u);
   }
   _seek(t) {
     const R = this.rec, F = R.frames, t0 = F[0].t, t1 = F[F.length - 1].t;
@@ -102,6 +174,7 @@ export class Replay {
     while (i < F.length - 2 && F[i + 1].t < t) i++;
     const A = F[i], B = F[i + 1] || A, u = B.t > A.t ? Math.max(0, Math.min(1, (t - A.t) / (B.t - A.t))) : 0;
     this._apply(R, A, B, u);
+    this._feet();
   }
   get dur() { const F = this.rec.frames; return F[F.length - 1].t - F[0].t; }
   // ---------------------------------------------------------------- 開く・閉じる
@@ -109,6 +182,7 @@ export class Replay {
     if (!R) return;
     this.rec = R; this.onClose = onClose;
     this.saved = this._grab(R, 0);   // 閉じたら今の形へ戻す
+    { const bv = this.h.ballView && this.h.ballView(); this.ballSave = bv ? { s: bv.mesh.scale.x, dot: !!(bv.dot && bv.dot.visible), hist: bv.hist.slice() } : null; }
     this.on = true; this.t = 0; this.playing = true; this.snapCam = true;
     const cam = this.h.camera; this.camSave = { layers: cam.layers.mask };
     cam.layers.enable(31);   // 一人称で遊んだ時の自分の体(見えない層 31 で動きだけ付けていた)も映す
@@ -120,6 +194,7 @@ export class Replay {
     if (!this.on) return;
     const R = this.rec;
     this._apply(R, this.saved, this.saved, 0);
+    { const bv = this.h.ballView && this.h.ballView(), S = this.ballSave; if (bv && S) { bv.mesh.scale.setScalar(S.s); if (bv.dot) bv.dot.visible = S.dot; bv.hist = S.hist; } }
     this.h.camera.layers.mask = this.camSave.layers;
     this.on = false;
     if (this.ui) { this.ui.remove(); this.ui = null; }
@@ -136,6 +211,7 @@ export class Replay {
     this._seek(F[0].t + this.t);
     { const me = this.h.me(); if (me) { if (this.view === 'fp') { this._meVis = me.root.visible; me.root.visible = false; } } }   // 自分の目の時は自分の頭を映さない(位置は覚えた形のまま)
     this.place(dt);
+    this._ballLook();
     // 近くの人を薄くする処理(カメラが体の中に入った時)を、リプレイのカメラで計り直す
     const cam = this.h.camera;
     for (const a of this.h.athletes()) if (a && a.rig && a._fadeNear && a.root.visible) { try { a._fadeNear(cam, a.root.getWorldPosition(V())); } catch (e) { } }
@@ -164,7 +240,12 @@ export class Replay {
         break;
       }
       case 'behind': P = mp.clone().addScaledVector(toB, -4.2).setY(mp.y + 2.3); L = mp.clone().addScaledVector(toB, 3).setY(mp.y + 1.0); break;
-      case 'side': { const sd = V(-toB.z, 0, toB.x); P = mp.clone().addScaledVector(sd, 7).setY(mp.y + 1.6); L = mp.clone().setY(mp.y + 1.0); break; }
+      case 'side': {
+        const sd = V(-toB.z, 0, toB.x); P = mp.clone().addScaledVector(sd, 7).setY(mp.y + 1.6); L = mp.clone().setY(mp.y + 1.0);
+        // 11/28 打球が画面の外へ出ていた(横からは自分だけを真ん中に見ていた): 球が見えている間は、自分と球の真ん中を見て、両方が入るだけ引く(45 m まで)
+        if (bp && !OLD) { const half = Math.hypot(bp.x - L.x, bp.y - L.y, bp.z - L.z) / 2; if (half > 1.2) { const tv = Math.tan((cam.fov || 60) * Math.PI / 360), th = Math.min(tv, tv * (cam.aspect || 1)), need = Math.min(45, half / (th * 0.8) + 1); /* 縦長の画面は横の見える幅で決める */ L = L.clone().lerp(bp, 0.5); P = L.clone().addScaledVector(sd, Math.max(7, need)).setY(L.y + 1.6); } }
+        break;
+      }
       case 'high': { const c = mp.clone().lerp(V(tgt.x, 0, tgt.z), 0.35); P = c.clone().add(V(0.01, 26, 8)); L = c; break; }
       case 'tv': P = V(0, 7.5, 16); L = mp.clone().lerp(V(tgt.x, 0, tgt.z), 0.4).setY(1); break;
       case 'ball': {
@@ -178,6 +259,17 @@ export class Replay {
       }
     }
     if (P.y < 0.3) P.y = 0.3;
+    // 11/28 「後ろから」「横から」で、高いフライ・打った直後の遠い球が画面の外に出ていた: 球が画面の内側(縁から 15%)に入るまで、見る所を球の方へ寄せる
+    if (bp && !OLD && (this.view === 'behind' || this.view === 'side')) {
+      const c = this._fitCam || (this._fitCam = new THREE.PerspectiveCamera());
+      c.fov = cam.fov; c.aspect = cam.aspect; c.near = cam.near; c.far = cam.far; c.updateProjectionMatrix(); c.position.copy(P); c.up.set(0, 1, 0);
+      for (let k = 0; k < 8; k++) {
+        c.lookAt(L); c.updateMatrixWorld(true);
+        const q = bp.clone().project(c), front = c.getWorldDirection(V()).dot(bp.clone().sub(P)) > 0;
+        if (front && Math.abs(q.x) < 0.85 && Math.abs(q.y) < 0.85) break;
+        L = L.clone().lerp(bp, 0.3);
+      }
+    }
     const k = this.snapCam || this.view === 'fp' || this.view === 'free' ? 1 : 1 - Math.exp(-8 * dt);
     this.camP.lerp(P, k); this.camL.lerp(L, k);
     if (this.snapCam) { this.camP.copy(P); this.camL.copy(L); this.snapCam = false; }

@@ -569,6 +569,7 @@ async function loadAll() {
   // 11/23 守備の 1 プレーのリプレイ(js/replay.js)。プレーの始まりで覚え始める
   replay = new Replay({ camera, roots: () => [defense.group, me && me.root, defense.ballView.mesh], me: () => me, ball: () => defense.ballView.mesh,
     athletes: () => [me, ...Object.values(defense.fig), ...defense.runnerFigs, defense.batter, ...Object.values(defense.ump || {})],
+    ballView: () => defense.ballView, ballFly: () => !!defense.ball, groundAt: (x, z, from) => groundAt(x, z, from, 4),   // 11/28 リプレイの球の見え方・足を地面に乗せる(js/replay.js)
     render: (dt) => { gfx.update(dt); gfx.render(); },
     hide: (on) => { if (on) { replay._hid = [fpGlove, defense.ring, defense.ballView.trail, catchFxM].filter(Boolean).map((o) => [o, o.visible]); for (const [o] of replay._hid) o.visible = false; document.body.classList.add('replayOn'); }
       else { for (const [o, v] of replay._hid || []) o.visible = v; replay._hid = null; document.body.classList.remove('replayOn'); } } });

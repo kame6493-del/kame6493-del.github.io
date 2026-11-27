@@ -3,7 +3,7 @@
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1127f';
+import { CareerUI } from './career_ui.js?v=1128n';
 import * as Rank from './ranking.js?v=1127b';
 
 const KEY = 'r4walk.career.v1';
@@ -90,6 +90,22 @@ export function promoInfo(D) {
   return { played, min: st.min, ok3, last3: P, left: k };
 }
 
+// 11/28 持ち主「課金の誘いを強める」案 2: 昇格に届かなかった試合の後の「成長ブーストなら あと○試合で昇格」の数。
+//   この試合と同じ守り(評価・UZR の基準・経験値)を続けたら、経験値の倍率 m で何試合目に昇格するか。能力で基準が下がるのは社会人(能力の平均 60 で評価 B)だけなので、
+//   高校など倍率で数が変わらない時は呼ぶ側が出さない。30 試合で上がれなければ null(計算できない = 出さない)
+export function promoSim(D, rank, uzrOK, base, m) {
+  const st = STAGES[D.stage]; if (!st || !st.need || !base) return null;
+  const ab = { ...D.ab }, xp = { ...D.xp }, P = ((D.pass || [])[D.stage] || []).slice(), played = D.stageGames[D.stage] || 0;
+  for (let j = 1; j <= 30; j++) {
+    for (const k of AB_KEYS) { xp[k] = (xp[k] || 0) + (base[k] || 0) * m; while (ab[k] < AB_MAX && xp[k] >= xpNeed(ab[k])) { xp[k] -= xpNeed(ab[k]); ab[k]++; } }
+    const nr = st.need.abAvg && abAvg(ab) >= st.need.abAvg ? st.need.rankAb : st.need.rank;
+    const ok = (RANK_N[rank] || 0) >= RANK_N[nr] || !!uzrOK;
+    P.push(ok);
+    if (ok && played + j >= st.min && P.slice(-3).filter(Boolean).length >= 2) return j;
+  }
+  return null;
+}
+
 const sig = (x) => 1 / (1 + Math.exp(-x));
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
@@ -97,7 +113,7 @@ function fresh() {
   return { v: 1, stage: 0, pos: 'SS', ab: { arm: AB_MIN, field: AB_MIN }, xp: { arm: 0, field: 0 },
     stageGames: [0, 0, 0], tot: { games: 0, po: 0, a: 0, e: 0, uzr: 0, wins: 0 }, hist: [], final: null, made: Date.now(),
     name: '', num: 6, pass: [[], [], []], best: null, byPos: {},
-    stageTot: [zt(), zt(), zt()], done: null, toPro: null };
+    stageTot: [zt(), zt(), zt()], done: null, toPro: null, byPark: {}, parkFrom: 0 };
 }
 // 11/26 段ごとの成績(1 シーズン = その段で守った試合。adj は位置の補正ありの UZR、ch は打球の機会)
 function zt() { return { games: 0, po: 0, a: 0, e: 0, uzr: 0, adj: 0, ch: 0, pos: {} }; }
@@ -169,7 +185,7 @@ function makeCard(D, f) {
   let id = ''; try { id = Rank.deviceId().slice(0, 6) + '-'; } catch (e) { /* */ }
   return { id: id + Date.now().toString(36), name: D.name, num: D.num, pos: mainPos(S, D.pos), posAll: { ...S.pos }, grade: f.grade, title: f.title, score: f.score,
     pro: { games: S.games, po: S.po, a: S.a, e: S.e, uzr: r2(S.uzr), adj: r2(S.adj), ch: S.ch },
-    tot: { ...D.tot }, ab: { ...D.ab }, best: D.best, seasons: D.stageTot.map((x) => ({ games: x.games, uzr: r2(x.uzr), adj: r2(x.adj) })), t: Date.now(), ...cosOf(),
+    tot: { ...D.tot }, ab: { ...D.ab }, best: D.best, byPos: JSON.parse(JSON.stringify(D.byPos || {})), byPark: { ...(D.byPark || {}) }, seasons: D.stageTot.map((x) => ({ games: x.games, uzr: r2(x.uzr), adj: r2(x.adj) })), t: Date.now(), ...cosOf(),
     toPro: toProOf(D), pts: Rank.rankPts(toProOf(D), r2(S.adj)) };
 }
 
@@ -203,13 +219,26 @@ class Career {
         { const ab = {}, xp = {}; for (const k of AB_KEYS) { const v = Math.round(+((j.ab || {})[k])); ab[k] = Number.isFinite(v) ? Math.max(AB_MIN, Math.min(AB_MAX, v)) : AB_MIN; const x = +((j.xp || {})[k]); xp[k] = Number.isFinite(x) && x > 0 ? x : 0; } D.ab = ab; D.xp = xp; }
         if (!Array.isArray(D.pass) || D.pass.length !== 3) D.pass = [[], [], []];
         // 11/26 位置ごとの成績(試合・刺殺・補殺・失策・UZR)。前から遊んでいる人の記録は、今の位置の分として引き継ぐ
-        if (!j.byPos || typeof j.byPos !== 'object') { D.byPos = {}; const T = D.tot; if (T && T.games) D.byPos[D.pos] = { games: T.games, po: T.po, a: T.a, e: T.e, uzr: T.uzr }; }
+        // 11/28 残っている試合の記録(最近 60 試合。1 試合ずつ位置がある)から出し、そこに無い前の分だけ今の位置に入れる
+        if (!j.byPos || typeof j.byPos !== 'object') {
+          D.byPos = {}; const T = D.tot || {}, rest = { games: T.games || 0, po: T.po || 0, a: T.a || 0, e: T.e || 0, uzr: T.uzr || 0 };
+          for (const h of (Array.isArray(D.hist) ? D.hist : []).slice(-(rest.games || 0) || undefined)) {
+            if (!h || !POS_NAME[h.pos] || rest.games <= 0) continue;
+            const B = D.byPos[h.pos] || (D.byPos[h.pos] = { games: 0, po: 0, a: 0, e: 0, uzr: 0 });
+            B.games++; B.po += h.po || 0; B.a += h.a || 0; B.e += h.e || 0; B.uzr += h.uzr || 0;
+            rest.games--; rest.po -= h.po || 0; rest.a -= h.a || 0; rest.e -= h.e || 0; rest.uzr -= h.uzr || 0;
+          }
+          if (rest.games > 0) { const B = D.byPos[D.pos] || (D.byPos[D.pos] = { games: 0, po: 0, a: 0, e: 0, uzr: 0 }); B.games += rest.games; B.po += Math.max(0, rest.po); B.a += Math.max(0, rest.a); B.e += Math.max(0, rest.e); B.uzr += rest.uzr; }
+        }
         if (!D.best && D.hist.length) D.best = D.hist.reduce((b, h) => ((RANK_N[h.rank] || 0) > (RANK_N[b] || 0) ? h.rank : b), null);
         // 11/26 段ごとの成績が無い前の記録は、残っている試合の記録(最近 60 試合)から作る
         if (!Array.isArray(j.stageTot) || j.stageTot.length !== 3) {
           D.stageTot = [zt(), zt(), zt()];
           for (const h of D.hist) { const S = D.stageTot[h.stage]; if (!S || (h.stage === 2 && S.games >= FINAL_GAMES)) continue; S.games++; S.po += h.po; S.a += h.a; S.e += h.e; S.uzr += h.uzr; S.adj += adjUZR(h.pos, h.uzr, h.ch); S.pos[h.pos] = (S.pos[h.pos] || 0) + 1; }
         }
+        // 11/28 持ち主「何試合どこどこで守ったみたいなの残して」: 球場ごとの試合数。前の記録には球場が残っていないので、今から数える(parkFrom = 数え始めた時の通算試合)
+        if (!j.byPark || typeof j.byPark !== 'object' || Array.isArray(j.byPark)) { D.byPark = {}; D.parkFrom = (D.tot && D.tot.games) || 0; }
+        if (!D.byPos || typeof D.byPos !== 'object') D.byPos = {};
         if (D.stage === 2 && !D.toPro) D.toPro = (D.stageGames[0] || 0) + (D.stageGames[1] || 0);
         // 前の作りでプロ 5 試合を超えて続けていた人は、5 試合で終えた形にする(続きの試合は通算にだけ入っている)
         //   (殿堂には入れる。ランキングへは送らない: UZR の数え方が 11/26 に変わる前の試合のため)
@@ -361,7 +390,7 @@ class Career {
     if (bs.useTrain && bs.train > 0) { bs.train--; train = true; boostSave(bs); }
     const mult = (owned ? BOOST.mult : 1) * (train ? BOOST.train : 1);
     this.game = { po: 0, a: 0, e: 0, uzr: 0, uzrOld: 0, parts: { rng: 0, dpr: 0, arm: 0, err: 0 }, chances: 0, xp: { arm: 0, field: 0 }, xpPlay: { arm: 0, field: 0 }, ups: { arm: 0, field: 0 }, ab0: { ...ab }, plays: 0, stage: this.data.stage, pos: d.my,
-      mult, owned, train, xp0: { ...this.data.xp }, base: { arm: 0, field: 0 } };
+      mult, owned, train, xp0: { ...this.data.xp }, base: { arm: 0, field: 0 }, park: (window.__app && window.__app.stadium) || (window.__app && window.__app.ui && window.__app.ui.app && window.__app.ui.app.stadium) || '' };
     const st = this.stage, n = this.data.stageGames[this.data.stage] + 1;
     // 11/26 プロの 4 試合目は「優勝のかかった試合」、5 試合目は「最終戦」
     const tag = this.data.stage === 2 ? (n === FINAL_GAMES - 1 ? '優勝のかかった試合' : n >= FINAL_GAMES ? '最終戦' : '') : '';
@@ -491,12 +520,21 @@ class Career {
     { const S = D.stageTot[st0]; S.games++; S.po += G.po; S.a += G.a; S.e += G.e; S.uzr += G.uzr; S.adj += adjUZR(G.pos, G.uzr, G.chances); S.ch += G.chances; S.pos[G.pos] = (S.pos[G.pos] || 0) + 1; }
     if (!D.byPos) D.byPos = {};
     { const B = D.byPos[G.pos] || (D.byPos[G.pos] = { games: 0, po: 0, a: 0, e: 0, uzr: 0 }); B.games++; B.po += G.po; B.a += G.a; B.e += G.e; B.uzr += G.uzr; }
+    if (G.park) { if (!D.byPark || typeof D.byPark !== 'object') D.byPark = {}; D.byPark[G.park] = (D.byPark[G.park] || 0) + 1; }
     const res = { stage: D.stage, game: D.stageGames[D.stage], pos: G.pos, po: G.po, a: G.a, e: G.e, tc, uzr: G.uzr, chances: G.chances, rank, score: ev.n ? ev.score : null,
       ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now(), parts: { ...G.parts }, uzrOld: G.uzrOld,
       needRank, abAvg: avg, boost: this.boostRes(G) };
-    D.hist.push({ stage: res.stage, pos: res.pos, po: res.po, a: res.a, e: res.e, uzr: Math.round(res.uzr * 100) / 100, rank, won, t: res.t, ch: G.chances });
+    D.hist.push({ stage: res.stage, pos: res.pos, po: res.po, a: res.a, e: res.e, uzr: Math.round(res.uzr * 100) / 100, rank, won, t: res.t, ch: G.chances, park: G.park || undefined });
     if (D.hist.length > 60) D.hist.shift();
     if (!promoted && need) res.prog = promoInfo(D);
+    // 11/28 案 2: 昇格に届かなかった時、「成長ブースト(持っている人は 特訓チケットを毎試合)なら あと N 試合」(今のままより早い時だけ。案内は career_ui.js の nudge)
+    if (!promoted && need && enough && G.base) {
+      try {
+        const mNow = G.owned ? BOOST.mult : 1, mAlt = G.owned ? BOOST.mult * BOOST.train : BOOST.mult;
+        const now = promoSim(D, rank, uzrOK, G.base, mNow), alt = promoSim(D, rank, uzrOK, G.base, mAlt);
+        if (alt != null && (now == null || alt < now)) res.sim = { what: G.owned ? 'train' : 'boost', alt, now };
+      } catch (e) { /* 出さないだけ */ }
+    }
     if (promoted) { this.sendSeason(st0); D.stage = Math.min(STAGES.length - 1, D.stage + 1); if (D.stage === 2) D.toPro = D.stageGames[0] + D.stageGames[1]; }
     if (st0 === 2) { res.proGame = D.stageGames[2]; res.proLeft = Math.max(0, FINAL_GAMES - D.stageGames[2]); }
     if (st0 === 2 && D.stageGames[2] >= FINAL_GAMES) { const f = finalEval(D); res.final = f; res.finalFirst = !D.final; D.final = f; res.done = this.complete(f); }

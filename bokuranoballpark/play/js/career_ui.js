@@ -1,6 +1,7 @@
 // 11/25 守備のキャリアの画面(キャリアの画面・試合の終わりの画面・試合の中の小さな札)。
 // 見た目は ChatGPT の案(_chatgpt_career_1125/career_result_gpt_1125.png): 夜の球場と花火、紺と金の枠、緑のバー、赤い昇格の帯、緑の大きなボタン。
 // 文字は全部 HTML(絵に焼かない)。飾りの花火だけ案の絵から切り出した(img/career_fw_l.webp・career_fw_r.webp)。
+import { STADIUM_NAMES } from './stadiums.js';
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const $ = (id) => document.getElementById(id);
 const ICON = {
@@ -18,6 +19,29 @@ const UZR_HELP = ['同じ打球を「平均的な守備の選手」が守った�
   '1 試合では小さな数になります(難しい打球を捕って +0.3〜0.8 ほど)。'];
 // 11/27 ランキングの点(早さ+守備)の「?」。式は ranking.js の rankPts
 const PQ = '<button type="button" class="cQ" data-act="ptsq" aria-label="点の出し方">?</button>';
+// 11/28 課金の誘い(持ち主「全部入れてください」・「くどくならないか」の歯止め)。数え方は docs/アプリ化の引き継ぎ.md の 11/28 の節
+//   アプリ版: 結果の画面の案内(2 試合あける)・昇格に届かなかった時の「あと N 試合」(間をあけない)・キャリアを始めた時(その選手で 1 回)
+//   ブラウザ版: アプリへの誘い(結果の画面とキャリアの画面。2 試合あける。値段なし。アプリ版には出さない)
+//   歯止め: どの案内も合わせて 1 日 3 回まで / × を続けて 2 回で 5 試合あける(買う・案内を押すと戻る)/ ブラウザ版の誘いは × でその日おしまい
+//   ?nudgecap=0 は歯止めを外す(回数を比べる試験だけ)
+const NKEY = 'r4walk.nudge.v1', DAY_MAX = 3, GAP = 2, GAP_COOL = 5, WEB_GAP = 2;
+const APPSTORE = 'https://apps.apple.com/jp/app/id6837152603';
+const dayNow = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+const capsOn = () => { try { return new URLSearchParams(location.search).get('nudgecap') !== '0'; } catch (e) { return true; } };
+function nst() {
+  let s = {}; try { s = JSON.parse(localStorage.getItem(NKEY) || '{}') || {}; } catch (e) { /* 新しく */ }
+  s = { n: 0, xs: 0, cool: false, open: false, web: -99, webOff: false, ...s };
+  if (s.day !== dayNow()) { s.day = dayNow(); s.n = 0; s.webOff = false; }
+  return s;
+}
+const nsave = (s) => { try { localStorage.setItem(NKEY, JSON.stringify(s)); } catch (e) { /* 残せなくても遊べる */ } };
+// 出した: 前に出した案内を × で閉じずに過ぎたなら、× の続きは切れる
+const nShown = (s) => { if (s.open) s.xs = 0; s.open = true; s.n++; nsave(s); };
+const nClosed = () => { const s = nst(); s.open = false; s.xs++; if (s.xs >= 2) s.cool = true; nsave(s); };
+const nReset = () => { const s = nst(); s.xs = 0; s.cool = false; s.open = false; nsave(s); };
+const isApp = () => { try { if (window.IPPOME_APP) return true; const C = window.Capacitor; return !!(C && C.isNativePlatform && C.isNativePlatform()); } catch (e) { return false; } };
+const devKind = () => { const u = navigator.userAgent || ''; if (/iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1)) return 'ios'; if (/Android/i.test(u)) return 'android'; return 'pc'; };
+let hubSeen = false;   // この起動で キャリアの画面を開いたか(歯止めを外した時の「開いた最初」)
 const noPrice = () => { try { return new URLSearchParams(location.search).has('noprice'); } catch (e) { return false; } };   // ストアの写真を撮る時は値段を出さない
 // 能力の文字(S 90〜・A 80〜・B 70〜・C 60〜・D 50〜・E 40〜・F 20〜・G 1〜)。色は career.css の .cLetter.gS〜gG
 export const GRADE = (v) => (v >= 90 ? 'S' : v >= 80 ? 'A' : v >= 70 ? 'B' : v >= 60 ? 'C' : v >= 50 ? 'D' : v >= 40 ? 'E' : v >= 20 ? 'F' : 'G');
@@ -65,7 +89,12 @@ export class CareerUI {
     for (const el of [hub, res]) { el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true }); el.addEventListener('mousedown', (e) => e.stopPropagation()); }
     addEventListener('keydown', (e) => { if (e.code === 'Escape' && !this.hub.classList.contains('hide')) { e.stopPropagation(); this.backToTitle(); } }, true);
     // 11/27 成長の品を買った・使った時(js/career.js の boostSave、アプリの shop.js)は、キャリアの画面を描き直す
-    addEventListener('bp:boost', () => { if (this.hub && !this.hub.classList.contains('hide')) this.renderHub(); });
+    addEventListener('bp:boost', () => {
+      // 11/28 買った(チケット・特訓が増えた・店を開いている間にブーストが有効になった)ら、案内の間を元に戻す
+      try { const n = this.buySig(), o = this._buy || n, shop = document.querySelector('#bpShop:not(.hide)'); if (n.train > o.train || n.abup > o.abup || (shop && n.own > o.own)) nReset(); this._buy = n; } catch (e) { /* */ }
+      if (this.hub && !this.hub.classList.contains('hide')) this.renderHub();
+    });
+    this._buy = this.buySig();
     const tick = () => { try { this.placePops(); } catch (e) { /* 飾り */ } requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
   }
@@ -99,6 +128,7 @@ export class CareerUI {
     const ui = this.appUI; if (!ui) return;
     ui.hideAll(); ui.app.setOverlay(true);
     this.res.classList.add('hide');
+    this.pickHubNudge(false);
     this.renderHub();
     this.hub.classList.remove('hide');
     this.hub.scrollTop = 0;
@@ -126,6 +156,7 @@ export class CareerUI {
     this.hub.innerHTML = this.bg() + `<div class="carSheet">
       <div class="cTop"><button class="cBack" data-act="back">戻る</button><h1 class="cLogo">守備のキャリア</h1></div>
       ${done}<div class="cPanel cDark">${this.ladder(D.stage)}${this.posRow(D.pos)}${goal}</div>
+      ${this.hubNudgeHtml()}
       ${menu}
       <button class="cCardBtn" data-act="card"><span class="cCardNo">${esc(D.num)}</span><span class="cCardTx"><b>${esc(D.name || '名前を決める')}</b><small>自分の選手カード</small></span></button>
       <div class="cPanel cLight"><div class="cRibbon">能力</div>${this.abRows(D.ab, null, D.xp)}
@@ -134,7 +165,7 @@ export class CareerUI {
       <div class="cPanel cLight"><div class="cRibbon">通算成績</div>${this.table([
         ['試合', `${T.games}<small> (高校 ${D.stageGames[0]} ・ 社会人 ${D.stageGames[1]} ・ プロ ${D.stageGames[2]})</small>`],
         ['刺殺', T.po], ['補殺', T.a], ['失策', T.e], ['守備機会', T.po + T.a + T.e], ['守備率', K.fpctText(T.po, T.a, T.e)],
-        ['UZR', K.uzrText(T.uzr), T.uzr >= 0 ? 'pos' : 'neg']])}${this.recent()}</div>
+        ['UZR', K.uzrText(T.uzr), T.uzr >= 0 ? 'pos' : 'neg']])}${this.recent()}${T.games ? '<button class="cBtn cRecBtn" data-act="rec">守った記録</button>' : ''}</div>
       ${fin}
       ${D.done ? '' : `<div class="cPanel cDark cPick"><div class="cPickHead">守る所</div><div class="cPosBtns">${POS7.map((p) => `<button data-pos="${p}" class="${p === D.pos ? 'on' : ''}" aria-label="${esc(K.POS_NAME[p])}">${POS_SHORT[p]}</button>`).join('')}</div>
         <div class="cNote">どこを守っても、その位置の普通の野手と比べて UZR を出します。替えても能力・通算成績・段はそのまま(位置ごとの成績は選手カードに)。</div></div>
@@ -162,8 +193,11 @@ export class CareerUI {
     const a = b.dataset.act;
     if (a === 'uzrq') { this.uzrHelp(); return; }
     if (a === 'ptsq') { this.ptsHelp(); return; }
+    if (a === 'rec') { this.recHelp(); return; }
     if (a === 'usetrain') { this.C.setUseTrain(!this.K.boostState().useTrain); this.renderHub(); return; }
-    if (a === 'growshop') { this.openGrowShop(); return; }
+    if (a === 'growshop') { if (b.closest('.cNudge')) { nReset(); this._hubN = null; } this.openGrowShop(); return; }
+    if (a === 'nudgex') { nClosed(); this._hubN = null; this.renderHub(); return; }
+    if (a === 'webx') { const s = nst(); s.webOff = true; s.open = false; nsave(s); this._hubN = null; this.renderHub(); return; }
     if (a === 'back') this.backToTitle();
     else if (a === 'card') this.openCard();
     else if (a === 'rank') this.openRank('pro5');
@@ -228,8 +262,9 @@ export class CareerUI {
     const a = b.dataset.act, ui = this.appUI;
     if (a === 'uzrq') { this.uzrHelp(); return; }
     if (a === 'ptsq') { this.ptsHelp(); return; }
-    if (a === 'nudgex') { const n = b.closest('.cNudge'); if (n) n.remove(); return; }
-    if (a === 'growshop') { this.openGrowShop(); return; }
+    if (a === 'nudgex') { const n = b.closest('.cNudge'); if (n) n.remove(); nClosed(); return; }
+    if (a === 'webx') { const n = b.closest('.cNudge'); if (n) n.remove(); const s = nst(); s.webOff = true; s.open = false; nsave(s); return; }
+    if (a === 'growshop') { if (b.closest('.cNudge')) nReset(); this.openGrowShop(); return; }
     if (a === 'share') { try { window.__bpLocker.share(this.C.data.done || this.C.data); } catch (er) { /* なし */ } return; }
     // 11/27 X でシェア(js/share_x.js): 試合の結果の絵・キャリア完了の絵(最終評価・称号・UZR・選手カード)
     if (a === 'xgame') { try { window.__bpShareX.careerGame(this.lastRes); } catch (er) { /* なし */ } return; }
@@ -336,7 +371,17 @@ export class CareerUI {
       `能力が高いほど 守れる範囲が広がり、評価と UZR が上がりやすくなります。社会人は 能力の平均 ${co.abAvg} 以上で 評価 ${co.rankAb} でも基準を超えます。`,
       `れい: プロまで ${R.TO_PRO_MIN + 2} 試合・UZR +1.5 → 早さ ${ex.speed} + 守備 ${ex.def} = ${ex.total} 点`]);
   }
-  help(title, lines) {
+  // 11/28 持ち主「何試合どこどこで守ったみたいなの キャリアモード残して」: この選手の 守備位置ごと(試合・刺殺・補殺・失策・UZR)と 球場ごとの試合数。押した時だけ開く
+  recHelp() {
+    const D = this.C.data, K = this.K;
+    const pos = Object.entries(D.byPos || {}).filter(([, s]) => s && s.games > 0).sort((x, y) => y[1].games - x[1].games);
+    const park = Object.entries(D.byPark || {}).filter(([, n]) => n > 0).sort((x, y) => y[1] - x[1]);
+    const t1 = pos.length ? `<table class="cRecT"><tr><th>位置</th><th>試合</th><th>刺殺</th><th>補殺</th><th>失策</th><th>UZR</th></tr>${pos.map(([p, s]) => `<tr><th>${esc(K.POS_NAME[p] || p)}</th><td>${s.games}</td><td>${s.po}</td><td>${s.a}</td><td>${s.e}</td><td class="${s.uzr >= 0 ? 'pos' : 'neg'}">${K.uzrText(s.uzr)}</td></tr>`).join('')}</table>` : '<p>まだ試合がありません</p>';
+    const t2 = park.length ? `<table class="cRecT park">${park.map(([id, n]) => `<tr><th>${esc(STADIUM_NAMES[id] || id)}</th><td>${n} 試合</td></tr>`).join('')}</table>` : '';
+    const note = D.parkFrom > 0 ? `<p class="cRecNote">球場は この版から数えています(前の ${D.parkFrom} 試合は 球場の記録がありません)</p>` : '';
+    this.help('守った記録', [], `<div class="cRecSub">守備位置</div>${t1}${park.length || note ? `<div class="cRecSub">球場</div>${t2}${note}` : ''}`);
+  }
+  help(title, lines, html) {
     let el = $('carHelp');
     if (!el) {
       el = document.createElement('div'); el.id = 'carHelp'; el.className = 'hide';
@@ -344,7 +389,7 @@ export class CareerUI {
       for (const t of ['touchstart', 'mousedown', 'keydown']) el.addEventListener(t, (e) => e.stopPropagation(), { passive: true });
       document.body.appendChild(el);
     }
-    el.innerHTML = `<div class="chBox" role="dialog" aria-label="${esc(title)}"><b>${esc(title)}</b>${lines.map((t) => `<p>${esc(t)}</p>`).join('')}<button type="button" class="cBtn" data-x="1">閉じる</button></div>`;
+    el.innerHTML = `<div class="chBox" role="dialog" aria-label="${esc(title)}"><b>${esc(title)}</b>${lines.map((t) => `<p>${esc(t)}</p>`).join('')}${html || ''}<button type="button" class="cBtn" data-x="1">閉じる</button></div>`;
     el.classList.remove('hide');
   }
 
@@ -368,29 +413,87 @@ export class CareerUI {
     const B = r.boost; if (!B || B.mult <= 1) return '';
     return `<div class="cXpMul">経験値 ×${B.mult}<small>${[B.owned ? '成長ブースト' : '', B.train ? '特訓チケット' : ''].filter(Boolean).join('・')}</small></div>`;
   }
-  // 結果の画面の案内(アプリ版だけ・3 試合に 1 回まで・× で閉じる・試合の後だけ)。「ブーストがあれば +◯ だった」を数で出す
+  buySig() { const bs = this.K.boostState(); return { own: this.K.boostOwned() ? 1 : 0, train: +bs.train || 0, abup: +bs.abup || 0 }; }
+  priceOf(pid) { try { return noPrice() ? '' : (window.__bpStore.price && window.__bpStore.price(pid)) || ''; } catch (e) { return ''; } }
+  nudgeBox(what, line, why, pid, cls) {
+    const price = this.priceOf(pid);
+    return `<div class="cNudge${cls ? ' ' + cls : ''}" role="note" data-nudge="${esc(cls || 'res')}"><button type="button" class="cNudgeX" data-act="nudgex" aria-label="閉じる">×</button><b class="cNudgeH">${esc(what)}</b><p>${line}</p>${why ? `<small>${esc(why)}</small>` : ''}<button type="button" class="cBtn cNudgeGo" data-act="growshop">ショップで見る${price ? ` <i>${esc(price)}</i>` : ''}</button></div>`;
+  }
+  // 11/28 ブラウザ版: アプリへの誘いを今出せるか(出せるなら数える)。結果の画面は 2 試合目から
+  webOK(where) {
+    if (isApp() || this.C.data.done) return false;
+    const caps = capsOn(), s = nst(), g = this.C.data.tot.games;
+    if (where === 'res' && g < 2) return false;
+    if (caps && (s.n >= DAY_MAX || s.webOff)) return false;
+    if (g - (s.web ?? -99) < WEB_GAP) return false;
+    s.web = g; nShown(s); return true;
+  }
+  // ブラウザ版の誘い(値段は出さない。ブラウザ版では買えない)。iPhone は App Store、Android は「近日公開」だけ、PC は App Store と「iPhone で」
+  webHtml(where) {
+    const d = devKind();
+    const foot = d === 'android' ? '<small class="cNudgeSoon">Android 版は 近日公開です</small>'
+      : `<a class="cBtn cNudgeGo" data-act="webgo" href="${APPSTORE}" target="_blank" rel="noopener">${d === 'pc' ? 'App Store で見る(iPhone)' : 'App Store で見る'}</a>`;
+    const body = d === 'pc' ? 'iPhone のアプリ版は 成長ブーストで キャリアの経験値が ずっと ×1.5。能力が早く伸びて 早くプロへ上がれます'
+      : 'アプリ版は 成長ブーストで キャリアの経験値が ずっと ×1.5。能力が早く伸びて 早くプロへ上がれます';
+    return `<div class="cNudge web ${where}" role="note" data-nudge="web"><button type="button" class="cNudgeX" data-act="webx" aria-label="閉じる">×</button><b class="cNudgeH">アプリなら 早く上がれる</b><p class="sm">${esc(body)}</p>${foot}</div>`;
+  }
+  // 11/28 案 1: キャリアを始めた時の案内(アプリ版・ブーストを持っていない人・その選手で 1 回)。ブラウザ版は誘い(2 試合あける)
+  pickHubNudge(fresh) {
+    if (fresh && this._hubN) { if (this._hubN === 'start') { this.C.data.startNudge = true; this.C.save(); } return; }   // 開いてすぐ新しい選手にした時、同じ案内を 2 回数えない
+    this._hubN = null;
+    const D = this.C.data, K = this.K, S = window.__bpStore;
+    if (D.done) return;
+    if (S && S.grow) {
+      const first = !hubSeen; hubSeen = true;
+      if (K.boostOwned()) return;
+      const caps = capsOn(), s = nst();
+      const want = caps ? !D.startNudge && s.n < DAY_MAX : (fresh || first);
+      if (!want) return;
+      D.startNudge = true; this.C.save(); nShown(s); this._hubN = 'start';
+    } else if (this.webOK('hub')) this._hubN = 'web';
+  }
+  hubNudgeHtml() {
+    if (this._hubN === 'web') return this.webHtml('hub');
+    if (this._hubN !== 'start') return '';
+    const co = this.K.STAGES[1].need;
+    return this.nudgeBox('成長ブースト', 'キャリアの経験値が ずっと <b>×1.5</b>。能力が早く伸びるほど 評価と UZR が上がりやすく、早くプロへ上がれます',
+      `社会人は 能力の平均 ${co.abAvg} 以上なら 評価 ${co.rankAb} でも基準クリア`, 'bp_boost_xp', 'hub');
+  }
+  // 結果の画面の案内。アプリ版: ふつうは 2 試合あけて、伸び悩み・昇格が近い・ブーストで +2 以上多い時。昇格に届かなかった時は「あと N 試合」を間をあけずに
+  //   (同じ試合で 2 回は出さない。1 日 3 回・× 2 回で 5 試合あける の歯止めは守る)。ブラウザ版はアプリへの誘い
   nudge(r) {
     const K = this.K, S = window.__bpStore, B = r.boost;
-    if (!S || !S.grow || !B || r.final || r.done) return '';
-    const bs = K.boostState(), g = this.C.data.tot.games;
-    if (g < 2 || g - (bs.nudge ?? -99) < 3) return '';
+    if (!B || r.final || r.done) return '';
+    if (!S || !S.grow) return this.webOK('res') ? this.webHtml('res') : '';
+    const caps = capsOn(), ns = nst(), bs = K.boostState(), g = this.C.data.tot.games;
+    if (caps && ns.n >= DAY_MAX) return '';
+    const since = g - (bs.nudge ?? -99);
+    if (caps && ns.cool && since < GAP_COOL) return '';
+    const shown = (html) => { bs.nudge = g; K.boostSave(bs); nShown(ns); return html; };
+    // 案 2: 昇格に届かなかった試合の後(career.js の promoSim。今のままより早く上がれる時だけ)
+    const sim = r.sim;
+    if (sim && r.need && !r.promoted && (sim.what === 'boost' ? !B.owned : B.owned)) {
+      const now = sim.now == null ? 'いまのままだと この守りでは届きません' : `いまのままだと あと ${sim.now} 試合`;
+      const nx = esc(K.STAGES[r.stage + 1].name);
+      if (sim.what === 'boost') return shown(this.nudgeBox('成長ブースト', `成長ブーストなら あと <b>${sim.alt} 試合</b>で ${nx}へ昇格`, `この試合と同じ守りを続けた時の数(${now})`, 'bp_boost_xp', 'sim'));
+      return shown(this.nudgeBox('特訓チケット', `特訓チケットを毎試合 使えば あと <b>${sim.alt} 試合</b>で ${nx}へ昇格`, `この試合と同じ守りを続けた時の数(${now})`, 'bp_train_5', 'sim'));
+    }
+    if (g < 2 || since < GAP) return '';
     const sum = (o) => (o ? o.arm + o.field : 0), got = sum(r.ups);
     let what = '', alt = null, pid = '';
     if (!B.owned) { what = '成長ブースト'; alt = B.ifBoost; pid = 'bp_boost_xp'; }
-    else if (!B.train) { what = '特訓チケット'; alt = B.ifTrain; pid = 'bp_train_1'; }
+    else if (!B.train && (!caps || (r.need && !r.promoted))) { what = '特訓チケット'; alt = B.ifTrain; pid = 'bp_train_1'; }   // 歯止め: 特訓チケットは昇格に届かなかった時だけ
     const near = !!(r.need && !r.promoted && r.prog && r.prog.left <= 2);
     const abShort = !!(r.need && r.need.abAvg && r.abAvg < r.need.abAvg);
     const slump = got <= 1, more = alt ? sum(alt) - got : 0;
     if (!(near || slump || more >= 2)) return '';
     if (!alt || more <= 0) { if (!slump) return ''; what = '能力アップの特訓'; alt = null; pid = 'bp_abup_1'; }
-    bs.nudge = g; K.boostSave(bs);
     const line = alt ? `${esc(what)}があれば この試合の伸び ${K.AB_KEYS.map((k) => `${esc(K.AB_NAME[k])} +${r.ups[k]}→<b>+${alt[k]}</b>`).join(' ・ ')}` : '選んだ能力が すぐ +3(70 から +2)';
     const why = near && abShort ? `社会人は 能力の平均 ${r.need.abAvg} 以上なら 評価 ${r.need.rankAb} でも基準クリア(いま ${r.abAvg})`
       : near ? `昇格まで 最短 あと ${r.prog.left} 試合。能力が高いほど 評価と UZR が上がりやすくなります`
       : slump ? `この試合の伸びは 合計 +${got}。能力は 高くなるほど 次の 1 に経験が要ります`
       : '早くプロに上がるほど ランキングの点(早さ)が高くなります';
-    let price = ''; try { price = noPrice() ? '' : (S.price && S.price(pid)) || ''; } catch (e) { /* */ }
-    return `<div class="cNudge" role="note"><button type="button" class="cNudgeX" data-act="nudgex" aria-label="閉じる">×</button><b class="cNudgeH">${esc(what)}</b><p>${line}</p><small>${esc(why)}</small><button type="button" class="cBtn cNudgeGo" data-act="growshop">ショップで見る${price ? ` <i>${esc(price)}</i>` : ''}</button></div>`;
+    return shown(this.nudgeBox(what, line, why, pid, ''));
   }
 
   // ------------------------------------------------ 11/26 キャリア完了・殿堂・ランキング・キャリアの説明
@@ -402,6 +505,7 @@ export class CareerUI {
   }
   startNew() {
     this.C.newCareer();
+    this.pickHubNudge(true);
     this.renderHub();
     this.openCard(true);   // 新しい選手の名前・背番号・守備位置
   }
