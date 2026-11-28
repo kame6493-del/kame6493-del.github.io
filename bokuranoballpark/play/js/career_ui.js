@@ -2,6 +2,7 @@
 // 見た目は ChatGPT の案(_chatgpt_career_1125/career_result_gpt_1125.png): 夜の球場と花火、紺と金の枠、緑のバー、赤い昇格の帯、緑の大きなボタン。
 // 文字は全部 HTML(絵に焼かない)。飾りの花火だけ案の絵から切り出した(img/career_fw_l.webp・career_fw_r.webp)。
 import { STADIUM_NAMES } from './stadiums.js';
+import * as Gear from './gear.js?v=1128g';   // 11/28 夜 道具ガチャ(キャリアの画面の「道具」・結果の画面の 1 行・ランキングの行の道具)
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const $ = (id) => document.getElementById(id);
 const ICON = {
@@ -164,6 +165,7 @@ export class CareerUI {
       <div class="cPanel cLight"><div class="cRibbon">能力</div>${this.abRows(D.ab, null, D.xp)}
         <div class="cNote">肩: 送球の速さ・正確さ / 守備: 一歩目・走る速さ・グラブの届く幅・飛び込み。段が上がるほど動きが良くなります</div></div>
       ${this.growHtml()}
+      ${this.gearHtml()}
       <div class="cPanel cLight"><div class="cRibbon">通算成績</div>${this.table([
         ['試合', `${T.games}<small> (高校 ${D.stageGames[0]} ・ 社会人 ${D.stageGames[1]} ・ プロ ${D.stageGames[2]})</small>`],
         ['刺殺', T.po], ['補殺', T.a], ['失策', T.e], ['守備機会', T.po + T.a + T.e], ['守備率', K.fpctText(T.po, T.a, T.e)],
@@ -198,6 +200,7 @@ export class CareerUI {
     if (a === 'rec') { this.recHelp(); return; }
     if (a === 'usetrain') { this.C.setUseTrain(!this.K.boostState().useTrain); this.renderHub(); return; }
     if (a === 'growshop') { if (b.closest('.cNudge')) { nReset(); this._hubN = null; } this.openGrowShop(); return; }
+    if (a === 'gacha') { this.openGacha(); return; }
     if (a === 'nudgex') { nClosed(); this._hubN = null; this.renderHub(); return; }
     if (a === 'webx') { const s = nst(); s.webOff = true; s.open = false; nsave(s); this._hubN = null; this.renderHub(); return; }
     if (a === 'back') this.backToTitle();
@@ -243,7 +246,7 @@ export class CareerUI {
         ${this.table([['刺殺', r.po], ['補殺', r.a], ['失策', r.e], ['守備率', K.fpctText(r.po, r.a, r.e)], ['UZR', K.uzrText(r.uzr), r.uzr >= 0 ? 'pos' : 'neg']])}
       </div>
       <div class="cPanel cLight cAbP"><div class="cAbs">${this.abRows(r.ab, r.ups, null)}${anyUp ? '' : '<div class="cNote">能力は上がらなかった(経験は少しずつたまっています)</div>'}${this.xpBadge(r)}</div></div>
-      ${this.nudge(r)}${band}${fin}
+      ${this.nudge(r)}${this.gearLine(r)}${band}${fin}
       <button class="cGo" data-act="next">次の試合へ</button>
       <div class="cRow2"><button class="cBtn" data-act="hub">キャリアの画面へ</button><button class="cBtn" data-act="title">タイトルへ</button></div>
       ${window.__bpShareX ? '<button class="cBtn cShareBtn xShareBtn" data-act="xgame">X でシェア</button>' : ''}
@@ -267,6 +270,7 @@ export class CareerUI {
     if (a === 'nudgex') { const n = b.closest('.cNudge'); if (n) n.remove(); nClosed(); return; }
     if (a === 'webx') { const n = b.closest('.cNudge'); if (n) n.remove(); const s = nst(); s.webOff = true; s.open = false; nsave(s); return; }
     if (a === 'growshop') { if (b.closest('.cNudge')) nReset(); this.openGrowShop(); return; }
+    if (a === 'gacha') { Gear.open({}); return; }
     if (a === 'share') { try { window.__bpLocker.share(this.C.data.done || this.C.data); } catch (er) { /* なし */ } return; }
     // 11/27 X でシェア(js/share_x.js): 試合の結果の絵・キャリア完了の絵(最終評価・称号・UZR・選手カード)
     if (a === 'xgame') { try { window.__bpShareX.careerGame(this.lastRes); } catch (er) { /* なし */ } return; }
@@ -396,6 +400,23 @@ export class CareerUI {
   }
 
   // ------------------------------------------------ 11/27 成長(アプリの課金: 成長ブースト・特訓チケット・能力アップの特訓)
+  // 11/28 夜 道具(付けている 4 つ・無料の券・ガチャへ)
+  gearHtml() {
+    const S = Gear.load(), B = Gear.bonus(S);
+    return `<div class="cPanel cDark cGear"><div class="cGrowHead">道具</div>
+      <div class="cGearRow">${Gear.SLOT_KEYS.map((k) => { const id = S.eq[k], o = id && S.own[id]; return `<div class="cGearS">${id ? Gear.iconHtml(id, o.lv) : '<i class="gcIc empty"><i class="gcArt"></i></i>'}<small>${esc(Gear.SLOTS[k].name)}</small><small class="v">${B[Gear.SLOTS[k].eff] ? '+' + B[Gear.SLOTS[k].eff] : '-'}</small></div>`; }).join('')}</div>
+      <button class="cBtn cGearGo" data-act="gacha">道具ガチャ・付け替え${S.free > 0 ? ` <small>無料の券 ${S.free} 枚</small>` : ''}</button></div>`;
+  }
+  openGacha() { Gear.open({ onClose: () => { if (this.hub && !this.hub.classList.contains('hide')) this.renderHub(); } }); }
+  // 結果の画面の 1 行(無料の券をもらった時と、アプリで 4 試合に 1 回だけ。押し付けない)
+  gearLine(r) {
+    const S = Gear.load(), st = !!(window.__bpStore && window.__bpStore.gacha);
+    if (r.gearFree > 0) return `<div class="cGearLine"><span>道具ガチャの無料の券 +${r.gearFree} 枚</span><button class="cGearLk" data-act="gacha">引く ›</button></div>`;
+    if (!st && !S.free) return '';
+    if (((this.C.data.tot && this.C.data.tot.games) || 0) % 4 !== 0) return '';
+    const tag = Gear.parseTag(Gear.bestTag(S));
+    return `<div class="cGearLine sub"><span>${tag ? `道具 ${esc(tag.item.rar)} ${esc(tag.item.name)} Lv${tag.lv}` : '守備の道具で 動きを少し良くできます'}</span><button class="cGearLk" data-act="gacha">道具ガチャ ›</button></div>`;
+  }
   openGrowShop() { try { window.__bpStore.openShop('grow'); } catch (e) { /* ブラウザ版には売り場が無い */ } }
   // キャリアの画面の「成長」の枠(アプリ版か、持っている品がある時だけ)
   growHtml() {
@@ -601,8 +622,10 @@ export class CareerUI {
       const rows = res.rows || [];
       // 11/27 プロ 5 試合・守備位置の表は「点」(早さ+守備)。名前の下に プロまでの試合数と UZR
       const sub2 = (r) => (pts ? `<small class="cRkSub">プロまで ${r.toPro != null ? esc(r.toPro) : '-'} 試合 ・ UZR ${r.uzr != null && Number.isFinite(+r.uzr) ? K.uzrText(+r.uzr) : '-'}</small>` : '');
+      // 11/28 夜 その人が付けていた一番いい道具(絵とレア度)
+      const gearChip = (g) => { const t = Gear.parseTag(g); return t ? `<span class="cRkGear" title="${esc(t.item.name)} Lv${t.lv}">${Gear.iconHtml(t.id, 0, 'xs')}<b class="r${esc(t.item.rar)}">${esc(t.item.rar)}</b></span>` : ''; };
       const valTd = (r) => (pts ? `<td class="pts">${esc(Math.round(r.val))}</td>` : `<td class="${r.val >= 0 ? 'pos' : 'neg'}">${K.uzrText(r.val)}</td>`);
-      body = `<div class="cRankNote">${esc(note)}</div>` + (rows.length ? `<table class="cRankT${pts ? ' pts' : ''}"><tr><th>順位</th><th>選手</th><th>位置</th><th>${pts ? '点' : 'UZR'}</th><th>日付</th></tr>${rows.map((r, i) => `<tr class="${r.own ? 'own' : ''}"><td class="n">${r.local && res.from !== 'net' && res.from !== 'cache' ? '-' : i + 1}</td><td class="pl"><i class="${r.own ? cosFr() : ''}">${esc(r.num)}</i>${esc(r.name)}${r.own ? '<em>あなた</em>' : ''}${sub2(r)}</td><td>${esc(POS_SHORT[r.pos] || '')}</td>${valTd(r)}<td class="d">${esc(String(r.day || '').slice(5).replace('-', '/'))}</td></tr>`).join('')}</table>`
+      body = `<div class="cRankNote">${esc(note)}</div>` + (rows.length ? `<table class="cRankT${pts ? ' pts' : ''}"><tr><th>順位</th><th>選手</th><th>位置</th><th>${pts ? '点' : 'UZR'}</th><th>日付</th></tr>${rows.map((r, i) => `<tr class="${r.own ? 'own' : ''}"><td class="n">${r.local && res.from !== 'net' && res.from !== 'cache' ? '-' : i + 1}</td><td class="pl"><i class="${r.own ? cosFr() : ''}">${esc(r.num)}</i>${esc(r.name)}${r.own ? '<em>あなた</em>' : ''}${gearChip(r.gear)}${sub2(r)}</td><td>${esc(POS_SHORT[r.pos] || '')}</td>${valTd(r)}<td class="d">${esc(String(r.day || '').slice(5).replace('-', '/'))}</td></tr>`).join('')}</table>`
         : '<div class="cEmpty">まだ記録がありません。最初の 1 人になろう。</div>');
     }
     this.rankEl.innerHTML = this.bg() + `<div class="carSheet rk">
@@ -610,7 +633,7 @@ export class CareerUI {
       <div class="cTabs">${tabs}</div>${sub}
       <div class="cPanel cLight cRankP"><div class="cRankCap">${cap}${tab === 'hof' ? '' : pts ? `<small>点 = 早さ + 守備${PQ}</small>` : `<small>UZR(位置の補正あり)${Q}</small>`}</div>${body}</div>
       ${pts ? `<div class="cNote cRkBoost">能力が高いほど 早く上がれて、UZR も上がりやすくなります。${K.storeOn() ? ' 成長ブースト・特訓で 能力を早く伸ばせます。<button class="cBtn cRkGo" data-act="growshop">成長の品を見る</button>' : ''}</div>` : ''}
-      ${tab === 'hof' ? '' : `<div class="cNote">${esc(ADJ_NOTE)}。名前・背番号・守備位置・${pts ? '点・プロまでの試合数・UZR' : '値'}・日付だけを送ります。</div>`}
+      ${tab === 'hof' ? '' : `<div class="cNote">${esc(ADJ_NOTE)}。名前・背番号・守備位置・${pts ? '点・プロまでの試合数・UZR' : '値'}・日付・付けていた一番いい道具だけを送ります。</div>`}
     </div>`;
   }
   onRankClick(e) {

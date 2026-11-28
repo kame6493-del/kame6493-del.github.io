@@ -113,16 +113,18 @@ export const myUid = () => (LS.get(K.auth) || {}).uid || null;
 const fv = (f) => (!f ? null : 'stringValue' in f ? f.stringValue : 'integerValue' in f ? +f.integerValue : 'doubleValue' in f ? +f.doubleValue : 'timestampValue' in f ? f.timestampValue : null);
 function rowOf(doc) {
   const F = doc.fields || {}, uid = String(doc.name || '').split('/').pop();
-  return { uid, name: cleanName(fv(F.name)), num: fv(F.num), pos: fv(F.pos), val: +fv(F.val), games: fv(F.games), day: fv(F.day), toPro: fv(F.toPro), uzr: F.uzr ? +fv(F.uzr) : null };
+  return { uid, name: cleanName(fv(F.name)), num: fv(F.num), pos: fv(F.pos), val: +fv(F.val), games: fv(F.games), day: fv(F.day), toPro: fv(F.toPro), uzr: F.uzr ? +fv(F.uzr) : null, gear: gearOk(fv(F.gear)) };
 }
 
+// 11/28 夜 道具ガチャ: 付けていた一番いい道具(「id:Lv」の 1 語。js/gear.js の bestTag)。形の合わない物は出さない・送らない
+export const gearOk = (g) => (typeof g === 'string' && /^[a-z0-9_]{1,12}:[1-5]$/.test(g) ? g : null);
 // 自分の記録(この端末で終えたキャリアの最高。ネットが無くても出せる)
 export function mine() { return LS.get(K.mine) || {}; }
 function better(board, e) { const m = mine()[board]; return !m || e.val > m.val + 1e-9; }
 function keepMine(board, e) { const m = mine(); if (better(board, e)) { m[board] = { ...e, own: true }; LS.set(K.mine, m); } }
 // 端末の中だけに残す(送らない。殿堂のカードから作り直す時)
 export function keepLocal(board, e0) {
-  const e = { name: cleanName(e0.name), num: Math.round(+e0.num) || 0, pos: e0.pos, val: e0.val, games: e0.games, day: e0.day || day(e0.t), toPro: e0.toPro, uzr: e0.uzr };
+  const e = { name: cleanName(e0.name), num: Math.round(+e0.num) || 0, pos: e0.pos, val: e0.val, games: e0.games, day: e0.day || day(e0.t), toPro: e0.toPro, uzr: e0.uzr, ...(gearOk(e0.gear) ? { gear: e0.gear } : {}) };
   if (plausible(board, e)) keepMine(board, e);
 }
 // 11/27 前の形(pro5・pos_* の値が UZR だけ)の自分の記録・送り待ち・覚えた表を消す
@@ -164,7 +166,7 @@ function merge(rows, board) {
 export async function submit(board, e0) {
   const pts = ptsBoard(board);
   const e = { name: cleanName(e0.name), num: Math.round(+e0.num) || 0, pos: e0.pos, val: Math.round(e0.val * 100) / 100, games: e0.games, day: e0.day || day(e0.t),
-    ...(pts ? { toPro: e0.toPro, uzr: Math.round(+e0.uzr * 100) / 100 } : {}) };
+    ...(pts ? { toPro: e0.toPro, uzr: Math.round(+e0.uzr * 100) / 100 } : {}), ...(gearOk(e0.gear) ? { gear: e0.gear } : {}) };
   if (!plausible(board, e)) return { ok: false, why: 'implausible' };
   const isBetter = better(board, e);
   keepMine(board, e);
@@ -176,8 +178,11 @@ export async function submit(board, e0) {
     const name = `projects/${PROJECT}/databases/(default)/documents/${ROOT}/${board}/entries/${a.uid}`;
     const fields = { name: { stringValue: e.name }, num: { integerValue: String(e.num) }, pos: { stringValue: e.pos }, val: { doubleValue: e.val }, games: { integerValue: String(e.games) }, day: { stringValue: e.day }, v: { integerValue: pts ? '2' : '1' } };
     if (pts) { fields.toPro = { integerValue: String(e.toPro) }; fields.uzr = { doubleValue: e.uzr }; }
-    await http(`${DOCS}:commit`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + a.idToken },
-      body: JSON.stringify({ writes: [{ update: { name, fields }, updateTransforms: [{ fieldPath: 'at', setToServerValue: 'REQUEST_TIME' }] }] }) }, true);
+    const send = (f) => http(`${DOCS}:commit`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + a.idToken },
+      body: JSON.stringify({ writes: [{ update: { name, fields: f }, updateTransforms: [{ fieldPath: 'at', setToServerValue: 'REQUEST_TIME' }] }] }) }, true);
+    // 11/28 夜 道具(gear)を足して送る。サーバーのルールがまだ gear を通さない時(断られた時)は、gear を外してもう一度だけ送る(記録は今まで通り載る)
+    if (e.gear) { fields.gear = { stringValue: e.gear }; try { await send(fields); } catch (er) { if (er.code !== 'denied') throw er; delete fields.gear; await send(fields); } }
+    else await send(fields);
     stats.writes++;
     delete P[board]; LS.set(K.pend, P);
     // 覚えている表にも自分を入れておく(すぐ読み直さない)

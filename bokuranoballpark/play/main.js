@@ -2299,6 +2299,8 @@ function fpPocket(amt) {
 //   指の間の切れ込みは外形の外へ押し出されて埋まり、1 つの丸い革の形になる。手首の側(y < 0.07)は元のまま。捕手は少し厚く。
 //   形は捕手・一塁を守って初めて捕った時に 1 回だけ作り(作った物は覚える)、ほかの位置では前の形のまま(重さはほかの位置では増えない)。?nomitt=1 で前の形
 const FPM = { kind: 'g', base: null, made: {} };
+// 形の数(sx・sy = 全体の横・縦の伸び、A・B = 寄せる先の楕円の半径 m、lo・hi = 外形を寄せる割合の範囲、TH = 厚み)
+const MITT = { c: { sx: 1.3, sy: 0.8, A: 0.14, B: 0.135, lo: 0.85, hi: 1.3, TH: 1.15 }, fb: { sx: 0.8, sy: 1.2, A: 0.085, B: 0.175, lo: 0.8, hi: 1.25, TH: 1.08 } };   // 11/28 夜 撮って見比べて決めた(shots/mitt_1128/tune_*)
 function fpMittKind() { if (params.has('nomitt')) return 'g'; const my = defense && defense.my; return my === 'C' ? 'c' : my === '1B' ? 'fb' : 'g'; }
 function fpMittMake(kind) {
   const g = fpGloveMesh.geometry, pa = g.attributes.position, na = g.attributes.normal, n = pa.count, P0 = FPM.base.p, Y0 = 0.154;
@@ -2309,14 +2311,17 @@ function fpMittMake(kind) {
   const m2 = new Float32Array(NB), m3 = new Float32Array(NB);
   for (let b = 0; b < NB; b++) { let v = 0; for (let k = -3; k <= 3; k++) v = Math.max(v, mx[(b + k + NB) % NB]); m2[b] = v; }
   for (let b = 0; b < NB; b++) { let v = 0; for (let k = -2; k <= 2; k++) v += m2[(b + k + NB) % NB]; m3[b] = v / 5; }
-  const A = kind === 'c' ? 0.118 : 0.085, B = kind === 'c' ? 0.128 : 0.175, TH = kind === 'c' ? 1.1 : 1.08;
+  const M = MITT[kind], A = M.A, B = M.B, TH = M.TH;
   const out = new Float32Array(P0.length);
   for (let i = 0; i < n; i++) {
-    const x = P0[i * 3], y = P0[i * 3 + 1] + Y0, z = P0[i * 3 + 2], dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy);
-    const f = Math.floor(ang(x, y)), u = ang(x, y) - f, R = m3[f % NB] * (1 - u) + m3[(f + 1) % NB] * u;
+    const x0 = P0[i * 3], y0 = P0[i * 3 + 1] + Y0, z = P0[i * 3 + 2], w0 = smr(0.03, 0.10, y0);
+    const f = Math.floor(ang(x0, y0)), u = ang(x0, y0) - f, R = (m3[f % NB] * (1 - u) + m3[(f + 1) % NB] * u) * Math.hypot(1, 0);
+    // まず形全体を横・縦に伸ばす(革の絵が流れない)。その後で外形を丸・楕円へ寄せる(寄せる量は lo〜hi まで)
+    const x = cx + (x0 - cx) * (1 + (M.sx - 1) * w0), y = cy + (y0 - cy) * (1 + (M.sy - 1) * w0), dx = x - cx, dy = y - cy;
+    const Ra = R * Math.hypot(M.sx * Math.cos(Math.atan2(y0 - cy, x0 - cx)), M.sy * Math.sin(Math.atan2(y0 - cy, x0 - cx)));
     const th = Math.atan2(dy, dx), T = 1 / Math.sqrt((Math.cos(th) / A) ** 2 + (Math.sin(th) / B) ** 2);   // その向きの楕円の半径
-    const w = smr(0.03, 0.10, y);   // 手首の側は元のまま
-    const k = R > 1e-4 ? 1 + (Math.max(0.6, Math.min(1.3, T / R)) - 1) * w : 1;   // 伸ばし過ぎ・縮め過ぎで革の絵が流れないように
+    const w = w0;   // 手首の側は元のまま
+    const k = Ra > 1e-4 ? 1 + (Math.max(M.lo, Math.min(M.hi, T / Ra)) - 1) * w : 1;   // 伸ばし過ぎ・縮め過ぎで革の絵が流れないように
     out[i * 3] = cx + dx * k; out[i * 3 + 1] = cy + dy * k - Y0; out[i * 3 + 2] = z * (1 + (TH - 1) * w);
   }
   const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.BufferAttribute(out, 3)); g2.setIndex(g.index); g2.computeVertexNormals();
@@ -2334,7 +2339,8 @@ function fpMittSet() {
   if (kind === 'g') FPG.samp = FPM.base.samp;
   else { const Q = []; for (let i = 0; i < pa.count; i += 23) Q.push(new THREE.Vector3(S.p[i * 3], S.p[i * 3 + 1] + 0.154, S.p[i * 3 + 2])); FPG.samp = Q; }
   FPM.kind = kind; FPG.tgt = null;
-  window.__app.fpMittKind = kind;
+  window.__app.fpMittKind = kind; window.__app.MITT = MITT;
+  window.__app.mittRebuild = () => { FPM.made = {}; FPM.kind = 'x'; fpMittSet(); };   // 形の数を替えて見直す時(調整用)
 }
 function loadFpGlove() {
   fpGloveLoading = true;

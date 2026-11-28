@@ -3,8 +3,9 @@
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1128z';
-import * as Rank from './ranking.js?v=1127b';
+import { CareerUI } from './career_ui.js?v=1128g';
+import * as Rank from './ranking.js?v=1128g';
+import * as Gear from './gear.js?v=1128g';   // 11/28 夜 道具ガチャ(付けた道具の点を能力に足して効かせる。上限あり)
 
 const KEY = 'r4walk.career.v1';
 const OFS = ['LF', 'CF', 'RF'];
@@ -264,7 +265,7 @@ class Career {
       for (const c of this.hof()) {
         if (c.migrated || !c.seasons || !c.pro || c.pro.games < FINAL_GAMES) continue;
         const tp = c.toPro || ((c.seasons[0].games || 0) + (c.seasons[1].games || 0)), pt = Rank.rankPts(tp, c.pro.adj);
-        const e = { name: c.name, num: c.num, pos: c.pos, val: pt.total, uzr: c.pro.adj, toPro: tp, games: c.pro.games, t: c.t };
+        const e = { name: c.name, num: c.num, pos: c.pos, val: pt.total, uzr: c.pro.adj, toPro: tp, games: c.pro.games, t: c.t, gear: c.gear };
         Rank.keepLocal('pro5', e); Rank.keepLocal('pos_' + c.pos, e);
       }
     } catch (e) { /* 無くても遊べる */ }
@@ -431,19 +432,21 @@ class Career {
   onBegin(d) {
     const ab = this.data.ab;
     this.baseD = d.D;
-    d.D = { ...d.D, reach: d.D.reach * EFFECT.reach(ab.field), speed: d.D.speed * EFFECT.speed(ab.field) };
-    d.diveK = EFFECT.dive(ab.field); d.startK = EFFECT.start(ab.field);
+    this.gb = Gear.bonus();   // 11/28 夜 道具の点(試合の始めに決める。試合の途中で付け替えても次の試合から)
+    const E = this.eff();
+    d.D = { ...d.D, reach: d.D.reach * EFFECT.reach(E.reach), speed: d.D.speed * EFFECT.speed(E.start) };
+    d.diveK = EFFECT.dive(E.reach); d.startK = EFFECT.start(E.start);
     const C = this;
     // 11/28 CPU の外野手も同じ肩の式で: 段ごとの肩(高校 50・社会人 62・プロ 72)。キャリアの外(自由に守る・ノック)は今まで通り(倍率 1)
     const cpuArm = [50, 62, 72][this.data.stage] ?? 50;
     d.cpuArmK = function (k, dist) { return C.game && dist > 40 ? EFFECT.armOF(cpuArm) : 1; };
     d.throwMod = function (to, from, speed, rk, pl) {
       if (!C.game) return null;
-      const s = C.data.ab.arm, rng = this.rng;
+      const E = C.eff(), s = E.arm, rng = this.rng;
       const dx = to.x - from.x, dz = to.z - from.z, L = Math.hypot(dx, dz) || 1;
       const g = (rng() + rng() + rng() - 1.5) * 2;   // ほぼ正規分布
-      let off = g * EFFECT.sigma(s);
-      if (rng() < EFFECT.wild(s)) { off = (rng() < 0.5 ? -1 : 1) * (2.0 + rng() * 0.8); pl._carWild = { rk }; }
+      let off = g * EFFECT.sigma(E.aim);
+      if (rng() < EFFECT.wild(E.aim)) { off = (rng() < 0.5 ? -1 : 1) * (2.0 + rng() * 0.8); pl._carWild = { rk }; }
       const t2 = to.clone(); t2.x += (-dz / L) * off; t2.z += (dx / L) * off;
       const ofLong = OFS.includes(this.my) && L > 40;   // 11/28 外野からの遠い返球(本塁・三塁・二塁・中継)は肩で弾道が変わる倍率
       return { to: t2, speed: speed * (ofLong ? EFFECT.armOF(s) : EFFECT.arm(s)) };
@@ -583,9 +586,14 @@ class Career {
   // 試合の途中で能力が上がった時も、すぐプレーに効かせる
   applyAbilities() {
     const d = window.__app && window.__app.defense; if (!d || !this.game || !this.baseD) return;
-    const ab = this.data.ab;
-    d.D = { ...this.baseD, reach: this.baseD.reach * EFFECT.reach(ab.field), speed: this.baseD.speed * EFFECT.speed(ab.field) };
-    d.diveK = EFFECT.dive(ab.field); d.startK = EFFECT.start(ab.field);
+    const E = this.eff();
+    d.D = { ...this.baseD, reach: this.baseD.reach * EFFECT.reach(E.reach), speed: this.baseD.speed * EFFECT.speed(E.start) };
+    d.diveK = EFFECT.dive(E.reach); d.startK = EFFECT.start(E.start);
+  }
+  // 11/28 夜 道具の点を足した能力(EFFECT を引く値。99 まで)。reach・start は守備、arm・aim は肩に足す
+  eff() {
+    const ab = this.data.ab, g = this.gb || { reach: 0, start: 0, arm: 0, aim: 0 }, c = (v) => Math.min(AB_MAX, v);
+    return { reach: c(ab.field + g.reach), start: c(ab.field + g.start), arm: c(ab.arm + g.arm), aim: c(ab.arm + g.aim) };
   }
   // ------------------------------------------------ 試合の終わり
   onResult(r) {
@@ -634,6 +642,14 @@ class Career {
     if (promoted) { this.sendSeason(st0); D.stage = Math.min(STAGES.length - 1, D.stage + 1); if (D.stage === 2) D.toPro = D.stageGames[0] + D.stageGames[1]; }
     if (st0 === 2) { res.proGame = D.stageGames[2]; res.proLeft = Math.max(0, FINAL_GAMES - D.stageGames[2]); }
     if (st0 === 2 && D.stageGames[2] >= FINAL_GAMES) { const f = finalEval(D); res.final = f; res.finalFirst = !D.final; D.final = f; res.done = this.complete(f); }
+    // 11/28 夜 道具ガチャの無料の券(キャリアの初めての試合 1・昇格 1・キャリア完了 2。同じ節目は 1 回だけ)
+    try {
+      let fr = 0; const mk = D.made || 0;
+      fr += Gear.grant('first', 1);
+      if (promoted) fr += Gear.grant(`promo_${mk}_${st0}`, 1);
+      if (res.done) fr += Gear.grant(`done_${mk}`, 2);
+      res.gearFree = fr;
+    } catch (e) { /* 無くても遊べる */ }
     this.save();
     this.ui.result(res);
     this.cheer(res);
@@ -647,8 +663,10 @@ class Career {
     const H = this.hof(), cap = hofCapNow(H.length); H.push(card); this.saveHof(H, cap);
     try { window.dispatchEvent(new CustomEvent('bp:careerdone', { detail: { first: H.length === 1 } })); } catch (e) { /* 無くても動く */ }
     // 11/27 持ち主「最速でプロ、プロでスコアを競う」: プロ 5 試合・守備位置の板は「早さ+守備」の点(ranking.js の rankPts)。1 シーズンの板は今まで通り UZR
-    const e = { name: D.name, num: D.num, pos, val: card.pts.total, uzr: Math.round(S.adj * 100) / 100, toPro: card.toPro, games: S.games, t: card.t };
-    const es = { name: D.name, num: D.num, pos, val: S.adj, games: S.games, t: card.t };
+    let gear = null; try { gear = Gear.bestTag(); } catch (er) { /* なし */ }   // 11/28 夜 付けている一番いい道具(ランキングの行に出す)
+    if (gear) card.gear = gear;
+    const e = { name: D.name, num: D.num, pos, val: card.pts.total, uzr: Math.round(S.adj * 100) / 100, toPro: card.toPro, games: S.games, t: card.t, gear };
+    const es = { name: D.name, num: D.num, pos, val: S.adj, games: S.games, t: card.t, gear };
     this.lastSend = Promise.all([Rank.submit('pro5', e), Rank.submit('pos_' + pos, e), Rank.submit('season_pro', es)]).catch(() => null);
     return card;
   }
@@ -656,7 +674,8 @@ class Career {
   sendSeason(si) {
     const D = this.data, S = D.stageTot && D.stageTot[si]; if (!S || !S.games) return;
     const board = ['season_hs', 'season_corp'][si]; if (!board) return;
-    this.lastSend = Rank.submit(board, { name: D.name, num: D.num, pos: mainPos(S, D.pos), val: S.adj, games: S.games, t: Date.now() }).catch(() => null);
+    let gear = null; try { gear = Gear.bestTag(); } catch (er) { /* なし */ }
+    this.lastSend = Rank.submit(board, { name: D.name, num: D.num, pos: mainPos(S, D.pos), val: S.adj, games: S.games, t: Date.now(), gear }).catch(() => null);
   }
   // 11/27 成長: 結果の画面に出す数(この試合の倍率・ブースト/特訓チケットがあれば何ずつ上がったか)
   boostRes(G) {

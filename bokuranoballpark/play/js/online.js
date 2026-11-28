@@ -14,6 +14,7 @@
 // ?noonline=1 で入れない。試験は window.__online。
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import * as Gear from './gear.js?v=1128g';   // 11/28 夜 道具ガチャ: 付けているグラブ(c の 6 つ目)の色とレア度の光
 
 const API_KEY = 'AIzaSyC4yXnCeOvQZarFHz-0KKk5_szykky3yJk';   // 公開してよい識別子(js/ranking.js と同じ)
 const DB = 'https://oekakirace-default-rtdb.asia-southeast1.firebasedatabase.app';
@@ -94,17 +95,21 @@ const FRAMES = {   // 名札の縁(locker.css の .bpFr-* と同じ色)
   hof: { g: ['#1a1a1a', '#e9b923', '#5a4510', '#e9b923'], b: '#0a0806' },
 };
 function lookOf(c) {
-  const [gc, gp, uni, fr, ti] = String(c || '').split('|');
+  const [gc, gp, uni, fr, ti, gr] = String(c || '').split('|');
   const C = cos(), get = (id, kind) => { const x = C && C.get(id); return x && x.kind === kind ? x : null; };
-  const g = get(gc, 'gcolor') || { c: 0x8a5528, st: 0xf3ecdb }, p = get(gp, 'gpat') || { p: 0 }, u = get(uni, 'uni'), t = get(ti, 'title');
+  let g = get(gc, 'gcolor') || { c: 0x8a5528, st: 0xf3ecdb }; const p = get(gp, 'gpat') || { p: 0 }, u = get(uni, 'uni'), t = get(ti, 'title');
+  // 11/28 夜 道具ガチャのグラブ: 着せ替えのグラブの色が初めの茶色なら、道具の色にする。SR・SSR は手元が光る
+  const gi = Gear.BY_ID[gr] && Gear.BY_ID[gr].slot === 'glove' ? Gear.BY_ID[gr] : null;
+  if (gi && (!gc || gc === 'gc_brown')) g = { c: parseInt(gi.col.slice(1), 16), st: g.st };
   const frame = FRAMES[String(fr || '').replace(/^frame_/, '')] ? String(fr).replace(/^frame_/, '') : 'basic';
-  return { glove: g.c, stitch: g.st, pat: p.p ? (p.pc === -1 || p.pc == null ? null : p.pc) : null, patId: p.p || 0, uni: Object.assign({}, DEF_UNI, (u && u.u) || {}), frame, title: t && t.id !== 'title_none' ? t.name : '' };
+  return { glove: g.c, stitch: g.st, pat: p.p ? (p.pc === -1 || p.pc == null ? null : p.pc) : null, patId: p.p || 0, uni: Object.assign({}, DEF_UNI, (u && u.u) || {}), frame, title: t && t.id !== 'title_none' ? t.name : '', gearRar: gi ? gi.rar : '' };
 }
 // 自分の見た目(持っている物だけ。持っていない物は初めの物)
 function myLook() {
   const C = cos(); if (!C) return 'gc_brown|gp_plain|uni_home|frame_basic|title_none';
   const e = C.eq(), ok = (id, d) => { try { return id && C.get(id) && C.owned(id) ? id : d; } catch (er) { return d; } };
-  return [ok(e.gcolor, 'gc_brown'), ok(e.gpat, 'gp_plain'), ok(e.uni, 'uni_home'), ok(e.frame, 'frame_basic'), ok(e.title, 'title_none')].join('|');
+  let gr = ''; try { const S = Gear.load(); gr = S.eq.glove && S.own[S.eq.glove] ? S.eq.glove : ''; } catch (er) { /* なし */ }
+  return [ok(e.gcolor, 'gc_brown'), ok(e.gpat, 'gp_plain'), ok(e.uni, 'uni_home'), ok(e.frame, 'frame_basic'), ok(e.title, 'title_none')].join('|') + (gr ? '|' + gr : '');
 }
 
 // ---------------------------------------------------------------- 選手の形(簡単な形。色は頂点の色、材質は全員で 1 つ)
@@ -183,8 +188,19 @@ function buildFigure(L) {
   const farGeo = mergeGeometries([body.geometry, place(legL.geometry, -0.09, HIP), place(legR.geometry, 0.09, HIP), place(armL.geometry, -SH_X, SH_Y), place(armR.geometry, SH_X, SH_Y)]);
   const far = new THREE.Mesh(farGeo, mat()); far.visible = false;
   root.add(near, far);
+  // 11/28 夜 SR・SSR のグラブは手元に小さな光(絵はレア度ごとに 1 枚を全員で使う。近い時だけ)
+  if (L.gearRar === 'SR' || L.gearRar === 'SSR') { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex(L.gearRar), depthWrite: false, transparent: true, blending: THREE.AdditiveBlending })); s.scale.setScalar(L.gearRar === 'SSR' ? 0.55 : 0.42); s.position.set(-0.04, -0.64, -0.02); armL.add(s); }
   root.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; o.matrixAutoUpdate = true; } });
   return { root, near, far, body, legL, legR, armL, armR };
+}
+const GLOW_TX = {};
+function glowTex(r) {
+  if (GLOW_TX[r]) return GLOW_TX[r];
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64; const g = cv.getContext('2d'), gr = g.createRadialGradient(32, 32, 2, 32, 32, 31);
+  const c = r === 'SSR' ? '255,200,60' : '190,110,255'; gr.addColorStop(0, `rgba(${c},0.95)`); gr.addColorStop(0.35, `rgba(${c},0.45)`); gr.addColorStop(1, `rgba(${c},0)`);
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace; tx.userData.shared = true; GLOW_TX[r] = tx;
+  return tx;
 }
 function disposeFigure(F) { F.root.traverse((o) => { if (o.isMesh) o.geometry.dispose(); if (o.isSprite) { if (o.material.map && !o.material.map.userData.shared) o.material.map.dispose(); o.material.dispose(); } }); }
 
