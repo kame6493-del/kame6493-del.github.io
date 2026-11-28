@@ -71,17 +71,30 @@ export class Sound {
     let low = null;
     try { if (OAC && LOWMEM) low = new OAC(1, 1, 22050); } catch (e) { low = null; }
     const keepRate = (url) => sfxSet.has(url) || /^audio\/(crack_|foultip|tick|mitt)/.test(url);
-    await Promise.all(Object.entries(urls).map(async ([k, url]) => {
+    // 11/28 X の声「iPhone で守備に行こうとするとすぐにメニュー画面に戻される」: 初めて遊び始めた時(守備の試合を押した時)に、ここで 115 ほどの音を
+    // 一度に読み・解いていた(読んだ中身・その写し・解いている途中の物が同時に積み上がる)。スマホは 3 本ずつ順に解き、写しを作らない
+    // (低い速さで解けなかった時だけ読み直す)。効果音(打球・捕球)を先に。?fullaudio=1 か PC は前と同じく一度に
+    const one = async ([k, url]) => {
       try {
         const ab = await (await fetch(url)).arrayBuffer();
         const dc = low && !keepRate(url) ? low : c;
-        try { this.buf[k] = await new Promise((res, rej) => { const r = dc.decodeAudioData(ab.slice(0), res, rej); if (r && r.catch) r.catch(rej); }); }
-        catch (e) { if (dc === c) throw e; this.buf[k] = await new Promise((res, rej) => c.decodeAudioData(ab, res, rej)); }   // 低い速さで解けない環境は前の形
+        try { this.buf[k] = await new Promise((res, rej) => { const r = dc.decodeAudioData(LOWMEM ? ab : ab.slice(0), res, rej); if (r && r.catch) r.catch(rej); }); }
+        catch (e) { if (dc === c) throw e; const ab2 = LOWMEM ? await (await fetch(url)).arrayBuffer() : ab; this.buf[k] = await new Promise((res, rej) => c.decodeAudioData(ab2, res, rej)); }   // 低い速さで解けない環境は前の形
       } catch (e) { /* 無くても遊べる */ }
-    }));
+    };
+    const list = Object.entries(urls).sort((x, y) => (keepRate(y[1]) ? 1 : 0) - (keepRate(x[1]) ? 1 : 0));
+    if (!LOWMEM) await Promise.all(list.map(one));
+    else { let i = 0; await Promise.all([0, 1, 2].map(async () => { while (i < list.length) await one(list[i++]); })); }
     this.ready = true;
     this.vPrime();
     try { if (this.bgHidden) await c.suspend(); else if (c.state === 'suspended') await c.resume(); } catch (e) { }
+  }
+  // 11/28 22.05kHz で解く台を 1 つだけ作って使い回す(前は実況の声・応援歌のファイルごとに OfflineAudioContext を作っていた)
+  _lowDC() {
+    if (this._ldc !== undefined) return this._ldc;
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    try { this._ldc = OAC ? new OAC(1, 1, 22050) : null; } catch (e) { this._ldc = null; }
+    return this._ldc;
   }
   // 短い響き(雑音を指数で減らしただけの、部屋の響きの型)
   impulse(sec) {
@@ -354,7 +367,7 @@ export class Sound {
     Promise.all(Object.entries(S).map(async ([k, v]) => {
       try {
         const ab = await (await fetch(v.file)).arrayBuffer();
-        const dc = OAC ? new OAC(1, 1, 22050) : this.ctx;
+        const dc = this._lowDC() || this.ctx;   // 11/28 曲ごとに解く台を作らない
         box.buf[k] = await new Promise((res, rej) => dc.decodeAudioData(ab, res, rej));
       } catch (e) { /* 無くても遊べる(今までの拍子の音で鳴る) */ }
     })).then(() => { box.ready = true; });
@@ -890,9 +903,7 @@ export class Sound {
     const p = (async () => {
       try {
         const ab = await (await fetch(u)).arrayBuffer();
-        const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-        let dc = this.ctx;
-        try { if (OAC) dc = new OAC(1, 1, 22050); } catch (e) { dc = this.ctx; }
+        const dc = this._lowDC() || this.ctx;   // 11/28 声ごとに解く台(OfflineAudioContext)を作らない。1 つを使い回す
         const b = await new Promise((res, rej) => { const r = dc.decodeAudioData(ab, res, rej); if (r && r.catch) r.catch(rej); });
         this.buf[u] = b; return b;
       } catch (e) { return null; } finally { delete this.vLoading[u]; }

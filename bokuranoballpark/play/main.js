@@ -2023,6 +2023,7 @@ function applyVolumes() {
 
 // メニューから遊ぶモードを始める
 function startMode(sel) {
+  try { memg.playing(sel); } catch (e) { /* 11/28 守備の最中に落ちた時にもう一度始めるための印(js/memguard.js) */ }
   start();
   lap.state = 'idle';   // 前のモードで測りかけの一周は持ち越さない
   leaveMode();
@@ -2105,6 +2106,7 @@ function busyWhile(p) {
   Promise.resolve(p).then(() => prebuildPlay()).then(() => (renderer.compileAsync ? renderer.compileAsync(scene, camera).catch(() => {}) : null)).catch(() => {}).finally(() => setTimeout(done, 30));
 }
 function toTitle() {
+  try { memg.playing(null); } catch (e) { /* 11/28 */ }
   leaveMode();
   if (watch && watch.on) watch.stop();
   ui.playing(false); ui.board(null); ui.digest(null); ui.skip(false); ui.pad('hide');
@@ -2619,6 +2621,7 @@ loadAll().then(() => {
   // 球場を選ぶ画面で別の球場に決めて読み直した時は、読み終わったらそのまま始める(タイトルへは戻らない)
   let goNow = false; try { goNow = sessionStorage.getItem('r4walk.go') === '1'; sessionStorage.removeItem('r4walk.go'); } catch (e) { /* 使えない環境 */ }
   if (goNow && ui && ui.go) ui.go();
+  else if (ui) { try { memg.resume(ui); } catch (e) { console.warn(e); } }   // 11/28 守備の最中に WebContent が落ちて読み直された時は、軽くしてもう一度始める
   { const ls = $('loadScreen'); if (ls) ls.classList.add('hide'); }
 }).catch((err) => {
   loadBusy = false;
