@@ -82,6 +82,7 @@ const HOMEFIX_OFF = typeof location !== 'undefined' && /[?&]oldhome=1/.test(loca
 // 11/27 夜 持ち主の直し(fix1127b): ?oldiff=1 インフィールドフライの走者を前の形に / ?oldpick=1 止まった球を拾い直した時の「直接捕球」の判定を前の形に / ?oldtalk=1 実況の「抜けた」「セーフ」を前の形に
 const OLDIFF = typeof location !== 'undefined' && /[?&]oldiff=1/.test(location.search);
 const OLDPICK = typeof location !== 'undefined' && /[?&]oldpick=1/.test(location.search);
+const OLDWEAKP = typeof location !== 'undefined' && /[?&]oldweakp=1/.test(location.search);   // 11/28 夕 比べる用: 直す前の弱いゴロ(自分が追う球を投手が横取りする・ほかの野手が先に捕った自分の打球も自分のミス/機会に数える)
 const OLDCAM = typeof location !== 'undefined' && /[?&]oldcam=1/.test(location.search);   // 11/27 フライを追う時の視点の回り方を前の形に
 const OLDTALK = typeof location !== 'undefined' && /[?&]oldtalk=1/.test(location.search);
 const ACC_COV = COVFIX_OFF ? 6.5 : 8.5;   // 塁に入る人の走り出しの加速(m/s²)
@@ -2051,8 +2052,17 @@ export class Defense {
     if (pl.thrown && pl.thrown.eta != null && pl.t < pl.thrown.eta + 0.15) return;   // 送球の途中は受け手に任せる
     const me = this.ctx.player.pos;
     const near = (k) => { const F = this.fig[k]; const T = F.target; return T && Math.hypot(T.x - p.x, T.z - p.z) < 3.5 && (F.spd || 0) > 0.3 || Math.hypot(F.root.position.x - p.x, F.root.position.z - p.z) < 2; };
-    if (pl.looseK && this.fig[pl.looseK] && near(pl.looseK)) return;
     const fk = pl.opt.fielder;
+    // 11/28 夕 遊んだ人「ショートでやっている時に、弱いゴロだとピッチャーが捕球してミスになることがある」: 自分の打球を CPU(投手など)が追い始めた後でも、
+    //   自分が追いついて その人と同じくらい(+0.3 秒まで)に届くなら、CPU は追うのをやめて元の場所(塁に入る人は塁)へ戻る。?oldweakp=1 で前の形
+    if (!OLDWEAKP && fk === this.my && !pl.thrown && pl.looseK && pl.looseK !== this.my && this.fig[pl.looseK] && !POS[this.my].of && this.inInfield(p)) {
+      const tb = pl.t - b.t0, k0 = pl.looseK, F0 = this.fig[k0], tm = this.reachT(b.path, me, this.fullSpeed(), tb), tk = this.reachT(b.path, F0.root.position, VMAX[k0] || AI_SPEED, tb);
+      if (tm < pathDuration(b.path) + 3 && tm <= tk + 0.3 && Math.hypot(F0.root.position.x - p.x, F0.root.position.z - p.z) > 1.6) {
+        F0.chase = null; F0.target = k0 === '1B' ? BASEP[1].clone().add(V(-0.6, 0, -0.4)) : this.homeOf(k0); if (F0.role === 'field') F0.role = k0 === '1B' ? 'base1' : null;
+        pl.looseK = null; pl.weakYield = (pl.weakYield || 0) + 1; return;
+      }
+    }
+    if (pl.looseK && this.fig[pl.looseK] && near(pl.looseK)) return;
     if (!pl.thrown && fk !== this.my && this.fig[fk] && this.fig[fk].chase && this.fig[fk].chase.path === b.path) {
       // 打球を追う人がまだ間に合う(ボールが追う点の手前)なら任せる
       const C = this.fig[fk].chase.pt, F = this.fig[fk].root.position;
@@ -2073,7 +2083,7 @@ export class Defense {
       if (tm < pathDuration(b.path)) {
         let best = 1e9;
         for (const q of ['P', 'C', '1B', '3B', '2B', 'SS']) if (q !== this.my && this.fig[q] && this.fig[q].root.visible) best = Math.min(best, this.reachT(b.path, this.fig[q].root.position, VMAX[q] || AI_SPEED, tb));
-        if (tm <= best + (this.my === '1B' && p.x > 2 ? 1.0 : 0.5)) return;   // 11/22 一塁側の球を自分(一塁手)が追う時は、投手は捕りに来ずに一塁へ入る(1.0 秒まで任せる)
+        if (tm <= best + (this.my === '1B' && p.x > 2 ? 1.0 : OLDWEAKP ? 0.5 : 0.8)) return;   // 11/28 夕 0.5 → 0.8 秒(人は動き出しが自動の野手より遅い)   // 11/22 一塁側の球を自分(一塁手)が追う時は、投手は捕りに来ずに一塁へ入る(1.0 秒まで任せる)
       }
     }
     let k = this.looseTo(p, [this.my]);
@@ -2313,6 +2323,8 @@ export class Defense {
   onCatch(pl, who, p, tt) {
     const c = this.ctx;
     const firstTouch = !pl.thrown;
+    // 11/28 夕 自分の打球を、自分が触れる前に(グラブの届く 9 割まで来ていない)ほかの野手が先に捕った: 自分の担当でなかった打球として、評価のミス・UZR の機会に数えない(?oldweakp=1 で前の形)
+    if (!OLDWEAKP && firstTouch && who !== 'me' && !pl.holder && pl.opt.fielder === this.my && !((pl.myMin ?? 99) < this.D.reach * 0.9)) { pl.notMine = who; if (who === 'P' || who === 'C') pl.cpuTook = who; }
     // 11/27 持ち主「外野に抜けたゴロを取りに行くと謎アウトになることがある」: 止まった球(ballDead)は道筋を作り直すので、拾い直した最初のこま(tt 0)には
     // 地面に着いた印が無く「直接捕った」扱いで打者アウトになっていた。打球の道筋そのもので、地面に着く前に捕った時だけ直接捕球にする(?oldpick=1 で前の形)
     const onFly = firstTouch && !pl.dropped && this.ball && (OLDPICK || (!pl.groundStop && pl.batted && this.ball.path === pl.batted.path)) && !this.ball.path.events.some((e) => (e.type === 'bounce' || e.type === 'roll' || e.type === 'wall') && e.t <= tt);   // 11/25 落とした球を拾い直したのはアウトでない
@@ -3170,7 +3182,7 @@ export class Defense {
       pl.coverOk = !!(pl.coverDone || (pl.coverMin ?? 99) < (pl.coverSpot.ring ? 2.5 : 1.5) || (!pl.coverSpot.need && reduced > 0.6));
     }
     if (pl.label === 'ファウル' && pl.fieldedBy !== 'me') return;
-    const mine = pl.opt.fielder === this.my && pl.batted && !pl.steal;
+    const mine = pl.opt.fielder === this.my && pl.batted && !pl.steal && !pl.notMine;   // 11/28 夕 ほかの野手が先に捕った打球は自分の打球にしない
     const caught = pl.fieldedBy === 'me' && !pl.missed;
     const reach = this.D.reach;
     const star = pl.star || (pl.batted && pl.batted.type === 'fence' ? 3 : (pl.myReach || 0) > 0.8 ? 2 : 1);

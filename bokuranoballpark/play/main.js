@@ -1383,6 +1383,41 @@ function clearCam(look, want) {
   if (h) return look.clone().addScaledVector(_ray.direction, Math.max(0.6, h.distance - 0.35));
   return want;
 }
+// 11/28 夕 後ろからの視点で、後ろが壁・フェンスの時: カメラの腕(選手の後ろ → カメラ)を横へ回す角 th(0 = 真後ろ・±1.4 rad = ほぼ真横)。
+//   見る向き(前)は変えない。回す量は少しずつ(回す時 0.15 秒・戻す時 0.4 秒ほど)。前に回した側を先に試す(左右へ行ったり来たりしない)
+const OLD_FENCECAM = params.has('oldfencecam');
+const fenceCam = { th: 0, side: 1, dt: 1 / 60, need: 0, cross: 0 };
+window.__fenceCam = fenceCam;   // 試験で見る(tools/fencecam_1128.py)
+function fenceCamAt(target, fwd, tall, me, th, cross = 0) {
+  const s = Math.min(1, Math.abs(th) / 1.4);
+  let back = (tall ? 4.6 * (1 - 0.5 * s) : 3.7 * (1 - 0.4 * s)), up = (tall ? 1.1 : 0.55) + (tall ? 1.4 : 0.9) * s;   // 縦持ちは少し高く(見下ろす)
+  // 反対の横へ移る間(cross)は、真後ろ(壁)を通らず、選手の頭の上を越えて移る
+  const x = cross * (1 - s); back += (0.3 - back) * x; up += (2.4 - up) * x;
+  const c = Math.cos(th), sn = Math.sin(th), bx = -fwd.x, bz = -fwd.z;   // 後ろ向き(横の成分)を th だけ回す
+  const p = target.clone().add(new THREE.Vector3((bx * c - bz * sn) * back, -fwd.y * back + up, (bx * sn + bz * c) * back));
+  p.y = Math.max(p.y, me.y + 1.2);
+  return p;
+}
+function fenceCamSwing(target, fwd, tall, me) {
+  // 少し遠め(+1 m)まで線を引いて、壁に着く前から回し始める。0・±0.5・±0.9・±1.2・±1.4・±1.6 rad のうち、ふさがれない一番小さい角
+  const L = fenceCam, sd = L.side;
+  let need = null, bestTh = 0, bestD = -1;
+  for (const th of [0, 0.5 * sd, -0.5 * sd, 0.9 * sd, -0.9 * sd, 1.2 * sd, -1.2 * sd, 1.4 * sd, -1.4 * sd, 1.6 * sd, -1.6 * sd]) {
+    const c = fenceCamAt(target, fwd, tall, me, th), d = c.distanceTo(target);
+    const mg = tall ? 1.6 : 1.0, probe = target.clone().addScaledVector(c.clone().sub(target).normalize(), d + mg);
+    const got = clearCam(target, probe).distanceTo(target);
+    if (got >= d + mg - 0.05) { need = th; break; }
+    if (got - d > bestD) { bestD = got - d; bestTh = th; }
+  }
+  if (need === null) need = bestTh;   // どこもふさがれる(角の隅など)なら、いちばん広く取れる向き
+  if (need) L.side = Math.sign(need);
+  if (need && L.th && Math.sign(need) !== Math.sign(L.th) && Math.abs(L.th) > 0.2) L.cross = 1;
+  else L.cross = Math.max(0, (L.cross || 0) - 2.5 * L.dt);
+  const k = 1 - Math.exp(-(L.cross > 0 || Math.abs(need) > Math.abs(L.th) ? 7 : 2.5) * L.dt);
+  L.need = need; L.th += (need - L.th) * k;
+  if (Math.abs(L.th) < 0.003) L.th = 0;
+  return L.th;
+}
 function desiredCam(v, out) {
   const me = player.pos;
   const dball = defense && defense.active ? defense.ballWorld() : null;
@@ -1399,6 +1434,27 @@ function desiredCam(v, out) {
     // 上を見上げても、カメラは地面に潜らない(足もとより 1.2 m 上に保つ)
     want.y = Math.max(want.y, me.y + 1.2);
     out.pos.copy(clearCam(target, want));
+    // 11/28 夕 遊んだ人「外野手でプレイしていくとフェンス際に行くと勝手に視点が切り替わってしまうのが不便」: 前は後ろが壁で 2.2 m より近くなると、
+    //   その場で横から(壁に沿って選手を見る形)へ飛び、見る向きも変わっていた。後ろからのまま見る向き(前)は変えず、カメラだけを壁の無い横へ少しずつ回し、少し上から見下ろす。
+    //   カメラは壁の手前に寄せる(めり込まない)。?oldfencecam=1 で前の形
+    if (!OLD_FENCECAM && mode === 'defense') {   // 歩く時(コンコースの天井の下など)は前のまま
+      const th = fenceCamSwing(target, fwd, tall, me), sw = Math.min(1, Math.abs(th) / 1.4);
+      if (th) {
+        // 横へ回した分だけ、見る点を選手に寄せる(真横でも選手が画面に入る)。少し上から見下ろす
+        // 回っている間はカメラの位置も少しなめらかに追う(壁で急に寄る所を数こまに分ける)。なめらかにした点も壁の手前へ寄せ直す(めり込まない)
+        const want2 = clearCam(target, fenceCamAt(target, fwd, tall, me, th, fenceCam.cross || 0)), fp = fenceCam.pos;
+        out.pos.copy(fp && fp.distanceTo(want2) < 6 ? clearCam(target, fp.clone().lerp(want2, 1 - Math.exp(-12 * fenceCam.dt))) : want2);
+        out.look.copy(target).addScaledVector(fwd, 6 - 3.6 * sw).add(new THREE.Vector3(0, -0.35 * sw, 0));
+        // 選手が画面の横から外れないよう、見る向きを選手の方へ必要なだけ寄せる(縦持ちは横の見える幅が狭い)
+        const hHalf = Math.atan(Math.tan((tall ? 80 : 68) * Math.PI / 360) * camera.aspect), maxA = hHalf * 0.72;
+        const vd = out.look.clone().sub(out.pos), dl = vd.length(); vd.divideScalar(dl);
+        const tp = new THREE.Vector3(me.x, me.y + 1.0, me.z).sub(out.pos).normalize(), ang = vd.angleTo(tp);
+        if (ang > maxA) { vd.lerp(tp, (ang - maxA) / ang).normalize(); out.look.copy(out.pos).addScaledVector(vd, dl); }
+      } else out.look.copy(target).addScaledVector(fwd, 6);
+      fenceCam.pos = (fenceCam.pos || new THREE.Vector3()).copy(out.pos);
+      out.fov = tall ? 80 : 68;
+      return;
+    }
     // 後ろがフェンスや壁でふさがれている時は、カメラを上へ持ち上げて見下ろす(選手に寄りすぎない)
     if (out.pos.distanceTo(target) < 2.2) {
       const fh = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
@@ -1475,6 +1531,8 @@ function placeCamera(dt = 1 / 60) {
     else { cam.pos.copy(camera.position); cam.look.copy(camera.position).add(camera.getWorldDirection(_v1)); cam.fov = 70; cam.init = true; }
     return;
   }
+  fenceCam.dt = Math.min(0.1, Math.max(0.001, dt));
+  if (v !== '3p' || mode !== 'defense') { fenceCam.th = 0; fenceCam.cross = 0; fenceCam.pos = null; }
   desiredCam(v, _want);
   if (!cam.init) { cam.pos.copy(_want.pos); cam.look.copy(_want.look); cam.fov = _want.fov; cam.init = true; }
   // 中継などの視点はなめらかに追う。後ろからはそのまま付いていく(切り替えの直後だけなめらかに)

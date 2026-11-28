@@ -3,7 +3,7 @@
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1128u';
+import { CareerUI } from './career_ui.js?v=1128z';
 import * as Rank from './ranking.js?v=1127b';
 
 const KEY = 'r4walk.career.v1';
@@ -30,7 +30,11 @@ export const FINAL_GAMES = 5;   // プロで 5 試合守ったら「キャリア
 //         右翼・二塁・左翼で振れ幅が大きく、上位 1 割の値が 1.3〜3.7 と離れたので、振れ幅でそろえた(上位 1 割 1.4〜2.7)。機会の数の差もこの中に入る
 //   表は docs/アプリ化の引き継ぎ.md の 11/26 ランキングの節
 // 11/28 片寄りは UZR そのものから引く形(UZR_BASE)にしたので、ここは 0。ADJ は 11/28 の数え方の振れ幅で取り直した(tools/uzr_1128_base.py。前の数は *.bak_uzr_1128)
-export const POS_BASE = { P: 0, C: 0, '1B': 0, '2B': 0, '3B': 0, SS: 0, LF: 0, CF: 0, RF: 0 };
+// 11/28 夕 易しくした形(UZR_EASE など)で上がった分を、ランキング(位置の補正ありの UZR)では 1 機会あたりで引く。ランキングの板は前の記録と同じ物差しのまま(前に送った記録と比べられる)。
+//   数は ふつうの自動の選手(cal 216 試合)で、易しくした形の UZR の位置ごとの平均 ÷ 1 試合の機会(tools/uzr_ease_1128_model.py)。?olduzr2=1 なら 0
+export const uzrOld2 = () => { try { return /[?&]olduzr2=1/.test(location.search); } catch (e) { return false; } };
+export const POS_BASE = uzrOld2() ? { P: 0, C: 0, '1B': 0, '2B': 0, '3B': 0, SS: 0, LF: 0, CF: 0, RF: 0 }
+  : { P: 0.0206, C: 0.0101, '1B': 0.0213, '2B': 0.02, '3B': 0.0201, SS: 0.0199, LF: 0.0211, CF: 0.0226, RF: 0.0216 };
 export const POS_ADJ = { P: 1.17, C: 0.952, '1B': 0.921, '2B': 1.032, '3B': 0.949, SS: 1.152, LF: 0.954, CF: 1.297, RF: 0.769 };
 export const POS_CH = { P: 7.8, C: 5.8, '1B': 5.3, '2B': 9.8, '3B': 6.2, SS: 9.0, LF: 14.7, CF: 13.0, RF: 13.2 };   // 1 試合の平均の機会(機会の数が無い前の記録に使う)
 export const adjUZR = (pos, u, ch) => (u - (POS_BASE[pos] || 0) * (ch ?? POS_CH[pos] ?? 14)) * (POS_ADJ[pos] || 1);
@@ -49,7 +53,29 @@ export const DP_RV = [0.394, 0.214];            // 併殺とひとつのアウ�
 export const DP_K = 0.87;                       // 普通の野手の併殺の割合の見積もり(outProb)に掛ける(自動の選手で出た本当の割合に合わせる)
 export const PIV_R = 0.90;                      // 二遊間のピボット: 普通の野手が二塁で受けて併殺にする割合(自動の選手で 13/14)
 export const EAVG_IF = 0.03, EAVG_OF = 0.015;   // 平均の失策の割合(自分の打球 1 つあたり)
-export const UZR_BASE = { P: 0.0222, C: 0.309, '1B': 0.0368, '2B': -0.024, '3B': -0.009, SS: -0.0024, LF: 0.0402, CF: 0.0734, RF: 0.0962 };   // 位置ごとの 1 機会あたりの片寄り(引く)
+export const UZR_BASE = { P: 0.0222, C: 0.309, '1B': 0.0368, '2B': -0.024, '3B': -0.009, SS: -0.0024, LF: 0.0402, CF: 0.0734, RF: 0.0962 };   // 位置ごとの 1 機会あたりの片寄り(引く)   (11/28 昼の形。?olduzr2=1 とチャレンジの前の版で使う)
+// 11/28 夕 少し易しく(遊んだ人「守備結果AでもUZRマイナスなのは少し易化してほしい」・持ち主「良い感じに修正して」)。式の形と 1 プレーの大きさ(0.75/0.83・RE24)は本物のまま、
+//   「平均の野手」の当てはめだけを甘くした。tools/uzr_ease_1128_model.py・uzr_ease_1128_grid.py で記録から試算、くわしくは docs の 11/28 夕 UZR を少し易しくの節
+//  1. 片寄りの引き方: 前は 1 機会ごとに同じだけ引いたので、易しいフライ(p 0.98)を捕るたびに −0.06(中堅)になり、易しい球を全部捕った A の試合がマイナスだった。
+//     片寄りは「普通の野手の見積もりが外れやすい半々の打球」で出ているので、p(1−p) に比例して引く(易しい球・届かない球はほぼ引かない)。UZR_BASE2 は p(1−p) 1 あたり
+//  2. 普通の野手でも届かない打球(p 0.05 以下)を捕れなかった時は引かない
+//  3. 自分の打球をほかの野手がアウトにした時は、引く分を半分に(本物の UZR は引かない。ゲームでは隣が拾うので半分)
+//  4. 平均の野手がアウトにする割合を 0.97 倍に(ゲームの人は本物の野手より見えにくく・動かしにくい。自動の選手のふつう(能力 60・動き出し 0.3 秒)が平均より少し上 +0.2〜0.4/試合になる)
+//  5. 自分の打球でも、自分が触れる前にほかの野手が先に捕った物は機会にしない(defense.js の onCatch の notMine。弱いゴロを投手が捕った時など)
+export const UZR_EASE = 0.97, UZR_FAR = 0.05, UZR_OTHER = 0.5;
+export const UZR_BASE2 = { P: 0.6009, C: 1.1342, '1B': 1.1618, '2B': -1.075, '3B': 0.0106, SS: 0.1306, LF: 1.2866, CF: 2.1467, RF: 3.0276 };   // p(1−p) 1 あたりの片寄り(捕手は盗塁 1 つあたりも)。ふつうの自動の選手 216 試合(tools/uzr_1128_cal*_avg.json)
+// 範囲の 1 プレー: how は 'out'(自分でアウト)・'miss'(アウトにできなかった)・'other'(ほかの野手がアウトにした)・'err'(失策。範囲は 0 で片寄りだけ)
+export function uzrRange(pos, p, how) {
+  const RV = OFS.includes(pos) ? 0.83 : 0.75;
+  if (uzrOld2()) return (how === 'err' ? 0 : how === 'out' ? (1 - p) * RV : -p * RV) - (UZR_BASE[pos] || 0);
+  const pe = p * UZR_EASE, w = (how === 'miss' || how === 'other') && p <= UZR_FAR ? 0 : p * (1 - p);
+  let r = 0;
+  if (how === 'out') r = (1 - pe) * RV;
+  else if (how === 'other') r = -pe * RV * UZR_OTHER;
+  else if (how === 'miss') { if (p <= UZR_FAR) return 0; r = -pe * RV; }
+  return r - (UZR_BASE2[pos] || 0) * w;
+}
+export const uzrStealBase = () => (uzrOld2() ? UZR_BASE.C : UZR_BASE2.C);   // 捕手の盗塁 1 つあたりの片寄り
 // UZR/150: 本物の 1 シーズン(150 試合)の機会にならした数(FanGraphs「UZR scaled to an average number of chances for a season」)。
 //   このゲームの 1 試合は本物より機会が多い(遊撃 13 前後、本物は 4〜5)ので、機会の数で本物の 150 試合ぶんに直す。
 //   REAL_CH: 本物の 1 試合(9 回)あたりの守備機会のおよその数(MLB の定位置の選手。一塁は送球を受けた刺殺を除く)
@@ -451,7 +477,7 @@ class Career {
   afterPlay(d, pl) {
     const G = this.game; if (!G) return;
     if (pl.label === 'ホームラン') return;
-    const mine = !!pl._car, caught = pl.fieldedBy === 'me' && !pl.missed;
+    const mine = !!pl._car && !pl.notMine, caught = pl.fieldedBy === 'me' && !pl.missed;   // 11/28 夕 自分が触れる前にほかの野手が捕った打球は自分の機会にしない(defense.js の onCatch の notMine)
     if (pl.label === 'ファウル' && !caught) return;
     const lt = pl.lastThrow, outs = pl.outs || 0, of = OFS.includes(d.my);
     // 失策: 捕れる打球を落とした・悪送球・大きくそれた送球を受け手が捕れなかった・お手玉でアウトにできなかった
@@ -505,15 +531,16 @@ class Career {
       if (mine && !ifLine) {
         const p = pl._car.p, ok = caught && outs > 0;
         if (err) part.err -= (1 - EAVG) * RV;
-        else { if (!ifAir) part.rng += ok ? (1 - p) * RV : -p * RV; part.err += EAVG * RV; }
+        else part.err += EAVG * RV;
         // 併殺: 走者一塁・2 アウト未満のゴロを自分が捕った(失策でない)
         if (pl._carDpR != null && caught && !err && sit.r1 && sit.outs < 2) part.dpr += (outs >= 2 ? 1 - pl._carDpR : -pl._carDpR) * DP_RV[sit.outs];
-        if (!ifAir) { G.chances++; part.rng -= base; }
+        // 範囲と片寄り(11/28 夕 uzrRange。?olduzr2=1 で昼の形 = 範囲 (1−p)/−p と 1 機会 base)
+        if (!ifAir) { G.chances++; part.rng += uzrRange(d.my, p, err ? 'err' : ok ? 'out' : (!caught && outs > 0) ? 'other' : 'miss'); }
       } else if (err && !mine) part.err -= 0.3;   // 自分の打球でない送球・中継の失策は 1 つ進塁ぶん
       // 二遊間のピボット: ほかの野手が捕ったゴロを二塁で受けて封殺した(走者一塁・2 アウト未満)。一塁も刺して併殺なら +、できなければ −
       if (!mine && !err && pl._carPiv && (d.my === '2B' || d.my === 'SS') && ty === 'grounder' && sit.r1 && sit.outs < 2)
         part.dpr += (outs >= 2 ? 1 - PIV_R : -PIV_R) * DP_RV[sit.outs];
-      if (pl.stealC) { const cs = (pl.outs || 0) > 0; part.arm += (cs ? 0.43 : -0.18) - base; G.chances++; }
+      if (pl.stealC) { const cs = (pl.outs || 0) > 0; part.arm += (cs ? 0.43 : -0.18) - uzrStealBase(); G.chances++; }
       else if (pl._carA && of) part.arm += 0.45;
     }
     for (const k in part) G.parts[k] += part[k];
