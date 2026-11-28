@@ -77,6 +77,7 @@ const REACT = 0.25;         // 打った瞬間から動き出すまで(秒)
 // 11/26 守備・走塁の直し(持ち主「外野フライでまだ外野のチャージ甘くて…ベースカバー異常に遅かったり…ファーストとかがベース離れる…ランナーが詰まっているのに全速力で走って」)。
 // ?oldai=1 で前の形(試験の前後比べ用)
 const COVFIX_OFF = typeof location !== 'undefined' && /[?&]oldai=1/.test(location.search);
+const HOMEFIX_OFF = typeof location !== 'undefined' && /[?&]oldhome=1/.test(location.search);   // 11/28 比べる用: 直す前の捕手(本塁で持たずに投げる・カバーの自分を見ない)
 // 11/27 夜 持ち主の直し(fix1127b): ?oldiff=1 インフィールドフライの走者を前の形に / ?oldpick=1 止まった球を拾い直した時の「直接捕球」の判定を前の形に / ?oldtalk=1 実況の「抜けた」「セーフ」を前の形に
 const OLDIFF = typeof location !== 'undefined' && /[?&]oldiff=1/.test(location.search);
 const OLDPICK = typeof location !== 'undefined' && /[?&]oldpick=1/.test(location.search);
@@ -2242,6 +2243,8 @@ export class Defense {
   canCover(b, fromK, tt) {
     const rk = this.cover[b];
     const P = BASEP[b];
+    // 11/28 持ち主「ベースカバー入っているのにキャッチャーが投げてこない」: 役目の人が別でも、自分(プレイヤー)が塁に着いている(2 m 以内)ならカバーとして認める
+    if (!HOMEFIX_OFF && this.my !== fromK && !this.watching && this.ctx.player && Math.hypot(this.ctx.player.pos.x - P.x, this.ctx.player.pos.z - P.z) < 2.0) return true;
     if (rk === this.my) return Math.hypot(this.ctx.player.pos.x - P.x, this.ctx.player.pos.z - P.z) / this.fullSpeed() < tt + 0.15;   // 自分は自動で塁へ走る
     if (!rk || rk === fromK || !this.fig[rk]) return false;
     const fp = this.fig[rk].root.position;
@@ -2293,6 +2296,8 @@ export class Defense {
       let Rr = k === pl.looseK ? (k === pl.flyK && !pl.thrown ? this.D.ai : 2.0) : pl.thrown || pl.loosePick ? 1.6 : (k === pl.opt.fielder ? this.D.ai : 0.0);
       if (this.stretch1(pl, k)) Rr = 1.15;   // 11/21 一塁でベースを踏んで伸びて捕る人: 球が伸ばしたグラブ(体の前 1.05 m)に来た時に捕る(前は 1.6 m 手前で捕っていた)
       if (F.noCatchUntil && !pl.thrown && this.ball && !this.ball.path.events.some((e) => e.type !== 'stop' && e.t < tt - 0.25)) Rr = 0;
+      // 11/28 CPU の野手も、バントの地面すれすれ(0.6 m 未満)を跳ねる前に宙で捕らない。打った直後 0.3 秒(バットの所)も捕らない(捕手が宙で捕って「捕手フライ」の 1 アウトで終わり、送球が出なかった)。自分が捕手の時(11/25)と同じ
+      if (!HOMEFIX_OFF && !pl.thrown && pl.batted && pl.batted.type === 'bunt' && this.ball && this.ball.path === pl.batted.path && (tt < 0.3 || p.y < 0.6) && !this.ball.path.events.some((e) => e.type !== 'stop' && e.t <= tt)) Rr = 0;
       if (Rr > 0 && dh < Rr && hb > -0.45 && hb < 2.5) { this.onCatch(pl, k, p, tt); return true; }   // 11/20 下は -0.1 → -0.45: マウンドの高さ(約 0.25 m)に立ったままの投手が、マウンドの裾で止まった球の上に立って拾えずにいた
     }
     return false;
@@ -2856,16 +2861,41 @@ export class Defense {
     else {
       const fp = F.root.position;
       const opts = [];
+      // 11/28 持ち主「バックホームの場面でキャッチャーがホームアウトしないで一塁に投げる」: 本塁へ向かう走者がいて、球を持った人が本塁の近くに
+      // いてタッチが間に合うなら、まず自分で本塁に入ってタッチ(塁に着くと tagBase → tagLock で待つ)。前は本塁の役目が自分(canCover が false)なので一塁へ投げていた
+      if (!HOMEFIX_OFF) {
+        const d0 = Math.hypot(fp.x - BASEP[0].x, fp.z - BASEP[0].z);
+        const home = runners.find((r) => !r.isBatter && !r.returning && r.run && !r.done && r.to % 4 === 0 && !(pl.tagged && pl.tagged[0]));
+        // 本塁の役目の人(捕手)は、それた送球を拾いに前へ出ていても 22 m までは走って戻る(0:3x の試験で 14 m 前で拾った捕手が、走者が来る 3 秒の間立ったままだった)。ほかの人は 6 m まで(遠ければ本塁へ投げる)
+        if (home && d0 < ((k === 'C' || this.cover[0] === k) ? 22 : 6) && this.runTime(Math.max(0, d0 - 0.6), VMAX[k] || AI_SPEED) + 0.1 < this.runnerETA(home, 0) + 0.3) {
+          (this._homeStep = this._homeStep || []).push({ from: k, d: +d0.toFixed(1) }); if (this._homeStep.length > 200) this._homeStep.shift();
+          pl.aiStep = 0; pl.aiThinking = true; F.target = BASEP[0].clone(); return;
+        }
+      }
       for (const r of runners) {
         if (r.returning) { const tt = Math.hypot(BASEP[r.from].x - fp.x, BASEP[r.from].z - fp.z) / 28 + 0.6; if (tt < r.dist / RUN_SPEED) opts.push(r.from); continue; }
         const tb = r.isBatter ? 1 : r.to % 4;
         const eta = this.runnerETA(r, tb);
         const tt = Math.hypot(BASEP[tb].x - fp.x, BASEP[tb].z - fp.z) / 28 + 0.6;
         // 11/26 塁に入る人が間に合うかは、投げるまでの構え(内野 0.6〜0.85 秒)と送球の時間で見る(前は 0.35 秒で見ていて、二塁のカバーが少し遅いだけで併殺を狙わず一塁へ投げていた)
-        if (tt < eta + 0.2 && this.canCover(tb, k, Math.hypot(BASEP[tb].x - fp.x, BASEP[tb].z - fp.z) / 30 + (POS[k].of ? 1.0 : COVFIX_OFF ? 0.35 : 0.65))) opts.push(tb);
+        if (HOMEFIX_OFF) { if (tt < eta + 0.2 && this.canCover(tb, k, Math.hypot(BASEP[tb].x - fp.x, BASEP[tb].z - fp.z) / 30 + (POS[k].of ? 1.0 : COVFIX_OFF ? 0.35 : 0.65))) opts.push(tb); continue; }
+        // 11/28 持ち主「ランナーの状況もちゃんと見て」: 送球の時間は投げる人の肩(BLV.arm)で。封殺は塁に先に着けば、タッチ(封殺でない)は 0.3 秒の余裕が要る。
+        // 受ける人がその塁にいない(間に合わない)なら投げない
+        const dist = Math.hypot(BASEP[tb].x - fp.x, BASEP[tb].z - fp.z);
+        const tt2 = dist / ((BLV.arm && (BLV.arm[k] || BLV.arm.IF)) || 28) + 0.6;
+        const forced = r.isBatter || this.forcedNow(r);
+        const margin = eta - tt2 + (forced ? (tb === 1 ? 0.2 : -0.15) : -0.3);   // 一塁より先の封殺は、受ける人が捕って踏む間(0.15 秒)の余裕も見る(試験で、走者一塁のバントを二塁へ投げて間に合わない 4 回があった)
+        if (margin > 0 && this.canCover(tb, k, dist / 30 + (POS[k].of ? 1.0 : COVFIX_OFF ? 0.35 : 0.65))) { opts.push(tb); (pl._optM = pl._optM || {})[tb] = { margin, forced }; }
       }
       const order = [0, 3, 2, 1];
       target = order.find((b) => opts.includes(b));
+      // 11/28 2 アウトは一番確実な所(封殺を先に、余裕の大きい塁)。打者走者の一塁が間に合うならそこで十分
+      if (!HOMEFIX_OFF && outsNow >= 2 && opts.length > 1) {
+        const M = pl._optM || {};
+        target = opts.slice().sort((a, b) => ((M[b] && M[b].forced ? 1 : 0) - (M[a] && M[a].forced ? 1 : 0)) || ((M[b] ? M[b].margin : 0) - (M[a] ? M[a].margin : 0)))[0];
+      }
+      pl._optM = null;
+      if (!HOMEFIX_OFF && target != null) { (this._throwLog = this._throwLog || []).push({ from: k, to: target, opts: opts.slice(), outs: outsNow }); if (this._throwLog.length > 300) this._throwLog.shift(); }
       // 11/22 一塁のカバーが間に合わない: 打者走者より先に自分で一塁を踏めるなら走って踏む(14 m まで)。踏めなければ投げずに持つ
       if (target == null && !farOut && this.batterRunner && !this.batterRunner.out && this.batterRunner.from < 1 && this.forcedNow(this.batterRunner)) {
         const d1 = Math.hypot(fp.x - BASEP[1].x, fp.z - BASEP[1].z);
@@ -2907,6 +2937,11 @@ export class Defense {
       pl.relayTarget = tb;
     } else {
       rk = this.cover[target];
+      // 11/28 自分(プレイヤー)が塁に着いている(2 m 以内)なら、役目の人が別でも自分へ投げる
+      if (!HOMEFIX_OFF && k !== this.my && !this.watching && this.ctx.player && Math.hypot(this.ctx.player.pos.x - BASEP[target].x, this.ctx.player.pos.z - BASEP[target].z) < 2.0) {
+        const ck = rk && rk !== k && this.fig[rk] ? Math.hypot(this.fig[rk].root.position.x - BASEP[target].x, this.fig[rk].root.position.z - BASEP[target].z) : 99;
+        if (rk === k || ck > 1.5) rk = this.my;
+      }
       if (rk === k) {
         // 塁に入る役目の人が自分で球を持った: 一塁なら自分で踏みに行く、ほかの塁は近くの別の人へ
         if (target === 1) { pl.aiThinking = true; pl.selfTagK = k; F.target = BASEP[1].clone(); return; }
