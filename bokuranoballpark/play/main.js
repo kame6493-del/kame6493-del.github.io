@@ -2293,6 +2293,49 @@ function fpPocket(amt) {
   for (let j = 0; j < dk.length; j += 2) { const i = dk[j], k = 1 - (1 - dk[j + 1]) * amt; A[i * 3] = k; A[i * 3 + 1] = k * (1 - 0.03 * amt); A[i * 3 + 2] = k * (1 - 0.06 * amt); }
   ca.needsUpdate = true;
 }
+// 11/28 夜 持ち主「キャッチャーファーストですがミットになるようにしてください」: 捕手・一塁を守る時は、一人称のグラブの形をミットに変える。
+//   スキャンのグラブ(手首が原点・x 親指の側・y 指先・z 手のひら)の外形を、ポケットの中心から見た向きごとに測り、
+//   その向きの外形が 捕手 = 丸(幅 0.118・長さ 0.128 m)・一塁 = 縦長の楕円(幅 0.085・長さ 0.175 m)に来るように、中心からの距離を同じ割合で伸ばす/縮める。
+//   指の間の切れ込みは外形の外へ押し出されて埋まり、1 つの丸い革の形になる。手首の側(y < 0.07)は元のまま。捕手は少し厚く。
+//   形は捕手・一塁を守って初めて捕った時に 1 回だけ作り(作った物は覚える)、ほかの位置では前の形のまま(重さはほかの位置では増えない)。?nomitt=1 で前の形
+const FPM = { kind: 'g', base: null, made: {} };
+function fpMittKind() { if (params.has('nomitt')) return 'g'; const my = defense && defense.my; return my === 'C' ? 'c' : my === '1B' ? 'fb' : 'g'; }
+function fpMittMake(kind) {
+  const g = fpGloveMesh.geometry, pa = g.attributes.position, na = g.attributes.normal, n = pa.count, P0 = FPM.base.p, Y0 = 0.154;
+  const cx = FPG.pocket.x, cy = FPG.pocket.y, NB = 96, mx = new Float32Array(NB);
+  const ang = (x, y) => ((Math.atan2(y - cy, x - cx) / (Math.PI * 2) + 1) % 1) * NB;
+  for (let i = 0; i < n; i++) { const x = P0[i * 3], y = P0[i * 3 + 1] + Y0, b = Math.floor(ang(x, y)) % NB, r = Math.hypot(x - cx, y - cy); if (r > mx[b]) mx[b] = r; }
+  // 向きごとの外形をならす(前後 3 つの最大 → 前後 2 つの平均)
+  const m2 = new Float32Array(NB), m3 = new Float32Array(NB);
+  for (let b = 0; b < NB; b++) { let v = 0; for (let k = -3; k <= 3; k++) v = Math.max(v, mx[(b + k + NB) % NB]); m2[b] = v; }
+  for (let b = 0; b < NB; b++) { let v = 0; for (let k = -2; k <= 2; k++) v += m2[(b + k + NB) % NB]; m3[b] = v / 5; }
+  const A = kind === 'c' ? 0.118 : 0.085, B = kind === 'c' ? 0.128 : 0.175, TH = kind === 'c' ? 1.1 : 1.08;
+  const out = new Float32Array(P0.length);
+  for (let i = 0; i < n; i++) {
+    const x = P0[i * 3], y = P0[i * 3 + 1] + Y0, z = P0[i * 3 + 2], dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy);
+    const f = Math.floor(ang(x, y)), u = ang(x, y) - f, R = m3[f % NB] * (1 - u) + m3[(f + 1) % NB] * u;
+    const th = Math.atan2(dy, dx), T = 1 / Math.sqrt((Math.cos(th) / A) ** 2 + (Math.sin(th) / B) ** 2);   // その向きの楕円の半径
+    const w = smr(0.03, 0.10, y);   // 手首の側は元のまま
+    const k = R > 1e-4 ? 1 + (Math.max(0.6, Math.min(1.3, T / R)) - 1) * w : 1;   // 伸ばし過ぎ・縮め過ぎで革の絵が流れないように
+    out[i * 3] = cx + dx * k; out[i * 3 + 1] = cy + dy * k - Y0; out[i * 3 + 2] = z * (1 + (TH - 1) * w);
+  }
+  const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.BufferAttribute(out, 3)); g2.setIndex(g.index); g2.computeVertexNormals();
+  return { p: out, n: na ? g2.attributes.normal.array.slice() : null };
+}
+function fpMittSet() {
+  if (!fpGloveMesh) return;
+  const kind = fpMittKind(); if (kind === FPM.kind) return;
+  const g = fpGloveMesh.geometry, pa = g.attributes.position, na = g.attributes.normal;
+  if (!FPM.base) FPM.base = { p: pa.array.slice(), n: na ? na.array.slice() : null, samp: FPG.samp };
+  const S = kind === 'g' ? FPM.base : (FPM.made[kind] = FPM.made[kind] || fpMittMake(kind));
+  pa.array.set(S.p); pa.needsUpdate = true;
+  if (na && S.n) { na.array.set(S.n); na.needsUpdate = true; }
+  g.computeBoundingSphere();
+  if (kind === 'g') FPG.samp = FPM.base.samp;
+  else { const Q = []; for (let i = 0; i < pa.count; i += 23) Q.push(new THREE.Vector3(S.p[i * 3], S.p[i * 3 + 1] + 0.154, S.p[i * 3 + 2])); FPG.samp = Q; }
+  FPM.kind = kind; FPG.tgt = null;
+  window.__app.fpMittKind = kind;
+}
 function loadFpGlove() {
   fpGloveLoading = true;
   gltfLoader.load('models/fp_glove.glb', (g) => {
@@ -2411,6 +2454,7 @@ function updateFpGlove(dt = 1 / 60) {
   const ok = started && !overlayOn && mode === 'defense' && activeView() === '1p' && d;
   if (!ok && FPG.hold == null) { if (fpGlove) fpGlove.visible = false; FPG.t = -1; return; }
   if (!fpGlove) { if (!fpGloveLoading) loadFpGlove(); return; }
+  if (FPG.t < 0 || FPG.hold != null) fpMittSet();   // 11/28 夜 捕手・一塁はミットの形(出ていない間に替える)
   const port = camera.aspect < 1;
   const anim = d && d.meAnim;
   if (anim && anim !== FPG.anim) { FPG.anim = anim; if (anim.kind === 'catch' && d.holderFig === 'me') { FPG.t = 0; FPG.h = anim.h || 0; fpGloveAim(port); } }

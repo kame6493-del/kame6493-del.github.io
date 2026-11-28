@@ -171,7 +171,7 @@ function pick(kind, o, me) {
     case 'bat': { const c = 'bat_stance' + (o.lh && base.clips.bat_stance_lh ? '_lh' : ''); return { clip: c, mode: 'loop' }; }   // 左打ちは *_lh
     case 'run': return { clip: 'run', mode: 'run' };
     case 'throw': {
-      const c = me.opt.mitt ? 'catcher_throw' : o.toss && base.clips.toss_under ? 'toss_under' : me.opt.of ? 'throw_of' : 'throw_inf';   // 近い二塁へは下手のトス(CMU 124_12、11/19 夜)
+      const c = me.opt.mitt && me.opt.mitt !== 'fb' ? 'catcher_throw' : o.toss && base.clips.toss_under ? 'toss_under' : me.opt.of ? 'throw_of' : 'throw_inf';   // 近い二塁へは下手のトス(CMU 124_12、11/19 夜)
       const rel = base.motions[c].events.release.t;
       // u: 腕を引いてから放すまで(0.35 秒、放すのは u≈0.63)。放す時刻に合わせる
       return { clip: c, mode: 'scrub', time: Math.max(0, rel - 0.22 + (o.u || 0) * 0.35), yaw: c === 'throw_inf' && THROW_LEFT ? Math.PI / 2 : 0 };
@@ -212,6 +212,22 @@ export function motionRoot(name, t) {
 }
 export function motionEvent(name, ev) { const M = base && base.motions[name]; return M && M.events && M.events[ev] ? M.events[ev].t : null; }
 
+// 11/28 夜 ファーストミット: 模型の Mitt(T の姿勢で腕は +x へ伸び、手首は x の小さい側)を、手首から先へ伸ばして幅を細くした形。全員で 1 つ
+let FB_GEO = null;
+function fbMittGeo(g0) {
+  if (FB_GEO) return FB_GEO;
+  const g = g0.clone(), pa = g.attributes.position;
+  g.computeBoundingBox();
+  const bb = g.boundingBox, x0 = bb.min.x, zc = (bb.min.z + bb.max.z) / 2;
+  for (let i = 0; i < pa.count; i++) {
+    const x = pa.getX(i), z = pa.getZ(i), u = Math.max(0, x - x0);
+    pa.setX(i, x0 + u * 1.32);
+    pa.setZ(i, zc + (z - zc) * (0.8 - 0.12 * Math.min(1, u / 0.23)));   // 先ほど少し細く(丸い先)
+  }
+  pa.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  FB_GEO = g;
+  return g;
+}
 export class Athlete {
   // kit: figures.js の KIT と同じ形(色は数値)。opt: { mitt, mask, bat, helmet, glove, number, numColor, of }
   constructor(kit, opt = {}) {
@@ -260,6 +276,9 @@ export class Athlete {
     if (!this.mxBody) for (const m of this.parts.Bat) if (!m.userData.slid) { m.geometry = m.geometry.clone(); m.geometry.translate(BAT_OFS[0], BAT_OFS[1], BAT_OFS[2]); m.userData.slid = true; }   // x: 手首から指の付け根の方へ、y: 手のひらの側へ(握りこぶしの中を通す、11/19 夜)
     const show = (k, v) => this.parts[k].forEach((m) => (m.visible = v));
     const o = this.opt;
+    // 11/28 夜 持ち主「キャッチャーファーストですがミットになるように」: 捕手は丸く厚いキャッチャーミット(模型の Mitt)、一塁手は縦長のファーストミット
+    //   (Mitt の形を手首から先へ 1.32 倍に伸ばし、幅を 0.8 倍に。形は全員で 1 つを使う。?nomitt1b=1 で前の形 = 一塁手はふつうのグラブ)
+    if (o.mitt === 'fb') for (const m of this.parts.Mitt) m.geometry = fbMittGeo(m.geometry);
     show('Glove', o.glove !== false && !o.mitt && !o.bat);
     show('Mitt', !!o.mitt);
     show('Bat', !!o.bat); show('BatL', false); show('BatOld', false); this.batShown = 'Bat';

@@ -111,7 +111,7 @@ export class Defense {
     this.group = new THREE.Group(); this.group.visible = false; this.scene.add(this.group);
     this.fig = {};
     for (const k of Object.keys(POS)) {
-      const f = new Person(KIT.home, { mitt: k === 'C', mask: k === 'C', number: String(NUM[k]), of: !!POS[k].of });
+      const f = new Person(KIT.home, { mitt: k === 'C' ? 'c' : k === '1B' && !/[?&]nomitt1b=1/.test(location.search) ? 'fb' : false, mask: k === 'C', number: String(NUM[k]), of: !!POS[k].of });
       this.group.add(f.root); this.fig[k] = f;
     }
     this.batter = new Person(KIT.away, { bat: true, helmet: true, glove: false });

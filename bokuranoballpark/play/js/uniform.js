@@ -489,7 +489,7 @@ export function dressUniform(a) {
     U.uPipe.value.setHex(S.pipe); U.uPipeK.value.set(...(plain ? [0, 0, 0, 0] : S.pipeK));
     if (U.uStripe) { const c = new THREE.Color(S.stripe ?? 0); U.uStripe.value.set(c.r, c.g, c.b, !plain && S.stripe != null ? 1 : 0); }
     U.uDirt.value = plain ? 0 : dirtOf(a);
-    U.uCatch.value = !plain && a.opt && a.opt.mitt ? 1 : 0;
+    U.uCatch.value = !plain && a.opt && a.opt.mitt && a.opt.mitt !== 'fb' ? 1 : 0;
     const OU = a.kit && a.kit.ownUni;   // 11/26 着せ替え: 自分の選手の縦じま・パイピング
     if (OU) { if (OU.pipe != null) U.uPipe.value.setHex(OU.pipe); if (U.uStripe) { const c = new THREE.Color(OU.stripe ?? 0); U.uStripe.value.set(c.r, c.g, c.b, OU.stripe != null ? 1 : 0); } }
   }
@@ -497,7 +497,7 @@ export function dressUniform(a) {
   const ch = r.uni.chest;
   if (ch) {
     const m = plain ? null : chestMask(key, S);
-    ch.mesh.visible = !!m && !(a.opt && a.opt.mitt);
+    ch.mesh.visible = !!m && !(a.opt && a.opt.mitt && a.opt.mitt !== 'fb');
     const k = key + '|' + (m ? 1 : 0);
     if (m && ch.key !== k) {
       ch.key = k;
