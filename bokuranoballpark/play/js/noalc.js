@@ -5,6 +5,7 @@
 //     同じ絵の別の四角(字の無い地・別の札)で上書きする。写す元が無い四角は、四角のすぐ外のまわりの色(地の色)で塗る。
 // ?alc=1 で消さない(前の見た目を見る時)。
 import { NOALC_PATCH } from './noalc_data.js';
+import { NOALC_LITE } from './noalc_lite.js';   // スマホの模型の lite_flat(頂点色で 1 つにまとめた部品)から消す所(tools/noalc_1128_litegen.py が作る)
 export { NOALC_PATCH };
 // 樽(kb_keg・rc_keg・r17_keg_steel・r28_beer_keg)・ジョッキの中身(kb_beer)・注ぎ口(r12_shop_beertap)・醸造のタンク(kt_brew_tank)・灰皿(*ashtray*・*ash_top・*ash_foot)・
 // 部屋の棚の色つきの瓶(room_bottle_*)。どれも色だけの材質で、その材質だけの部品(隠しても穴はあかない)。喫煙所の囲い(ガラス・枠・壁)は無地なので残す
@@ -41,14 +42,39 @@ function patchTexture(tex, rects) {
   }
   tex.image = c; tex.needsUpdate = true; return true;
 }
+// スマホの模型: lite_flat の三角形のうち、3 つの頂点が全部 PC 版の部品(樽・ジョッキの中身・醸造タンク・灰皿・棚の瓶)の島の箱の中にあり、色が近い物を消す
+function liteCut(o, ents, THREE) {
+  const g = o.geometry, P = g && g.attributes.position, C = g && g.attributes.color; if (!P || !C) return 0;
+  o.updateWorldMatrix(true, false); const e = o.matrixWorld.elements, I = g.index, nTri = (I ? I.count : P.count) / 3;
+  const vx = (i) => { const x = P.getX(i), y = P.getY(i), z = P.getZ(i); return [e[0] * x + e[4] * y + e[8] * z + e[12], e[1] * x + e[5] * y + e[9] * z + e[13], e[2] * x + e[6] * y + e[10] * z + e[14]]; };
+  const hitV = new Map();
+  const vHit = (i) => {
+    let h = hitV.get(i); if (h !== undefined) return h; h = false;
+    const r = C.getX(i), gg = C.getY(i), b = C.getZ(i); let q = null;
+    for (const t of ents) if (Math.abs(r - t.col[0]) <= t.tol && Math.abs(gg - t.col[1]) <= t.tol && Math.abs(b - t.col[2]) <= t.tol) { q = q || vx(i); for (const B of t.boxes) if (q[0] >= B[0] && q[0] <= B[3] && q[1] >= B[1] && q[1] <= B[4] && q[2] >= B[2] && q[2] <= B[5]) { h = true; break; } if (h) break; }
+    hitV.set(i, h); return h;
+  };
+  let cut = 0;
+  if (I) {
+    const keep = [];
+    for (let t = 0; t < nTri; t++) { const a = I.getX(3 * t), b = I.getX(3 * t + 1), c = I.getX(3 * t + 2); if (vHit(a) && vHit(b) && vHit(c)) { cut++; continue; } keep.push(a, b, c); }
+    if (cut) g.setIndex(keep);
+  } else {
+    for (let t = 0; t < nTri; t++) { const a = 3 * t; if (vHit(a) && vHit(a + 1) && vHit(a + 2)) { cut++; for (let k = 1; k < 3; k++) P.setXYZ(a + k, P.getX(a), P.getY(a), P.getZ(a)); } }
+    if (cut) P.needsUpdate = true;
+  }
+  if (cut) { g.computeBoundingSphere(); g.computeBoundingBox(); if (g.boundsTree) g.boundsTree = null; }
+  return cut;
+}
 export function noAlc(root, THREE, stadium) {
   if (typeof document === 'undefined') return { hid: 0, patched: 0 };
-  const texs = new Set(); let hid = 0, patched = 0;
+  const texs = new Set(); let hid = 0, patched = 0, cut = 0; const lite = NOALC_LITE[stadium] || null;
   root.traverse((o) => {
     if (!o.isMesh || !o.material) return;
     for (const m of (Array.isArray(o.material) ? o.material : [o.material])) {
       if (!m) continue;
       if (m.visible && NOALC_HIDE.test(m.name || '')) { m.visible = false; hid++; }
+      if (lite && m.name === 'lite_flat') cut += liteCut(o, lite, THREE);
       for (const t of [m.map, m.emissiveMap]) if (t) texs.add(t);
     }
   });
@@ -67,7 +93,7 @@ export function noAlc(root, THREE, stadium) {
     if (!p) continue;
     if (patchTexture(t, p.rects)) { done.add(t); patched++; note(p.name + ' ' + W + 'x' + H, t.image); }
   }
-  if (typeof window !== 'undefined') { const s = window.__noalcStat || (window.__noalcStat = { hid: 0, patched: 0, names: [] }); s.hid += hid; s.patched += patched; }
-  return { hid, patched };
+  if (typeof window !== 'undefined') { const s = window.__noalcStat || (window.__noalcStat = { hid: 0, patched: 0, names: [] }); s.hid += hid; s.patched += patched; s.cut = (s.cut || 0) + cut; }
+  return { hid, patched, cut };
 }
-if (typeof window !== 'undefined') window.__noalc = { HIDE: NOALC_HIDE, PATCH: NOALC_PATCH, COPY: NOALC_COPY };
+if (typeof window !== 'undefined') window.__noalc = { HIDE: NOALC_HIDE, PATCH: NOALC_PATCH, COPY: NOALC_COPY, LITE: NOALC_LITE };
