@@ -3,9 +3,29 @@
 // 守備の試合(defense.js)はそのまま使い、外から包む(begin・startPlay・onCatch・tagBase・tagRunner・evalPlay・makeBall・varietyBall・reachClass)。
 // defense.js に足したのは送球の 1 行(throwMod)だけ。画面は js/career_ui.js、見た目は career.css。
 // 進み具合は localStorage の r4walk.career.v1。
-import { CareerUI } from './career_ui.js?v=1128g';
+import { CareerUI } from './career_ui.js?v=1128p';
 import * as Rank from './ranking.js?v=1128g';
 import * as Gear from './gear.js?v=1128g';   // 11/28 夜 道具ガチャ(付けた道具の点を能力に足して効かせる。上限あり)
+import { STADIUMS } from './stadiums.js';
+
+// 11/28 夜 持ち主「球場を買った場合、キャリアモードはランダムに球場が出るように」「高校生は甲子園固定」「買わない場合は甲子園固定」:
+// 高校の段は浜風の球場(koshien)だけ。社会人・プロは「開いている球場」(アプリは shop/gate.js の __ippomeOpen = 買った・全部パック・お得パック・先行。
+// ブラウザ版は __ippomeOpen が無く全部遊べるので全部)と浜風から 1 試合ごとにランダム(直前の試合の球場は避ける)。開いている球場が無ければ浜風。
+// 球場が替わる時は main.js の setStadium(前の球場の描く所・音を捨ててから読み直す。back-forward cache に残さない)で読み直し、
+// 読み終わったら同じキャリアの試合を始める(sessionStorage の r4walk.carGo)。読み直しの間は読み込みの画面でなくキャリアの画面(次の球場の絵)を出す。
+// 選んだ球場は data.curPark に残す(試合の途中で落ちて読み直した時・途中でやめてまた始めた時は同じ球場。試合を終えると次の試合で選び直す)。
+// 遊んでいる人が選んだ球場(r4walk.sel)は書き換えない。?nocarpark=1 で前の形(今の球場のまま)
+export const HOME_PARK = 'koshien';
+const CAR_GO = 'r4walk.carGo', CAR_HOME = 'r4walk.carHome';
+const NOCARPARK = () => { try { return /[?&]nocarpark=1/.test(location.search); } catch (e) { return false; } };
+export const parkOpen = (id) => { try { return id === HOME_PARK || (typeof window.__ippomeOpen === 'function' ? !!window.__ippomeOpen(id) : true); } catch (e) { return id === HOME_PARK; } };
+export function parkPool(open = parkOpen) { return STADIUMS.map((s) => s.id).filter((id) => id === HOME_PARK || open(id)); }
+export function pickPark(stage, last, open = parkOpen, rnd = Math.random) {
+  if (!(stage > 0)) return HOME_PARK;
+  const pool = parkPool(open); if (pool.length <= 1) return HOME_PARK;
+  const c = pool.filter((id) => id !== last), L = c.length ? c : pool;
+  return L[Math.min(L.length - 1, Math.floor(rnd() * L.length))];
+}
 
 const KEY = 'r4walk.career.v1';
 const OFS = ['LF', 'CF', 'RF'];
@@ -260,6 +280,7 @@ class Career {
       BOOST, boostState, boostSave, storeOn, boostOwned, abAvg, upsFrom };
     this.ui = new CareerUI(this);
     this.wait();
+    this.bootGo();   // 11/28 夜 キャリアの球場へ読み直した後なら、読み終わったら試合を始める
     // 11/27 ランキングの点が「早さ+守備」に変わった: 前の形(UZR だけ)の自分の記録は ranking.js が消すので、殿堂のカードから作り直す(端末の中だけ。送らない)
     try {
       for (const c of this.hof()) {
@@ -334,21 +355,78 @@ class Career {
   appUI() { return window.__app && window.__app.ui; }
 
   // ------------------------------------------------ キャリアの試合を始める・やめる
-  start() {
+  // 11/28 夜 この試合の球場(上の pickPark)。高校は浜風。社会人・プロは選んだ物を curPark に残し、試合を終えるまで同じ
+  parkFor(cur) {
+    const D = this.data;
+    if (NOCARPARK()) return cur;
+    if (!(D.stage > 0)) return HOME_PARK;
+    const c = D.curPark;
+    if (c && c.stage === D.stage && STADIUMS.some((s) => s.id === c.id) && parkOpen(c.id)) return c.id;
+    const last = D.lastPark || (D.hist.length ? D.hist[D.hist.length - 1].park : null);
+    const id = pickPark(D.stage, last);
+    D.curPark = { id, stage: D.stage }; this.save();
+    return id;
+  }
+  start(o) {
     const ui = this.appUI(); if (!ui || !window.__app.ready) return false;
     if (this.data.done) return false;   // キャリアを終えた選手は試合に出ない(新しい選手で始め直す)
+    const cur = ui.app.stadium, park = (o && o.stay) ? cur : this.parkFor(cur);
+    if (park && cur && park !== cur && ui.app.setStadium) {
+      let ok = false;
+      try {
+        if (!sessionStorage.getItem(CAR_HOME)) { let h = null; try { h = (JSON.parse(localStorage.getItem('r4walk.sel') || '{}') || {}).stadium; } catch (e) { /* */ } sessionStorage.setItem(CAR_HOME, h || cur); }
+        sessionStorage.setItem(CAR_GO, park); ok = sessionStorage.getItem(CAR_GO) === park;
+        sessionStorage.setItem('r4walk.warmed', '1');   // 読み直した後の絵の準備はキャリアの画面の裏で(main.js の modeWarm は読み込みの画面を出さない)
+      } catch (e) { ok = false; }
+      if (ok) {
+        this.active = true;
+        this.ui.showHub(park);   // 読み直しの間もキャリアの画面のまま(次の球場の絵)
+        ui.app.setStadium(park); return true;
+      }
+      // sessionStorage が使えない時は今の球場のまま
+    }
     this.active = true;
     if (!this._saved) this._saved = { mode: ui.sel.mode, pos: ui.sel.pos };
     ui.sel.mode = 'game'; ui.sel.pos = this.data.pos;   // 一時停止の「最初から」(ui.go)でもキャリアの試合になるように
-    this.ui.hide();
+    if (!(o && o.keepHub)) this.ui.hide();
     ui.hideAll();
     ui.app.startMode({ ...ui.sel, mode: 'game', pos: this.data.pos, stadium: ui.app.stadium });
     return true;
+  }
+  // 11/28 夜 キャリアの球場に替えて読み直した後: 読み終わるまでキャリアの画面を出しておき、読めたら試合を始める。
+  // 絵の準備(main.js の modeWarm)が済むまでキャリアの画面を残す(読み込みの画面は出さない)
+  bootGo() {
+    let id = null; try { id = sessionStorage.getItem(CAR_GO); } catch (e) { /* */ }
+    if (!id) return;
+    this.booting = id;
+    const t0 = Date.now();
+    const tick = () => {
+      const A = window.__app;
+      if (A && A.ui && !this.ui.built) this.ui.build(A.ui);
+      if (this.ui.built && !this._bootShown) { this._bootShown = true; try { this.ui.showHub(id, true); } catch (e) { console.warn(e); } }
+      if (A && A.ready && this.hooked && A.ui) {
+        try { sessionStorage.removeItem(CAR_GO); } catch (e) { /* */ }
+        this.booting = null;
+        const ok = this.start({ stay: true, keepHub: true });
+        if (!ok) { try { this.ui.renderHub(); } catch (e) { /* */ } return; }
+        const t1 = Date.now();
+        const w = () => { if ((A.warming && Date.now() - t1 < 30000) || Date.now() - t1 < 150) { setTimeout(w, 60); return; } if (this.active) this.ui.hide(); };
+        w();
+        return;
+      }
+      if (Date.now() - t0 < 180000) setTimeout(tick, 120); else this.booting = null;
+    };
+    tick();
   }
   leave() {
     this.active = false; this.game = null;
     const ui = this.appUI();
     if (ui && this._saved) { ui.sel.mode = this._saved.mode; ui.sel.pos = this._saved.pos; this._saved = null; }
+    // 11/28 夜 キャリアで球場を替えていたら、タイトル・自由に遊ぶ時の球場は遊んでいる人が選んでいた物に戻す(次に遊ぶ時にその球場へ読み直す)
+    try {
+      const h = sessionStorage.getItem(CAR_HOME);
+      if (h && ui) { sessionStorage.removeItem(CAR_HOME); if (parkOpen(h) && STADIUMS.some((s) => s.id === h)) { ui.sel.stadium = h; const s = JSON.parse(localStorage.getItem('r4walk.sel') || '{}') || {}; s.stadium = h; localStorage.setItem('r4walk.sel', JSON.stringify(s)); } }
+    } catch (e) { /* 戻せなくても遊べる */ }
   }
 
   // ------------------------------------------------ 守備の試合を包む
@@ -625,6 +703,7 @@ class Career {
     if (!D.byPos) D.byPos = {};
     { const B = D.byPos[G.pos] || (D.byPos[G.pos] = { games: 0, po: 0, a: 0, e: 0, uzr: 0 }); B.games++; B.po += G.po; B.a += G.a; B.e += G.e; B.uzr += G.uzr; }
     if (G.park) { if (!D.byPark || typeof D.byPark !== 'object') D.byPark = {}; D.byPark[G.park] = (D.byPark[G.park] || 0) + 1; }
+    if (G.park) D.lastPark = G.park; D.curPark = null;   // 11/28 夜 次の試合は球場を選び直す(直前の球場は避ける)
     const res = { stage: D.stage, game: D.stageGames[D.stage], pos: G.pos, po: G.po, a: G.a, e: G.e, tc, uzr: G.uzr, chances: G.chances, rank, score: ev.n ? ev.score : null,
       ups: G.ups, ab: { ...D.ab }, xp: { ...G.xp }, promoted, passed, won, score2: r.g ? { us: r.g.score.us, them: r.g.score.them } : null, need, rankOK, uzrOK, enough, t: Date.now(), parts: { ...G.parts }, uzrOld: G.uzrOld,
       needRank, abAvg: avg, boost: this.boostRes(G) };

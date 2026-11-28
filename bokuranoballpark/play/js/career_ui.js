@@ -102,9 +102,9 @@ export class CareerUI {
     requestAnimationFrame(tick);
   }
   isOpen() { return !!this.hub && (!this.hub.classList.contains('hide') || !this.res.classList.contains('hide') || [this.card, this.rankEl, this.tutEl].some((x) => x && !x.classList.contains('hide'))); }
-  hide() { if (!this.hub) return; this.hub.classList.add('hide'); this.res.classList.add('hide'); for (const x of [this.card, this.rankEl, this.tutEl]) if (x) x.classList.add('hide'); }
+  hide() { if (!this.hub) return; this._movePark = null; this.hub.classList.add('hide'); this.res.classList.add('hide'); for (const x of [this.card, this.rankEl, this.tutEl]) if (x) x.classList.add('hide'); }
   bg() {
-    const st = (window.__app && window.__app.ui && window.__app.ui.app && window.__app.ui.app.stadium) || 'koshien';
+    const st = this._movePark || (window.__app && window.__app.ui && window.__app.ui.app && window.__app.ui.app.stadium) || 'koshien';
     return `<div class="carBg" style="--st:url('img/stadium_thumbs/${esc(st)}.jpg')"><i class="fwL"></i><i class="fwR"></i></div>`;
   }
   ladder(cur, lit) {
@@ -129,6 +129,7 @@ export class CareerUI {
   // ------------------------------------------------ キャリアの画面
   openHub() {
     const ui = this.appUI; if (!ui) return;
+    this._movePark = null;
     ui.hideAll(); ui.app.setOverlay(true);
     this.res.classList.add('hide');
     this.pickHubNudge(false);
@@ -136,6 +137,16 @@ export class CareerUI {
     this.hub.classList.remove('hide');
     this.hub.scrollTop = 0;
     if (!this.C.data.name) this.openCard(true);   // 初めは名前を決める
+  }
+  // 11/28 夜 キャリアの球場へ替えて読み直す間(読み直した後の読み込み・絵の準備の間も)は、読み込みの画面でなくキャリアの画面を出す(背景は次の球場)
+  showHub(park) {
+    const ui = this.appUI; if (!ui) return;
+    try { ui.hideAll(); ui.app.setOverlay(true); } catch (e) { /* */ }
+    this.res.classList.add('hide');
+    this._movePark = park || null;
+    this.renderHub();
+    this.hub.classList.remove('hide');
+    this.hub.scrollTop = 0;
   }
   renderHub() {
     const C = this.C, D = C.data, K = this.K, st = C.stage, T = D.tot;
@@ -173,10 +184,10 @@ export class CareerUI {
       ${fin}
       ${D.done ? '' : `<div class="cPanel cDark cPick"><div class="cPickHead">守る所</div><div class="cPosBtns">${POS7.map((p) => `<button data-pos="${p}" class="${p === D.pos ? 'on' : ''}" aria-label="${esc(K.POS_NAME[p])}">${POS_SHORT[p]}</button>`).join('')}</div>
         <div class="cNote">どこを守っても、その位置の普通の野手と比べて UZR を出します。替えても能力・通算成績・段はそのまま(位置ごとの成績は選手カードに)。</div></div>
-      <button class="cGo" data-act="go"${ready ? '' : ' disabled'}>${ready ? `${esc(st.name)}の試合へ` : '読み込み中…'}</button>`}
+      ${this._movePark ? `<button class="cGo" disabled>${esc(STADIUM_NAMES[this._movePark] || '')}で試合を始めます</button>` : `<button class="cGo" data-act="go"${ready ? '' : ' disabled'}>${ready ? `${esc(st.name)}の試合へ` : '読み込み中…'}</button>`}`}
       <button class="cReset" data-act="reset">記録を消して最初から</button>
     </div>`;
-    if (!ready) { clearTimeout(this._rt); this._rt = setTimeout(() => { if (!this.hub.classList.contains('hide')) this.renderHub(); }, 800); }
+    if (!ready && !this._movePark) { clearTimeout(this._rt); this._rt = setTimeout(() => { if (!this.hub.classList.contains('hide')) this.renderHub(); }, 800); }
   }
   // 昇格の進み具合(小さく): 直近 3 試合の ○× と、最短であと何試合
   progress(P) {

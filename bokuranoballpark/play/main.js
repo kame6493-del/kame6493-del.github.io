@@ -2049,13 +2049,18 @@ function startMode(sel) {
 // 11/21 持ち主「始めたときのローディングで画面が固まる」の続き: 守備の試合・歩くなどを始めた 1 こま目で、新しく出た物(選手・道具)の絵の作りを
 // 描く時に待って 0.5〜1.5 秒止まっていた。始めた時は描くのを止め、新しい絵の作りを GPU の裏で済ませてから描く。
 // 0.12 秒で済まない時だけ、読み込みの画面(球場の絵・回るボール)を出す
+// 11/28 夜 持ち主「ナイターデイゲームの読み込みは最初の試合開始だけにしてください それ以降は出ないように」: 読み込みの画面(球場の絵・「準備中…」)は
+// 起動してから最初に遊び始めた 1 回だけ(sessionStorage の r4walk.warmed。キャリアの球場替えの読み直しの後も出さない)。2 回目からは出さずに裏で絵の準備を済ませる
+// (その間は前の画面のまま。替えた時間帯の材質だけ作り直すので、前の分は three が捨てる)。?warmscreen=1 で前の形
 let modeWarmN = 0;
+const warmQuiet = () => { if (params.has('warmscreen')) return false; try { return sessionStorage.getItem('r4walk.warmed') === '1'; } catch (e) { return modeWarmN > 1; } };
 async function modeWarm() {
   const my = ++modeWarmN; loadBusy = true;
+  const quiet = warmQuiet(); try { sessionStorage.setItem('r4walk.warmed', '1'); } catch (e) { /* 使えない環境 */ }
   const ls = $('loadScreen'), bar = ls && ls.querySelector('.lsBar i'), tx = ls && ls.querySelector('.lsTxt'), t0 = tx ? tx.textContent : '';
   let shown = false;
   const show = setTimeout(() => {
-    if (!ls || my !== modeWarmN || !loadBusy) return; shown = true;
+    if (!ls || quiet || my !== modeWarmN || !loadBusy) return; shown = true;
     ls.style.backgroundImage = `url("img/stadium_thumbs/${STADIUM}.jpg")`;
     const nm = ls.querySelector('.lsName'); if (nm) nm.textContent = STADIUM_NAMES[STADIUM] || '';
     if (tx) tx.textContent = '準備中…'; if (bar) bar.style.width = '60%';
@@ -2588,7 +2593,7 @@ $('pzReplay').addEventListener('click', (e) => { e.stopPropagation(); const R = 
 
 // ---------------------------------------------------------------- 試験用の入口(自動テストと撮影で使う)
 window.__app = {
-  ready: false, manual: false, WARPS, TIMES, P, DOORS, VIEWS, get solids() { return propSolids; },   // 11/22 夜 置いた物の当たり判定(試験で見る)
+  ready: false, manual: false, get warming() { return loadBusy; }, WARPS, TIMES, P, DOORS, VIEWS, get solids() { return propSolids; },   // 11/22 夜 置いた物の当たり判定(試験で見る)
   warp, setTime, setQuality, setPhoto, athleteLod: (v) => setAthleteLod(v), start, simulate, setCrowd, sit, standUp, doAction, nearestSeat, seatY: (i) => seats.y[i],
   setView, cycleView, startMode, toTitle, get ui() { return ui; }, get overlay() { return overlayOn; },
   get fps() { return fpsVal; }, soilMats, gfx, get renderer() { return renderer; }, get scene() { return scene; },
