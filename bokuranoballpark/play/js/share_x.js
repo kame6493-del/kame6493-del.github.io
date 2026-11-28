@@ -24,8 +24,7 @@ const coarse = () => { try { return matchMedia('(pointer: coarse)').matches; } c
 export const shareUrl = () => (platform() === 'ios' ? URL_IOS : URL_WEB);   // Android は一般公開の前なので Play の URL は入れない
 // 11/27 夜 持ち主「X でシェアは URL アイフォンも貼れるようにして」: どこから出しても iPhone(App Store)とブラウザ版の両方を貼る(Play はまだ貼らない)
 export const shareUrls = () => `iPhone ${URL_IOS}\nブラウザ ${URL_WEB}`;
-// 11/28 extra: 足すタグ(今日の守備チャレンジの「#今日の守備チャレンジ」)
-export const withTags = (body, dive, extra) => `${body}\n${TAGS}${extra ? ' ' + extra : ''}${dive ? ' ' + TAG_DIVE : ''}\n${shareUrls()}`;
+export const withTags = (body, dive) => `${body}\n${TAGS}${dive ? ' ' + TAG_DIVE : ''}\n${shareUrls()}`;
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sgn = (x) => (x >= 0 ? '+' : '−') + Math.abs(+x || 0).toFixed(2);   // 11/28 UZR を本物の大きさにしたので小数 2 桁
 const FONT = '"Dela Gothic One",sans-serif';
@@ -453,7 +452,7 @@ async function withPlayVideo(kind, p) {
   const view = rp.view, speed = rp.speed;
   let out = null;
   try {
-    rp.view = p.view || (R.hl.special === 'dive' || R.hl.special === 'jump' ? 'side' : 'behind');   // 11/28 p.view: 今日の守備チャレンジの縦の画面は後ろから(横からはスマホの縦で三塁側の壁に入ることがあった)
+    rp.view = R.hl.special === 'dive' || R.hl.special === 'jump' ? 'side' : 'behind';
     rp.open(R, null);
     if (rp.ui) rp.ui.style.display = 'none';   // 録る間はリプレイのボタンを出さない(押せないので)
     rp.recDir = catchDir(rp, R);
@@ -468,7 +467,7 @@ async function withPlayVideo(kind, p) {
   }
   if (!out) return fromCanvas(kind, p);
   const dive = R.hl.special === 'dive';
-  const text = withTags(R.hl.rank >= 2 ? addScene(p.body, R.hl.word) : p.body, dive, p.tag);
+  const text = withTags(R.hl.rank >= 2 ? addScene(p.body, R.hl.word) : p.body, dive);
   return showVideo(kind, out, text, '名場面のリプレイの動画');
 }
 // キャリア完了: カードが寄る・数が数え上がる・判子の数秒の動画。録れない時は絵
@@ -490,11 +489,8 @@ export const game = once(async (r) => { const p = await gameImage(r); return wit
 export const careerGame = once(async (r) => { const C = window.__career; return withPlayVideo('career', await careerGameImage(r, C.K, C.data)); });
 export const careerDone = once(async (c) => { const C = window.__career; return doneVideo(c, C.K); });
 export const replay = once(async (rp, btn) => replayShare(rp, btn));
-// 11/28 今日の守備チャレンジ(js/challenge.js): 絵と文は challenge.js が作り、動画はノックと同じく一番よいプレーのリプレイ
-export const challenge = once(async (p) => withPlayVideo('challenge', p));
 
 // 守備の試合・ノックの結果の画面のボタン(index.html の #resShare)。中身は js/ui.js の result が覚えた lastResult
 ensureCss();
 { const b = document.getElementById('resShare'); if (b) b.addEventListener('click', (e) => { e.stopPropagation(); const ui = window.__app && window.__app.ui; if (ui && ui.lastResult) game(ui.lastResult); }); }
-window.__bpShareX = { game, careerGame, careerDone, replay, challenge, send, sheet, close, withTags, shareUrl, videoMime, recordReplay, bestRec, TAGS, TAG_DIVE,
-  draw: { newCanvas, rrect, fonts, ground, brand, stamp, tiles, fitText, FONT, RANK_C } };   // 11/28 draw: 今日の守備チャレンジ(js/challenge.js)の絵を同じ部品で描く
+window.__bpShareX = { game, careerGame, careerDone, replay, send, sheet, close, withTags, shareUrl, videoMime, recordReplay, bestRec, TAGS, TAG_DIVE };
