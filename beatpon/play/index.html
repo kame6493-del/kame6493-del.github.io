@@ -44,5 +44,27 @@
   add();
 })();
 </script>
+<!-- 11/28 設定の「サポート」の下に、作者のほかのゲームを小さく1行(サイトの頁だけ。アプリには入れない。× で閉じたらその端末では出さない) -->
+<script>
+(function(){
+  if(!/github\.io$/.test(location.hostname)&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))return;
+  var KEY='beatpon_xpromo_closed_1128';
+  try{if(localStorage.getItem(KEY))return;}catch(e){}
+  var st=document.createElement('style');
+  st.textContent='.xp-row{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 8px;font-size:13px;color:#6a2a8a}.xp-row a{color:inherit;text-decoration:underline;text-underline-offset:3px;font-weight:700}.xp-row button{all:unset;cursor:pointer;padding:4px 8px;font-size:15px;line-height:1;opacity:.6}';
+  document.head.appendChild(st);
+  function add(){
+    try{if(localStorage.getItem(KEY))return;}catch(e){}
+    var links=document.querySelector('.calib-links');
+    if(!links||links.parentNode.querySelector('.xp-row'))return;
+    var p=document.createElement('p');p.className='xp-row';
+    p.innerHTML='<span>作者のほかのゲーム: <a href="/bokuranoballpark/play/?from=beatpon_web" target="_blank" rel="noopener">野球ゲーム『ぼくらのボールパーク』</a></span><button type="button" aria-label="閉じる">×</button>';
+    p.querySelector('button').addEventListener('click',function(){p.remove();try{localStorage.setItem(KEY,'1');}catch(e){}});
+    links.parentNode.insertBefore(p,links.nextSibling);
+  }
+  new MutationObserver(add).observe(document.getElementById('root'),{childList:true,subtree:true});
+  add();
+})();
+</script>
 </body>
 </html>

@@ -156,3 +156,24 @@ if (shareOn()) {
   })(0);
 }
 window.__ippomeShare = { shareTextFor, intentUrl, on: shareOn() };
+
+// ------------------------------------------------ 11/28 作者のほかのゲーム(ブラウザ版だけ。アプリ版の make_www.py は web.js を入れないので出ない)
+// 持ち主 11/28「とにかく頑張って宣伝」。一時停止の画面のいちばん下(「不具合・要望を送る」の下)に小さい1行。× で閉じたら、その端末では出さない。
+// 行き先はビートぽん!のブラウザ版(その場で遊べる)。値段・「無料」の字は入れない。
+(function xpromo() {
+  const KEY = 'ippome_xpromo_closed_1128';
+  try { if (localStorage.getItem(KEY)) return; } catch (e) { /* なし */ }
+  const sheet = document.querySelector('#panel .sheet.pause');
+  if (!sheet || document.getElementById('ipXpromo')) return;
+  const css = document.createElement('style');
+  css.textContent = '#ipXpromo{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:6px;margin:10px 0 2px;font-size:12px;line-height:1.5;opacity:.85}'
+    + '#ipXpromo a{color:inherit;text-decoration:underline;text-underline-offset:3px}'
+    + '#ipXpromo button{all:unset;cursor:pointer;padding:2px 8px;font-size:14px;line-height:1;opacity:.7}';
+  document.head.appendChild(css);
+  const row = document.createElement('div');
+  row.id = 'ipXpromo';
+  row.innerHTML = '<span>作者のほかのゲーム: <a href="https://yurustudio.github.io/beatpon/play/?from=bokura_web" target="_blank" rel="noopener">リズムゲーム『ビートぽん!』</a></span>'
+    + '<button type="button" aria-label="閉じる">×</button>';
+  row.querySelector('button').addEventListener('click', () => { row.remove(); try { localStorage.setItem(KEY, '1'); } catch (e) { /* なし */ } });
+  sheet.appendChild(row);
+})();
