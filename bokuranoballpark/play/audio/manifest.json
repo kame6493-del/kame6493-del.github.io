@@ -1,27 +1,22 @@
 {
  "sfx": {
   "bat_barrel": [
-   "audio/sfx/bat_barrel_2.mp3",
-   "audio/sfx/bat_solid_1.mp3"
+   "audio/sfx/bat_m_barrel.mp3"
   ],
   "bat_solid": [
-   "audio/sfx/bat_solid_1.mp3",
-   "audio/sfx/bat_grounder_3.mp3"
+   "audio/sfx/bat_m_solid.mp3"
   ],
   "bat_jam": [
-   "audio/sfx/bat_end_1.mp3",
-   "audio/sfx/bat_end_2.mp3"
+   "audio/sfx/bat_m_end.mp3"
   ],
   "bat_end": [
-   "audio/sfx/bat_end_1.mp3",
-   "audio/sfx/bat_end_2.mp3"
+   "audio/sfx/bat_m_end.mp3"
   ],
   "bat_foul": [
-   "audio/sfx/bat_foul_2.mp3"
+   "audio/sfx/bat_m_foul.mp3"
   ],
   "bat_grounder": [
-   "audio/sfx/bat_grounder_1.mp3",
-   "audio/sfx/bat_grounder_3.mp3"
+   "audio/sfx/bat_m_grounder.mp3"
   ],
   "glove": [
    "audio/sfx/glove_1.mp3",
