@@ -77,6 +77,7 @@ const REACT = 0.25;         // 打った瞬間から動き出すまで(秒)
 // 11/26 守備・走塁の直し(持ち主「外野フライでまだ外野のチャージ甘くて…ベースカバー異常に遅かったり…ファーストとかがベース離れる…ランナーが詰まっているのに全速力で走って」)。
 // ?oldai=1 で前の形(試験の前後比べ用)
 const COVFIX_OFF = typeof location !== 'undefined' && /[?&]oldai=1/.test(location.search);
+const AICOMMIT_OFF = typeof location !== 'undefined' && /[?&]oldcommit=1/.test(location.search);   // 11/28 比べる用: CPU の送球の予約が 2 つ重なる直しを外す
 const HOMEFIX_OFF = typeof location !== 'undefined' && /[?&]oldhome=1/.test(location.search);   // 11/28 比べる用: 直す前の捕手(本塁で持たずに投げる・カバーの自分を見ない)
 // 11/27 夜 持ち主の直し(fix1127b): ?oldiff=1 インフィールドフライの走者を前の形に / ?oldpick=1 止まった球を拾い直した時の「直接捕球」の判定を前の形に / ?oldtalk=1 実況の「抜けた」「セーフ」を前の形に
 const OLDIFF = typeof location !== 'undefined' && /[?&]oldiff=1/.test(location.search);
@@ -1241,6 +1242,12 @@ export class Defense {
       let m = 1e9; for (let i = 0; i < path.n; i++) { if (path.pts[i * 4 + 1] > 2.3) continue; m = Math.min(m, Math.hypot(path.pts[i * 4] - base.x, path.pts[i * 4 + 2] - base.z)); }
       if (m < 1.6) { F.target = base.clone().add(V(0, 0, 0.5)); F.chase = null; return; }
     }
+    // 11/28 X の遊んだ人「ホームゲッツー取らない」: 満塁のゴロで本塁へ投げた時、捕手が送球を迎えに本塁の 2〜3 m 前へ出て捕り、本塁を踏めず封殺にならなかった(tools/homedp_1128.py)。
+    //   本塁への送球が本塁の受け所(HOME_RECV)の近く(1.6 m)を通るなら、前へ出ずに本塁で待って受ける(?oldcommit=1 で前の形)
+    if (!AICOMMIT_OFF && base && pl.thrown.base === 0) {
+      let m = 1e9; for (let i = 0; i < path.n; i++) { if (path.pts[i * 4 + 1] > 2.3) continue; m = Math.min(m, Math.hypot(path.pts[i * 4] - HOME_RECV.x, path.pts[i * 4 + 2] - HOME_RECV.z)); }
+      if (m < 1.6) { F.target = HOME_RECV.clone(); F.chase = null; return; }
+    }
     if (!base || Math.hypot(pt.x - base.x, pt.z - base.z) > 1.9) { F.target = pt; F.chase = { pt, at: pl.t, path }; }
     else if (Math.hypot(fp.x - base.x, fp.z - base.z) > 1.5) { F.target = pt; F.chase = { pt, at: pl.t, path }; }   // まだ塁に着いていない: 間に合う所で受ける   // 塁から 1.9 m 以内に来る送球は、塁に足を残して伸びて捕る
   }
@@ -1898,7 +1905,7 @@ export class Defense {
       }
       let near = null, nd = 7;
       for (const r of list) { if (this.onBase(r) || r.isBatter) continue; const rp = this.runnerPos(r); const d = Math.hypot(rp.x - H.x, rp.z - H.z); if (d < (r.rundown ? 16 : nd) && d < (near ? nd : 99)) { nd = d; near = r; } }   // 挟まれた走者は 16 m まで追う(全力で詰める)
-      if (near && pl.aiStep == null && !pl.tagWait) { const rp = this.runnerPos(near); F.target = V(rp.x, 0, rp.z); F.prep = null; pl.aiChase = near; pl.aiThinking = true; }
+      if (near && pl.aiStep == null && !pl.tagWait && pl.aiCommit !== who) { const rp = this.runnerPos(near); F.target = V(rp.x, 0, rp.z); F.prep = null; pl.aiChase = near; pl.aiThinking = true; }
       else if (pl.aiChase) { pl.aiChase = null; pl.aiThinking = false; F.target = null; }
       if (pl.aiChase && pl.aiChase.rundown) this.rundownAI(pl, pl.aiChase, who, H);
     }
@@ -2922,7 +2929,7 @@ export class Defense {
     if (target === 1 && k === '1B' && Math.hypot(F.root.position.x - BASEP[1].x, F.root.position.z - BASEP[1].z) < 9) {
       pl.aiThinking = true; pl.selfTagK = k; F.target = BASEP[1].clone(); return;
     }
-    pl.aiThinking = true;
+    pl.aiThinking = true; pl.aiCommit = AICOMMIT_OFF ? null : k; const aiTok = pl.aiTok = (pl.aiTok || 0) + 1;   // 11/28 投げ先を決めた(投げるまで、そばを走る走者を追いに行って決め直さない)
     let rk, to;
     if (target === 'cut') {
       rk = pl.returnTo || this.cutoffK || 'SS';
@@ -2964,7 +2971,7 @@ export class Defense {
       if (target === 1 && !toMe) { const s1 = this.firstRecv(pl, rk, F.root.position); if (s1) { this.fig[rk].target = s1.p.clone(); this.fig[rk].target.snap = true; to = s1.glove.clone(); } }
     }
     // 併殺の二塁から一塁への転送は素早く(0.25 秒)、ほかは受ける所を指してから(0.45 秒)
-    const dpTurn = target === 1 && (pl.outs || 0) >= 1 && pl.thrown && pl.thrown.base === 2;
+    const dpTurn = target === 1 && (pl.outs || 0) >= 1 && pl.thrown && (pl.thrown.base === 2 || (!AICOMMIT_OFF && pl.thrown.base === 0 && k === 'C'));   // 11/28 本塁で封殺した捕手から一塁(ホームゲッツー)も素早く
     const relay = pl.thrown && pl.thrown.relayTo != null;
     const clipThrow = F.prep && F.prep.rel && pl.thrown;   // 中継・併殺の動きの中で投げる
     // 11/25 外野手が地面の球(抜けた・落ちた球)を拾った時は、拾いながら投げる形に入る(1.25〜1.5 秒 → 0.95〜1.15 秒。高校生の外野手の返球の速さ)。フライを捕った時は今までどおり
@@ -2979,8 +2986,11 @@ export class Defense {
     F.pointAt = to.clone(); F.pointT = turn;
     this.later(turn, () => {
       if (this.play !== pl || pl.endT) return;
+      // 11/28 満塁のゴロで、遊撃手が本塁へ投げると決めた後にそばを走る走者を追い、決め直した三塁への送球も予約され、本塁へ投げた球が 0.2 秒後に三塁へ投げ直されていた(tools/homedp_1128.py)。
+      //   投げる時に、まだ自分が球を持っていて、自分の決めた送球の時だけ投げる
+      if (!AICOMMIT_OFF && (pl.holder !== k || pl.aiTok !== aiTok)) return;
       // 投げる時にもう一度: 構える間に走者が止まった・戻り終えた塁へは投げない(持ったまま、次のこまで決め直す)
-      if (typeof target === 'number' && !this.baseLive(target)) { (this._emptySkip = this._emptySkip || []).push({ base: target, from: k, late: true }); pl.aiThinking = false; F.pointT = 0; return; }
+      if (typeof target === 'number' && !this.baseLive(target)) { (this._emptySkip = this._emptySkip || []).push({ base: target, from: k, late: true }); pl.aiThinking = false; pl.aiCommit = null; F.pointT = 0; return; }
       if (target === 'cut' && !toMe && rk && this.fig[rk]) to = this.fig[rk].root.position.clone().setY(0);   // 中継の人が今いる所へ
       if (target === 1 && pl.first1 && pl.first1.k === rk && !toMe) { const s1 = this.firstRecv(pl, rk, F.root.position); to = s1.glove.clone(); this.fig[rk].target = s1.p.clone(); this.fig[rk].target.snap = true; }   // 11/21 投げる時の所から決め直す
       F.setYawToward(to.x, to.z);
@@ -2988,6 +2998,7 @@ export class Defense {
       const dist = Math.hypot(to.x - from.x, to.z - from.z);
       const of = !!POS[k].of;
       let speed = of ? ofThrowSpeed(dist) : Math.min(36, 29 + dist * 0.17);   // 外野の送球は高校生の 90〜110 km/h(ofThrowSpeed)
+      if (of && this.cpuArmK) { try { speed *= this.cpuArmK(k, dist) || 1; } catch (e) { /* 無くても投げる */ } }   // 11/28 持ち主「肩の強さが良くなるにつれて改善」: 守備のキャリアでは CPU の外野手も段ごとの肩で(js/career.js)
       // 11/22 一塁へ走って入るカバーの人へは、着く時に合わせて緩める・走る道の上へ(firstLead)
       let lead = false;
       if (target === 1 && !toMe && pl.first1 && pl.first1.k === rk) { const L1 = this.firstLead(pl, rk, from, to, speed); to = L1.to; speed = L1.speed; lead = !!L1.lead; if (lead) F.setYawToward(to.x, to.z); }
@@ -2997,7 +3008,7 @@ export class Defense {
       const s = solveThrow(from, aim, speed, hop ? -1.5 : lead ? 1.2 : target === 1 && pl.first1 && pl.first1.k === rk ? 1.0 : 1.35);   // 11/21 一塁は伸ばしたグラブの高さ(1.0 m)へ
       const path = predict(this.world, from, s.v, s.w, 6, { Cd: 0.35, clScale: 0, dt: DT });
       pl.thrown = { from: k, fromK: k, base: target === 'cut' ? null : target, to: toMe ? 'me' : rk, relayTo: target === 'cut' ? pl.relayTarget : null, eta: pl.t + this.arriveT(path, to) };
-      pl.holder = null; this.holderFig = null; pl.aiThinking = false;
+      pl.holder = null; this.holderFig = null; pl.aiThinking = false; pl.aiCommit = null;
       pl.myLock = false; pl.overChase = false;
       this.launch(path, pl.t);
       this.receiverGo(pl, rk, toMe);

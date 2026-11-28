@@ -2,6 +2,8 @@
 // 守備の試合の「自動で進める打席」と、一人称の場面の判定の両方で使う。自動テストからも直接呼ぶ。
 // 自分のチームは後攻(表の守り)。g.score.them = 先攻、g.score.us = 後攻。
 
+// 11/28 お手玉・落球の失策を無くした(?bobble=1 で前の形。画面の無い試験では常に新しい形)
+const OLD_BOBBLE = typeof location !== 'undefined' && /[?&]bobble=1/.test(location.search || '');
 export const BASE_XZ = [[0, -0.22], [19.07, -19.4], [0, -38.8], [-19.07, -19.4]];
 export const BASE_NAME = ['本塁', '一塁', '二塁', '三塁'];
 const polar = (aDeg, d) => [d * Math.sin(aDeg * Math.PI / 180), -d * Math.cos(aDeg * Math.PI / 180)];
@@ -218,7 +220,8 @@ export function resolveBIP(g, bip, rng) {
     return `${lab}${type === 'fly' || type === 'pop' ? '後方へのポテンヒット' : 'への内野安打'}${runs ? ' ' + runs + ' 点' : ''}`;
   }
   // 失策(高校野球は 1 試合 1 チームあたり 0.5〜1 個ほど): 打者は一塁へ、走者は 1 つ進む
-  if ((type === 'grounder' || type === 'fly' || type === 'liner') && rng() < 0.03) {
+  // 11/28 持ち主「落球お手玉要らない」: ゴロをはじく・落球の失策は起こさない(乱数は前と同じだけ引く)。?bobble=1 で前の形
+  if ((type === 'grounder' || type === 'fly' || type === 'liner') && rng() < 0.03 && OLD_BOBBLE) {
     const runs = b[2] ? 1 : 0; g.bases = [true, b[0], b[1]]; addRuns(g, runs);
     return `${lab}の${type === 'grounder' ? 'エラー(ゴロをはじく)' : 'エラー(落球)'}${runs ? ' ' + runs + ' 点' : ''}`;
   }

@@ -12,11 +12,12 @@ const DIAMOND = '<svg class="cDia" viewBox="0 0 60 44"><path d="M30 41 4 17A36 3
 const DOT = { '1B': [42, 26], '2B': [36, 15], SS: [24, 15], '3B': [18, 26], LF: [12, 9], CF: [30, 5], RF: [48, 9], P: [30, 26.5], C: [30, 38.5] };   // 11/26 投手・捕手の点も
 // 11/26 持ち主「説明とかも入れてください 分からない人居ると思うので uzr の注釈として」: UZR の横の小さな「?」。押した時だけ短い注釈を出す
 const Q = '<button type="button" class="cQ" data-act="uzrq" aria-label="UZR とは">?</button>';
-const UZR_HELP = ['同じ打球を「平均的な守備の選手」が守った時と比べて、何点ぶん失点を防いだかを表す数字です。',
-  'プラスなら平均より多く防いだ、マイナスなら平均より失点を許した、という意味です。',
-  '守備範囲・併殺・肩・失策の 4 つを合わせた数です(捕手は盗塁を刺した分)。',
-  '目安(1 シーズン): +10 で上手い、0 で平均、−10 で下手。',
-  '1 試合では小さな数になります(難しい打球を捕って +0.3〜0.8 ほど)。'];
+// 11/28 持ち主「リアルの基準を徹底的に調べてそれに沿った採点に」: 本物の UZR(FanGraphs・Lichtman・DELTA)の基準と目安に合わせた
+const UZR_HELP = ['同じ守備位置の「平均的な守備の選手」と比べて、何点ぶん失点を防いだかの数です(平均が 0)。',
+  '打球ごとに 平均的な選手がアウトにできる割合と比べます。難しい打球を捕れば大きくプラス、易しい打球を落とせば大きくマイナス。',
+  '守備範囲・併殺(二遊間は二塁で受けて投げる分も)・失策・肩(外野の補殺)を足します。捕手は盗塁を刺した分。',
+  '1 プレーは 安打とアウトの差 約 0.75 点(外野 0.83)、併殺は 0.2〜0.4 点。1 試合の UZR は小さな数です。',
+  '本物の目安は UZR/150(1 シーズン 150 試合の守備機会にならした数): +15 ゴールドグラブ級・+10 上手い・+5 平均より上・0 平均・−10 下手(FanGraphs)。'];
 // 11/27 ランキングの点(早さ+守備)の「?」。式は ranking.js の rankPts
 const PQ = '<button type="button" class="cQ" data-act="ptsq" aria-label="点の出し方">?</button>';
 // 11/28 課金の誘い(持ち主「全部入れてください」・「くどくならないか」の歯止め)。数え方は docs/アプリ化の引き継ぎ.md の 11/28 の節
@@ -146,7 +147,7 @@ export class CareerUI {
       ? `<div class="cGoal"><b>${esc(nextName)}へ上がる条件</b><span>評価 ${need.rank} 以上${abN} か UZR${Q} ${K.uzrText(need.uzr)} 以上を、直近 3 試合のうち 2 試合(${esc(st.name)}で ${st.min} 試合以上)</span>${this.progress(K.promoInfo(D))}</div>`
       : D.done ? '' : `<div class="cGoal"><b>キャリア完了まで</b><span>プロで あと ${Math.max(0, left)} 試合${left === 2 ? '(次は 優勝のかかった試合)' : left === 1 ? '(次が 最終戦)' : ''}</span><small class="cProg">プロまで ${tp} 試合(早さ ${sp} 点)。プロ 5 試合の UZR と合わせた点で ランキングを競います${PQ}</small></div>`;
     const fin = T.games ? `<div class="cPanel cLight cFinal${D.final ? ' fixed' : ''}"><div class="cRibbon">${D.final ? 'キャリアの最終評価' : 'いまの守備の評価(通算)'}</div>`
-      + `<div class="cFinRow"><div class="cStamp sm r${fe.grade}"><span>${fe.grade}</span></div><div><div class="cFinTitle">${esc(fe.title)}</div><div class="cFinSub">${fe.score}/100 ・ 1 試合あたり UZR ${K.uzrText(fe.uzrPG)} ・ 守備率 ${K.fpctText(T.po, T.a, T.e)}</div></div></div></div>` : '';
+      + `<div class="cFinRow"><div class="cStamp sm r${fe.grade}"><span>${fe.grade}</span></div><div><div class="cFinTitle">${esc(fe.title)}</div><div class="cFinSub">${fe.score}/100 ・ UZR/150 ${K.uzr150Text(K.uzr150All(D))} ・ 守備率 ${K.fpctText(T.po, T.a, T.e)}</div></div></div></div>` : '';
     const ready = !!(window.__app && window.__app.ready);
     const done = D.done ? `<div class="cPanel cDark cDoneP"><div class="cDoneHead">キャリア完了</div>${this.miniCard(D.done)}
         <div class="cNote">この選手の記録は殿堂に残りました。新しい選手で、もう一度 最高の守備職人を目指せます。</div>
@@ -165,7 +166,7 @@ export class CareerUI {
       <div class="cPanel cLight"><div class="cRibbon">通算成績</div>${this.table([
         ['試合', `${T.games}<small> (高校 ${D.stageGames[0]} ・ 社会人 ${D.stageGames[1]} ・ プロ ${D.stageGames[2]})</small>`],
         ['刺殺', T.po], ['補殺', T.a], ['失策', T.e], ['守備機会', T.po + T.a + T.e], ['守備率', K.fpctText(T.po, T.a, T.e)],
-        ['UZR', K.uzrText(T.uzr), T.uzr >= 0 ? 'pos' : 'neg']])}${this.recent()}${T.games ? '<button class="cBtn cRecBtn" data-act="rec">守った記録</button>' : ''}</div>
+        ['UZR', K.uzrText(T.uzr), T.uzr >= 0 ? 'pos' : 'neg'], ...(T.games ? [['UZR/150', K.uzr150Text(K.uzr150All(D)), K.uzr150All(D) >= 0 ? 'pos' : 'neg']] : [])])}${this.recent()}${T.games ? '<button class="cBtn cRecBtn" data-act="rec">守った記録</button>' : ''}</div>
       ${fin}
       ${D.done ? '' : `<div class="cPanel cDark cPick"><div class="cPickHead">守る所</div><div class="cPosBtns">${POS7.map((p) => `<button data-pos="${p}" class="${p === D.pos ? 'on' : ''}" aria-label="${esc(K.POS_NAME[p])}">${POS_SHORT[p]}</button>`).join('')}</div>
         <div class="cNote">どこを守っても、その位置の普通の野手と比べて UZR を出します。替えても能力・通算成績・段はそのまま(位置ごとの成績は選手カードに)。</div></div>
@@ -519,6 +520,7 @@ export class CareerUI {
         <div class="cRankBox"><div class="cShine"></div><div class="cStamp r${esc(c.grade)}"><span>${esc(c.grade)}</span></div><div class="cDoneTitle">${esc(c.title)}</div><div class="cScore"><b data-to="${c.score}">0</b><small>/ 100</small></div></div>
         <div class="cSubHead">プロ通算(${P.games} 試合)</div>
         ${this.table([['アウトを取った数(刺殺)', P.po], ['送球でアウト(補殺)', P.a], ['エラー(失策)', P.e], ['守備率', K.fpctText(P.po, P.a, P.e)], ['UZR', K.uzrText(P.uzr), P.uzr >= 0 ? 'pos' : 'neg'],
+          ...(P.games ? [['UZR/150', K.uzr150Text(K.uzr150(c.pos, P.uzr, P.games)), P.uzr >= 0 ? 'pos' : 'neg']] : []),
           ['UZR(位置の補正あり)', K.uzrText(P.adj), P.adj >= 0 ? 'pos' : 'neg']])}
         <div class="cNote dk">${esc(ADJ_NOTE)}</div>
         ${c.pts ? `<div class="cPts"><b>ランキングの点 ${esc(c.pts.total)}${PQ}</b><small>早さ ${esc(c.pts.speed)}(プロまで ${esc(c.toPro)} 試合)+ 守備 ${esc(c.pts.def)}(UZR ${K.uzrText(P.adj)})</small></div>` : ''}</div>
@@ -641,8 +643,8 @@ export class CareerUI {
         t: ['肩は 送球の速さと正確さ、守備は 一歩目・走る速さ・届く幅。', '強さは S(一番上)から G までの文字で出ます。段が上がるほど 動きが目に見えて良くなります。', `試合で守るほど 経験がたまって 伸びていきます。${K.storeOn() ? '成長ブースト・特訓でも 早く伸ばせます。' : ''}`] },
       { h: '成績の言葉', pic: `<div class="tutWords"><div><b>刺殺</b><span>自分で捕ったり タッチしたりして アウトにした数</span></div><div><b>補殺</b><span>送球して アウトを 手伝った数</span></div><div><b>失策</b><span>エラー(捕り損ね・悪い送球)</span></div><div><b>守備率</b><span>エラーをしなかった割合</span></div></div>`,
         t: ['結果の画面に出る言葉です。', '覚えなくても大丈夫。いちばん大事なのは 次のページの UZR です。'] },
-      { h: 'UZR とは', pic: `<div class="tutUzr"><div><span>平均の選手</span><i style="--w:50%"></i><b>0</b></div><div class="me"><span>あなた</span><i style="--w:72%"></i><b>+0.6</b></div></div>`,
-        t: ['同じ打球を 平均の選手が守った時と比べて、何点ぶん 失点を防いだかの数です。', 'プラスなら 平均より上手、マイナスなら 平均より下。', '1 試合では 小さな数です(難しい打球を捕って +0.3〜0.8 ほど)。'] },
+      { h: 'UZR とは', pic: `<div class="tutUzr"><div><span>平均の選手</span><i style="--w:50%"></i><b>0</b></div><div class="me"><span>あなた</span><i style="--w:72%"></i><b>+0.35</b></div></div>`,
+        t: ['同じ位置の 平均の選手と比べて、何点ぶん 失点を防いだかの数です(本物の UZR と同じ数え方)。', '難しい打球を捕る・併殺を取ると プラス、易しい打球を落とす・エラーで マイナス。', '1 試合では 小さな数です。本物の目安は UZR/150 で +15 がゴールドグラブ級。'] },
       { h: 'プロ 5 試合と ランキング', pic: `<div class="tutPro">${[1, 2, 3, 4, 5].map((n) => `<span class="${n === 4 ? 'v' : n === 5 ? 'f' : ''}">${n}<small>${n === 4 ? '優勝が<br>かかる' : n === 5 ? '最終戦' : '試合'}</small></span>`).join('')}</div><div class="tutPts">点 = 早さ(プロまで 最短 ${K.Rank.TO_PRO_MIN} 試合で 100)+ 守備(50 + UZR × 20)</div>`,
         t: ['プロは 5 試合。4 試合目は 優勝のかかった試合、5 試合目が 最終戦です。', '終えると 選手カードが 殿堂に残り、新しい選手で 始め直せます。', 'ランキングは「早さ+守備」の点。早くプロに上がるほど、プロ 5 試合の UZR(位置の補正あり)が高いほど 上へ。'] },
     ];

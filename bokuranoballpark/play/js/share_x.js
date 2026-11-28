@@ -26,7 +26,7 @@ export const shareUrl = () => (platform() === 'ios' ? URL_IOS : URL_WEB);   // A
 export const shareUrls = () => `iPhone ${URL_IOS}\nブラウザ ${URL_WEB}`;
 export const withTags = (body, dive) => `${body}\n${TAGS}${dive ? ' ' + TAG_DIVE : ''}\n${shareUrls()}`;
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const sgn = (x) => (x >= 0 ? '+' : '−') + Math.abs(+x || 0).toFixed(1);
+const sgn = (x) => (x >= 0 ? '+' : '−') + Math.abs(+x || 0).toFixed(2);   // 11/28 UZR を本物の大きさにしたので小数 2 桁
 const FONT = '"Dela Gothic One",sans-serif';
 const RANK_C = { S: '#ffcf33', A: '#ff6b4a', B: '#4fb3ff', C: '#5fd38a', D: '#a7b0c4' };
 

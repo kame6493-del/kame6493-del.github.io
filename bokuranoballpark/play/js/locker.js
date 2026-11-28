@@ -331,7 +331,7 @@ async function shareCard(src) {
   const ttl = COS.titleText(D.ttl || e.title); if (ttl) { g.fillStyle = '#ffd23a'; g.font = '700 30px sans-serif'; g.fillText(`〈${ttl}〉`, 530, 228); }
   g.fillStyle = '#cfe0ff'; g.font = '700 32px sans-serif';
   const pos = (K.POS_NAME && K.POS_NAME[D.pos]) || D.pos || '';
-  const P = D.pro; const line = P ? `${pos} ・ プロ ${P.games} 試合 ・ UZR ${P.adj >= 0 ? '+' : '−'}${Math.abs(P.adj).toFixed(1)}${D.grade ? ` ・ 評価 ${D.grade}` : ''}` : `${pos}`;
+  const P = D.pro; const line = P ? `${pos} ・ プロ ${P.games} 試合 ・ UZR ${P.adj >= 0 ? '+' : '−'}${Math.abs(P.adj).toFixed(2)}${D.grade ? ` ・ 評価 ${D.grade}` : ''}` : `${pos}`;
   g.fillText(line, 530, 280);
   const gn = `${(COS.get(D.gc || e.gcolor) || {}).name || ''}${(D.gp || e.gpat) !== 'gp_plain' ? '・' + ((COS.get(D.gp || e.gpat) || {}).name || '') : ''}`;
   g.fillStyle = 'rgba(255,255,255,.75)'; g.font = '600 22px sans-serif'; g.fillText(`枠: ${(COS.get(D.fr || e.frame) || {}).name || ''} ・ グラブ: ${gn}`, 530, 640);
