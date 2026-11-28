@@ -28,7 +28,7 @@
 // 出来事の名前(js/mokuhyo.js が数える。守備は js/defense.js・js/guide.js から mkEv を呼ぶ)
 //   show:<言葉> … 球場の演出の言葉(js/gimmicks.js の G.say の 1 つめ) ・ spot:<札の言葉> … 名物に触れた ・ sit:<区画>
 //   eat drink eat_meib eat_meib0 eat_sweet eat_sit eat_out ・ sit:back sit:ouen top field lap ・ goods cheer balloon spot photo warp
-//   job job:beer job:shop job:ball job:relief job_done ・ hit_seen hr_seen hr_ouen game_seen foul
+//   job job:uriko job:shop job:ball job:relief job_done ・ hit_seen hr_seen hr_ouen game_seen foul
 //   def_tut def_catch def_knock def_fine def_game def_win
 
 export const CHAPTERS = [
@@ -66,7 +66,7 @@ export const GOALS = [
   // 売り子の一日
   { id: 'u_desk', ch: 'uriko', h: 'アルバイト受付に行ってみよう', s: '球場の外の関係者入口', where: 'desk', r: 3.5, kinds: ['watch'], done: { at: true }, reward: { yen: 100 }, next: 'u_job' },
   { id: 'u_job', ch: 'uriko', h: 'アルバイトを 1 回 やってみよう', s: '受付で {E} → 好きな仕事', where: 'desk', kinds: ['watch'], done: { ev: 'job' }, reward: { yen: 300 }, next: 'u_beer' },
-  { id: 'u_beer', ch: 'uriko', h: '売り子で客席を回ってみよう', s: '受付で「ビールの売り子」→ 手を挙げたお客さんへ', where: 'desk', kinds: ['watch'], done: { ev: 'job:beer' }, reward: { yen: 300 }, next: 'u_shop' },
+  { id: 'u_beer', ch: 'uriko', h: '売り子で客席を回ってみよう', s: '受付で「ドリンクの売り子」→ 手を挙げたお客さんへ', where: 'desk', kinds: ['watch'], done: { ev: 'job:uriko' }, reward: { yen: 300 }, next: 'u_shop' },
   { id: 'u_shop', ch: 'uriko', h: '売店の店員をやってみよう', s: '受付で「売店の店員」→ 注文の品を渡す', where: 'desk', kinds: ['watch'], done: { ev: 'job:shop' }, reward: { yen: 300 }, next: 'u_ball' },
   { id: 'u_ball', ch: 'uriko', h: 'ボールパーソンをやってみよう', s: '受付で「ボールパーソン」→ 転がる球を拾う', where: 'desk', kinds: ['watch'], done: { ev: 'job:ball' }, reward: { yen: 300 }, next: 'u_done' },
   { id: 'u_done', ch: 'uriko', h: '仕事を最後までやりとげよう', s: '途中でやめずに時間いっぱい', where: 'desk', kinds: ['watch'], done: { ev: 'job_done' }, reward: { yen: 500, badge: 'hataraki', goods: 'keychain' }, next: 'u_ten' },

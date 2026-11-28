@@ -33,7 +33,7 @@ function hairGeo(THREE) {
 }
 const STALLS = [
   { name: 'やきそば', col: 0xd2462e }, { name: 'からあげ', col: 0xe39a1e }, { name: 'お弁当', col: 0x3b7d4f },
-  { name: 'ドリンク', col: 0x2f72b8 }, { name: 'かき氷', col: 0x49a7c9 }, { name: 'グッズ', col: 0x7b4fa0 }, { name: 'ホットドッグ', col: 0xb8452f }, { name: 'ビール', col: 0xd8a425 },
+  { name: 'ドリンク', col: 0x2f72b8 }, { name: 'かき氷', col: 0x49a7c9 }, { name: 'グッズ', col: 0x7b4fa0 }, { name: 'ホットドッグ', col: 0xb8452f }, { name: 'たこやき', col: 0xb8652a },
 ];
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 // 11/20 売店の種類を実在の球場の配置に合わせる: freeplay.js が window.__fpStallKind(x, y, z, i) を置いていれば、その場所の種類(無ければ今までどおり順に)

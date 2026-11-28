@@ -28,7 +28,6 @@ export const ITEMS = {
   onigiri: { name: 'おにぎり', price: 300, hold: 'box', col: 0xf2f2ee, use: 'eat' },
   curry: { name: 'カレー', price: 900, hold: 'box', col: 0xb87a2a, use: 'eat' },
   takoyaki: { name: 'たこやき', price: 600, hold: 'box', col: 0xb8652a, use: 'eat' },
-  beer: { name: 'ビール', price: 800, hold: 'cup', col: 0xf0c040, use: 'drink', adult: true },
   juice: { name: 'ジュース', price: 400, hold: 'cup', col: 0xf08a2a, use: 'drink' },
   tea: { name: 'お茶', price: 300, hold: 'bottle', col: 0x6a9a4a, use: 'drink' },
   cola: { name: 'コーラ', price: 400, hold: 'cup', col: 0x4a2a1a, use: 'drink' },
@@ -55,14 +54,14 @@ const HOLD_LIFT = { box: 0.03, cup: 0.0, bottle: -0.04, cone: 0.0, dog: 0.03, st
 // 店の窓の品の絵(ChatGPT で作った 5×5 の絵 img/fp_items.jpg。値段の数字は絵に入れず、画面の字で出す)。並びはこの順
 // 11/22 袋のボタンの絵: 紙の手さげ袋(クラフト紙の色・折り返し・紺の持ち手・球場の金の帯)。丸い紺のボタンの中に置く(fp.css の #fpBag)
 const BAG_SVG = '<svg class="bg" viewBox="0 0 64 64" aria-hidden="true"><path d="M23 22 C23 10 41 10 41 22" fill="none" stroke="#1c2f5c" stroke-width="4.5" stroke-linecap="round"/><path d="M14 22 H50 L53 56 Q53 58 51 58 H13 Q11 58 11 56 Z" fill="#d9a865" stroke="#5b3a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M14 22 H50 L50.6 28 H13.4 Z" fill="#c08a45"/><rect x="12.4" y="37" width="39.2" height="7" fill="#ffd65a"/><path d="M12.4 37 H51.6 M12.4 44 H51.6" stroke="#5b3a14" stroke-width="1.2" opacity=".5"/><circle cx="23" cy="25" r="2" fill="#5b3a14"/><circle cx="41" cy="25" r="2" fill="#5b3a14"/></svg>';
-const ICONS = ['yakisoba', 'karaage', 'bento', 'hotdog', 'kakigori', 'onigiri', 'curry', 'takoyaki', 'ramen', 'ice', 'softcream', 'churros', 'popcorn', 'beer', 'juice', 'tea', 'cola', 'megaphone', 'towel', 'plush', 'keychain', 'minibat', 'kinen', 'balloon', 'cap'];
+const ICONS = ['yakisoba', 'karaage', 'bento', 'hotdog', 'kakigori', 'onigiri', 'curry', 'takoyaki', 'ramen', 'ice', 'softcream', 'churros', 'popcorn', '_unused13', 'juice', 'tea', 'cola', 'megaphone', 'towel', 'plush', 'keychain', 'minibat', 'kinen', 'balloon', 'cap'];
 // 売店の名前(walkers.js の STALLS と模型の売店)→ 並べる品
 const MENUS = {
-  'やきそば': ['yakisoba', 'onigiri', 'tea', 'cola'], 'からあげ': ['karaage', 'onigiri', 'juice', 'beer'], 'お弁当': ['bento', 'onigiri', 'tea'],
-  'おべんとう': ['bento', 'onigiri', 'tea'], 'ドリンク': ['beer', 'juice', 'cola', 'tea'], 'かき氷': ['kakigori', 'juice'], 'グッズ': ['megaphone', 'towel', 'plush', 'keychain', 'minibat', 'kinen', 'balloon', 'cap', 'uni'],
-  'ホットドッグ': ['hotdog', 'popcorn', 'cola', 'beer'], '甘い物': ['ice', 'softcream', 'churros', 'kakigori', 'juice'], 'ラーメン': ['ramen', 'onigiri', 'tea'], '自動販売機': ['tea', 'juice', 'cola'], 'コンビニ': ['onigiri', 'bento', 'hotdog', 'ice', 'popcorn', 'tea', 'juice', 'cola'], 'おみやげ': ['plush', 'keychain', 'towel', 'kinen', 'minibat', 'megaphone', 'cap', 'uni'], 'ワゴン': ['hotdog', 'popcorn', 'ice', 'beer', 'juice', 'tea', 'megaphone', 'towel', 'keychain', 'balloon'], 'ビール': ['beer', 'juice', 'tea'], 'カレー': ['curry', 'tea', 'juice'], 'たこやき': ['takoyaki', 'cola', 'tea'],
+  'やきそば': ['yakisoba', 'onigiri', 'tea', 'cola'], 'からあげ': ['karaage', 'onigiri', 'juice', 'tea'], 'お弁当': ['bento', 'onigiri', 'tea'],
+  'おべんとう': ['bento', 'onigiri', 'tea'], 'ドリンク': ['juice', 'cola', 'tea'], 'かき氷': ['kakigori', 'juice'], 'グッズ': ['megaphone', 'towel', 'plush', 'keychain', 'minibat', 'kinen', 'balloon', 'cap', 'uni'],
+  'ホットドッグ': ['hotdog', 'popcorn', 'cola', 'juice'], '甘い物': ['ice', 'softcream', 'churros', 'kakigori', 'juice'], 'ラーメン': ['ramen', 'onigiri', 'tea'], '自動販売機': ['tea', 'juice', 'cola'], 'コンビニ': ['onigiri', 'bento', 'hotdog', 'ice', 'popcorn', 'tea', 'juice', 'cola'], 'おみやげ': ['plush', 'keychain', 'towel', 'kinen', 'minibat', 'megaphone', 'cap', 'uni'], 'ワゴン': ['hotdog', 'popcorn', 'ice', 'juice', 'tea', 'megaphone', 'towel', 'keychain', 'balloon'], 'カレー': ['curry', 'tea', 'juice'], 'たこやき': ['takoyaki', 'cola', 'tea'],
 };
-const VENDOR_MENU = ['beer', 'juice', 'tea', 'cola'];
+const VENDOR_MENU = ['juice', 'tea', 'cola', 'ice'];
 // 11/21 持ち主「から揚げの店に違うもの売ってたり 店名と売っているものが一致しない」: 店の名前・品の名前 → ゆるい分類。
 // 看板の字(見た目)の分類に合う品書きだけを付ける。tools/_match_cats.js と同じ中身(試験の台本 tools/_match_audit.py がそちらを読む。直す時は両方)
 const SHOP_KIND = [
@@ -79,25 +78,24 @@ const SHOP_KIND = [
   ['udon', /うどん|そば|きしめん|冷麺|ひやし|客車茶屋/],
   ['hotdog', /ホットドッグ|ドッグ|バーガー|ポテト|ナチョス|フランク|タコス|ダイナー/],   // 11/22 看板: 「タコススタンド」(海鳴り)
   ['pizza', /ピザ|パスタ|スパ|ナポリタン|マルゲリータ/],
-  ['beer', /ビール|ビア|ブルワリー|サワー|地酒|焼酎|ワイン|醸造|バー$|ふなびスタンド|ハイボール|チューハイ|エール|ラガー|IPA/],
   ['ice', /かき氷|かち割り|氷|アイス|ソフト|クリーム|シェイク|フロート/],
   ['sweets', /甘|あまみ|あまい|スイーツ|クレープ|パフェ|喫茶|カフェ|珈琲|コーヒー|ラテ|もみじ|ずんだ|おいも|大学いも|牧場|ワッフル|チュロス|ポップコーン|茶屋|ベーカリー|トースト|たい焼|もなか|団子|だんご|梅ヶ枝|人形焼|せんべい|ヨーグルト|ミルク|チーズケーキ/],
   ['bento', /弁当|べんとう|丼|どんぶり|重|寿司|むすび|おにぎり|飯|食堂|御膳|かつ|カツ|うなぎ|あなご|海鮮|明太|芋煮|おでん|豚汁|笹かま|もつ鍋|サンド|ご飯|めし|天むす|稲荷|いなり|助六|なめろう|フライ|かき|みそかつ|味噌かつ|どて|きりたんぽ|いくら|はらこ|ライス|ちらし|煮|肉じゃが|肉吸い|がき/],
-  ['drink', /ドリンク|ソーダ|ジュース|コーラ|お茶|水|ウーロン|スポーツ|牛乳|ひやしあめ|冷やしあめ/],
+  ['drink', /ドリンク|ソーダ|ジュース|スカッシュ|レモネード|麦茶|ふなびスタンド|コーラ|お茶|水|ウーロン|スポーツ|牛乳|ひやしあめ|冷やしあめ/],
 ];
 const kindOf = (name) => { const s = String(name || ''); for (const [k, re] of SHOP_KIND) if (re.test(s)) return k; return null; };
 // 付け合わせとして並べてよい物(どの店でも可): 飲み物・おにぎり・枝豆・ポテト・フランク・ポップコーン
-const SIDE = /おにぎり|むすび|枝豆|ポテト|チップス|じゃがバター|とうもろこし|フランク|ポップコーン|お茶|お水|ウーロン|コーラ|ジュース|ビール|ハイボール|チューハイ|サワー|スポーツ|コーヒー|ノンアル|餃子/;
+const SIDE = /おにぎり|むすび|枝豆|ポテト|チップス|じゃがバター|とうもろこし|フランク|ポップコーン|お茶|お水|ウーロン|コーラ|ジュース|スカッシュ|レモネード|ソーダ|スポーツ|コーヒー|餃子/;
 // 近い分類(同じ店に並んでいてよい)
 const NEAR = { ramen: ['udon'], udon: ['ramen', 'bento'], yakisoba: ['konamon', 'takoyaki'], konamon: ['takoyaki', 'yakisoba'], takoyaki: ['konamon', 'yakisoba'], karaage: ['yakitori'], yakitori: ['karaage'],
-  hotdog: ['pizza'], pizza: ['hotdog'], ice: ['sweets'], sweets: ['ice', 'drink'], beer: ['drink', 'yakitori', 'karaage'], drink: ['beer', 'ice', 'sweets'], bento: ['udon'], curry: [] };
+  hotdog: ['pizza'], pizza: ['hotdog'], ice: ['sweets'], sweets: ['ice', 'drink'], drink: ['ice', 'sweets'], bento: ['udon'], curry: [] };
 const kindHit = (name) => { const s = String(name || ''); for (const [k, re] of SHOP_KIND) { const m = s.match(re); if (m) return [k, m[0]]; } return [null, null]; };
 kbSetKind(kindOf);   // 11/22 看板の型は品書きと同じ分類で決める(js/kanban.js)
 // その球場の品書きに合う店が無い時の、同じ分類の定番の品(既の ITEMS)
 const KIND_FALLBACK = { karaage: ['karaage', 'kara_stick', 'fries', 'onigiri'], yakitori: ['ks_yakitori', 'ks_negima', 'ks_tsukune', 'pk_yakitori', 'kara_stick', 'edamame'], curry: ['curry', 'onigiri', 'tea'],
   takoyaki: ['takoyaki', 'ks_odako', 'ks_takosen', 'cola'], konamon: ['ks_okonomi', 'ks_negiyaki', 'rs_okonomi', 'yakisoba', 'oolong'], ramen: ['ramen', 'gyoza', 'onigiri', 'water'], udon: ['udon', 'onigiri', 'tea'],
   yakisoba: ['yakisoba', 'frank', 'cola'], hotdog: ['hotdog', 'frank', 'fries', 'popcorn', 'cola'], pizza: ['pizza', 'fries', 'cola'], ice: ['kakigori', 'softcream', 'ice', 'juice'],
-  sweets: ['crepe', 'churros', 'softcream', 'ice', 'coffee'], bento: ['bento', 'onigiri', 'tea'], beer: ['beer', 'highball', 'chuhai', 'nonalc', 'edamame'], drink: ['juice', 'cola', 'tea', 'sports_dr', 'water'] };
+  sweets: ['crepe', 'churros', 'softcream', 'ice', 'coffee'], bento: ['bento', 'onigiri', 'tea'], drink: ['juice', 'cola', 'tea', 'sports_dr', 'water'] };
 const GOODS_IDS = ['megaphone', 'towel', 'plush', 'keychain', 'minibat', 'kinen', 'balloon'];
 // 着替え(架空の色。実在のチームの色の組み合わせは使わない)
 const UNIS = [
@@ -137,7 +135,7 @@ const SIGHTS = [
 const SIGHT_PRICE = 1500;
 // 球場の仕事(バイト)。watch: 試合中(観戦)だけ。pay: 1 回の目安。uni: 仕事の服(架空の色)。dur: 秒
 const JOBS = [
-  { k: 'beer', name: 'ビールの売り子', watch: true, dur: 180, uni: { jersey: 0xf6cf3a, pants: 0x2b2f3a, cap: 0xf6cf3a }, base: 1000, desc: 'タンクを背負って客席を回り、手を挙げたお客さんに売る(1 杯 250 円・10 杯で補充・最後まで続けると 1,000 円)' },
+  { k: 'uriko', name: 'ドリンクの売り子', watch: true, dur: 180, uni: { jersey: 0xf6cf3a, pants: 0x2b2f3a, cap: 0xf6cf3a }, base: 1000, desc: 'タンクを背負って客席を回り、手を挙げたお客さんに売る(1 杯 250 円・10 杯で補充・最後まで続けると 1,000 円)' },
   { k: 'shop', name: '売店の店員', watch: false, dur: 120, uni: { jersey: 0xc8323a, pants: 0x2b2f3a, cap: 0xc8323a }, base: 1000, desc: '並んだお客さんの注文の品を渡す(正しく 1 つ 100 円・速いと +20 円・最後まで続けると 1,000 円)' },
   { k: 'ball', name: 'ボールパーソン', watch: true, dur: 180, uni: { jersey: 0x1f3557, pants: 0x1f3557, cap: 0x1f3557 }, base: 700, desc: 'ファウルゾーンで、転がってきた球を拾う(1 球 400 円・最後まで続けると 700 円)' },
   { k: 'clean', name: '清掃', watch: false, dur: 180, uni: { jersey: 0x6f8fa8, pants: 0x3a4a5a, cap: 0x6f8fa8 }, desc: 'ごみを拾って、燃えるごみ・プラのごみ箱へ(1 つ 80 円・分別で +60 円)' },
@@ -150,9 +148,9 @@ const JOBS = [
 ];
 // すっきりの形の仕事(11/20 夜 持ち主「種類多すぎても疲れるから少ない中から」「いつでもスキップ」「ぐだつかずにすぐ終わらせられる」): 4 つまで・短く。
 // リリーフカーは持ち主が前に頼んだので残す(待たせない: 受付で選ぶと「投手交代の時に呼ぶ」。呼ばれたら車に乗って 1 回運んで終わり)
-const JOBS_SIMPLE = { beer: 60, shop: 45, ball: 60, relief: 0 };
+const JOBS_SIMPLE = { uriko: 60, shop: 45, ball: 60, relief: 0 };
 // 1 回の稼ぎの目安(11/21 持ち主「アルバイト時給良い感じに」: ふつうに遊んで 1 回 2,000〜3,000 円・リリーフは待つので 4,000 円。tools/_wage.py で測った額)。受付の窓の札に出す
-const JOB_ABOUT = { beer: 2800, shop: 2500, ball: 2500, relief: 4000 };
+const JOB_ABOUT = { uriko: 2800, shop: 2500, ball: 2500, relief: 4000 };
 // 増える額(遊びでだけ増える)
 const EARN = { mascot: 100, water: 1500, realFoul: 3000, start: 50000, firstPlace: 300, hit: 100, hr: 500, k: 100, gameEnd: 2000, foulPick: 500, foulCatch: 1500, drag: 2500, high5: 50, toStands: 200, catchBack: 30 };
 // 当日券の売り場(ticket)と仕事の受付=関係者入口(staff)の場所(11/20 持ち主「現実にあるチケット売り場に忠実な場所に」「仕事の受付も甲子園だと忠実のところに」)。
@@ -181,22 +179,22 @@ const SITES = {
     // 関係者入口: 公式の図に無い。求人の抜粋の「11 号門横」(頁は開けず)から 11 号門の横の外の壁ぞい(推定)
     staff: { at: [-98, 0] },
     // 外の店: 4・5 号門横 一塁ショップ / 10 号門横 三塁ショップ / 16 号門横 スタジアムショップ / 23 号門横 ライトのショップ(公式)、
-    // 2 号門前 ミズノスクエア(外周の屋台・ビアガーデン)、15・16 号門付近 左翼の外の広場(屋台)(公式の発表)
+    // 2 号門前 ミズノスクエア(外周の屋台)、15・16 号門付近 左翼の外の広場(屋台)(公式の発表)
     outer: [
-      { at: [116, -21], kinds: ['ビール', 'やきそば', 'からあげ', 'たこやき'], why: '2号門前 ミズノスクエア(外周の屋台・ビアガーデン)' },
+      { at: [116, -21], kinds: ['ドリンク', 'やきそば', 'からあげ', 'たこやき'], why: '2号門前 ミズノスクエア(外周の屋台)' },
       { at: [-112, -124], kinds: ['ラーメン', 'からあげ', 'ドリンク'], why: '15・16号門付近 左翼の外の広場(屋台)' },
     ],
     // コンコースの売店の種類(公式の 2026 年の場内フロアマップから。角度は本塁の後ろ 0・一塁側 +、y は床の高さ: 2.3 m 前後 = 内野 2 階・外野 1 階の主なコンコース、7 m 前後 = 3 階)
     shops: [
-      { ang: [-25, 25], y: [-1, 5], kinds: ['カレー', 'からあげ', 'やきそば', 'お弁当', '甘い物', 'ビール'] },     // 内野 2 階 中央(7・8 号門を入った正面にグッズ)
+      { ang: [-25, 25], y: [-1, 5], kinds: ['カレー', 'からあげ', 'やきそば', 'お弁当', '甘い物', 'ドリンク'] },     // 内野 2 階 中央(7・8 号門を入った正面にグッズ)
       { ang: [-25, 25], y: [5, 20], kinds: ['カレー', 'たこやき', 'お弁当', '甘い物'] },                          // 内野 3 階 中央
-      { ang: [-70, -25], y: [-1, 5], kinds: ['たこやき', 'やきそば', 'ビール', '甘い物', 'お弁当'] },               // 内野 2 階 三塁側
+      { ang: [-70, -25], y: [-1, 5], kinds: ['たこやき', 'やきそば', 'ドリンク', '甘い物', 'お弁当'] },               // 内野 2 階 三塁側
       { ang: [-70, -25], y: [5, 20], kinds: ['カレー', 'ドリンク', 'からあげ'] },                                  // 内野 3 階 三塁側
-      { ang: [25, 70], y: [-1, 5], kinds: ['カレー', 'たこやき', 'ビール', 'お弁当'] },                             // 内野 2 階 一塁側
+      { ang: [25, 70], y: [-1, 5], kinds: ['カレー', 'たこやき', 'ドリンク', 'お弁当'] },                             // 内野 2 階 一塁側
       { ang: [25, 70], y: [5, 20], kinds: ['カレー', 'からあげ', 'お弁当'] },                                      // 内野 3 階 一塁側
-      { ang: [-105, -70], kinds: ['カレー', 'たこやき', 'ビール', 'やきそば'] },                                   // 三塁アルプス
-      { ang: [70, 105], kinds: ['カレー', 'たこやき', 'ビール', 'やきそば'] },                                     // 一塁アルプス(くくるのワゴン・アルプス食堂)
-      { ang: [-180, -105], y: [5, 20], kinds: ['ビール', 'カレー', 'やきそば', 'たこやき'] },                       // 外野 3 階 レフト(ビール・おつまみ)
+      { ang: [-105, -70], kinds: ['カレー', 'たこやき', 'ドリンク', 'やきそば'] },                                   // 三塁アルプス
+      { ang: [70, 105], kinds: ['カレー', 'たこやき', 'ドリンク', 'やきそば'] },                                     // 一塁アルプス(くくるのワゴン・アルプス食堂)
+      { ang: [-180, -105], y: [5, 20], kinds: ['ドリンク', 'カレー', 'やきそば', 'たこやき'] },                       // 外野 3 階 レフト(ドリンク・おつまみ)
       { ang: [105, 180], y: [5, 20], kinds: ['甘い物', 'カレー', 'やきそば', 'お弁当'] },                           // 外野 3 階 ライト(スイーツ)
       { ang: [-180, -105], kinds: ['カレー', 'やきそば', 'たこやき', '甘い物', 'お弁当'] },                         // 外野 1 階 レフト
       { ang: [105, 180], kinds: ['カレー', 'やきそば', 'たこやき', '甘い物', 'からあげ'] },                         // 外野 1 階 ライト
@@ -216,9 +214,9 @@ const SITES = {
       { at: [70, 62], kinds: ['グッズ'], shop: true, title: 'チームストア', col: 0xf08a2a, look: { W: 6.0, D: 4.0, awn: 'solid', wall: 0xf2f2ee }, why: '20 ゲートの横(一塁側)のグッズの店(公式以外)' },
     ],
     shops: [
-      { ang: [-100, -15], kinds: ['からあげ', 'やきそば', 'ホットドッグ', '甘い物', 'ビール'] },   // 1 階 三塁側(串カツ・焼肉・餃子・鉄板焼きそば・バーガー)
+      { ang: [-100, -15], kinds: ['からあげ', 'やきそば', 'ホットドッグ', '甘い物', 'ドリンク'] },   // 1 階 三塁側(串カツ・焼肉・餃子・鉄板焼きそば・バーガー)
       { ang: [-15, 15], kinds: ['ホットドッグ', '甘い物', 'お弁当'] },                          // 本塁の後ろ(ホットドッグ・ジェラート・弁当)
-      { ang: [15, 100], kinds: ['カレー', 'からあげ', 'お弁当', '甘い物', 'ビール'] },          // 1 階 一塁側(カレー・おにぎりとからあげ・弁当・クレープ)
+      { ang: [15, 100], kinds: ['カレー', 'からあげ', 'お弁当', '甘い物', 'ドリンク'] },          // 1 階 一塁側(カレー・おにぎりとからあげ・弁当・クレープ)
       { ang: [-180, -100], kinds: ['ラーメン', 'ホットドッグ', 'カレー', 'たこやき'] },          // 外野(ラーメン・バーガー・からあげカレー・たこ焼き)
       { ang: [100, 180], kinds: ['ラーメン', 'たこやき', 'ホットドッグ', 'お弁当'] },
     ],
@@ -232,14 +230,14 @@ const SITES = {
     ticket: { at: [-47, 40], wins: ['当日券', '当日券', '当日券', '引換', '引換'], wall: { w: 7, n: 5, band: '#1d2f5a', bandCol: 0x1d2f5a, text: 'TICKETS', sub: '9入口横 チケットボックス', wallCol: 0xe8e6e0 } },   // 9 入口横(公式の図)。見た目は写真: 外壁に窓口が並び、上に紺の帯に白い「TICKETS」
     outer: [   // 外周のキッチンカー(プロ野球の日だけ。5 入口の外・正面入口の外・9 入口のあたり。公式の地図の印)
       { at: [52, 50], kinds: ['からあげ', 'カレー', 'ラーメン'], truck: true, why: '一塁側 5 入口の外のキッチンカー' },
-      { at: [-20, 78], kinds: ['やきそば', 'ビール'], truck: true, why: '正面入口の外のキッチンカー' },
+      { at: [-20, 78], kinds: ['やきそば', 'ドリンク'], truck: true, why: '正面入口の外のキッチンカー' },
       { at: [-70, 40], kinds: ['ホットドッグ', 'ドリンク'], truck: true, why: '三塁側 9 入口のあたりのキッチンカー' },
       { at: [28, 70], kinds: ['グッズ'], shop: true, title: 'グッズショップ', col: 0x1f6b3a, look: { W: 5.6, D: 3.8, awn: 'solid', wall: 0xf2f2ee }, why: '正面入口の横・一塁側 6 入口の近くのグッズの店(公式の地図の印)' },
     ],
     shops: [
       { ang: [5, 100], kinds: ['たこやき', '甘い物', 'カレー', 'お弁当', 'ラーメン'] },   // 内野一塁側(銀だこ・アイス・カレー丼・弁当・うどん)
-      { ang: [-100, 5], kinds: ['カレー', 'ビール', 'ホットドッグ', '甘い物', 'お弁当'] },   // 内野三塁側(カレー・ウインナーとビール・ポテト・甘い物)
-      { ang: [-180, -100], kinds: ['やきそば', 'ラーメン', 'ビール', '甘い物', 'からあげ'] },   // レフト
+      { ang: [-100, 5], kinds: ['カレー', 'ドリンク', 'ホットドッグ', '甘い物', 'お弁当'] },   // 内野三塁側(カレー・ウインナーとドリンク・ポテト・甘い物)
+      { ang: [-180, -100], kinds: ['やきそば', 'ラーメン', 'ドリンク', '甘い物', 'からあげ'] },   // レフト
       { ang: [100, 180], kinds: ['お弁当', '甘い物', 'ラーメン', 'たこやき'] },              // ライト
     ],
   },
@@ -255,10 +253,10 @@ const SITES = {
       { at: [100, 46], y: 6, kinds: ['グッズ'], shop: true, title: 'グッズショップ', col: 0x1f5aa0, look: { W: 7.0, D: 4.2, Hh: 3.4, awn: 'none', wall: 0x1f3557, signBg: '#0f2440', flags: false }, why: '8 ゲートの前(一塁側)のグッズの店(公式)' },
     ],
     shops: [
-      { ang: [5, 120], kinds: ['ホットドッグ', 'やきそば', '甘い物', 'からあげ', 'ビール'] },   // 2 階 一塁側(ホットドッグ・どて丼と焼きそば・ピザ・ポテト・バーガー)
-      { ang: [-120, -5], kinds: ['からあげ', 'たこやき', '甘い物', 'やきそば', 'ビール'] },     // 2 階 三塁側(からあげ・たこ焼き・クレープ・焼きそば)
-      { ang: [-5, 5], kinds: ['お弁当', 'ビール'] },
-      { ang: [120, 180], kinds: ['からあげ', 'ビール'] }, { ang: [-180, -120], kinds: ['からあげ', 'ビール'] },   // センター(焼き鳥)・ドリンク売店
+      { ang: [5, 120], kinds: ['ホットドッグ', 'やきそば', '甘い物', 'からあげ', 'ドリンク'] },   // 2 階 一塁側(ホットドッグ・どて丼と焼きそば・ピザ・ポテト・バーガー)
+      { ang: [-120, -5], kinds: ['からあげ', 'たこやき', '甘い物', 'やきそば', 'ドリンク'] },     // 2 階 三塁側(からあげ・たこ焼き・クレープ・焼きそば)
+      { ang: [-5, 5], kinds: ['お弁当', 'ドリンク'] },
+      { ang: [120, 180], kinds: ['からあげ', 'ドリンク'] }, { ang: [-180, -120], kinds: ['からあげ', 'ドリンク'] },   // センター(焼き鳥)・ドリンク売店
     ],
   },
   // 汽笛ヶ原(マツダ)。docs の「汽笛ヶ原」
@@ -268,15 +266,15 @@ const SITES = {
     toiletAngs: [-120, -60, -20, 20, 60, 120, 180], toiletOpen: true,   // 11/21 共通: 本物は 7 か所(内訳は公式の頁が読めず推定 C。センターの後ろのユニバーサルトイレは B)。外に開いたコンコース(天井が無い所)にも置く
     ticket: { gate: 'C', at: [-90, -30], wins: ['当日券', '当日券', '当日券', '当日券', '前売', '前売'], wall: { w: 9, n: 6, band: '#8a2a25', bandCol: 0x8a2a25, text: '入場券売り場', sub: '3塁側', wallCol: 0xd9d6cf } },   // 3 塁側入場券売り場(球団の公式の発信)。見た目は写真: スタンドの下の壁に窓口が長く並ぶ
     outer: [
-      { at: [-98, -8], kinds: ['グッズ', 'グッズ'], tent: { roof: 0xf6f6f4, label: 'ビジターグッズ', clerk: 0xc8102e, goods: [0xc8102e, 0xf2f2ee, 0x1f3557] }, why: '写真(検索「マツダスタジアム 外 グッズショップ 屋台」): 球場の外の白いテントでビジターのグッズを売る。メインゲートの近く(位置は推定)' },
-      { at: [-105, -50], kinds: ['やきそば', 'からあげ', 'ビール', 'お弁当'], why: '駅からの道(カープロード)の出店。メインゲート(三塁側)の先(公式以外・位置は推定)' },
+      { at: [-98, -8], kinds: ['グッズ'], tent: { roof: 0xf6f6f4, label: 'ビジターグッズ', clerk: 0xc8102e, goods: [0xc8102e, 0xf2f2ee, 0x1f3557] }, why: '写真(検索「マツダスタジアム 外 グッズショップ 屋台」): 球場の外の白いテントでビジターのグッズを売る。メインゲートの近く(位置は推定)' },
+      { at: [-105, -50], kinds: ['やきそば', 'からあげ', 'ドリンク', 'お弁当'], why: '駅からの道(カープロード)の出店。メインゲート(三塁側)の先(公式以外・位置は推定)' },
       { at: [10, 82], kinds: ['グッズ'], shop: true, title: 'グッズショップ', col: 0xc8102e, look: { W: 7.6, D: 4.4, Hh: 3.6, awn: 'none', wall: 0xf2f2ee, signBg: '#ffffff', flags: false }, why: '正面ロビーのグッズの店(公式・正面の入口の横)' },
     ],
     shops: [
-      { ang: [-110, -20], kinds: ['ラーメン', 'からあげ', 'お弁当', 'ビール'] },          // 1 階 三塁側(ラーメン・からあげ・飯)
-      { ang: [-20, 20], kinds: ['甘い物', 'ホットドッグ', 'ビール', 'お弁当'] },          // 正面(甘い物・ホットドッグ・肉とビール・弁当)
+      { ang: [-110, -20], kinds: ['ラーメン', 'からあげ', 'お弁当', 'ドリンク'] },          // 1 階 三塁側(ラーメン・からあげ・飯)
+      { ang: [-20, 20], kinds: ['甘い物', 'ホットドッグ', 'ドリンク', 'お弁当'] },          // 正面(甘い物・ホットドッグ・肉とドリンク・弁当)
       { ang: [20, 110], kinds: ['甘い物', 'ラーメン', 'ドリンク', 'やきそば'] },         // 1 階 一塁側(甘い物・うどん・ドリンク・ホルモン焼きそば)
-      { ang: [110, 180], kinds: ['ビール', '甘い物', 'ホットドッグ'] }, { ang: [-180, -110], kinds: ['ビール', '甘い物', 'ホットドッグ'] },
+      { ang: [110, 180], kinds: ['ドリンク', '甘い物', 'ホットドッグ'] }, { ang: [-180, -110], kinds: ['ドリンク', '甘い物', 'ホットドッグ'] },
     ],
   },
   // 灯台坂(横浜)。docs の「灯台坂」
@@ -286,13 +284,13 @@ const SITES = {
     toiletAt: [[82.89, 5.5, -40.2, 0.867, 0.498], [73.8, 5.5, -21.17, 0.867, 0.498], [63.63, 5.5, -3.43, 0.867, 0.498], [53.53, 5.5, 14.17, 0.867, 0.498], [56.76, 5.5, 8.53, 0.867, 0.498], [50.22, 5.5, 19.93, 0.867, 0.498], [31.85, 5.5, 37.32, 0.502, 0.865], [37.04, 5.5, 34.57, 0.688, 0.726], [-11.37, 5.5, 41.36, -0.074, 0.997], [-5.04, 5.5, 42.14, -0.034, 0.999], [1.4, 5.5, 42.4, -0.021, 1.0], [-37.71, 5.5, 33.71, -0.586, 0.81], [-52.52, 5.5, 16.47, -0.869, 0.495], [-58.28, 5.5, 6.35, -0.869, 0.495], [-67.33, 5.5, -9.55, -0.869, 0.495], [-75.85, 5.5, -24.54, -0.869, 0.495], [-82.57, 5.5, -42.85, -0.869, 0.495], [-34.32, 0.0, -112.24, -0.292, -0.956], [34.66, 0.0, -113.38, 0.292, -0.956]], toiletModel: true,   // 11/21 昼 R18: 外野の 1 階の通路のトイレの入口 2(公式 1F の図: 通路 27・30 の内側に男女の印)   // 11/21 夜 R17: 模型の 2 階のトイレの部屋の入口(公式 2F フロアマップの男女・多目的の印の角度。目隠しの壁・男女の札・中の個室と小便器は模型。授乳室は入らない)。[x, y, z, 前の向き x, z]
     relief: { col: 0x2fb5a8, seat: 0x1d2430, side: -1 },   // リリーフカー: 今も使う(公式以外: 2026 年に明るい青緑の新しい車)。屋根もドアも無い形
     outer: [
-      { at: [-82, -118], kinds: ['グッズ', 'グッズ', 'グッズ'], tent: { roof: 0x1f4fa0, legs: 0xf2f2f2, sign: '#1f4fa0', ink: '#ffffff', label: 'SHOP', clerk: 0x1f4fa0, goods: [0x1f4fa0, 0xf2f2ee, 0x6fb3e0] }, why: '写真(検索「横浜スタジアム 外 グッズショップ 屋台 公園」): 公園の側に青いテントが並び「SHOP」の看板。試合の前のグッズ売り' },
+      { at: [-82, -118], kinds: ['グッズ'], tent: { roof: 0x1f4fa0, legs: 0xf2f2f2, sign: '#1f4fa0', ink: '#ffffff', label: 'SHOP', clerk: 0x1f4fa0, goods: [0x1f4fa0, 0xf2f2ee, 0x6fb3e0] }, why: '写真(検索「横浜スタジアム 外 グッズショップ 屋台 公園」): 公園の側に青いテントが並び「SHOP」の看板。試合の前のグッズ売り' },
       { at: [-60, -140], kinds: ['グッズ'], shop: true, title: '灯台坂ストア', col: 0x1f4fa0, look: { W: 8.0, D: 4.4, Hh: 3.6, awn: 'none', wall: 0x1f3557, signBg: '#0f2440', flags: false }, why: '1F 外・GATE7 の横(左中間)のグッズの店(公式)' },
-      { at: [66, -140], kinds: ['ホットドッグ', 'ビール'], why: '1F 外・右中間の後ろのバーガーの店(公式)' },
+      { at: [66, -140], kinds: ['ホットドッグ', 'ドリンク'], why: '1F 外・右中間の後ろのバーガーの店(公式)' },
     ],
     shops: [
-      { ang: [5, 100], kinds: ['カレー', 'ホットドッグ', 'ビール', '甘い物', 'ラーメン'] },   // 内野一塁側(カレー・ホットドッグとビール・みかん氷・中華)
-      { ang: [-100, 5], kinds: ['ラーメン', 'からあげ', 'ビール', 'カレー', 'ドリンク'] },    // 内野三塁側(麺・からあげ・クラフトビール・中華)
+      { ang: [5, 100], kinds: ['カレー', 'ホットドッグ', 'ドリンク', '甘い物', 'ラーメン'] },   // 内野一塁側(カレー・ホットドッグとドリンク・みかん氷・中華)
+      { ang: [-100, 5], kinds: ['ラーメン', 'からあげ', 'ドリンク', 'カレー'] },    // 内野三塁側(麺・からあげ・ドリンク・中華)
       { ang: [100, 180], kinds: ['お弁当', 'カレー'] }, { ang: [-180, -100], kinds: ['お弁当', 'ラーメン'] },   // 外野(弁当)
     ],
   },
@@ -307,15 +305,15 @@ const SITES = {
     // 外の柵の線(sd_r14.py の R14_FENCE。一塁側は大きな建物の中を通して閉じる。ゲームの x, z)
     fence: (typeof location !== 'undefined' && /[?&]north_r1[0-4]/.test(location.search)) ? undefined : [[19, 86], [-40, 100], [-168, -35], [-112, -172], [-84, -208], [78, -150], [104, -128], [116, -104], [117, -62], [121, -58], [140, -50], [140, 40], [70, 44], [42, 76]],   // 見た目は写真: えんじ色の小さな箱に「TICKETS」   // 本塁の正面の建物の一塁側寄りの角(公式の案内図)
     outer: [
-      { at: [-78, 28], kinds: ['からあげ', 'たこやき', 'ホットドッグ', 'ビール', 'お弁当', '甘い物'], truck: true, why: '三塁側の外周のキッチンカーストリート(公式)' },
-      { at: [-14, 84], kinds: ['ビール'], why: '本塁の前の正面広場のビールの店(公式)' },
+      { at: [-78, 28], kinds: ['からあげ', 'たこやき', 'ホットドッグ', 'ドリンク', 'お弁当', '甘い物'], truck: true, why: '三塁側の外周のキッチンカーストリート(公式)' },
+      { at: [-14, 84], kinds: ['ドリンク'], why: '本塁の前の正面広場の飲み物の店(公式)' },
       { at: [84, 22], kinds: ['からあげ', '甘い物', 'お弁当', 'たこやき'], why: '一塁側の外周の店(からあげ・ポップコーン・弁当・たこ焼き。公式)' },
       { at: [-30, 90], kinds: ['グッズ'], shop: true, title: 'グッズショップ', col: 0x8a1b2e, look: { W: 7.0, D: 4.2, Hh: 3.4, awn: 'solid', wall: 0x2b2f36, flags: false }, why: '本塁の正面の建物のグッズの店(公式の案内図)。一塁寄りは建物に入ってしまうので、正面の広場の三塁寄りに置いた(推定)' },
     ],
     shops: [
-      { ang: [-20, 20], kinds: ['カレー', 'ホットドッグ', 'ラーメン', 'たこやき', '甘い物', 'ビール'] },   // バックネット裏
-      { ang: [20, 180], kinds: ['たこやき', 'ラーメン', 'カレー', '甘い物', 'からあげ', 'ビール'] },     // 一塁側
-      { ang: [-180, -20], kinds: ['からあげ', 'たこやき', 'ホットドッグ', 'ビール', '甘い物', 'お弁当'] },   // 三塁側
+      { ang: [-20, 20], kinds: ['カレー', 'ホットドッグ', 'ラーメン', 'たこやき', '甘い物', 'ドリンク'] },   // バックネット裏
+      { ang: [20, 180], kinds: ['たこやき', 'ラーメン', 'カレー', '甘い物', 'からあげ', 'ドリンク'] },     // 一塁側
+      { ang: [-180, -20], kinds: ['からあげ', 'たこやき', 'ホットドッグ', 'ドリンク', '甘い物', 'お弁当'] },   // 三塁側
     ],
   },
   // 白樺(エスコン)。G1 = 三塁側、G4 = 一塁側(公式の字)。docs の「白樺」
@@ -331,10 +329,10 @@ const SITES = {
       { at: [-46, -164], kinds: ['グッズ'], shop: true, title: 'フラッグシップストア', col: 0x0b2a4a, look: { W: 9.0, D: 4.6, Hh: 4.0, awn: 'none', wall: 0x0b2a4a, signBg: '#0b2a4a', flags: false }, why: 'TOWER 11 GATE(レフト)の横の大きなグッズの店(公式)' },
     ],
     shops: [
-      { ang: [5, 100], kinds: ['たこやき', 'ホットドッグ', 'からあげ', 'お弁当', 'ビール'] },   // 1F 一塁側(たこ焼き・バーガー・串鳥・弁当のワゴン)
-      { ang: [-100, 5], kinds: ['お弁当', '甘い物', 'ラーメン', 'ビール', 'カレー'] },          // 本塁の後ろ〜三塁側(弁当・ポップコーン・2F 七つ星横丁・3F スープカレー)
-      { ang: [-180, -100], kinds: ['ホットドッグ', 'ビール', 'ラーメン'] },                    // レフト
-      { ang: [100, 180], kinds: ['甘い物', 'ビール', 'お弁当'] },                              // ライト
+      { ang: [5, 100], kinds: ['たこやき', 'ホットドッグ', 'からあげ', 'お弁当', 'ドリンク'] },   // 1F 一塁側(たこ焼き・バーガー・串鳥・弁当のワゴン)
+      { ang: [-100, 5], kinds: ['お弁当', '甘い物', 'ラーメン', 'ドリンク', 'カレー'] },          // 本塁の後ろ〜三塁側(弁当・ポップコーン・2F 七つ星横丁・3F スープカレー)
+      { ang: [-180, -100], kinds: ['ホットドッグ', 'ドリンク', 'ラーメン'] },                    // レフト
+      { ang: [100, 180], kinds: ['甘い物', 'ドリンク', 'お弁当'] },                              // ライト
     ],
   },
   // 潮凪(PayPay ドーム)。実在の 7 ゲートはセンターの後ろ(TOP GATE)。模型の番号の並びは実在と違うので、センターに近い模型の 7 を使う。docs の「潮凪」
@@ -346,18 +344,18 @@ const SITES = {
     shopsReal: 40,   // 11/21 R27: 本物は固定店 28(公式のグルメの頁、3 エリアの合計)とワゴン約 50。開ける店の数は前のまま
     ticket: { gate: '7', at: [62, -151], wins: ['当日券', '当日券', '当日券', '当日券'], wall: { w: 6, n: 4, band: '#15171c', bandCol: 0x15171c, text: 'Ticket 7', sub: '7番チケット売場', wallCol: 0xcfd3d8 }, sign: 'Ticket 7', sub: '7番チケット売場', look: { wall: 0xcfd3d8, roof: 0x15171c, signBg: '#15171c' } },   // 近くに壁が無い時は黒い屋根の箱   // 7 ゲート横「7 番チケット売場」(公式 FAQ)。見た目は写真: 壁に黒い帯「Ticket 7」と窓口
     outer: [
-      { at: [0, 74], kinds: ['からあげ', 'ホットドッグ', 'ラーメン', 'ビール'], truck: true, why: '鷹マルシェ(キッチンカー。全試合。置き場所は確かめられず → 正面の下の道と推定)' },
+      { at: [0, 74], kinds: ['からあげ', 'ホットドッグ', 'ラーメン', 'ドリンク'], truck: true, why: '鷹マルシェ(キッチンカー。全試合。置き場所は確かめられず → 正面の下の道と推定)' },
       { at: [104, -108], kinds: ['グッズ'], shop: true, title: 'チームストア', col: 0xf2c200, look: { W: 8.0, D: 4.4, Hh: 3.6, awn: 'none', wall: 0x15171c, signBg: '#15171c', flags: false }, why: '8 ゲート(ライト)正面のグッズの店(公式以外)。11/21 前は高さ 10.6 m のデッキの縁に置いて前が崖になり近づけなかったので、下の外の広場に置いた' },
     ],
     shops: [
-      // 11/21 R28: 公式のグルメの頁の固定店 29 の GATE と通路の番号(11 通路 = 本塁の後ろ、11.25 度ごと)で、ゲートごとに区切った。ワゴン(ビールは 2G・4G・6G の扉の側)は模型の枠
-      { ang: [50, 110], kinds: ['ドリンク', 'ホットドッグ', 'お弁当', 'ビール'] },          // 1 GATE(2〜6 通路): 飲み物・タコス・軽食・パスタ・サンドイッチ
-      { ang: [6, 50], kinds: ['ホットドッグ', 'お弁当', 'やきそば', 'ビール'] },             // 2 GATE(7〜10 通路): 肉料理・鉄板焼き・バーガー・おにぎり
+      // 11/21 R28: 公式のグルメの頁の固定店 29 の GATE と通路の番号(11 通路 = 本塁の後ろ、11.25 度ごと)で、ゲートごとに区切った。ワゴン(飲み物は 2G・4G・6G の扉の側)は模型の枠
+      { ang: [50, 110], kinds: ['ドリンク', 'ホットドッグ', 'お弁当'] },          // 1 GATE(2〜6 通路): 飲み物・タコス・軽食・パスタ・サンドイッチ
+      { ang: [6, 50], kinds: ['ホットドッグ', 'お弁当', 'やきそば', 'ドリンク'] },             // 2 GATE(7〜10 通路): 肉料理・鉄板焼き・バーガー・おにぎり
       { ang: [-50, 6], kinds: ['甘い物', 'ドリンク', 'ホットドッグ'] },                    // 3 GATE(11〜15 通路): カフェ 3
-      { ang: [-100, -50], kinds: ['ホットドッグ', 'ラーメン', 'お弁当', 'ビール'] },        // 4 GATE(16〜19 通路): バーガー・うどん・餃子
+      { ang: [-100, -50], kinds: ['ホットドッグ', 'ラーメン', 'お弁当', 'ドリンク'] },        // 4 GATE(16〜19 通路): バーガー・うどん・餃子
       { ang: [-152, -100], kinds: ['からあげ', 'ラーメン', 'たこやき', 'お弁当'] },          // 5 GATE(20〜24 通路): チキン・とりかわ・だし料理・パスタ・たこ焼き
-      { ang: [-180, -152], kinds: ['お弁当', 'ラーメン', 'ビール'] },                     // 6 GATE(25〜28 通路): 日替わり・食堂・ラーメン
-      { ang: [135, 180], kinds: ['ビール', 'お弁当', 'からあげ'] },                       // 7 GATE(28〜31 通路): 横丁
+      { ang: [-180, -152], kinds: ['お弁当', 'ラーメン', 'ドリンク'] },                     // 6 GATE(25〜28 通路): 日替わり・食堂・ラーメン
+      { ang: [135, 180], kinds: ['ドリンク', 'お弁当', 'からあげ'] },                       // 7 GATE(28〜31 通路): 横丁
       { ang: [110, 135], kinds: ['ホットドッグ', 'お弁当', 'ドリンク'] },                  // 8 GATE(31〜1 通路): バーガー・牛かつ・もつ鍋
     ],
   },
@@ -368,16 +366,16 @@ const SITES = {
     relief: { col: 0xd8dde3, seat: 0x15171c, side: -1 },   // リリーフカー: 今も使う(公式以外: 2025 年 8 月に新しい車 2 台。形・色は記事に無い → 銀に近い白と推定)。投手は内野と外野のスタンドの間から出る
     // 外周のキッチンカーの並び(14 店。公式。どのゲートの前かは確かめられず → 正面の広場の三塁寄り、D と F の間の外と推定)・キッズエリアは F ゲートの近く(公式)
     outer: [
-      { at: [-30, 66], kinds: ['からあげ', 'カレー', 'ホットドッグ', 'ビール', '甘い物', 'からあげ'], truck: true, why: '外周グルメエリア(キッチンカー。位置は推定)' },
+      { at: [-30, 66], kinds: ['からあげ', 'カレー', 'ホットドッグ', 'ドリンク', '甘い物'], truck: true, why: '外周グルメエリア(キッチンカー。位置は推定)' },
       { at: [32, 64], kinds: ['グッズ'], shop: true, title: 'グッズストア', col: 0x1d2430, look: { W: 7.6, D: 4.4, Hh: 3.6, awn: 'none', wall: 0x1d2430, signBg: '#15171c', flags: false }, why: '球場の外の大きなグッズの店(公式。どのゲートの横かは確かめられず → 正面の一塁寄りと推定)' },
     ],
     // 場内(フロア 2 が主。201〜214 通路、一塁側 → 三塁側。公式の店の一覧)
     shops: [
-      { ang: [15, 110], kinds: ['ラーメン', 'カレー', 'ビール', 'からあげ', 'たこやき', 'ホットドッグ', '甘い物'] },   // 一塁側 201〜206
+      { ang: [15, 110], kinds: ['ラーメン', 'カレー', 'ドリンク', 'からあげ', 'たこやき', 'ホットドッグ', '甘い物'] },   // 一塁側 201〜206
       { ang: [-15, 15], kinds: ['ホットドッグ', 'お弁当', 'カレー', '甘い物'] },                                     // 本塁の後ろ 207・C ゲート横
-      { ang: [-110, -15], kinds: ['お弁当', 'ビール', 'ホットドッグ', 'からあげ', '甘い物', 'カレー'] },               // 三塁側 208〜214
-      { ang: [-180, -110], kinds: ['からあげ', 'ビール', 'ドリンク'] },   // レフトスタンドの下
-      { ang: [110, 180], kinds: ['ビール', 'ホットドッグ', 'ドリンク'] },  // ライトスタンドの下
+      { ang: [-110, -15], kinds: ['お弁当', 'ドリンク', 'ホットドッグ', 'からあげ', '甘い物', 'カレー'] },               // 三塁側 208〜214
+      { ang: [-180, -110], kinds: ['からあげ', 'ドリンク'] },   // レフトスタンドの下
+      { ang: [110, 180], kinds: ['ドリンク', 'ホットドッグ'] },  // ライトスタンドの下
     ],
   },
   // 森かげ(ベルーナドーム)。一般のゲートは外野の後ろのメイン(模型の 1)とサブ(模型の 2)だけ。docs の「森かげ」
@@ -389,15 +387,15 @@ const SITES = {
     noStall: (typeof location !== 'undefined' && /[?&]grove_r([3-9]|1[01])(=|&|$)/.test(location.search)) ? undefined : [[4, -203.5, 17], [-63.5, -196, 7], [-40, -211, 8], [41, -164, 13], [-49, -170, 12], [37.8, 18.8, 14], [-37.8, 18.8, 14]],   // 11/21 R12: ゲートのレーン・サブゲート・券売所・中段の中の広間には屋台を出さない   // 11/21 R11: 外のコンビニ・おみやげは駅からの道ぞい(メインゲート・サブゲート・大いすの前をふさがない)
     staff: { at: [-70, -150] },   // オフィス棟はサブゲートと三塁側の外野の建物の間(公式)。スタッフの通用口は確かめられず(推定)
     outer: [
-      { at: (typeof location !== 'undefined' && /[?&]grove_r([3-9]|10)(=|&|$)/.test(location.search)) ? [80, -200] : (typeof location !== 'undefined' && /[?&]grove_r([3-9]|1[01])(=|&|$)/.test(location.search)) ? [-52, -232] : [22, -232], kinds: ['からあげ', 'カレー', 'たこやき', 'ビール', 'ホットドッグ', 'お弁当'], tent: { flat: true, roof: 0x4a3426, back: true, backCol: 0x8a6a4a, sign: ['#c8102e', '#f2c200', '#1a1a1a', '#e8e4da'], ink: ['#ffffff', '#1a1a1a', '#f2c200', '#c8102e'], clerk: 0xf2f2ee, w: 3.4 }, why: '写真(検索「ベルーナドーム 外 屋台 ゲート」): 屋根の下に店が並び、店ごとに赤・黄・黒の大きな看板。駅前広場から駅への道ぞいの屋台の並び(公式の周辺図 12 番。14 店)。ガラスの小屋から離した広い所' },
+      { at: (typeof location !== 'undefined' && /[?&]grove_r([3-9]|10)(=|&|$)/.test(location.search)) ? [80, -200] : (typeof location !== 'undefined' && /[?&]grove_r([3-9]|1[01])(=|&|$)/.test(location.search)) ? [-52, -232] : [22, -232], kinds: ['からあげ', 'カレー', 'たこやき', 'ドリンク', 'ホットドッグ', 'お弁当'], tent: { flat: true, roof: 0x4a3426, back: true, backCol: 0x8a6a4a, sign: ['#c8102e', '#f2c200', '#1a1a1a', '#e8e4da'], ink: ['#ffffff', '#1a1a1a', '#f2c200', '#c8102e'], clerk: 0xf2f2ee, w: 3.4 }, why: '写真(検索「ベルーナドーム 外 屋台 ゲート」): 屋根の下に店が並び、店ごとに赤・黄・黒の大きな看板。駅前広場から駅への道ぞいの屋台の並び(公式の周辺図 12 番。14 店)。ガラスの小屋から離した広い所' },
       { at: (typeof location !== 'undefined' && /[?&]grove_r([3-9]|10)(=|&|$)/.test(location.search)) ? [56, -170] : (typeof location !== 'undefined' && /[?&]grove_r([3-9]|1[01])(=|&|$)/.test(location.search)) ? [29, -172] : [21.5, -184], kinds: ['グッズ'], shop: true, title: 'チームストア', col: 0x1f3557, look: (typeof location !== 'undefined' && /[?&]grove_r([3-9]|10)(=|&|$)/.test(location.search)) ? { W: 9.0, D: 4.6, Hh: 4.0, awn: 'none', wall: 0x1f3557, signBg: '#0f2440', flags: false } : { W: 5.0, D: 2.0, Hh: 3.0, awn: 'none', wall: 0x1f3557, signBg: '#0f2440', flags: false }, why: 'メインゲートの一塁側の横の大きなグッズの店(公式)。R11 は模型の 2 階の店(チームストア)の店先の売り台' },
     ],
     // 場内: 一塁・三塁のメインコンコースに並ぶ(番号の小さい方が本塁寄り。公式の店の一覧)
     shops: [
-      { ang: [0, 60], kinds: ['甘い物', 'カレー', 'ビール', 'からあげ'] },                       // 一塁側 本塁寄り(軽食・カレー・居酒屋・焼き鳥)
-      { ang: [60, 180], kinds: ['ビール', 'からあげ', 'ラーメン', '甘い物', 'たこやき', 'お弁当'] },   // 一塁側 外野寄り(タップバー・からあげ・うどん・アイス・たこ焼き)
-      { ang: [-60, 0], kinds: ['甘い物', 'からあげ', 'ビール', 'カレー'] },                      // 三塁側 本塁寄り(ピザ・パンケーキ・居酒屋)
-      { ang: [-180, -60], kinds: ['ビール', 'お弁当', 'ラーメン', 'やきそば', 'カレー', 'たこやき', '甘い物'] },   // 三塁側 外野寄り(ビール・弁当・うどん・鉄板屋台・油そば・たこ焼き)
+      { ang: [0, 60], kinds: ['甘い物', 'カレー', 'ドリンク', 'からあげ'] },                       // 一塁側 本塁寄り(軽食・カレー・焼き鳥・焼き鳥)
+      { ang: [60, 180], kinds: ['ドリンク', 'からあげ', 'ラーメン', '甘い物', 'たこやき', 'お弁当'] },   // 一塁側 外野寄り(タップバー・からあげ・うどん・アイス・たこ焼き)
+      { ang: [-60, 0], kinds: ['甘い物', 'からあげ', 'ドリンク', 'カレー'] },                      // 三塁側 本塁寄り(ピザ・パンケーキ・焼き鳥)
+      { ang: [-180, -60], kinds: ['ドリンク', 'お弁当', 'ラーメン', 'やきそば', 'カレー', 'たこやき', '甘い物'] },   // 三塁側 外野寄り(ドリンク・弁当・うどん・鉄板屋台・油そば・たこ焼き)
     ],
   },
   // 舟灯(京セラドーム)。ゲートは 3 階(模型の床 7 m)。docs の「舟灯」
@@ -408,19 +406,19 @@ const SITES = {
     toiletAngs: [-172, -138, -104, -84, -48, 56, 84, 103, 131, 162],   // 11/21 共通: 公式 3F フロアガイドのトイレ 10(https://www.kyoceradome-osaka.jp/floor_guide/f3/)
     walkMax: { c: 6500, cl: 3200 }, shopsReal: 25,   // 11/21 R7: 公式フロアガイドの売店(3F 16・5F 9)。歩く人の道を 3 階・5 階の一周に広げる(前は一部だけで、模型の店の前に道の目が無く店が開かなかった)
     ticket: { gate: '3', at: [18, 66], y: 7, sign: 'TICKETS ①', sub: 'チケット売場', wins: ['当日券', '当日券', '当日券', '引換'], wall: { w: 7, n: 4, band: '#2b2f36', bandCol: 0x2b2f36, text: 'TICKETS ①', sub: 'チケット売場', wallCol: 0x9aa0a6 }, look: { wall: 0x9aa0a6, roof: 0x2b2f36, signBg: '#2b2f36' } },   // 見た目は写真: 3 階のデッキの外壁に灰色の面と黒い帯「チケット売場 TICKETS ①」   // 3F チケット売場①〜④・中央プラザ(3・4 ゲート)ほか(公式のガイドマップ)
-    // 2F スタジアムモール(ゲートの外の店の輪。中へは入れない): 本塁の後ろ グッズ、三塁側 ピザ、レフト側 フライドチキン・ビアホール、ライト側 ダイナー(公式)
+    // 2F スタジアムモール(ゲートの外の店の輪。中へは入れない): 本塁の後ろ グッズ、三塁側 ピザ、レフト側 フライドチキン・ドリンクの店、ライト側 ダイナー(公式)
     outer: [
-      { at: [-36, 82], y: 7, kinds: ['グッズ', 'グッズ', 'グッズ'], tent: { roof: 0xffffff, stripe: 0xc8102e, sign: '#c8102e', ink: '#ffffff', label: 'グッズ売り場', clerk: 0x1f3557, goods: [0x1f3557, 0xc8a24a, 0xf2f2ee] }, why: '写真(検索「京セラドーム 外 グッズショップ ゲート」): 外の広場に赤白のテントと「グッズ売り場」の看板、列の柵' },
+      { at: [-36, 82], y: 7, kinds: ['グッズ'], tent: { roof: 0xffffff, stripe: 0xc8102e, sign: '#c8102e', ink: '#ffffff', label: 'グッズ売り場', clerk: 0x1f3557, goods: [0x1f3557, 0xc8a24a, 0xf2f2ee] }, why: '写真(検索「京セラドーム 外 グッズショップ ゲート」): 外の広場に赤白のテントと「グッズ売り場」の看板、列の柵' },
       { at: [0, 74], kinds: ['グッズ'], shop: true, title: 'グッズショップ', col: 0x1f3557, look: { W: 7.0, D: 4.0, Hh: 3.4, awn: 'solid', wall: 0x2b2f36, flags: false }, why: '2F スタジアムモール 本塁の後ろのグッズの店(公式。模型では地上の中央プラザの前)' },
-      { at: [-80, 46], kinds: ['からあげ', 'ビール'], why: '2F スタジアムモール 三塁〜レフト側のフライドチキン・ビアホール(公式。模型では地上)' },
+      { at: [-80, 46], kinds: ['からあげ', 'ドリンク'], why: '2F スタジアムモール 三塁〜レフト側のフライドチキン・ドリンクの店(公式。模型では地上)' },
       { at: [84, 40], kinds: ['ホットドッグ', 'ドリンク'], why: '2F スタジアムモール 一塁〜ライト側のダイナー(公式。模型では地上)' },
     ],
     // 場内: 3F(模型の床 7 m 前後)と 5F(上段)。公式のガイドマップの売店の一覧
     shops: [
-      { ang: [-70, -5], y: [-1, 12], kinds: ['お弁当', 'やきそば', 'ホットドッグ', 'やきそば'] },   // 3F 内野 三塁側(焼肉丼・焼きそば・バーガー)
-      { ang: [-5, 70], y: [-1, 12], kinds: ['からあげ', 'たこやき', 'からあげ', 'ラーメン'] },     // 3F 内野 一塁側(からあげ・たこ焼き・フライドチキン・炒飯)
+      { ang: [-70, -5], y: [-1, 12], kinds: ['お弁当', 'やきそば', 'ホットドッグ'] },   // 3F 内野 三塁側(焼肉丼・焼きそば・バーガー)
+      { ang: [-5, 70], y: [-1, 12], kinds: ['からあげ', 'たこやき', 'ラーメン'] },     // 3F 内野 一塁側(からあげ・たこ焼き・フライドチキン・炒飯)
       { ang: [-180, -70], y: [-1, 12], kinds: ['カレー', '甘い物', 'からあげ', 'たこやき'] },      // 3F 外野 レフト側(お好み焼き・カレー・シェイク)
-      { ang: [70, 180], y: [-1, 12], kinds: ['ホットドッグ', 'カレー', 'やきそば', 'ビール'] },   // 3F 外野 ライト側(ホットドッグ・カレー・焼きそば・ビアバー)
+      { ang: [70, 180], y: [-1, 12], kinds: ['ホットドッグ', 'カレー', 'やきそば', 'ドリンク'] },   // 3F 外野 ライト側(ホットドッグ・カレー・焼きそば・ドリンクスタンド)
       { y: [12, 60], kinds: ['ラーメン', 'からあげ', 'かき氷', 'お弁当', 'ホットドッグ'] },        // 5F 上段
     ],
   },
@@ -445,7 +443,7 @@ export class FreePlay {
     // 11/21 持ち主「店で食べられる商品大量に増やして」: js/menus_real.js(FOODS・STADIUM_MENUS)があれば品を足し、その球場の店に割り当てる。無ければ今の MENUS のまま
     this.real = null;
     import('./food_icons.js').then((m) => { this.foodIcons = m.FOOD_ICONS || null; }).catch(() => {});   // 11/21 名物の品の絵(無ければ前の絵か字だけ)
-    import('./menus_real.js').then((m) => { try { for (const [id, f] of Object.entries(m.FOODS || {})) if (!ITEMS[id] && f && f.name) ITEMS[id] = { price: 500, hold: 'box', col: 0xd9a35a, use: 'eat', ...f }; const R0 = (m.STADIUM_MENUS || {})[h.stadium]; if (R0) this.real = { shops: (R0.shops || []).map((q) => ({ kind: q.kind, items: (q.items || []).filter((id) => ITEMS[id]) })).filter((q) => q.items.length), vendor: (R0.vendor || []).filter((id) => ITEMS[id]) }; for (const b of this.boards || []) this.group.remove(b); this.boards = null; this.boardsN = -1; } catch (e) { this.real = null; } }).catch(() => {});
+    import('./menus_real.js').then((m) => { try { for (const [id, f] of Object.entries(m.FOODS || {})) if (!ITEMS[id] && f && f.name) ITEMS[id] = { price: 500, hold: 'box', col: 0xd9a35a, use: 'eat', ...f }; { let dr = 0; for (const id of Object.keys(this.bag || {})) if (!ITEMS[id]) { delete this.bag[id]; dr++; } if (dr) lsSet('r4walk.fp.bag', this.bag); }   /* 11/28 品書きから消した品(前の版の飲み物)が袋に残っていれば捨てる */ const R0 = (m.STADIUM_MENUS || {})[h.stadium]; if (R0) this.real = { shops: (R0.shops || []).map((q) => ({ kind: q.kind, items: (q.items || []).filter((id) => ITEMS[id]) })).filter((q) => q.items.length), vendor: (R0.vendor || []).filter((id) => ITEMS[id]) }; for (const b of this.boards || []) this.group.remove(b); this.boards = null; this.boardsN = -1; } catch (e) { this.real = null; } }).catch(() => {});
     this.genki = 50;                                // 元気(食べると上がる。応援の仕事の上乗せ)
     this.wear = lsGet('r4walk.fp.wear', { uni: 'u_home', cap: 'c_orange' });
     this.seen = lsGet('r4walk.fp.seen.' + h.stadium, {});
@@ -1178,7 +1176,7 @@ export class FreePlay {
   }
   siteSpec() { const sp = SITES[this.h.stadium] || {}; if (sp.toiletAtOld && typeof location !== 'undefined' && new RegExp(sp.toiletAtOld.q).test(location.search)) return Object.assign({}, sp, { toiletAt: sp.toiletAtOld.at }); return sp; }   // 11/21 汽笛ヶ原 R24: 前の版(?rail_r23=1 など)は前のトイレの棟の位置
   rayFirst(o, d, far) { return this.h.world.bvh.raycastFirst(new THREE.Ray(o.clone(), d.clone().normalize()), THREE.DoubleSide, 0, far); }   // 試験の撮影(tools/fpsite.py)からも使う
-  // その場所の売店の種類(実在の球場の配置。SITES の shops: { ang: [から, まで](度、本塁の後ろ 0・一塁側 +), y: [下, 上], kinds: [...] })。当てはまらなければ null
+  // その場所の売店の種類(実在の球場の配置。SITES の shops: { ang: [から, まで](度、本塁の後ろ 0・一塁側 +), y: [下, 上], kinds: [] })。当てはまらなければ null
   zoneKind(x, y, z, i) {
     const Z = this.siteSpec().shops; if (!Z) return null;
     const ang = Math.atan2(x, z + 40) * 180 / Math.PI;
@@ -1595,7 +1593,7 @@ export class FreePlay {
       this.makeSign(rp.clone().addScaledVector(f, -1.2), f, 'レンタル', '自転車・キックボード', 0x1f3557);
     }
   }
-  // 外の屋台の並び(SITES の outer: { at: [x, z], kinds: [...], why })。外の壁ぞい(無ければ広場)に、種類ごとに 1 軒ずつ 4.2 m あけて並べる
+  // 外の屋台の並び(SITES の outer: { at: [x, z], kinds: [], why })。外の壁ぞい(無ければ広場)に、種類ごとに 1 軒ずつ 4.2 m あけて並べる
   buildOuterStalls() {
     const L = this.siteSpec().outer; if (!L || this.outerBuilt) return; this.outerBuilt = true;
     const H = this.h, pl = this._plan, used = [pl.booth, pl.start, pl.out].concat((this.outStores || []).map((q) => V(q.x, q.y, q.z)));
@@ -1649,7 +1647,7 @@ export class FreePlay {
   inGroup(o) { for (let p = o; p; p = p.parent) if (p === this.group) return true; return false; }
   // キッチンカー(海鳴り・杜ノ丘・潮凪・観覧車の丘の写真: 外周に小さなトラックの店が並ぶ)。横の窓が前、ひさし・品書きの板
   makeTruck(p, f, kind) {
-    const COL = { 'やきそば': 0xd2462e, 'からあげ': 0xe39a1e, 'ビール': 0xd8a425, 'カレー': 0xb8742a, 'たこやき': 0xb8652a, 'ラーメン': 0xc8323a, 'ホットドッグ': 0xb8452f, '甘い物': 0xe07aa0, 'ドリンク': 0x2f72b8, 'お弁当': 0x3b7d4f };
+    const COL = { 'やきそば': 0xd2462e, 'からあげ': 0xe39a1e, 'カレー': 0xb8742a, 'たこやき': 0xb8652a, 'ラーメン': 0xc8323a, 'ホットドッグ': 0xb8452f, '甘い物': 0xe07aa0, 'ドリンク': 0x2f72b8, 'お弁当': 0x3b7d4f };
     const col = COL[kind] ?? 0x7a5a3a, g = new THREE.Group(), M = (c, r = 0.6, m = 0.1) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
     const add = (geo, mat, x, y, z) => { const o = new THREE.Mesh(geo, mat); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; };
     const body = M(col, 0.45, 0.2), white = M(0xf2f2ee, 0.6), dark = M(0x1c1c1e, 0.8);
@@ -1736,7 +1734,7 @@ export class FreePlay {
     }
   }
   makeYatai(p, f, kind) {
-    const COL = { 'やきそば': 0xd2462e, 'からあげ': 0xe39a1e, 'ビール': 0xd8a425, 'グッズ': 0x7b4fa0, 'かき氷': 0x49a7c9, 'カレー': 0xb8742a, 'たこやき': 0xb8652a, 'ラーメン': 0xc8323a, 'ホットドッグ': 0xb8452f, '甘い物': 0xe07aa0, 'ドリンク': 0x2f72b8, 'お弁当': 0x3b7d4f, 'おべんとう': 0x3b7d4f };
+    const COL = { 'やきそば': 0xd2462e, 'からあげ': 0xe39a1e, 'グッズ': 0x7b4fa0, 'かき氷': 0x49a7c9, 'カレー': 0xb8742a, 'たこやき': 0xb8652a, 'ラーメン': 0xc8323a, 'ホットドッグ': 0xb8452f, '甘い物': 0xe07aa0, 'ドリンク': 0x2f72b8, 'お弁当': 0x3b7d4f, 'おべんとう': 0x3b7d4f };
     const col = COL[kind] ?? 0x7a5a3a, g = new THREE.Group(), M = (c, r = 0.7) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
     const add = (geo, mat, x, y, z) => { const o = new THREE.Mesh(geo, mat); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; };
     const wood = M(0x8a6a4a), white = M(0xf2efe6);
@@ -2043,7 +2041,7 @@ export class FreePlay {
   guideTarget() {
     const j = this.job;
     if (j && j.k === 'guide' && j.d.guest) { if (!j.d.guest.follow) return { label: '迷ったお客さんへ', p: j.d.guest.a.root.position }; const t = this.sectionPoint(j.d.guest.sec, this.h.player.pos); if (t) return { label: `${j.d.guest.secName}へ`, p: t }; }
-    if (j && j.k === 'beer' && j.d.cups <= 0) { const W = this.walkers(), st0 = W && W.stalls.concat(this.wagons || [], this.mshops || []), isB = (s) => /ビール|ドリンク/.test((s.info && s.info.name) || s.kind || ''), st = st0 && st0.some(isB) ? st0.filter(isB) : st0; if (st && st.length) { const p = this.h.player.pos; const s = st.reduce((a, b) => (Math.hypot(a.x - p.x, a.z - p.z) < Math.hypot(b.x - p.x, b.z - p.z) ? a : b)); return { label: '補充(ビールの売店)へ', p: V(s.x, s.y, s.z) }; } }
+    if (j && j.k === 'uriko' && j.d.cups <= 0) { const W = this.walkers(), st0 = W && W.stalls.concat(this.wagons || [], this.mshops || []), isB = (s) => /ドリンク|ジュース|ソーダ/.test((s.info && s.info.name) || s.kind || ''), st = st0 && st0.some(isB) ? st0.filter(isB) : st0; if (st && st.length) { const p = this.h.player.pos; const s = st.reduce((a, b) => (Math.hypot(a.x - p.x, a.z - p.z) < Math.hypot(b.x - p.x, b.z - p.z) ? a : b)); return { label: '補充(ドリンクの売店)へ', p: V(s.x, s.y, s.z) }; } }
     if (j && j.k === 'clean' && j.d.bag.length >= 6 && this.bins) return { label: 'ごみ箱へ', p: this.bins[0].p };
     if (j && j.k === 'relief' && j.d.car) { if (j.d.phase === 'go') return { label: '内野の手前へ', p: V(0, 0, -30) }; if (j.d.phase === 'back') return { label: '車の出入口(シャッター)へ', p: j.d.car.garage ? j.d.car.garage.front : j.d.car.home.pos }; }
     const pl = this._plan; if (!this.tktOn || !pl) return null;
@@ -2105,7 +2103,7 @@ export class FreePlay {
     // 11/20 受付は球場の外の関係者入口。そこから、仕事ごとの持ち場(実在の球場で働く所)へ関係者入口から入る(jobPost)
     const fromDesk = this.jobDesk && Math.hypot(this.jobDesk.x - H.player.pos.x, this.jobDesk.z - H.player.pos.z) < 6;
     if (fromDesk && !['ball', 'ground', 'mogiri', 'goods'].includes(k)) this.jobPost(k);
-    if (k === 'beer') { j.d.cups = 10; j.d.callers = []; this.makeTank(); }
+    if (k === 'uriko') { j.d.cups = 10; j.d.callers = []; this.makeTank(); }
     if (k === 'shop') { const st = this.nearStall() || this.jobStall(false) || (this.walkers() && this.walkers().stalls.concat(this.wagons || [])[0]); if (st) { const fx = st.fx || 0, fz = st.fz || 1; H.placeAt(st.x + fx * 1.8, st.z + fz * 1.8, st.x, st.z, st.y + 1.3, st.y + 2); } this.shopGame(); }
     if (k === 'ball') { const sp = this.spot; if (sp) { const q = V(-sp.x, sp.y, sp.z); H.placeAt(q.x, q.z, 0, -20, 1.0, 3); } j.d.next = 4; }
     if (k === 'mogiri') { const pl = this.ticketPlan(); j.d.guests = []; j.d.next = 0.5; if (pl) { const q = pl.out.clone().addScaledVector(pl.outward, -1.2); j.d.post = q; j.d.pl = pl; H.placeAt(q.x, q.z, q.x + pl.outward.x * 10, q.z + pl.outward.z * 10, q.y + 1.5, q.y + 2); } }
@@ -2117,18 +2115,18 @@ export class FreePlay {
     if (k === 'relief') this.startRelief();
     this.say(this.simple ? def.name : `仕事: ${def.name}`, def.desc, { ms: this.simple ? 1500 : 3200, must: true });
   }
-  // 仕事の持ち場の売店: ビールの売り子はビールの売店(補充の所)、店員はコンコースの売店。受付(関係者入口)に近い順
-  jobStall(beer) {
+  // 仕事の持ち場の売店: ドリンクの売り子はドリンクの売店(補充の所)、店員はコンコースの売店。受付(関係者入口)に近い順
+  jobStall(drink) {
     const W = this.walkers(), L = (W && W.stalls || []).concat(this.mshops || [], this.wagons || []); if (!L.length) return null;
-    const q = this.jobDesk || this.h.player.pos, isBeer = (s) => /ビール|ドリンク/.test((s.info && s.info.name) || s.kind || '');
-    const pool = beer && L.some(isBeer) ? L.filter(isBeer) : L;
+    const q = this.jobDesk || this.h.player.pos, isDr = (s) => /ドリンク|ジュース|ソーダ/.test((s.info && s.info.name) || s.kind || '');
+    const pool = drink && L.some(isDr) ? L.filter(isDr) : L;
     return pool.reduce((a, b) => (Math.hypot(a.x - q.x, a.z - q.z) <= Math.hypot(b.x - q.x, b.z - q.z) ? a : b));
   }
-  // 受付から持ち場へ: 売り子 = ビールの売店の前(補充の所)、清掃・案内 = 受付にいちばん近いコンコース、応援団 = 外野(浜風はアルプスも)の客席の通路
+  // 受付から持ち場へ: 売り子 = ドリンクの売店の前(補充の所)、清掃・案内 = 受付にいちばん近いコンコース、応援団 = 外野(浜風はアルプスも)の客席の通路
   jobPost(k) {
     const H = this.h, W = this.walkers(), q = this.jobDesk;
-    if (k === 'beer' && this.simple) { const t = this.sectionPoint('infield', q || H.player.pos); if (t) { H.placeAt(t.x, t.z, 0, -40, 3, t.y + 3); return; } }   // すっきり: 補充が無いので、すぐ客席の通路から売り始める
-    if (k === 'beer' || k === 'shop') { const st = this.jobStall(k === 'beer'); if (st) { const fx = st.fx || 0, fz = st.fz || 1; H.placeAt(st.x + fx * 2.2, st.z + fz * 2.2, st.x, st.z, st.y + 1.3, st.y + 2); this.say('関係者入口から中へ', k === 'beer' ? 'ビールの売店でタンクを受け取った' : '売店へ'); return; } }
+    if (k === 'uriko' && this.simple) { const t = this.sectionPoint('infield', q || H.player.pos); if (t) { H.placeAt(t.x, t.z, 0, -40, 3, t.y + 3); return; } }   // すっきり: 補充が無いので、すぐ客席の通路から売り始める
+    if (k === 'uriko' || k === 'shop') { const st = this.jobStall(k === 'uriko'); if (st) { const fx = st.fx || 0, fz = st.fz || 1; H.placeAt(st.x + fx * 2.2, st.z + fz * 2.2, st.x, st.z, st.y + 1.3, st.y + 2); this.say('関係者入口から中へ', k === 'uriko' ? 'ドリンクの売店でタンクを受け取った' : '売店へ'); return; } }
     if (k === 'cheer') { const t = this.sectionPoint(H.stadium === 'koshien' ? 'alps' : 'outfield', q) || this.sectionPoint('outfield', q); if (t) { H.placeAt(t.x, t.z, 0, -40, 3, t.y + 3); this.say('関係者入口から中へ', '応援団の所へ'); return; } }
     const nodes = W && W.nodes ? W.nodes.filter((n) => n.kind === 'concourse' && n.nb.length >= 5) : [];
     if (nodes.length) { const n = nodes.reduce((a, b) => (Math.hypot(a.x - q.x, a.z - q.z) <= Math.hypot(b.x - q.x, b.z - q.z) ? a : b)); H.placeAt(n.x, n.z, 0, -40, n.y + 1.4, n.y + 2); this.say('関係者入口から中へ', 'コンコースが持ち場'); }
@@ -2213,11 +2211,11 @@ export class FreePlay {
   // 仕事の時の E(近くの物に触るより先)
   jobAction() {
     const j = this.job, H = this.h, p = H.player.pos; if (!j || H.mode !== 'walk') return null;
-    if (j.k === 'beer') {
+    if (j.k === 'uriko') {
       if (this.simple) j.d.cups = 99;   // すっきり: 補充に行かなくてよい
       if (j.d.cups <= 0) { const st = this.nearStall(); return st ? { label: 'タンクを補充する', run: () => { j.d.cups = 10; this.say('補充した', 'あと 10 杯'); } } : null; }
       const c = j.d.callers.find((q) => Math.hypot(q.p.x - p.x, q.p.z - p.z) < 2.4 && Math.abs(q.p.y - p.y) < 2.2);
-      if (c) return { label: this.simple ? '売る' : 'ビールを売る', run: () => { j.d.cups--; this.group.remove(c.m); j.d.callers.splice(j.d.callers.indexOf(c), 1); this.jobGain(250, 'ビール 1 杯'); if (j.d.cups <= 0) this.say('タンクが空になった', 'コンコースの売店で補充'); } };
+      if (c) return { label: this.simple ? '売る' : 'ドリンクを売る', run: () => { j.d.cups--; this.group.remove(c.m); j.d.callers.splice(j.d.callers.indexOf(c), 1); this.jobGain(250, 'ドリンク 1 杯'); if (j.d.cups <= 0) this.say('タンクが空になった', 'コンコースの売店で補充'); } };
     }
     if (j.k === 'clean') {
       const t = j.d.trash.find((q) => Math.hypot(q.p.x - p.x, q.p.z - p.z) < 1.6 && Math.abs(q.p.y - p.y) < 1.5);
@@ -2261,7 +2259,7 @@ export class FreePlay {
   // 売店の店員: 注文の品を 4 つから選ぶ(画面の部品。時間は本当の時間で数える)
   shopGame(ids0, pay0) {
     const el = document.createElement('div'); el.id = 'fpShop'; document.body.appendChild(el); this.shopEl = el;
-    const ids = ids0 || (this.simple ? ['yakisoba', 'hotdog', 'beer'] : null) || ['yakisoba', 'karaage', 'bento', 'hotdog', 'kakigori', 'onigiri', 'curry', 'takoyaki', 'beer', 'juice', 'tea', 'cola'], pay = pay0 || 100;
+    const ids = ids0 || (this.simple ? ['yakisoba', 'hotdog', 'juice'] : null) || ['yakisoba', 'karaage', 'bento', 'hotdog', 'kakigori', 'onigiri', 'curry', 'takoyaki', 'juice', 'tea', 'cola'], pay = pay0 || 100;
     const next = () => {
       const j = this.job; if (!j || (j.k !== 'shop' && j.k !== 'goods')) return;
       const want = ids[Math.floor(Math.random() * ids.length)], opts = [want]; while (opts.length < Math.min(this.simple ? 3 : 4, ids.length)) { const x = ids[Math.floor(Math.random() * ids.length)]; if (!opts.includes(x)) opts.push(x); } opts.sort(() => Math.random() - 0.5);
@@ -2282,7 +2280,7 @@ export class FreePlay {
     if (j.t >= j.def.dur || (j.k === 'ground' && this.drag && this.drag.wdone)) { this.endJob(false); return; }
     const left = Math.max(0, Math.round(j.def.dur - j.t)), mm = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
     let info = '';
-    if (j.k === 'beer') {
+    if (j.k === 'uriko') {
       info = `残り ${j.d.cups} 杯`;
       // 手を挙げたお客さん(近くの客席の 3 人に印)
       const S = H.seats;
@@ -2774,13 +2772,13 @@ export class FreePlay {
     return this.stallMenu0(s);
   }
   // 本物の品書き(menus_real.js)の店を割り当てる。グッズの店・自販機はそのまま
-  // 11/21 直し: 前は先頭(どの球場もビール)を 2 回分の重みで回していて、浜風で 208 軒のうち 54 軒がビールになった。
-  // 今は種類ごとの重み(名物 = ビール類を除いた先頭の 3 種類は重く、からあげ・ホットドッグ等の定番は並、グッズは軽く、ビール・サワー・ドリンクは合わせて全体の 1 割)に比べて、
+  // 11/21 直し: 前は先頭(どの球場も飲み物の店)を 2 回分の重みで回していて、浜風で 208 軒のうち 54 軒が飲み物の店になった。
+  // 今は種類ごとの重み(名物 = 飲み物を除いた先頭の 3 種類は重く、からあげ・ホットドッグ等の定番は並、グッズは軽く、ドリンクの店は合わせて全体の 1 割)に比べて、
   // 今までに割り当てた数がいちばん足りない種類を選ぶ。8 m 以内に同じ種類があれば選ばない(他に無い時だけ)、20 m 以内は少し遠ざける
   realWeights(R) {
     if (R._w) return R._w;
-    const DR = /ビール|サワー|ドリンク|醸造所/, SAKE = /焼酎|ワイン|地酒/, GEN = /^(からあげ|ホットドッグ|やきそば|甘い物|ラーメン|ソフトクリーム)$/;
-    let nm = 0; const w = R.shops.map((q) => { const k = q.kind; if (DR.test(k)) return -1; if (k === 'グッズ') return 0.5; if (SAKE.test(k)) return 0.8; if (GEN.test(k)) return 0.9; return nm++ < 3 ? 2.4 : 1.3; });
+    const DR = /ドリンク|ジュース|ソーダ|スカッシュ/, GEN = /^(からあげ|ホットドッグ|やきそば|甘い物|ラーメン|ソフトクリーム)$/;
+    let nm = 0; const w = R.shops.map((q) => { const k = q.kind; if (DR.test(k)) return -1; if (k === 'グッズ') return 0.5; if (GEN.test(k)) return 0.9; return nm++ < 3 ? 2.4 : 1.3; });
     const nD = w.filter((v) => v < 0).length, sum = w.reduce((a, v) => a + (v > 0 ? v : 0), 0), wD = nD ? sum * 0.11 / 0.89 / nD : 0;
     R._w = w.map((v) => (v < 0 ? wD : v)); const T = R._w.reduce((a, v) => a + v, 0); R._p = R._w.map((v) => v / T); R._cnt = R.shops.map(() => 0);
     return R._w;
@@ -2804,14 +2802,14 @@ export class FreePlay {
   }
   // 品の並びを店の分類に合わせる: グッズは外す・違う分類の料理は外す(飲み物・おにぎり等の付け合わせは残す)・その分類の品を先頭に(名前の字を含む品をいちばん前)・足りなければ定番の品を足す
   shapeMenu(c, ids, core) {
-    const nm = (id) => ITEMS[id].name || '', drink = (id) => ITEMS[id].use === 'drink' || !!ITEMS[id].adult, goods = (id) => !!ITEMS[id].keep || id === 'balloon';
+    const nm = (id) => ITEMS[id].name || '', drink = (id) => ITEMS[id].use === 'drink', goods = (id) => !!ITEMS[id].keep || id === 'balloon';
     let L = [...new Set(ids)].filter((id) => ITEMS[id] && ITEMS[id].price > 0);
     if (c === 'goods') return L.filter(goods).slice(0, 8);
     L = L.filter((id) => !goods(id));
     if (c === 'drink') L = L.filter((id) => drink(id));   // 飲み物の店は飲み物だけ
-    if (c && !['store', 'drink', 'beer'].includes(c)) L = L.filter((id) => { if (drink(id) || SIDE.test(nm(id))) return true; const k = kindOf(nm(id)); return !k || k === c || (NEAR[c] || []).includes(k); });
+    if (c && !['store', 'drink'].includes(c)) L = L.filter((id) => { if (drink(id) || SIDE.test(nm(id))) return true; const k = kindOf(nm(id)); return !k || k === c || (NEAR[c] || []).includes(k); });
     if (!c || c === 'store' || c === 'vend') return L.slice(0, 8);
-    const main = (id) => (c === 'drink' ? drink(id) && !ITEMS[id].adult : c === 'beer' ? kindOf(nm(id)) === 'beer' || !!ITEMS[id].adult : kindOf(nm(id)) === c);
+    const main = (id) => (c === 'drink' ? drink(id) : kindOf(nm(id)) === c);
     for (const id of KIND_FALLBACK[c] || []) { if (L.filter(main).length >= 2) break; if (ITEMS[id] && !L.includes(id) && main(id)) L.push(id); }
     const rank = (id) => (main(id) ? (core && nm(id).includes(core) ? 0 : 1) : 2);
     return L.map((id, i) => [id, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map((q) => q[0]).slice(0, 8);
@@ -2833,7 +2831,7 @@ export class FreePlay {
     if (!c) { const k = R.shops.findIndex((q) => q.kind === name); if (k < 0) return null; s._rs = k; R._cnt[k]++; const f0 = ITEMS[R.shops[k].items[0]]; return { kind: name, items: this.shapeMenu(f0 ? kindOf(f0.name) : null, R.shops[k].items, null) }; }
     const sc = R.shops.map((q) => { const qc = kindOf(q.kind); if (qc === 'goods') return 0; let v = 0; if (core && q.kind.includes(core)) v += 4; if (core && q.items.some((id) => ITEMS[id] && (ITEMS[id].name || '').includes(core) && kindOf(ITEMS[id].name) === c)) v += 2.5; if (qc === c) v += 1.5; const f0 = ITEMS[q.items[0]]; if (f0 && kindOf(f0.name) === c) v += 0.5; return v; });
     const top = Math.max(0, ...sc);
-    if (top < 2.5 && core && core.length >= 2 && !['drink', 'beer', 'ice', 'sweets'].includes(c)) {   // その球場の品書きに無い名前(にぎり寿司 等): 全部の品から同じ字の品
+    if (top < 2.5 && core && core.length >= 2 && !['drink', 'ice', 'sweets'].includes(c)) {   // その球場の品書きに無い名前(にぎり寿司 等): 全部の品から同じ字の品
       const own = new Set(R.shops.flatMap((q) => q.items)), rk = (id) => (!/^[a-z]{2}_/.test(id) || own.has(id) ? 0 : 1);   // 定番の品・この球場の品を先に(ほかの球場の名前の付いた品は、それしか無い時だけ)
       let ids = Object.keys(ITEMS).filter((id) => ITEMS[id].price > 0 && !ITEMS[id].keep && (ITEMS[id].name || '').includes(core) && kindOf(ITEMS[id].name) === c);
       if (ids.some((id) => !rk(id))) ids = ids.filter((id) => !rk(id)); ids = ids.slice(0, 3);
@@ -2858,15 +2856,15 @@ export class FreePlay {
   vendorMenu() { return (this.real && this.real.vendor && this.real.vendor.length) ? this.real.vendor.slice(0, 8) : VENDOR_MENU; }
   stallMenu0(s) {
     if (s.kind === 'グッズ' && this.simple) return { title: 'グッズの店', ids: ['megaphone', 'towel', 'balloon'] };
-    if (s.kind === '売店') return { title: '売店', ids: ['yakisoba', 'karaage', 'hotdog', 'curry', 'bento', 'onigiri', 'ice', 'beer', 'juice', 'tea'] };
+    if (s.kind === '売店') return { title: '売店', ids: ['yakisoba', 'karaage', 'hotdog', 'curry', 'bento', 'onigiri', 'ice', 'juice', 'tea'] };
     if (s.kind) return { title: s.kind === '自動販売機' ? '自動販売機' : `${s.kind}の店`, ids: MENUS[s.kind] || MENUS['やきそば'] };
     // 模型にもとからある売店は、看板の品と walkers の名前が合わないので「売店」の広い品書きにする
-    if (s.model) return { title: '売店', ids: ['yakisoba', 'karaage', 'hotdog', 'onigiri', 'beer', 'juice', 'tea', 'kakigori'] };
+    if (s.model) return { title: '売店', ids: ['yakisoba', 'karaage', 'hotdog', 'onigiri', 'juice', 'tea', 'kakigori'] };
     const name = s.info && s.info.name || '売店';
     return { title: s.wagon ? '移動販売のワゴン' : name + 'の店', ids: MENUS[name] || ['onigiri', 'tea', 'juice'] };
   }
   // 模型の店を探す: 店の名前の看板・カウンター・店の前の板・自販機の材質の三角の真ん中を 5 m の目に集め、1 つの目 = 1 店。
-  // 種類は、その目と隣の目にある材質の名前から(ビールの注ぎ口 → ビール、グッズの棚 → グッズ、ケース・甘い → 甘い物、自販機 → 自動販売機、ほかは食べ物を順に)
+  // 種類は、その目と隣の目にある材質の名前から(飲み物の注ぎ口 → ドリンク、グッズの棚 → グッズ、ケース・甘い → 甘い物、自販機 → 自動販売機、ほかは食べ物を順に)
   scanModelShops() {
     this.mshops = [];
     const RE = /shop_name_\d+|shop_counter|counter_black|kiosk|conc_counter|shop_front|shopsigns|shop_fascia|shop_register|vending|vend_\d/i;
@@ -2904,7 +2902,7 @@ export class FreePlay {
       const [cx, cz, cy] = k.split(',').map(Number), mats = new Set(c.mats);
       for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) for (const M of [cells, tcells]) { const q = M.get(`${cx + dx},${cz + dz},${cy}`); if (q) q.mats.forEach((m) => mats.add(m)); }
       const all = [...mats].join(' ');
-      const kind = /beer|beertap/i.test(all) ? 'ビール' : /goods/i.test(all) ? 'グッズ' : /case_glass|sweet|cream|ice/i.test(all) ? '甘い物' : /ramen/i.test(all) ? 'ラーメン' : /curry/i.test(all) ? 'カレー' : /bento/i.test(all) ? 'お弁当'
+      const kind = /beer|beertap/i.test(all) ? 'ドリンク' : /goods/i.test(all) ? 'グッズ' : /case_glass|sweet|cream|ice/i.test(all) ? '甘い物' : /ramen/i.test(all) ? 'ラーメン' : /curry/i.test(all) ? 'カレー' : /bento/i.test(all) ? 'お弁当'
         : (/vend/i.test(all) && !/shop|counter|kiosk/i.test(all)) ? '自動販売機' : '売店';   // 看板の字は読めないので、手がかりの無い店は広い品書きの「売店」(看板と品が食い違わないように)
       // 近くの店と重ねない
       if (this.mshops.some((m) => Math.hypot(m.x - ctr.x, m.z - ctr.z) < 7 && Math.abs(m.y - fy) < 2)) continue;   // 1 店の看板と台が隣の目にまたがっても 1 店
@@ -3238,11 +3236,11 @@ export class FreePlay {
   // 表の店ごとに、台の奥の決まった所に店員(大きな店は 2 人)を、客の方を向けて立て、買える店(mopen)にする。服は店の種類の色
   placeJsonClerks(W) {
     const E = this.clerkE, H = this.h;
-    const COLK = { yakisoba: 0xd2462e, curry: 0xb8742a, karaage: 0xe39a1e, yakitori: 0x8a3a24, takoyaki: 0xb8652a, konamon: 0xa0522d, ramen: 0xc8323a, udon: 0x6a5a3a, hotdog: 0xb8452f, pizza: 0xd0562a, beer: 0xd8a425, ice: 0x49a7c9, sweets: 0xe07aa0, bento: 0x3b7d4f, drink: 0x2f72b8, goods: 0x1f3557, store: 0x2f9e4f };
+    const COLK = { yakisoba: 0xd2462e, curry: 0xb8742a, karaage: 0xe39a1e, yakitori: 0x8a3a24, takoyaki: 0xb8652a, konamon: 0xa0522d, ramen: 0xc8323a, udon: 0x6a5a3a, hotdog: 0xb8452f, pizza: 0xd0562a, ice: 0x49a7c9, sweets: 0xe07aa0, bento: 0x3b7d4f, drink: 0x2f72b8, goods: 0x1f3557, store: 0x2f9e4f };
     for (const u of E.units) {
       if (!u.c || !u.c.length) continue;
       const fx = u.f[0], fz = u.f[1], x = u.s[0], y = u.s[1], z = u.s[2];
-      let kind = null; { const nk = new Set(this.mopen.filter((s) => Math.hypot(s.x - x, s.z - z) < 20 && Math.abs(s.y - y) < 2).map((s) => s.kind)); for (let t = 0; t < 8 && (!kind || nk.has(kind)); t++) kind = this.zoneKind(x, y, z, this.mopen.length + t * 3) || ['やきそば', 'からあげ', 'ビール', 'カレー', '甘い物', 'ドリンク', 'ラーメン', 'グッズ'][(this.mopen.length + t) % 8]; }
+      let kind = null; { const nk = new Set(this.mopen.filter((s) => Math.hypot(s.x - x, s.z - z) < 20 && Math.abs(s.y - y) < 2).map((s) => s.kind)); for (let t = 0; t < 8 && (!kind || nk.has(kind)); t++) kind = this.zoneKind(x, y, z, this.mopen.length + t * 3) || ['やきそば', 'からあげ', 'たこやき', 'カレー', '甘い物', 'ドリンク', 'ラーメン', 'グッズ'][(this.mopen.length + t) % 8]; }
       const cat = kindOf(u.t || '') || kindOf(kind), col = COLK[cat] ?? 0xc8323a, white = cat !== 'goods' && cat !== 'store';
       const s = { x, y, z, fx, fz, w: u.w || 2, kind, info: { name: kind }, model: true, json: true, clerk: null, clerks: [] };
       u.c.forEach((q, i) => {
@@ -3305,7 +3303,7 @@ export class FreePlay {
       const { c, f, front, fy } = q;
       if (pick.has(q)) {
         let kind = null;   // 種類: 前に決めた割り当て(SITES の shops)から、隣(20 m 以内)の開いた店と同じにならない物
-        { const nk = new Set(this.mopen.filter((s) => Math.hypot(s.x - c.x, s.z - c.z) < 20 && Math.abs(s.y - fy) < 2).map((s) => s.kind)); for (let t = 0; t < 8 && (!kind || nk.has(kind)); t++) kind = this.zoneKind(c.x, fy, c.z, this.mopen.length + t * 3) || ['やきそば', 'からあげ', 'ビール', 'カレー', '甘い物', 'ドリンク', 'ラーメン', 'グッズ'][(this.mopen.length + t) % 8]; }
+        { const nk = new Set(this.mopen.filter((s) => Math.hypot(s.x - c.x, s.z - c.z) < 20 && Math.abs(s.y - fy) < 2).map((s) => s.kind)); for (let t = 0; t < 8 && (!kind || nk.has(kind)); t++) kind = this.zoneKind(c.x, fy, c.z, this.mopen.length + t * 3) || ['やきそば', 'からあげ', 'たこやき', 'カレー', '甘い物', 'ドリンク', 'ラーメン', 'グッズ'][(this.mopen.length + t) % 8]; }
         const a = new Athlete({ plain: true, jersey: 0xf4f4f0, pants: 0x2a2a2a, cap: [0xc8323a, 0x1f3557, 0x2f7a45, 0xe39a1e][this.mopen.length % 4], sock: 0x222222, under: 0xf4f4f0 }, { number: '', glove: false });
         a.root.position.set(q.back.x, q.by, q.back.z); a.root.rotation.y = Math.atan2(f.x, f.z); a.set('stand', { v: 0 }); this.group.add(a.root);
         (this.clerks = this.clerks || []).push(a);   // (簡単な形(figures.js)は部品が多く描く回数が増えるので使わない。遠くの店員は描かない)
@@ -3614,7 +3612,7 @@ export class FreePlay {
       { label: 'その場に置く', tag: '', run: () => { this.closeSheet(); this.placeHeld(); } },
       { label: '投げる(止まった所で拾える)', tag: '', run: () => { this.closeSheet(); this.throwHeld(); } });
     rows.push({ head: '袋の中(食べ物・飲み物)' });
-    const b = Object.entries(this.bag).filter(([, n]) => n > 0);
+    const b = Object.entries(this.bag).filter(([id, n]) => n > 0 && ITEMS[id]);
     if (!b.length) rows.push({ label: '何も入っていません(売店・売り子で買えます)', tag: '', off: true, run: () => {} });
     for (const [id, n] of b) rows.push({ icon: id, label: `${ITEMS[id].name} × ${n}`, tag: '出す', run: () => { this.closeSheet(); this.stow(); this.bag[id]--; lsSet('r4walk.fp.bag', this.bag); this.hold(id); this.say(ITEMS[id].name, this.useHint(id)); } });
     rows.push({ head: '持っているグッズ' });

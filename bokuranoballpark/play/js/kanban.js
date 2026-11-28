@@ -10,7 +10,7 @@ const BASE = new URL('../', import.meta.url).href;
 const S = { ready: false, fail: false, wait: [], boards: null, marks: null, deco: null, meta: null, imgs: new Map() };
 let started = false, kindFn = () => null;
 // 筆の字体(kb_yuji)に入っている字(店名の字だけに絞った)。ほかの字が入る名前は太いゴシック(kb_dela)にする(字体が混ざらないように)
-const YUJI = new Set([...'…›、。「」あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちっつてでとどなにぬねのはばひびふぶぷへべほまみむめもゃやゅよらりるれろわをんァアィイウェォオカガキギクグケゲコゴサザシジスズセソタダチッツテトドナニネノハバパヒビピフブプベペホボポマミムメモャュユョラリルレロワン・ー一丁三上下丘並中串丼乗九事二交亭人仕付代以伝位体作使係信個側備充先入公具内円処凪出分切列別券前割動北区千原取受口台号司合同名味呼品員喫噌回団園地坂型堂場塁増壁売夕外夜大天太好始婆子字学安定実客室寝寮寿小少届屋山川席帽幸広店座庫庭弁式引当待後必応念戻所手打投拾持指振捕捨掃揚換援操放救整方日明昔星時暗書替最服木本杜来東板林株根案森模横樹樺橋機次止歳段水氷汁汐決汽沢波津流浜海消清渡港湧湾漁漏潮火灯炭点焚焼照煮熊燃牛牧物特珈球琲甘生町画畑番白盛盤目看眺着礼移空窓窯立笛笹箱粉紙紺終絵緑線置羽者肉肩自舟船色芋花苔茶草華落葉薪薬行袋裏補要見覧観角言記試誕読調豚貨販買赤走足路車転輪辺近迷送通造運道選部酎酒醸野金針鈴鉄銀鍋門閉開間関降陰雪霧青面音風飛食飯飲駅験鮮鳥鳴鷺麺麻']);
+const YUJI = new Set([...'…›、。「」あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちっつてでとどなにぬねのはばひびふぶぷへべほまみむめもゃやゅよらりるれろわをんァアィイウェォオカガキギクグケゲコゴサザシジスズセソタダチッツテトドナニネノハバパヒビピフブプベペホボポマミムメモャュユョラリルレロワン・ー一丁三上下丘並中串丼乗九事二交亭人仕付代以伝位体作使係信個側備充先入公具内円処凪出分切列別券前割動北区千原取受口台号司合同名味呼品員喫噌回団園地坂型堂場塁増壁売夕外夜大天太好始婆子字学安定実客室寝寮寿小少届屋山川席帽幸広店座庫庭弁式引当待後必応念戻所手打投拾持指振捕捨掃揚換援操放救整方日明昔星時暗書替最服木本杜来東板林株根案森模横樹樺橋機次止歳段水氷汁汐決汽沢波津流浜海消清渡港湧湾漁漏潮火灯炭点焚焼照煮熊燃牛牧物特珈球琲甘生町画畑番白盛盤目看眺着礼移空窓窯立笛笹箱粉紙紺終絵緑線置羽者肉肩自舟船色芋花苔茶草華落葉薪薬行袋裏補要見覧観角言記試誕読調豚貨販買赤走足路車転輪辺近迷送通造運道選部野金針鈴鉄銀鍋門閉開間関降陰雪霧青面音風飛食飯飲駅験鮮鳥鳴鷺麺麻']);
 const loadImg = (src) => new Promise((ok, ng) => { const i = new Image(); i.decoding = 'async'; i.onload = () => ok(i); i.onerror = () => ng(new Error('img ' + src)); i.src = src; });
 export function kbSetKind(fn) { kindFn = fn || kindFn; }
 export function kbLoad() {
@@ -26,7 +26,7 @@ const stadium = () => (typeof window !== 'undefined' && window.__fp && window.__
 const lite = () => !!(typeof window !== 'undefined' && window.__kbLite);
 
 // ---------------------------------------------------------------- 型
-const MK = { karaage: 0, ramen: 1, curry: 2, yakisoba: 3, takoyaki: 4, beer: 5, ice: 6, bento: 7, goods: 8, hotdog: 9, coffee: 10, kakigori: 11, nikuman: 12, yakitori: 13, udon: 14, pizza: 15, konamon: 16, drink: 17, sweets: 18, store: 19 };
+const MK = { karaage: 0, ramen: 1, curry: 2, yakisoba: 3, takoyaki: 4, ice: 6, bento: 7, goods: 8, hotdog: 9, coffee: 10, kakigori: 11, nikuman: 12, yakitori: 13, udon: 14, pizza: 15, konamon: 16, drink: 17, sweets: 18, store: 19 };
 // 看板の地(kb_boards の番号): 0 黒うるし 1 白木 2 赤のれん 3 藍のれん 4 電球の電飾 5 れんがにネオン 6 パステルの甘味 7 黒板 8 金属の板 9 朱の祭りの幕 10 緑のほうろう 11 空色の波
 const BST = [
   { ink: '#f2cf72', stroke: '#140c04', font: 'yuji', px: 0.32, py: 0.2 },
@@ -42,20 +42,20 @@ const BST = [
   { ink: '#f4d677', stroke: '#06180c', font: 'dela', px: 0.32, py: 0.22 },
   { ink: '#ffffff', stroke: '#0b4a86', font: 'dela', px: 0.3, py: 0.22 },
 ];
-const KB_BOARD = { ramen: 2, nikuman: 2, udon: 3, yakitori: 1, bento: 1, curry: 10, karaage: 9, yakisoba: 0, takoyaki: 9, konamon: 0, hotdog: 4, pizza: 4, beer: 5, ice: 11, kakigori: 11, sweets: 6, coffee: 7, drink: 11, goods: 8, store: 8 };
+const KB_BOARD = { ramen: 2, nikuman: 2, udon: 3, yakitori: 1, bento: 1, curry: 10, karaage: 9, yakisoba: 0, takoyaki: 9, konamon: 0, hotdog: 4, pizza: 4, ice: 11, kakigori: 11, sweets: 6, coffee: 7, drink: 11, goods: 8, store: 8 };
 // 球場ごと: def 種類の分からない店の地 / sw 種類ごとの地の替え / deco 飾り(雪・波・葉・電飾・ちょうちん)/ menu 品書きの板の地
 const THEME = {
   koshien: { def: 10, deco: 'lantern', sw: { sweets: 6, store: 10 }, menu: 'enamel' },   // 古い球場・浜風: 緑のほうろう、和の店にちょうちん
   dome: { def: 8, deco: 'bulbs', sw: { karaage: 4 }, menu: 'navy' },                      // 大屋根の球場: 金属の板と電飾
-  park: { def: 1, deco: 'leaf', sw: { curry: 1, beer: 1 }, menu: 'wood' },                  // 杜の球場: 白木とつたの葉
+  park: { def: 1, deco: 'leaf', sw: { curry: 1 }, menu: 'wood' },                  // 杜の球場: 白木とつたの葉
   ring: { def: 8, deco: 'bulbs', sw: { karaage: 0, yakitori: 0 }, menu: 'navy' },           // 銀の輪の屋根の球場
   railside: { def: 5, deco: null, sw: { hotdog: 5, curry: 0, bento: 7 }, menu: 'chalk' },    // 汽車と港のれんが
   bowl: { def: 11, deco: 'wave', sw: { curry: 10, ramen: 0 }, menu: 'navy' },              // 港町
   north: { def: 1, deco: 'snow', sw: { yakitori: 0, karaage: 1 }, menu: 'wood' },           // 北の杜
-  roof: { def: 7, deco: 'snow', sw: { ramen: 0, curry: 7, beer: 5 }, menu: 'chalk' },        // 北国の屋根の球場
+  roof: { def: 7, deco: 'snow', sw: { ramen: 0, curry: 7, drink: 5 }, menu: 'chalk' },        // 北国の屋根の球場
   bay: { def: 11, deco: 'wave', sw: { ramen: 0 }, menu: 'navy' },                           // 海の球場
   shore: { def: 11, deco: 'wave', sw: { yakitori: 9 }, menu: 'enamel' },                    // 海辺の風の球場
-  grove: { def: 1, deco: 'leaf', sw: { curry: 1, coffee: 7, beer: 1 }, menu: 'wood' },      // 森の球場
+  grove: { def: 1, deco: 'leaf', sw: { curry: 1, coffee: 7 }, menu: 'wood' },      // 森の球場
   canal: { def: 0, deco: 'lantern', sw: { hotdog: 4, karaage: 0 }, menu: 'chalk' },        // 運河の下町
 };
 const WA = new Set(['ramen', 'udon', 'yakitori', 'takoyaki', 'konamon', 'bento', 'nikuman', 'yakisoba']);   // ちょうちんを下げる和の店
@@ -181,7 +181,7 @@ function drawFood(g, ic, x, y, s, sty) {
   g.restore();
 }
 const MENU_BG = { chalk: { ink: '#f6f3ea', sub: '#ffd76a', line: 'rgba(255,255,255,0.25)', px: 0.075, top: 0.07 }, enamel: { ink: '#2a2020', sub: '#b3121c', line: 'rgba(0,0,0,0.18)', px: 0.085, top: 0.075 }, navy: { ink: '#f4f1e6', sub: '#f2cf72', line: 'rgba(255,255,255,0.22)', px: 0.085, top: 0.075 }, wood: { ink: '#2d1a0c', sub: '#8a1a10', line: 'rgba(60,30,10,0.25)', px: 0.06, top: 0.05 } };
-function menuBgOf(sty) { const k = sty.sk; if (k === 'sweets' || k === 'ice' || k === 'kakigori' || k === 'drink') return 'enamel'; if (k === 'beer' || k === 'coffee') return 'chalk'; return (sty.T && sty.T.menu) || 'chalk'; }
+function menuBgOf(sty) { const k = sty.sk; if (k === 'sweets' || k === 'ice' || k === 'kakigori' || k === 'drink') return 'enamel'; if (k === 'coffee') return 'chalk'; return (sty.T && sty.T.menu) || 'chalk'; }
 const yenTxt = (n) => `${Math.round(n).toLocaleString('ja-JP')}円`;
 // 縦長の品書きの板(立て看板・店の脇の板)
 export function kbDrawMenu(g, x, y, w, h, title, items, iconOf, opt = {}) {
@@ -240,7 +240,7 @@ export const KB_MENUS = {
 };
 // スマホの画質の模型で、看板が 1 枚の絵に詰めてある所(絵の中の四角 [x0, y0, x1, y1, 店名]、size の絵の画素で。上から下へ)
 const KB_LITE = {
-  koshien: [{ re: 'r12_shop_name_lite$', size: 512, boxes: [[212, 0, 438, 24, '浜風カレー'], [0, 143, 226, 166, 'からあげ'], [228, 143, 454, 166, '鉄板やきそば'], [0, 168, 226, 191, 'たこやき'], [228, 168, 454, 191, 'ビール・ドリンク'], [0, 193, 226, 216, 'おべんとう'], [228, 193, 454, 216, '炭火やきとり'], [0, 218, 226, 241, 'かき氷・ソフト'], [228, 218, 454, 241, 'にぎり寿司'], [0, 243, 226, 266, 'グラウンドピザ'], [228, 243, 454, 266, '応援グッズ'], [0, 268, 226, 291, 'うどん・そば'], [228, 268, 454, 291, '中華・天津飯'], [0, 293, 226, 316, 'お好み焼き']] }],
+  koshien: [{ re: 'r12_shop_name_lite$', size: 512, boxes: [[212, 0, 438, 24, '浜風カレー'], [0, 143, 226, 166, 'からあげ'], [228, 143, 454, 166, '鉄板やきそば'], [0, 168, 226, 191, 'たこやき'], [228, 168, 454, 191, 'ジュース・ドリンク'], [0, 193, 226, 216, 'おべんとう'], [228, 193, 454, 216, '炭火やきとり'], [0, 218, 226, 241, 'かき氷・ソフト'], [228, 218, 454, 241, 'にぎり寿司'], [0, 243, 226, 266, 'グラウンドピザ'], [228, 243, 454, 266, '応援グッズ'], [0, 268, 226, 291, 'うどん・そば'], [228, 268, 454, 291, '中華・天津飯'], [0, 293, 226, 316, 'お好み焼き']] }],
 };
 function namesOf(st, spec) {
   if (spec.t || spec.byName) return spec;
